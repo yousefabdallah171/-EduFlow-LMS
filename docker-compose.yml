@@ -1,0 +1,53 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    depends_on:
+      - backend
+    networks:
+      - eduflow_net
+    ports:
+      - "80:80"
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env
+    networks:
+      - eduflow_net
+    volumes:
+      - video_storage:/app/storage
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - eduflow_net
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    networks:
+      - eduflow_net
+    volumes:
+      - redisdata:/data
+
+networks:
+  eduflow_net:
+    driver: bridge
+
+volumes:
+  pgdata:
+  redisdata:
+  video_storage:

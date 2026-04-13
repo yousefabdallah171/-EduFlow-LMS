@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+enum Locale {
+  en
+  ar
+}
+
+enum Theme {
+  light
+  dark
+}
+
+enum OAuthProvider {
+  email
+  google
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum EnrollmentType {
+  PAID
+  ADMIN_ENROLLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum CouponDiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum VideoStatus {
+  NONE
+  PROCESSING
+  READY
+  ERROR
+}
+
+enum UploadStatus {
+  UPLOADING
+  COMPLETE
+  PROCESSING
+  READY
+  CANCELLED
+  ERROR
+}
+
+model User {
+  id                   String           @id @default(uuid())
+  email                String           @unique
+  passwordHash         String?
+  fullName             String
+  avatarUrl            String?
+  role                 Role             @default(STUDENT)
+  locale               Locale           @default(en)
+  theme                Theme            @default(light)
+  oauthProvider        OAuthProvider    @default(email)
+  oauthId              String?          @unique
+  emailVerified        Boolean          @default(false)
+  emailVerifyToken     String?
+  emailVerifyExpires   DateTime?
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  refreshTokens        RefreshToken[]
+  enrollments          Enrollment[]     @relation("StudentEnrollment")
+  payments             Payment[]
+  lessonProgress       LessonProgress[]
+  videoTokens          VideoToken[]
+  videoUploads         VideoUpload[]    @relation("UploadUser")
+  revokedEnrollments   Enrollment[]     @relation("RevokedBy")
+  updatedCourse        CourseSettings[] @relation("CourseUpdatedBy")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  familyId  String
+  sessionId String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model Enrollment {
+  id             String           @id @default(uuid())
+  userId         String           @unique
+  user           User             @relation("StudentEnrollment", fields: [userId], references: [id], onDelete: Cascade)
+  status         EnrollmentStatus @default(ACTIVE)
+  enrollmentType EnrollmentType
+  paymentId      String?          @unique
+  payment        Payment?         @relation(fields: [paymentId], references: [id])
+  enrolledAt     DateTime         @default(now())
+  revokedAt      DateTime?
+  revokedById    String?
+  revokedBy      User?            @relation("RevokedBy", fields: [revokedById], references: [id])
+}
+
+model Payment {
+  id                   String        @id @default(uuid())
+  userId               String
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  amountPiasters       Int
+  currency             String        @default("EGP")
+  paymobOrderId        String?
+  paymobTransactionId  String?       @unique
+  couponId             String?
+  coupon               Coupon?       @relation(fields: [couponId], references: [id])
+  discountPiasters     Int           @default(0)
+  status               PaymentStatus @default(PENDING)
+  webhookReceivedAt    DateTime?
+  webhookHmac          String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  enrollment           Enrollment?
+}
+
+model Coupon {
+  id            String             @id @default(uuid())
+  code          String             @unique
+  discountType  CouponDiscountType
+  discountValue Decimal            @db.Decimal(10, 2)
+  maxUses       Int?
+  usesCount     Int                @default(0)
+  expiryDate    DateTime?
+  createdAt     DateTime           @default(now())
+  deletedAt     DateTime?
+  payments      Payment[]
+}
+
+model Lesson {
+  id              String           @id @default(uuid())
+  titleEn         String
+  titleAr         String
+  descriptionEn   String?
+  descriptionAr   String?
+  videoHlsPath    String?
+  videoStatus     VideoStatus      @default(NONE)
+  durationSeconds Int?
+  sortOrder       Int              @default(0)
+  isPublished     Boolean          @default(false)
+  dripDays        Int?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  progress        LessonProgress[]
+  videoTokens     VideoToken[]
+  uploads         VideoUpload[]
+}
+
+model LessonProgress {
+  id                  String   @id @default(uuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId            String
+  lesson              Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt         DateTime?
+  watchTimeSeconds    Int      @default(0)
+  lastPositionSeconds Int      @default(0)
+  updatedAt           DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+}
+
+model VideoToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  sessionId String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model VideoUpload {
+  id           String       @id @default(uuid())
+  lessonId     String?
+  lesson       Lesson?      @relation(fields: [lessonId], references: [id])
+  uploadedById String
+  uploadedBy   User         @relation("UploadUser", fields: [uploadedById], references: [id])
+  filename     String
+  sizeBytes    BigInt
+  offsetBytes  BigInt       @default(0)
+  status       UploadStatus @default(UPLOADING)
+  storagePath  String?
+  errorMessage String?
+  createdAt    DateTime     @default(now())
+  completedAt  DateTime?
+}
+
+model CourseSettings {
+  id               Int      @id @default(1)
+  titleEn          String
+  titleAr          String
+  descriptionEn    String?
+  descriptionAr    String?
+  pricePiasters    Int
+  currency         String   @default("EGP")
+  isEnrollmentOpen Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
+  updatedById      String?
+  updatedBy        User?    @relation("CourseUpdatedBy", fields: [updatedById], references: [id])
+}

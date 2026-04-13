@@ -321,6 +321,152 @@ server {
 (writes uploads + HLS segments) and the Nginx container (serves `.m3u8`/`.ts` files directly
 for performance). In production, replace with a CDN/object storage mount.
 
+## Design System
+
+### Brand & Visual Identity
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--color-primary` | `#EB2027` | CTAs, active states, badges, progress |
+| `--color-primary-dark` | `#C4191F` | Hover states |
+| `--color-primary-light` | `#F8D7D8` | Backgrounds, tints |
+
+Full tonal scale (`50`–`900`) defined in `frontend/src/styles/tailwind.config.ts` under `colors.primary`.
+
+**Aesthetic**: Warm educational feel — off-white backgrounds (`#FAFAF8`), soft shadows, generous spacing. Premium and trustworthy without being cold or corporate.
+
+### Typography
+
+| Font | Language | Weights | Source |
+|------|----------|---------|--------|
+| **Inter** | Latin (EN) | 400, 500, 600, 700 | Google Fonts |
+| **Noto Kufi Arabic** | Arabic (AR) | 400, 500, 700 | Google Fonts |
+
+Switching rule: `:lang(ar) { font-family: 'Noto Kufi Arabic', sans-serif; }` in `globals.css`.
+
+### RTL-First Approach
+
+- All layout uses CSS logical properties (`margin-inline-start`, `padding-inline-end`, etc.)
+- `dir="rtl"` / `dir="ltr"` set on `<html>` by `locale.store.ts`
+- Icons that convey direction (arrows, chevrons) are mirrored automatically via `[dir="rtl"] .icon-dir { transform: scaleX(-1); }`
+- Arabic is the primary target audience — Arabic layout is tested first, English second
+
+---
+
+## Complete Page Map
+
+### Public Pages (no auth required)
+
+| Route | Component | Description |
+|-------|-----------|-------------|
+| `/` | `Landing.tsx` | Course sales landing: hero, curriculum preview, instructor bio, testimonials, FAQ, CTA |
+| `/preview` | `LessonPreview.tsx` | First lesson free preview — guests watch without enrolling |
+| `/about` | `About.tsx` | Instructor profile, credentials, teaching philosophy |
+| `/testimonials` | `Testimonials.tsx` | Student success stories, social proof |
+| `/faq` | `FAQ.tsx` | Accordion-based FAQ (Headless UI Disclosure) |
+| `/contact` | `Contact.tsx` | Contact form + support email |
+| `/pricing` | `Pricing.tsx` | Full offer page: price, what's included, guarantee |
+| `/privacy` | `PrivacyPolicy.tsx` | Privacy policy (legal) |
+| `/terms` | `Terms.tsx` | Terms and conditions (legal) |
+| `/refund` | `RefundPolicy.tsx` | Refund policy (legal) |
+| `/verify-email` | `VerifyEmail.tsx` | Email verification landing (token in query param) |
+| `/reset-password` | `ResetPassword.tsx` | Password reset form (token in query param) |
+| `/404` | `NotFound.tsx` | 404 error page with CTA back to landing |
+
+### Student Area (requires STUDENT role + active enrollment)
+
+| Route | Component | Description |
+|-------|-----------|-------------|
+| `/register` | `Register.tsx` | Email/password + Google OAuth registration |
+| `/login` | `Login.tsx` | Login form |
+| `/forgot-password` | `ForgotPassword.tsx` | Request password reset email |
+| `/checkout` | `Checkout.tsx` | Paymob payment + coupon input |
+| `/dashboard` | `student/Dashboard.tsx` | Overview: progress summary, continue learning CTA, recent activity |
+| `/course` | `Course.tsx` | Full curriculum accordion, completion progress bar |
+| `/lesson/:id` | `Lesson.tsx` | HLS video player + watermark + progress tracking |
+| `/progress` | `student/Progress.tsx` | Detailed lesson-by-lesson completion stats, watch time |
+| `/notes` | `student/Notes.tsx` | Per-lesson notes: create, edit, delete, export |
+| `/downloads` | `student/Downloads.tsx` | Downloadable resources attached to lessons |
+| `/orders` | `student/Orders.tsx` | Billing history, payment receipts |
+| `/profile` | `student/Profile.tsx` | Name, avatar, password change, notification prefs |
+| `/help` | `student/Help.tsx` | FAQ + contact support form for enrolled students |
+
+### Admin Area (requires ADMIN role)
+
+| Route | Component | Description |
+|-------|-----------|-------------|
+| `/admin` | `admin/Dashboard.tsx` | KPI cards: revenue, enrollments, completion, watch time; timeseries charts |
+| `/admin/students` | `admin/Students.tsx` | Paginated table, live combobox search, enroll/revoke with Dialog |
+| `/admin/students/:id` | `admin/StudentDetail.tsx` | Individual student profile: enrollment history, watch time, notes |
+| `/admin/lessons` | `admin/Lessons.tsx` | Lesson list table, video upload Sheet panel, reorder drag handle |
+| `/admin/media` | `admin/MediaLibrary.tsx` | All uploaded videos: status (PROCESSING/READY), re-process, delete |
+| `/admin/pricing` | `admin/Pricing.tsx` | Course price editor, coupon CRUD with Floating UI usage stats |
+| `/admin/orders` | `admin/Orders.tsx` | Full payment history table, manual mark-paid, export CSV |
+| `/admin/analytics` | `admin/Analytics.tsx` | Lesson completion rates, drop-off funnel, preview vs enrolled views |
+| `/admin/notifications` | `admin/Notifications.tsx` | Email template editor, manual broadcast to all students |
+| `/admin/tickets` | `admin/Tickets.tsx` | Student support requests: status (OPEN/RESOLVED), reply |
+| `/admin/audit` | `admin/AuditLog.tsx` | Immutable log of all admin actions (who, what, when) |
+| `/admin/settings` | `admin/Settings.tsx` | Course settings (title, description, thumbnail), SMTP config, Paymob keys |
+
+---
+
+## Free Preview Architecture
+
+### Overview
+
+The first lesson (configurable per lesson via `is_preview` flag) is publicly accessible without enrollment. This drives conversion: guests experience real course content before purchasing.
+
+### Access Control Matrix
+
+| User State | Preview Lesson | Non-Preview Lesson |
+|------------|---------------|-------------------|
+| Guest (not logged in) | ✅ Watch freely | 🔒 Redirect to `/pricing` |
+| Registered (not enrolled) | ✅ Watch + CTA banner to purchase | 🔒 Redirect to `/checkout` |
+| Enrolled student | ✅ Full access, no CTA | ✅ Full access |
+| Admin | ✅ Full access | ✅ Full access |
+
+### Implementation Details
+
+**Backend**:
+- `lessons` table: add `is_preview BOOLEAN DEFAULT false` column
+- `GET /api/v1/lessons/:id` — if `is_preview = true`, skip enrollment check, issue time-limited guest token
+- Guest video token: shorter TTL (1 hour vs 24h for enrolled), no session binding
+- Analytics: `video_views` table tracks `viewer_type: 'GUEST' | 'REGISTERED' | 'ENROLLED'`
+
+**Frontend**:
+- `/preview` route renders `LessonPreview.tsx` — same `VideoPlayer` component, no auth guard
+- Registered-but-not-enrolled: floating CTA banner overlaid on player ("Enroll to access all X lessons")
+- Admin toggle in `admin/Lessons.tsx`: Switch component per row to set `is_preview`
+
+**Analytics tracking** (in `AnalyticsService`):
+- Preview view count (total, unique)
+- Preview-to-registration conversion rate
+- Preview-to-purchase conversion rate
+
+---
+
+## Role Flows
+
+### Guest Flow
+```
+Landing (/) → Preview (/preview) → Register (/register) → Checkout (/checkout) → Dashboard (/dashboard)
+```
+- Guest lands on sales page → watches free preview → registers → pays → accesses full course
+
+### Student Flow
+```
+Login → Dashboard → Continue Learning → Lesson → Notes/Downloads → Progress
+```
+- Returning student: login → dashboard shows "continue from lesson N" → watches → takes notes → tracks progress
+
+### Admin Flow
+```
+Login → Dashboard → [Content: Lessons / Media] → [Students] → [Orders] → [Analytics] → [Settings]
+```
+- Admin manages content, monitors students, handles support tickets, views revenue analytics
+
+---
+
 ## Complexity Tracking
 
 > No violations requiring justification — all principles satisfied by this design.
