@@ -9,8 +9,47 @@ export const lessonRepository = {
     });
   },
 
+  getLessonsByAdmin(): Promise<any[]> {
+    return prisma.lesson.findMany({
+      include: {
+        section: {
+          select: {
+            id: true,
+            titleEn: true,
+            titleAr: true
+          }
+        }
+      },
+      orderBy: [{ sectionId: "asc" }, { sortOrder: "asc" }]
+    });
+  },
+
+  getLessonsBySection(sectionId: string): Promise<any[]> {
+    return prisma.lesson.findMany({
+      where: { sectionId },
+      include: {
+        section: true,
+        resources: true,
+        progress: true
+      },
+      orderBy: { sortOrder: "asc" }
+    });
+  },
+
   findById(id: string): Promise<Lesson | null> {
     return prisma.lesson.findUnique({ where: { id } });
+  },
+
+  async findByIdWithDetails(id: string): Promise<any> {
+    return prisma.lesson.findUnique({
+      where: { id },
+      include: {
+        section: true,
+        resources: true,
+        progress: true,
+        videoTokens: true
+      }
+    });
   },
 
   create(data: Parameters<typeof prisma.lesson.create>[0]["data"]) {
@@ -33,6 +72,13 @@ export const lessonRepository = {
   findFirstPublished(): Promise<import("@prisma/client").Lesson | null> {
     return prisma.lesson.findFirst({
       where: { isPublished: true },
+      orderBy: { sortOrder: "asc" }
+    });
+  },
+
+  findFirstPreview(): Promise<import("@prisma/client").Lesson | null> {
+    return prisma.lesson.findFirst({
+      where: { isPreview: true, isPublished: true },
       orderBy: { sortOrder: "asc" }
     });
   },

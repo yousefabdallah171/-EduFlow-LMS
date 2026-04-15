@@ -13,11 +13,14 @@ const createLessonSchema = z.object({
   descriptionEn: z.string().trim().optional(),
   descriptionAr: z.string().trim().optional(),
   dripDays: z.number().int().min(0).nullable().optional(),
-  sortOrder: z.number().int().min(0)
+  sortOrder: z.number().int().min(0).optional(),
+  sectionId: z.string().optional(),
+  isPublished: z.boolean().optional()
 });
 
 const updateLessonSchema = createLessonSchema.partial().extend({
-  isPublished: z.boolean().optional()
+  isPublished: z.boolean().optional(),
+  sortOrder: z.number().int().min(0).optional()
 });
 
 const reorderSchema = z.object({
@@ -44,9 +47,9 @@ const handleLessonAdminError = (error: unknown, res: Response, next: NextFunctio
 export const adminLessonsController = {
   async list(_req: Request, res: Response, next: NextFunction) {
     try {
-      const lessons = await lessonRepository.findAll();
+      const lessons = await (lessonRepository as any).getLessonsByAdmin();
       res.json({
-        lessons: lessons.map((lesson) => ({
+        lessons: lessons.map((lesson: any) => ({
           id: lesson.id,
           titleEn: lesson.titleEn,
           titleAr: lesson.titleAr,
@@ -54,7 +57,8 @@ export const adminLessonsController = {
           isPublished: lesson.isPublished,
           videoStatus: lesson.videoStatus,
           durationSeconds: lesson.durationSeconds,
-          dripDays: lesson.dripDays
+          dripDays: lesson.dripDays,
+          section: lesson.section
         }))
       });
     } catch (error) {
@@ -64,11 +68,29 @@ export const adminLessonsController = {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const body = createLessonSchema.parse(req.body);
+      const { titleEn, titleAr, descriptionEn, descriptionAr, sectionId, isPublished, dripDays } = createLessonSchema.parse(req.body);
+
+      if (!titleEn || !titleAr) {
+        res.status(400).json({ message: "titleEn and titleAr are required" });
+        return;
+      }
+
+      const sortOrder = await getNextLessonSortOrder();
       const lesson = await prisma.lesson.create({
-        data: body
+        data: {
+          titleEn,
+          titleAr,
+          descriptionEn,
+          descriptionAr,
+          sectionId,
+          isPublished: isPublished ?? false,
+          sortOrder,
+          dripDays
+        },
+        include: { section: true }
       });
-      res.status(201).json(lesson);
+
+      res.status(201).json({ lesson });
     } catch (error) {
       handleLessonAdminError(error, res, next);
     }
@@ -82,12 +104,24 @@ export const adminLessonsController = {
         return;
       }
 
-      const body = updateLessonSchema.parse(req.body);
+      const { titleEn, titleAr, descriptionEn, descriptionAr, sectionId, isPublished, sortOrder, dripDays } = updateLessonSchema.parse(req.body);
+
       const lesson = await prisma.lesson.update({
         where: { id: lessonId },
-        data: body
+        data: {
+          titleEn,
+          titleAr,
+          descriptionEn,
+          descriptionAr,
+          sectionId,
+          isPublished,
+          sortOrder,
+          dripDays
+        },
+        include: { section: true }
       });
-      res.json(lesson);
+
+      res.json({ lesson });
     } catch (error) {
       handleLessonAdminError(error, res, next);
     }
@@ -117,6 +151,22 @@ export const adminLessonsController = {
     }
   },
 
+  async togglePreview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const lessonId = getFirstValue(req.params.lessonId);
+      if (!lessonId) {
+        res.status(400).json({ error: "LESSON_ID_REQUIRED" });
+        return;
+      }
+
+      const { isPreview } = z.object({ isPreview: z.boolean() }).parse(req.body);
+      const lesson = await lessonRepository.update(lessonId, { isPreview });
+      res.json(lesson);
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async reorder(req: Request, res: Response, next: NextFunction) {
     try {
       const body = reorderSchema.parse(req.body);
@@ -134,3 +184,11 @@ export const adminLessonsController = {
     }
   }
 };
+
+async function getNextLessonSortOrder(): Promise<number> {
+  const last = await prisma.lesson.findFirst({
+    orderBy: { sortOrder: "desc" },
+    select: { sortOrder: true }
+  });
+  return (last?.sortOrder ?? 0) + 1;
+}

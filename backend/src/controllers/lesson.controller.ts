@@ -4,6 +4,7 @@ import path from "node:path";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
+import { prisma } from "../config/database.js";
 import { enrollmentRepository } from "../repositories/enrollment.repository.js";
 import { lessonRepository } from "../repositories/lesson.repository.js";
 import { userRepository } from "../repositories/user.repository.js";
@@ -103,7 +104,7 @@ const buildPlaylist = (lessonId: string, token: string) => {
     "#EXT-X-VERSION:3",
     "#EXT-X-TARGETDURATION:10",
     "#EXT-X-MEDIA-SEQUENCE:0",
-    `#EXT-X-KEY:METHOD=AES-128,URI=\"/api/v1/video/${lessonId}/key?token=${encodedToken}\"`,
+    `#EXT-X-KEY:METHOD=AES-128,URI="/api/v1/video/${lessonId}/key?token=${encodedToken}"`,
     "#EXTINF:10.0,",
     `/api/v1/video/${lessonId}/segment-0.ts?token=${encodedToken}`,
     "#EXT-X-ENDLIST"
@@ -111,6 +112,86 @@ const buildPlaylist = (lessonId: string, token: string) => {
 };
 
 export const lessonController = {
+  async getAllLessonsGrouped(req: Request, res: Response, next: NextFunction) {
+    try {
+      const sections = await prisma.section.findMany({
+        include: {
+          lessons: {
+            where: { isPublished: true },
+            select: {
+              id: true,
+              titleEn: true,
+              titleAr: true,
+              descriptionEn: true,
+              descriptionAr: true,
+              durationSeconds: true,
+              sortOrder: true
+            },
+            orderBy: { sortOrder: "asc" }
+          }
+        },
+        orderBy: { sortOrder: "asc" }
+      });
+
+      res.json({ sections });
+    } catch (error) {
+      console.error("Error fetching lessons:", error);
+      res.status(500).json({ message: "Failed to fetch lessons" });
+    }
+  },
+
+  async getLessonDetail(req: Request, res: Response, next: NextFunction) {
+    try {
+      const lessonId = getFirstValue(req.params.lessonId);
+      const userId = (req as any).user?.userId;
+
+      if (!lessonId) {
+        res.status(400).json({ message: "Lesson ID is required" });
+        return;
+      }
+
+      const lesson = await prisma.lesson.findUnique({
+        where: { id: lessonId },
+        include: {
+          section: {
+            select: {
+              id: true,
+              titleEn: true,
+              titleAr: true
+            }
+          },
+          resources: {
+            select: {
+              id: true,
+              title: true,
+              fileUrl: true,
+              fileSizeBytes: true,
+              createdAt: true
+            }
+          },
+          progress: userId ? {
+            where: { userId },
+            select: {
+              completedAt: true,
+              watchTimeSeconds: true,
+              lastPositionSeconds: true
+            }
+          } : undefined
+        }
+      });
+
+      if (!lesson) {
+        res.status(404).json({ message: "Lesson not found" });
+        return;
+      }
+
+      res.json({ lesson });
+    } catch (error) {
+      console.error("Error fetching lesson:", error);
+      res.status(500).json({ message: "Failed to fetch lesson" });
+    }
+  },
+
   async list(req: Request, res: Response, next: NextFunction) {
     try {
       const enrollment = await enrollmentRepository.findByUserId(req.user!.userId);
@@ -133,6 +214,8 @@ export const lessonController = {
           return {
             id: lesson.id,
             title: lesson.titleEn,
+            titleEn: lesson.titleEn,
+            titleAr: lesson.titleAr,
             durationSeconds: lesson.durationSeconds,
             sortOrder: lesson.sortOrder,
             isUnlocked,
@@ -169,10 +252,15 @@ export const lessonController = {
       res.json({
         id: access.lesson.id,
         title: access.lesson.titleEn,
+        titleEn: access.lesson.titleEn,
+        titleAr: access.lesson.titleAr,
         descriptionHtml: access.lesson.descriptionEn ?? "",
+        descriptionHtmlEn: access.lesson.descriptionEn ?? "",
+        descriptionHtmlAr: access.lesson.descriptionAr ?? "",
         durationSeconds: access.lesson.durationSeconds,
         videoToken: token.videoToken,
         hlsUrl: token.hlsUrl,
+        expiresAt: token.expiresAt.toISOString(),
         watermark: {
           name: user.fullName,
           maskedEmail: maskEmail(user.email)
@@ -282,22 +370,26 @@ export const lessonController = {
 
   async preview(req: Request, res: Response, next: NextFunction) {
     try {
-      const firstLesson = await lessonRepository.findFirstPublished();
+      const firstLesson = await lessonRepository.findFirstPreview() ?? await lessonRepository.findFirstPublished();
       if (!firstLesson) {
         res.status(404).json({ error: "NO_LESSONS", message: "No published lessons available for preview." });
         return;
       }
 
-      const { videoToken, hlsUrl } = await videoTokenService.issuePreviewToken(firstLesson.id);
+      const { videoToken, hlsUrl, expiresAt } = await videoTokenService.issuePreviewToken(firstLesson.id);
 
       res.json({
         id: firstLesson.id,
         title: firstLesson.titleEn,
+        titleEn: firstLesson.titleEn,
         titleAr: firstLesson.titleAr,
         descriptionHtml: firstLesson.descriptionEn ?? "",
+        descriptionHtmlEn: firstLesson.descriptionEn ?? "",
+        descriptionHtmlAr: firstLesson.descriptionAr ?? "",
         durationSeconds: firstLesson.durationSeconds,
         videoToken,
         hlsUrl,
+        expiresAt: expiresAt.toISOString(),
         sortOrder: firstLesson.sortOrder
       });
     } catch (error) {
