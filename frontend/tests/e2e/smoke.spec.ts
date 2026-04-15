@@ -9,7 +9,7 @@ const adminUser = {
 
 const studentUser = {
   email: "student@eduflow.com",
-  password: "Student1234!"
+  password: "Student12345!"
 };
 
 const trackConsoleErrors = (page: { on: Function }) => {
@@ -44,7 +44,7 @@ const login = async (page: any, user: { email: string; password: string }) => {
     (response: { url: () => string }) => response.url().endsWith("/api/v1/auth/login"),
     { timeout: 10000 }
   );
-  await page.getByRole("button", { name: "Log in" }).click();
+  await page.locator('button[type="submit"]').click();
   const response = await responsePromise;
   if (response.status() !== 200) {
     throw new Error(`Login failed with status ${response.status()}`);
@@ -72,7 +72,8 @@ test.describe("frontend smoke (chromium)", () => {
     await page.waitForTimeout(1000);
     await page.goto(`${baseUrl}/en/course`, { waitUntil: "networkidle" });
     await expect(page).toHaveURL(`${baseUrl}/en/course`);
-    await expect(page.getByRole("heading", { name: "Protected lesson library" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "EduFlow Student" })).toBeVisible();
+    await expect(page.getByText("Lessons", { exact: true })).toBeVisible();
     await page.goto(`${baseUrl}/en/lessons/seed-1`, { waitUntil: "networkidle" });
     await expect(page).toHaveURL(`${baseUrl}/en/lessons/seed-1`);
 

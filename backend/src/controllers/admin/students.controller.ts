@@ -289,6 +289,65 @@ export const adminStudentsController = {
     }
   },
 
+  async detail(req: Request, res: Response, next: NextFunction) {
+    try {
+      const studentId = getFirstValue(req.params.studentId);
+      if (!studentId) {
+        res.status(400).json({ error: "STUDENT_ID_REQUIRED" });
+        return;
+      }
+
+      const [student, totalPublishedLessons] = await Promise.all([
+        prisma.user.findFirst({
+          where: {
+            id: studentId,
+            role: "STUDENT"
+          },
+          include: {
+            enrollments: {
+              orderBy: { enrolledAt: "desc" }
+            },
+            lessonProgress: {
+              orderBy: { updatedAt: "desc" },
+              include: {
+                lesson: {
+                  select: {
+                    id: true,
+                    titleEn: true,
+                    titleAr: true,
+                    sortOrder: true
+                  }
+                }
+              }
+            }
+          }
+        }),
+        prisma.lesson.count({ where: { isPublished: true } })
+      ]);
+
+      if (!student) {
+        res.status(404).json({ error: "STUDENT_NOT_FOUND" });
+        return;
+      }
+
+      res.json({
+        ...buildStudentPayload(student, totalPublishedLessons),
+        enrollments: student.enrollments.map(enrollmentResponse),
+        progress: student.lessonProgress.map((progress) => ({
+          lessonId: progress.lessonId,
+          lessonTitleEn: progress.lesson.titleEn,
+          lessonTitleAr: progress.lesson.titleAr,
+          lessonSortOrder: progress.lesson.sortOrder,
+          watchTimeSeconds: progress.watchTimeSeconds,
+          completedAt: progress.completedAt,
+          updatedAt: progress.updatedAt
+        }))
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async enroll(req: Request, res: Response, next: NextFunction) {
     try {
       const studentId = getFirstValue(req.params.studentId);

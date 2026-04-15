@@ -11,10 +11,13 @@ import { authenticate } from "./middleware/auth.middleware.js";
 import { requireRole } from "./middleware/rbac.middleware.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
+import { publicRoutes } from "./routes/public.routes.js";
 import { studentRoutes } from "./routes/student.routes.js";
 
 export const createApp = () => {
   const app = express();
+
+  app.set("trust proxy", 1);
 
   app.use(
     cors({
@@ -33,6 +36,7 @@ export const createApp = () => {
   });
 
   app.use("/api/v1/auth", authRoutes);
+  app.use("/api/v1", publicRoutes);
   app.use("/api/v1", studentRoutes);
   app.use("/api/v1/admin", authenticate, requireRole("ADMIN"), adminRoutes);
 

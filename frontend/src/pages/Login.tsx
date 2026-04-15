@@ -23,7 +23,7 @@ export const Login = () => {
     setMessage("");
     try {
       const nextUser = await login(email, password);
-      navigate(nextUser.role === "ADMIN" ? `${prefix}/admin/dashboard` : `${prefix}/course`, { replace: true });
+      navigate(nextUser.role === "ADMIN" ? `${prefix}/admin/dashboard` : `${prefix}/dashboard`, { replace: true });
     } catch (error: unknown) {
       const apiError = error as AxiosError<{ message?: string }>;
       setMessage(apiError.response?.data?.message ?? "Login failed. Please try again.");

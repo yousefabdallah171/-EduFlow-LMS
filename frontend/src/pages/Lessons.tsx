@@ -33,9 +33,10 @@ export const Lessons = () => {
   const lessonsQuery = useQuery({
     queryKey: ["all-lessons"],
     enabled: Boolean(isEnrolled),
+    retry: false,
     queryFn: async () => {
-      const response = await api.get<{ sections: Section[] }>("/lessons");
-      return response.data.sections;
+      const response = await api.get<{ sections?: Section[] }>("/lessons/grouped");
+      return response.data.sections ?? [];
     }
   });
 
@@ -60,6 +61,26 @@ export const Lessons = () => {
           <p style={{ color: "var(--color-text-muted)" }}>
             {t("lesson.notEnrolled")}
           </p>
+        </div>
+      </RootLayout>
+    );
+  }
+
+  if (lessonsQuery.isError) {
+    return (
+      <RootLayout>
+        <div className="flex min-h-[60vh] items-center justify-center px-6">
+          <div
+            className="max-w-md rounded-lg border p-6 text-center"
+            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+          >
+            <h1 className="text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+              {t("lesson.error")}
+            </h1>
+            <p className="mt-2 text-sm" style={{ color: "var(--color-text-muted)" }}>
+              {t("lessons.noLessons") || "No lessons available yet"}
+            </p>
+          </div>
         </div>
       </RootLayout>
     );

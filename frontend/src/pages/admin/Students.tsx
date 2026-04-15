@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { useTranslation } from "react-i18next";
 
 import { AdminShell } from "@/components/layout/AdminShell";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -63,6 +64,7 @@ const StatusBadge = ({ status }: { status: EnrollmentStatus }) => {
 const formatDate = (value: string | null) => (value ? new Date(value).toLocaleDateString() : "—");
 
 export const AdminStudents = () => {
+  const { t } = useTranslation();
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedSearchStudent, setSelectedSearchStudent] = useState<StudentSearchResult | null>(null);
@@ -165,7 +167,7 @@ export const AdminStudents = () => {
     );
 
   return (
-    <AdminShell title="Student management" description="Search by name or email, then enroll students manually or revoke course access.">
+    <AdminShell title={t("admin.students.title")} description={t("admin.students.desc")}>
       <section className="space-y-5">
 
         {/* Search */}

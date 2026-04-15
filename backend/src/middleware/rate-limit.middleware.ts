@@ -7,9 +7,23 @@ export const authRateLimit = rateLimit({
   legacyHeaders: false
 });
 
+export const refreshRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: process.env.NODE_ENV === "production" ? 120 : 1000,
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 export const paymentRateLimit = rateLimit({
   windowMs: 60 * 1000,
   max: process.env.NODE_ENV === "production" ? 20 : 1000,
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+export const contactRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === "production" ? 5 : 1000,
   standardHeaders: true,
   legacyHeaders: false
 });

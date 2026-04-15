@@ -1,4 +1,4 @@
-{
+seeds{
   "lighthouseVersion": "13.1.0",
   "requestedUrl": "http://127.0.0.1:4173/en/course?demo=1",
   "mainDocumentUrl": "http://127.0.0.1:4173/en/course?demo=1",

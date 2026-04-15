@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
@@ -64,37 +63,40 @@ const ensureStorage = async () => {
   await fs.mkdir(rawUploadDir(), { recursive: true });
 };
 
-const writeMockHls = async (lessonId: string, inputPath: string) => {
-  const outputDir = hlsDir(lessonId);
-  await fs.mkdir(outputDir, { recursive: true });
-  const segmentName = "segment-0.ts";
-  const playlist = ["#EXTM3U", "#EXT-X-VERSION:3", "#EXTINF:10.0,", segmentName, "#EXT-X-ENDLIST"].join("\n");
-  await fs.copyFile(inputPath, path.join(outputDir, segmentName));
-  await fs.writeFile(path.join(outputDir, "playlist.m3u8"), playlist, "utf8");
-  return {
-    playlistRelativePath: path.relative(storageRoot(), path.join(outputDir, "playlist.m3u8")),
-    durationSeconds: 10
-  };
-};
-
 const runFfmpeg = async (lessonId: string, inputPath: string) => {
   const outputDir = hlsDir(lessonId);
+  await fs.rm(outputDir, { recursive: true, force: true });
   await fs.mkdir(outputDir, { recursive: true });
   const outputPlaylist = path.join(outputDir, "playlist.m3u8");
+  const segmentPattern = path.join(outputDir, "segment-%03d.ts");
 
   return new Promise<{ playlistRelativePath: string; durationSeconds: number }>((resolve, reject) => {
     const child = spawn("ffmpeg", [
       "-y",
       "-i",
       inputPath,
-      "-codec:",
-      "copy",
-      "-start_number",
-      "0",
+      "-map",
+      "0:v:0",
+      "-map",
+      "0:a:0?",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "veryfast",
+      "-profile:v",
+      "main",
+      "-c:a",
+      "aac",
+      "-b:a",
+      "128k",
       "-hls_time",
-      "10",
-      "-hls_list_size",
-      "0",
+      "6",
+      "-hls_playlist_type",
+      "vod",
+      "-hls_flags",
+      "independent_segments",
+      "-hls_segment_filename",
+      segmentPattern,
       "-f",
       "hls",
       outputPlaylist

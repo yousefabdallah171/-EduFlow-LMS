@@ -20,7 +20,8 @@ export const hashVideoToken = (token: string): string => crypto.createHash("sha2
 export const signVideoToken = (payload: VideoTokenPayload): string =>
   jwt.sign(payload, env.VIDEO_TOKEN_SECRET, {
     algorithm: "HS256",
-    expiresIn: "30m"
+    expiresIn: "30m",
+    jwtid: crypto.randomUUID()
   });
 
 export const signPreviewToken = (payload: PreviewTokenPayload): string =>

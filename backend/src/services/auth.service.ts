@@ -8,7 +8,13 @@ import { refreshTokenRepository } from "../repositories/refresh-token.repository
 import { userRepository } from "../repositories/user.repository.js";
 import { videoTokenService } from "./video-token.service.js";
 import { sendPasswordResetEmail, sendVerificationEmail } from "../utils/email.js";
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../utils/jwt.js";
+import {
+  REFRESH_SESSION_WINDOW_MS,
+  REFRESH_SESSION_WINDOW_SECONDS,
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken
+} from "../utils/jwt.js";
 
 export class AuthError extends Error {
   constructor(
@@ -46,24 +52,23 @@ const toAuthUser = (user: User): AuthUser => ({
   avatarUrl: user.avatarUrl
 });
 
-const getExpiry = (days: number) => {
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + days);
-  return expiresAt;
-};
+const getRefreshExpiry = () => new Date(Date.now() + REFRESH_SESSION_WINDOW_MS);
 
 const verificationUrl = (token: string) => `${env.FRONTEND_URL}/verify-email?token=${token}`;
 
 const resetUrl = (token: string) => `${env.FRONTEND_URL}/reset-password?token=${token}`;
 const sessionCacheKey = (userId: string, sessionId: string) => `session:${userId}:${sessionId}`;
 
-const issueSession = async (user: User, sessionId: string = crypto.randomUUID(), familyId: string = crypto.randomUUID()) => {
-  const tokenId = crypto.randomUUID();
-  const accessToken = signAccessToken({
+const issueAccessToken = (user: User, sessionId: string) =>
+  signAccessToken({
     userId: user.id,
     role: user.role,
     sessionId
   });
+
+const issueSession = async (user: User, sessionId: string = crypto.randomUUID(), familyId: string = crypto.randomUUID()) => {
+  const tokenId = crypto.randomUUID();
+  const accessToken = issueAccessToken(user, sessionId);
   const refreshToken = signRefreshToken({
     userId: user.id,
     role: user.role,
@@ -77,10 +82,10 @@ const issueSession = async (user: User, sessionId: string = crypto.randomUUID(),
     tokenHash: hashToken(refreshToken),
     familyId,
     sessionId,
-    expiresAt: getExpiry(7)
+    expiresAt: getRefreshExpiry()
   });
 
-  await redis.set(sessionCacheKey(user.id, sessionId), "active", "EX", 7 * 24 * 60 * 60);
+  await redis.set(sessionCacheKey(user.id, sessionId), "active", "EX", REFRESH_SESSION_WINDOW_SECONDS);
 
   return {
     accessToken,
@@ -102,19 +107,25 @@ export const authService = {
     const emailVerifyToken = randomToken();
     const emailVerifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
+    const isDevMode = env.NODE_ENV === "development";
+
     const user = await userRepository.create({
       email,
       fullName: input.fullName.trim(),
       passwordHash,
-      emailVerified: false,
-      emailVerifyToken,
-      emailVerifyExpires
+      emailVerified: isDevMode,
+      emailVerifyToken: isDevMode ? null : emailVerifyToken,
+      emailVerifyExpires: isDevMode ? null : emailVerifyExpires
     });
 
-    await sendVerificationEmail(user.email, user.fullName, verificationUrl(emailVerifyToken));
+    if (!isDevMode) {
+      await sendVerificationEmail(user.email, user.fullName, verificationUrl(emailVerifyToken));
+    }
 
     return {
-      message: "Registration successful. Please check your email to verify your account.",
+      message: isDevMode
+        ? "Registration successful. You can now log in."
+        : "Registration successful. Please check your email to verify your account.",
       user: {
         id: user.id,
         email: user.email,
@@ -167,8 +178,16 @@ export const authService = {
       throw new AuthError("INVALID_REFRESH_TOKEN", 401, "Invalid refresh token.");
     }
 
-    await refreshTokenRepository.revokeByHash(tokenHash);
-    return issueSession(user, payload.sessionId, payload.familyId);
+    await Promise.all([
+      refreshTokenRepository.extendExpiryByHash(tokenHash, getRefreshExpiry()),
+      redis.set(sessionCacheKey(user.id, payload.sessionId), "active", "EX", REFRESH_SESSION_WINDOW_SECONDS)
+    ]);
+
+    return {
+      accessToken: issueAccessToken(user, payload.sessionId),
+      refreshToken: rawRefreshToken,
+      user: toAuthUser(user)
+    };
   },
 
   async logout(rawRefreshToken: string | undefined) {

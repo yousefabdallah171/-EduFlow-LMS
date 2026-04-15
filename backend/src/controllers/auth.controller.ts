@@ -5,6 +5,7 @@ import type { User } from "@prisma/client";
 
 import { env } from "../config/env.js";
 import { AuthError, authService } from "../services/auth.service.js";
+import { REFRESH_SESSION_WINDOW_MS } from "../utils/jwt.js";
 
 const passwordSchema = z
   .string()
@@ -32,21 +33,49 @@ const resetPasswordSchema = z.object({
   password: passwordSchema
 });
 
-const refreshCookieOptions = {
+const isHttpsRequest = (req: Request) =>
+  req.secure || req.get("x-forwarded-proto")?.split(",")[0]?.trim() === "https";
+
+const shouldUseSecureCookie = (req: Request) => {
+  if (isHttpsRequest(req)) {
+    return true;
+  }
+
+  try {
+    return new URL(env.FRONTEND_URL).protocol === "https:";
+  } catch {
+    return env.NODE_ENV === "production";
+  }
+};
+
+const getRefreshCookieOptions = (req: Request) => ({
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
+  secure: shouldUseSecureCookie(req),
   sameSite: "strict" as const,
   path: "/api/v1",
-  maxAge: 7 * 24 * 60 * 60 * 1000
+  maxAge: REFRESH_SESSION_WINDOW_MS
+});
+
+const getRefreshMarkerCookieOptions = (req: Request) => ({
+  httpOnly: false,
+  secure: shouldUseSecureCookie(req),
+  sameSite: "strict" as const,
+  path: "/",
+  maxAge: REFRESH_SESSION_WINDOW_MS
+});
+
+const setRefreshCookie = (req: Request, res: Response, refreshToken: string) => {
+  res.cookie("refresh_token", refreshToken, getRefreshCookieOptions(req));
+  res.cookie("eduflow_refresh_present", "1", getRefreshMarkerCookieOptions(req));
 };
 
-const setRefreshCookie = (res: Response, refreshToken: string) => {
-  res.cookie("refresh_token", refreshToken, refreshCookieOptions);
-};
-
-const clearRefreshCookie = (res: Response) => {
+const clearRefreshCookie = (req: Request, res: Response) => {
   res.clearCookie("refresh_token", {
-    ...refreshCookieOptions,
+    ...getRefreshCookieOptions(req),
+    maxAge: undefined
+  });
+  res.clearCookie("eduflow_refresh_present", {
+    ...getRefreshMarkerCookieOptions(req),
     maxAge: undefined
   });
 };
@@ -91,7 +120,7 @@ export const authController = {
     try {
       const body = loginSchema.parse(req.body);
       const result = await authService.login(body);
-      setRefreshCookie(res, result.refreshToken);
+      setRefreshCookie(req, res, result.refreshToken);
       res.json({
         accessToken: result.accessToken,
         user: result.user
@@ -104,14 +133,17 @@ export const authController = {
   async refresh(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await authService.refresh(req.cookies.refresh_token as string | undefined);
-      setRefreshCookie(res, result.refreshToken);
+      setRefreshCookie(req, res, result.refreshToken);
       res.json({
         accessToken: result.accessToken,
         user: result.user
       });
     } catch (error) {
-      if (error instanceof AuthError && error.code === "TOKEN_REUSE_DETECTED") {
-        clearRefreshCookie(res);
+      if (
+        error instanceof AuthError &&
+        (error.code === "TOKEN_REUSE_DETECTED" || error.code === "INVALID_REFRESH_TOKEN")
+      ) {
+        clearRefreshCookie(req, res);
       }
       handleError(error, res, next);
     }
@@ -120,7 +152,7 @@ export const authController = {
   async logout(req: Request, res: Response, next: NextFunction) {
     try {
       await authService.logout(req.cookies.refresh_token as string | undefined);
-      clearRefreshCookie(res);
+      clearRefreshCookie(req, res);
       res.json({ message: "Logged out successfully." });
     } catch (error) {
       handleError(error, res, next);
@@ -167,7 +199,7 @@ export const authController = {
         }
 
         const result = await authService.issueSessionForUser(user);
-        setRefreshCookie(res, result.refreshToken);
+        setRefreshCookie(req, res, result.refreshToken);
         res.redirect(`${env.FRONTEND_URL}/auth/callback`);
       } catch (authError) {
         handleError(authError, res, next);

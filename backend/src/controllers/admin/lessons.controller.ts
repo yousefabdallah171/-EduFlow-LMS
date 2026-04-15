@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import { prisma } from "../../config/database.js";
@@ -14,7 +15,7 @@ const createLessonSchema = z.object({
   descriptionAr: z.string().trim().optional(),
   dripDays: z.number().int().min(0).nullable().optional(),
   sortOrder: z.number().int().min(0).optional(),
-  sectionId: z.string().optional(),
+  sectionId: z.string().trim().min(1).nullable().optional(),
   isPublished: z.boolean().optional()
 });
 
@@ -41,23 +42,38 @@ const handleLessonAdminError = (error: unknown, res: Response, next: NextFunctio
     return;
   }
 
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+    res.status(404).json({
+      error: "LESSON_NOT_FOUND",
+      message: "Lesson not found."
+    });
+    return;
+  }
+
   next(error);
 };
 
 export const adminLessonsController = {
-  async list(_req: Request, res: Response, next: NextFunction) {
+  async list(req: Request, res: Response, next: NextFunction) {
     try {
-      const lessons = await (lessonRepository as any).getLessonsByAdmin();
+      const sectionId = getFirstValue(req.query.sectionId as string | string[] | undefined);
+      const lessons = sectionId
+        ? await lessonRepository.getLessonsBySection(sectionId)
+        : await lessonRepository.getLessonsByAdmin();
       res.json({
         lessons: lessons.map((lesson: any) => ({
           id: lesson.id,
           titleEn: lesson.titleEn,
           titleAr: lesson.titleAr,
+          descriptionEn: lesson.descriptionEn,
+          descriptionAr: lesson.descriptionAr,
           sortOrder: lesson.sortOrder,
           isPublished: lesson.isPublished,
+          isPreview: lesson.isPreview,
           videoStatus: lesson.videoStatus,
           durationSeconds: lesson.durationSeconds,
           dripDays: lesson.dripDays,
+          sectionId: lesson.sectionId,
           section: lesson.section
         }))
       });
@@ -66,26 +82,55 @@ export const adminLessonsController = {
     }
   },
 
+  async detail(req: Request, res: Response, next: NextFunction) {
+    try {
+      const lessonId = getFirstValue(req.params.lessonId);
+      if (!lessonId) {
+        res.status(400).json({ error: "LESSON_ID_REQUIRED" });
+        return;
+      }
+
+      const lesson = await prisma.lesson.findUnique({
+        where: { id: lessonId },
+        include: { section: true }
+      });
+      if (!lesson) {
+        res.status(404).json({
+          error: "LESSON_NOT_FOUND",
+          message: "Lesson not found."
+        });
+        return;
+      }
+
+      res.json({ lesson });
+    } catch (error) {
+      handleLessonAdminError(error, res, next);
+    }
+  },
+
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const { titleEn, titleAr, descriptionEn, descriptionAr, sectionId, isPublished, dripDays } = createLessonSchema.parse(req.body);
+      const { titleEn, titleAr, descriptionEn, descriptionAr, sectionId, isPublished, isPreview, dripDays, sortOrder } = createLessonSchema
+        .extend({ isPreview: z.boolean().optional() })
+        .parse(req.body);
 
       if (!titleEn || !titleAr) {
         res.status(400).json({ message: "titleEn and titleAr are required" });
         return;
       }
 
-      const sortOrder = await getNextLessonSortOrder();
+      const nextSortOrder = sortOrder ?? await getNextLessonSortOrder(sectionId ?? undefined);
       const lesson = await prisma.lesson.create({
         data: {
           titleEn,
           titleAr,
-          descriptionEn,
-          descriptionAr,
-          sectionId,
+          descriptionEn: descriptionEn || null,
+          descriptionAr: descriptionAr || null,
+          sectionId: sectionId || null,
           isPublished: isPublished ?? false,
-          sortOrder,
-          dripDays
+          isPreview: isPreview ?? false,
+          sortOrder: nextSortOrder,
+          dripDays: dripDays ?? null
         },
         include: { section: true }
       });
@@ -104,19 +149,22 @@ export const adminLessonsController = {
         return;
       }
 
-      const { titleEn, titleAr, descriptionEn, descriptionAr, sectionId, isPublished, sortOrder, dripDays } = updateLessonSchema.parse(req.body);
+      const { titleEn, titleAr, descriptionEn, descriptionAr, sectionId, isPublished, isPreview, sortOrder, dripDays } = updateLessonSchema
+        .extend({ isPreview: z.boolean().optional() })
+        .parse(req.body);
 
       const lesson = await prisma.lesson.update({
         where: { id: lessonId },
         data: {
           titleEn,
           titleAr,
-          descriptionEn,
-          descriptionAr,
-          sectionId,
+          descriptionEn: descriptionEn === undefined ? undefined : descriptionEn || null,
+          descriptionAr: descriptionAr === undefined ? undefined : descriptionAr || null,
+          sectionId: sectionId === undefined ? undefined : sectionId || null,
           isPublished,
+          isPreview,
           sortOrder,
-          dripDays
+          dripDays: dripDays === undefined ? undefined : dripDays
         },
         include: { section: true }
       });
@@ -147,7 +195,7 @@ export const adminLessonsController = {
       await lessonRepository.delete(lessonId);
       res.json({ message: "Lesson deleted." });
     } catch (error) {
-      next(error);
+      handleLessonAdminError(error, res, next);
     }
   },
 
@@ -163,7 +211,7 @@ export const adminLessonsController = {
       const lesson = await lessonRepository.update(lessonId, { isPreview });
       res.json(lesson);
     } catch (error) {
-      next(error);
+      handleLessonAdminError(error, res, next);
     }
   },
 
@@ -185,8 +233,9 @@ export const adminLessonsController = {
   }
 };
 
-async function getNextLessonSortOrder(): Promise<number> {
+async function getNextLessonSortOrder(sectionId?: string): Promise<number> {
   const last = await prisma.lesson.findFirst({
+    where: sectionId ? { sectionId } : undefined,
     orderBy: { sortOrder: "desc" },
     select: { sortOrder: true }
   });

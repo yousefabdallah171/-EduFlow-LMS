@@ -4,7 +4,6 @@ import { AxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-import { Input } from "@/components/ui/input";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
 

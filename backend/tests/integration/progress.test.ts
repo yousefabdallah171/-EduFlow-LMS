@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+﻿import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import request from "supertest";
 import bcrypt from "bcryptjs";
 import type { PrismaClient } from "@prisma/client";
@@ -113,3 +113,4 @@ describe("US3 lesson progress", () => {
     expect(complete.body.courseCompletionPercentage).toBe(50);
   });
 });
+

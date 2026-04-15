@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+﻿import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import request from "supertest";
 import bcrypt from "bcryptjs";
 import type { PrismaClient } from "@prisma/client";
@@ -77,7 +77,7 @@ beforeEach(async () => {
     where: { id: 1 },
     update: {
       titleEn: "EduFlow Course",
-      titleAr: "دورة EduFlow",
+      titleAr: "Ø¯ÙˆØ±Ø© EduFlow",
       pricePiasters: 49900,
       currency: "EGP",
       isEnrollmentOpen: true
@@ -85,7 +85,7 @@ beforeEach(async () => {
     create: {
       id: 1,
       titleEn: "EduFlow Course",
-      titleAr: "دورة EduFlow",
+      titleAr: "Ø¯ÙˆØ±Ø© EduFlow",
       pricePiasters: 49900,
       currency: "EGP",
       isEnrollmentOpen: true
@@ -226,3 +226,4 @@ describe("US2 checkout and webhook enrollment", () => {
     expect(allEnrollments).toHaveLength(1);
   });
 });
+

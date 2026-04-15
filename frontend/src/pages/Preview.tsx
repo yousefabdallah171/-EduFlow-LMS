@@ -3,24 +3,31 @@ import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { VideoPlayer } from "@/components/shared/VideoPlayer";
+import { PreviewCTABanner } from "@/components/shared/PreviewCTABanner";
 import { api } from "@/lib/api";
+import { formatClockDuration, pickLocalizedText, resolveLocale } from "@/lib/locale";
 
 type PreviewLesson = {
   id: string;
   title: string;
+  titleEn?: string;
   titleAr: string;
   descriptionHtml: string;
+  descriptionHtmlEn?: string;
+  descriptionHtmlAr?: string;
   durationSeconds: number | null;
   videoToken: string;
   hlsUrl: string;
+  expiresAt?: string;
   sortOrder: number;
 };
 
 export const Preview = () => {
   const { locale } = useParams();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const isAr = i18n.language === "ar";
+  const currentLocale = resolveLocale(locale);
+  const isAr = currentLocale === "ar";
 
   const previewQuery = useQuery({
     queryKey: ["lesson-preview"],
@@ -65,7 +72,12 @@ export const Preview = () => {
   }
 
   const lesson = previewQuery.data;
-  const title = isAr && lesson.titleAr ? lesson.titleAr : lesson.title;
+  const title = pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr);
+  const description = pickLocalizedText(
+    currentLocale,
+    lesson.descriptionHtmlEn ?? lesson.descriptionHtml,
+    lesson.descriptionHtmlAr
+  );
 
   return (
     <main className="min-h-dvh px-4 py-8 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
@@ -112,7 +124,7 @@ export const Preview = () => {
           </h1>
           {lesson.durationSeconds ? (
             <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
-              {Math.floor(lesson.durationSeconds / 60)}m {lesson.durationSeconds % 60}s
+              {formatClockDuration(lesson.durationSeconds)}
             </p>
           ) : null}
         </div>
@@ -123,8 +135,11 @@ export const Preview = () => {
           sourceUrl={lesson.hlsUrl}
           watermark={null}
           initialPositionSeconds={0}
+          playbackExpiresAt={lesson.expiresAt ?? null}
           onProgress={() => {/* Preview — no progress tracking */}}
-          onTokenExpired={() => {/* Preview token; user must enroll to continue */}}
+          onTokenExpired={() => {
+            void previewQuery.refetch();
+          }}
         />
 
         {/* CTA after video */}
@@ -162,7 +177,7 @@ export const Preview = () => {
         </div>
 
         {/* Description */}
-        {lesson.descriptionHtml ? (
+        {description ? (
           <div
             className="rounded-2xl border p-5 shadow-card"
             style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
@@ -171,12 +186,13 @@ export const Preview = () => {
               {t("lesson.notes")}
             </p>
             <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-              {lesson.descriptionHtml}
+              {description}
             </p>
           </div>
         ) : null}
 
       </section>
+      <PreviewCTABanner />
     </main>
   );
 };

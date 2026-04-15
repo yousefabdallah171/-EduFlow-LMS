@@ -4,7 +4,7 @@ import { AxiosHeaders } from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
 
 import type { AuthUser } from "@/stores/auth.store";
-import { useAuthStore } from "@/stores/auth.store";
+import { hasStoredRefreshFlag, useAuthStore } from "@/stores/auth.store";
 
 export const queryClient = new QueryClient();
 
@@ -23,23 +23,101 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & {
 };
 
 let refreshRequest: Promise<string | null> | null = null;
+let refreshTimer: number | null = null;
 
 type RefreshResponse = {
   accessToken: string;
   user?: AuthUser | null;
 };
 
+const ACCESS_TOKEN_REFRESH_BUFFER_MS = 60 * 1000;
+const MIN_REFRESH_DELAY_MS = 15 * 1000;
+
+const clearRefreshTimer = () => {
+  if (typeof window === "undefined" || refreshTimer === null) {
+    return;
+  }
+
+  window.clearTimeout(refreshTimer);
+  refreshTimer = null;
+};
+
+const getTokenExpiryMs = (token: string | null | undefined): number | null => {
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const encodedPayload = (token.split(".")[1] ?? "").replace(/-/g, "+").replace(/_/g, "/");
+    const paddedPayload = encodedPayload.padEnd(Math.ceil(encodedPayload.length / 4) * 4, "=");
+    const payload = JSON.parse(window.atob(paddedPayload));
+    return typeof payload.exp === "number" ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+};
+
+export const isAccessTokenExpiringSoon = (
+  token: string | null | undefined,
+  bufferMs = ACCESS_TOKEN_REFRESH_BUFFER_MS
+) => {
+  const expiryMs = getTokenExpiryMs(token);
+  if (!expiryMs) {
+    return false;
+  }
+
+  return expiryMs - Date.now() <= bufferMs;
+};
+
+const scheduleRefresh = (token: string | null) => {
+  clearRefreshTimer();
+
+  if (typeof window === "undefined" || !token) {
+    return;
+  }
+
+  const expiryMs = getTokenExpiryMs(token);
+  if (!expiryMs) {
+    return;
+  }
+
+  const delayMs = Math.max(expiryMs - Date.now() - ACCESS_TOKEN_REFRESH_BUFFER_MS, MIN_REFRESH_DELAY_MS);
+  refreshTimer = window.setTimeout(() => {
+    void refreshAccessToken();
+  }, delayMs);
+};
+
+export const setAuthenticatedSession = (accessToken: string, user: AuthUser | null) => {
+  useAuthStore.getState().setSession(accessToken, user);
+  scheduleRefresh(accessToken);
+};
+
+export const clearAuthenticatedSession = () => {
+  clearRefreshTimer();
+  useAuthStore.getState().clearSession();
+};
+
 export const refreshAccessToken = async (): Promise<string | null> => {
+  if (!hasStoredRefreshFlag()) {
+    clearAuthenticatedSession();
+    return null;
+  }
+
   if (!refreshRequest) {
     refreshRequest = refreshApi
       .post<RefreshResponse>("/auth/refresh")
       .then((response) => {
         const currentUser = useAuthStore.getState().user;
-        useAuthStore.getState().setSession(response.data.accessToken, response.data.user ?? currentUser);
+        setAuthenticatedSession(response.data.accessToken, response.data.user ?? currentUser);
         return response.data.accessToken;
       })
-      .catch(() => {
-        useAuthStore.getState().clearSession();
+      .catch((error) => {
+        const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+        const refreshSessionWasRejected = status === 401 || status === 403;
+
+        if (refreshSessionWasRejected) {
+          clearAuthenticatedSession();
+        }
         return null;
       })
       .finally(() => {

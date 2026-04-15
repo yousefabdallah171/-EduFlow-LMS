@@ -124,11 +124,13 @@ export const videoTokenService = {
 
   async issuePreviewToken(lessonId: string) {
     const previewToken = signPreviewToken({ lessonId, isPreview: true });
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     // Store AES key in Redis with the special preview session ID.
     await videoTokenService.getSessionKey(`preview:${lessonId}`, lessonId);
     return {
       videoToken: previewToken,
-      hlsUrl: `/api/v1/video/${lessonId}/playlist.m3u8?token=${encodeURIComponent(previewToken)}`
+      hlsUrl: `/api/v1/video/${lessonId}/playlist.m3u8?token=${encodeURIComponent(previewToken)}`,
+      expiresAt
     };
   },
 

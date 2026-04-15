@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+﻿import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import request from "supertest";
 import bcrypt from "bcryptjs";
 import type { PrismaClient } from "@prisma/client";
@@ -117,3 +117,4 @@ describe("US1 refresh token rotation", () => {
     await request(app).post("/api/v1/auth/refresh").set("Cookie", cookieHeader(rotatedCookie)).expect(403);
   });
 });
+

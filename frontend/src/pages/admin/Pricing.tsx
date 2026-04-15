@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { autoUpdate, flip, offset, shift, useDismiss, useFloating, useInteractions, useRole } from "@floating-ui/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { AdminShell } from "@/components/layout/AdminShell";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -104,6 +105,7 @@ const CouponStatsPopover = ({ coupon }: { coupon: Coupon }) => {
 };
 
 export const AdminPricing = () => {
+  const { t } = useTranslation();
   const [priceInput, setPriceInput] = useState("");
   const [draft, setDraft] = useState<CouponDraft>(initialDraft);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
@@ -191,8 +193,8 @@ export const AdminPricing = () => {
 
   return (
     <AdminShell
-      title="Pricing and coupons"
-      description="Manage course pricing, create limited promos, and monitor how each coupon converts into paid enrollments."
+      title={t("admin.pricing.title")}
+      description={t("admin.pricing.desc")}
     >
       <section className="grid gap-5 xl:grid-cols-[300px_minmax(0,1fr)]">
 
@@ -201,7 +203,7 @@ export const AdminPricing = () => {
           className="rounded-2xl border p-5 shadow-card"
           style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
         >
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-600">Course price</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("admin.pricing.coursePrice")}</p>
           {pricingQuery.isLoading ? (
             <Skeleton className="mt-4 h-32 w-full rounded-xl" />
           ) : (
@@ -246,7 +248,7 @@ export const AdminPricing = () => {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-brand-600">
-                  {editingCoupon ? "Edit coupon" : "Create coupon"}
+                  {editingCoupon ? t("admin.pricing.editCoupon") : t("admin.pricing.createCoupon")}
                 </p>
                 <p className="mt-1.5 text-sm" style={{ color: "var(--color-text-secondary)" }}>
                   Percentage or fixed discounts with optional limits and expiry.
@@ -352,7 +354,7 @@ export const AdminPricing = () => {
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-brand-600">Coupon inventory</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("admin.pricing.couponInventory")}</p>
                 <p className="mt-1.5 text-sm" style={{ color: "var(--color-text-secondary)" }}>
                   Revenue reflects completed payments tied to each coupon.
                 </p>

@@ -1,12 +1,7 @@
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { useLocation, useNavigate } from "react-router-dom";
-
 import { useLocaleStore } from "@/stores/locale.store";
-
-const locales = [
-  { id: "en" as const, label: "English" },
-  { id: "ar" as const, label: "العربية" }
-];
+import { useAuthStore } from "@/stores/auth.store";
+import { api } from "@/lib/api";
 
 const replaceLocaleInPathname = (pathname: string, locale: "en" | "ar") => {
   const parts = pathname.split("/").filter(Boolean);
@@ -15,50 +10,36 @@ const replaceLocaleInPathname = (pathname: string, locale: "en" | "ar") => {
   } else {
     parts.unshift(locale);
   }
-
   return `/${parts.join("/")}`;
 };
 
 export const LanguageSwitcher = () => {
   const { locale, setLocale } = useLocaleStore();
+  const { user, updateUser } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
+  const toggle = () => {
+    const next = locale === "en" ? "ar" : "en";
+    setLocale(next);
+    navigate(`${replaceLocaleInPathname(location.pathname, next)}${location.search}${location.hash}`, { replace: true });
+
+    // Save to account if logged in
+    if (user && user.role === "STUDENT") {
+      updateUser({ locale: next });
+      void api.patch("/student/profile", { locale: next }).catch(() => {/* non-blocking */});
+    }
+  };
+
   return (
-    <Menu as="div" className="relative">
-      <MenuButton
-        className="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors hover:bg-surface2"
-        style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", backgroundColor: "var(--color-surface)" }}
-      >
-        {locale === "ar" ? "AR" : "EN"}
-      </MenuButton>
-      <MenuItems
-        anchor="bottom end"
-        className="z-40 mt-2 w-40 rounded-xl border p-1 shadow-elevated focus:outline-none"
-        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border-strong)" }}
-      >
-        {locales.map((item) => (
-          <MenuItem key={item.id}>
-            {({ focus }) => (
-              <button
-                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors"
-                style={{
-                  backgroundColor: focus ? "var(--color-surface-2)" : "transparent",
-                  color: locale === item.id ? "var(--color-brand)" : "var(--color-text-primary)"
-                }}
-                onClick={() => {
-                  setLocale(item.id);
-                  navigate(`${replaceLocaleInPathname(location.pathname, item.id)}${location.search}${location.hash}`);
-                }}
-                type="button"
-              >
-                <span>{item.label}</span>
-                {locale === item.id ? <span aria-hidden="true" className="text-brand-600">●</span> : null}
-              </button>
-            )}
-          </MenuItem>
-        ))}
-      </MenuItems>
-    </Menu>
+    <button
+      aria-label="Switch language"
+      className="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors hover:bg-surface2"
+      style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", backgroundColor: "var(--color-surface)" }}
+      onClick={toggle}
+      type="button"
+    >
+      {locale === "ar" ? "EN" : "AR"}
+    </button>
   );
 };

@@ -13,6 +13,8 @@ export const NavBar = () => {
   const segment = location.pathname.split("/")[1];
   const prefix = segment === "en" || segment === "ar" ? `/${segment}` : "";
   const { user, logout } = useAuth();
+  const userRole = user?.role;
+  const isAuthenticated = Boolean(user);
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const { refs, floatingStyles } = useFloating({
@@ -23,11 +25,18 @@ export const NavBar = () => {
   });
 
   const links = useMemo(() => {
-    if (user?.role === "ADMIN") {
+    if (userRole === "ADMIN") {
       return [
         { labelKey: "nav.dashboard", to: "/admin/dashboard" },
         { labelKey: "nav.lessons",   to: "/admin/lessons" },
         { labelKey: "nav.students",  to: "/admin/students" }
+      ];
+    }
+    if (isAuthenticated) {
+      return [
+        { labelKey: "nav.dashboard", to: "/dashboard" },
+        { labelKey: "nav.course",    to: "/course" },
+        { labelKey: "nav.checkout",  to: "/checkout" }
       ];
     }
     return [
@@ -35,7 +44,7 @@ export const NavBar = () => {
       { labelKey: "nav.course",   to: "/course" },
       { labelKey: "nav.checkout", to: "/checkout" }
     ];
-  }, [user?.role]);
+  }, [isAuthenticated, userRole]);
 
   return (
     <Disclosure
@@ -101,9 +110,13 @@ export const NavBar = () => {
                 onClick={() => setOpen((v) => !v)}
                 type="button"
               >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-[10px] font-bold text-white">
-                  {user.fullName.charAt(0).toUpperCase()}
-                </span>
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-[10px] font-bold text-white overflow-hidden">
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
+                  ) : (
+                    user.fullName.charAt(0).toUpperCase()
+                  )}
+                </div>
                 <span className="hidden sm:block">{user.fullName.split(" ")[0]}</span>
               </button>
 
@@ -123,14 +136,27 @@ export const NavBar = () => {
                   </div>
                   <div className="mt-1 space-y-0.5">
                     {user.role === "STUDENT" ? (
-                      <Link
-                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium no-underline transition-colors hover:bg-surface2"
-                        style={{ color: "var(--color-text-primary)" }}
-                        onClick={() => setOpen(false)}
-                        to={`${prefix}/course`}
-                      >
-                        {t("nav.myCourse")}
-                      </Link>
+                      <>
+                        {[
+                          { to: "/dashboard", label: t("nav.dashboard") },
+                          { to: "/course",    label: t("nav.myCourse") },
+                          { to: "/progress",  label: t("nav.progress") },
+                          { to: "/notes",     label: t("nav.notes") },
+                          { to: "/orders",    label: t("nav.orders") },
+                          { to: "/profile",   label: t("nav.profile") },
+                          { to: "/help",      label: t("nav.help") },
+                        ].map((item) => (
+                          <Link
+                            key={item.to}
+                            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium no-underline transition-colors hover:bg-surface2"
+                            style={{ color: "var(--color-text-primary)" }}
+                            onClick={() => setOpen(false)}
+                            to={`${prefix}${item.to}`}
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </>
                     ) : (
                       <Link
                         className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium no-underline transition-colors hover:bg-surface2"

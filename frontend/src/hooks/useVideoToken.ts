@@ -32,6 +32,38 @@ export type LessonPlayback = {
   }>;
 };
 
+type LessonPlaybackApiResponse = Partial<LessonPlayback> & {
+  lesson?: Partial<LessonPlayback>;
+};
+
+const normalizeLessonPlayback = (payload: LessonPlaybackApiResponse): LessonPlayback => {
+  const lesson: Partial<LessonPlayback> = payload.lesson ?? payload;
+
+  if (!lesson.id || !lesson.hlsUrl || !lesson.watermark) {
+    throw new Error("Lesson playback data is incomplete.");
+  }
+
+  return {
+    id: lesson.id,
+    title: lesson.title ?? lesson.titleEn ?? "Lesson",
+    titleEn: lesson.titleEn,
+    titleAr: lesson.titleAr ?? null,
+    descriptionHtml: lesson.descriptionHtml ?? "",
+    descriptionHtmlEn: lesson.descriptionHtmlEn ?? lesson.descriptionHtml ?? "",
+    descriptionHtmlAr: lesson.descriptionHtmlAr ?? "",
+    durationSeconds: lesson.durationSeconds ?? null,
+    videoToken: lesson.videoToken ?? "",
+    hlsUrl: lesson.hlsUrl,
+    expiresAt: lesson.expiresAt,
+    watermark: lesson.watermark,
+    progress: {
+      lastPositionSeconds: lesson.progress?.lastPositionSeconds ?? 0,
+      completedAt: lesson.progress?.completedAt ?? null
+    },
+    resources: lesson.resources ?? []
+  };
+};
+
 export const useVideoToken = (lessonId: string | undefined, enabled = true) => {
   const demo = isDemoMode();
   const lessonQuery = useQuery({
@@ -43,8 +75,8 @@ export const useVideoToken = (lessonId: string | undefined, enabled = true) => {
       if (demo && lessonId) {
         return demoLessonPlayback(lessonId);
       }
-      const response = await api.get<LessonPlayback>(`/lessons/${lessonId}`);
-      return response.data;
+      const response = await api.get<LessonPlaybackApiResponse>(`/lessons/${lessonId}`);
+      return normalizeLessonPlayback(response.data);
     }
   });
 

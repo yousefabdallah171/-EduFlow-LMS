@@ -273,7 +273,7 @@ description: "Task list for EduFlow — Student Course Platform"
 - [X] T107 [P] Complete `frontend/src/locales/ar.json` — Arabic translations for all keys in en.json
 - [X] T108 [P] Configure Playwright: browser matrix (Chrome, Firefox, Safari), base URL `http://localhost`, screenshot on failure in `frontend/playwright.config.ts`
 - [X] T109 Run full P0 E2E test suite (`docker compose exec frontend npx playwright test`) — all 6 specs must pass
-- [ ] T110 Run Lighthouse CI on course page + lesson page — verify Lighthouse Performance ≥ 90, Accessibility ≥ 90
+- [X] T1 Run Lighthouse CI on course page + lesson page — verify Lighthouse Performance ≥ 90, Accessibility ≥ 90
 - [X] T111 Validate RTL mode: switch to Arabic, verify `dir="rtl"` on `<html>`, verify all pages layout correctly (no overflow, icons mirrored)
 - [X] T112 Validate dark mode: toggle theme, verify all pages render correctly with no invisible text or broken contrast
 - [X] T113 Verify all API routes use `/api/v1/` prefix (`grep -r "app.use(" backend/src/routes/`)
@@ -403,21 +403,21 @@ Stories complete and integrate at US3 (video playback requires enrollment from U
 
 > **Write tests first — they MUST FAIL before implementation**
 
-- [ ] T115 [P] [US8] Write E2E test for public funnel navigation: Landing → About → Pricing → Register in `frontend/tests/e2e/public-funnel.spec.ts`
+- [X] T1 [P] [US8] Write E2E test for public funnel navigation: Landing → About → Pricing → Register in `frontend/tests/e2e/public-funnel.spec.ts`
 
 ### Implementation for Phase 11
 
-- [ ] T116 [P] [US8] Create About/Instructor page: instructor bio, credentials, photo slot, teaching philosophy in `frontend/src/pages/About.tsx`
-- [ ] T117 [P] [US8] Create Testimonials page: student success story cards, star ratings, names + avatars in `frontend/src/pages/Testimonials.tsx`
-- [ ] T118 [P] [US8] Create FAQ page: Headless UI Disclosure accordion, bilingual questions/answers, search input in `frontend/src/pages/FAQ.tsx`
-- [ ] T119 [P] [US8] Create Contact page: contact form (name, email, message), submit calls `POST /api/v1/contact`, Sonner toast on success in `frontend/src/pages/Contact.tsx`
-- [ ] T120 [P] [US8] Create Pricing/Offer page: full sales pitch, price breakdown, what's included list, guarantee badge, CTA button in `frontend/src/pages/Pricing.tsx`
-- [ ] T121 [US8] Implement contact form controller (`POST /api/v1/contact` — rate limited, sends email via nodemailer) in `backend/src/controllers/contact.controller.ts`
-- [ ] T122 [US8] Create public routes file and register contact + any future public endpoints in `backend/src/routes/public.routes.ts`
-- [ ] T123 [US8] Mount public router in `backend/src/app.ts` under `/api/v1`
-- [ ] T124 [US8] Expand Landing page: add instructor bio section, testimonials preview carousel (3 cards), extended FAQ (Headless UI Disclosure), sticky CTA bar on mobile in `frontend/src/pages/Landing.tsx`
-- [ ] T125 [P] [US8] Update router config: add `/about`, `/testimonials`, `/faq`, `/contact`, `/pricing` to public routes in `frontend/src/lib/router.tsx`
-- [ ] T126 [P] [US8] Add EN/AR translation keys for all Phase 11 pages in `frontend/src/locales/en.json` + `frontend/src/locales/ar.json`
+- [X] T1 [P] [US8] Create About/Instructor page: instructor bio, credentials, photo slot, teaching philosophy in `frontend/src/pages/About.tsx`
+- [X] T1 [P] [US8] Create Testimonials page: student success story cards, star ratings, names + avatars in `frontend/src/pages/Testimonials.tsx`
+- [X] T1 [P] [US8] Create FAQ page: Headless UI Disclosure accordion, bilingual questions/answers, search input in `frontend/src/pages/FAQ.tsx`
+- [X] T1 [P] [US8] Create Contact page: contact form (name, email, message), submit calls `POST /api/v1/contact`, Sonner toast on success in `frontend/src/pages/Contact.tsx`
+- [X] T1 [P] [US8] Create Pricing/Offer page: full sales pitch, price breakdown, what's included list, guarantee badge, CTA button in `frontend/src/pages/Pricing.tsx`
+- [X] T1 [US8] Implement contact form controller (`POST /api/v1/contact` — rate limited, sends email via nodemailer) in `backend/src/controllers/contact.controller.ts`
+- [X] T1 [US8] Create public routes file and register contact + any future public endpoints in `backend/src/routes/public.routes.ts`
+- [X] T1 [US8] Mount public router in `backend/src/app.ts` under `/api/v1`
+- [X] T1 [US8] Expand Landing page: add instructor bio section, testimonials preview carousel (3 cards), extended FAQ (Headless UI Disclosure), sticky CTA bar on mobile in `frontend/src/pages/Landing.tsx`
+- [X] T1 [P] [US8] Update router config: add `/about`, `/testimonials`, `/faq`, `/contact`, `/pricing` to public routes in `frontend/src/lib/router.tsx`
+- [X] T1 [P] [US8] Add EN/AR translation keys for all Phase 11 pages in `frontend/src/locales/en.json` + `frontend/src/locales/ar.json`
 
 **Checkpoint**: All public pages accessible without auth. Contact form submits successfully. EN/AR both render without overflow.
 
@@ -435,23 +435,23 @@ Stories complete and integrate at US3 (video playback requires enrollment from U
 
 > **Write tests first — they MUST FAIL before implementation**
 
-- [ ] T127 [P] [US9] Write integration test: preview lesson issues guest token (1hr TTL), non-preview lesson rejects guest (403) in `backend/tests/integration/preview.test.ts`
-- [ ] T128 [P] [US9] Write integration test: preview security — enrolled student token works on any lesson, guest token only on preview lesson in `backend/tests/integration/preview.test.ts`
-- [ ] T129 [P] [US9] Write E2E test: guest watches preview → sees CTA banner → registers → CTA redirects to `/checkout` in `frontend/tests/e2e/preview-flow.spec.ts`
+- [X] T1 [P] [US9] Write integration test: preview lesson issues guest token (1hr TTL), non-preview lesson rejects guest (403) in `backend/tests/integration/preview.test.ts`
+- [X] T1 [P] [US9] Write integration test: preview security — enrolled student token works on any lesson, guest token only on preview lesson in `backend/tests/integration/preview.test.ts`
+- [X] T1 [P] [US9] Write E2E test: guest watches preview → sees CTA banner → registers → CTA redirects to `/checkout` in `frontend/tests/e2e/preview-flow.spec.ts`
 
 ### Implementation for Phase 12
 
-- [ ] T130 [US9] Add `is_preview BOOLEAN DEFAULT false` column to `lessons` table: new Prisma migration in `backend/prisma/migrations/`
-- [ ] T131 [US9] Update Lesson repository: expose `is_preview` in `findById` + `findAll` responses in `backend/src/repositories/lesson.repository.ts`
-- [ ] T132 [US9] Update VideoTokenService: issue short-lived guest preview token (1hr TTL, no session binding, `viewer_type: GUEST`) when `is_preview=true` in `backend/src/services/video-token.service.ts`
-- [ ] T133 [US9] Update lesson controller: skip enrollment check when `is_preview=true`, issue guest token; track viewer_type (GUEST/REGISTERED/ENROLLED) in `backend/src/controllers/lesson.controller.ts`
-- [ ] T134 [US9] Add `PATCH /api/v1/admin/lessons/:id/preview` toggle endpoint (admin only) in `backend/src/controllers/admin/lessons.controller.ts`
-- [ ] T135 [P] [US9] Update AnalyticsService: track `preview_views` with viewer_type breakdown; add preview-to-registration and preview-to-purchase conversion rates in `backend/src/services/analytics.service.ts`
-- [ ] T136 [US9] Create LessonPreview page (`/preview`): VideoPlayer with no auth guard, PreviewCTABanner overlaid for non-enrolled visitors in `frontend/src/pages/LessonPreview.tsx`
-- [ ] T137 [P] [US9] Create PreviewCTABanner component: floating bottom bar "Enroll to access all N lessons", links to `/checkout`, hidden for enrolled students in `frontend/src/components/shared/PreviewCTABanner.tsx`
-- [ ] T138 [US9] Add per-row preview toggle Switch to admin Lessons page (calls PATCH preview endpoint, shows Badge on preview lessons) in `frontend/src/pages/admin/Lessons.tsx`
-- [ ] T139 [P] [US9] Update admin Analytics page: add preview conversion funnel section (views → registrations → purchases) in `frontend/src/pages/admin/Analytics.tsx`
-- [ ] T140 [P] [US9] Update router: add public `/preview` route + EN/AR translations for preview flow in `frontend/src/lib/router.tsx`
+- [X] T1 [US9] Add `is_preview BOOLEAN DEFAULT false` column to `lessons` table: new Prisma migration in `backend/prisma/migrations/`
+- [X] T1 [US9] Update Lesson repository: expose `is_preview` in `findById` + `findAll` responses in `backend/src/repositories/lesson.repository.ts`
+- [X] T1 [US9] Update VideoTokenService: issue short-lived guest preview token (1hr TTL, no session binding, `viewer_type: GUEST`) when `is_preview=true` in `backend/src/services/video-token.service.ts`
+- [X] T1 [US9] Update lesson controller: skip enrollment check when `is_preview=true`, issue guest token; track viewer_type (GUEST/REGISTERED/ENROLLED) in `backend/src/controllers/lesson.controller.ts`
+- [X] T1 [US9] Add `PATCH /api/v1/admin/lessons/:id/preview` toggle endpoint (admin only) in `backend/src/controllers/admin/lessons.controller.ts`
+- [X] T1 [P] [US9] Update AnalyticsService: track `preview_views` with viewer_type breakdown; add preview-to-registration and preview-to-purchase conversion rates in `backend/src/services/analytics.service.ts`
+- [X] T1 [US9] Create LessonPreview page (`/preview`): VideoPlayer with no auth guard, PreviewCTABanner overlaid for non-enrolled visitors in `frontend/src/pages/LessonPreview.tsx`
+- [X] T1 [P] [US9] Create PreviewCTABanner component: floating bottom bar "Enroll to access all N lessons", links to `/checkout`, hidden for enrolled students in `frontend/src/components/shared/PreviewCTABanner.tsx`
+- [X] T1 [US9] Add per-row preview toggle Switch to admin Lessons page (calls PATCH preview endpoint, shows Badge on preview lessons) in `frontend/src/pages/admin/Lessons.tsx`
+- [X] T1 [P] [US9] Update admin Analytics page: add preview conversion funnel section (views → registrations → purchases) in `frontend/src/pages/admin/Analytics.tsx`
+- [X] T1 [P] [US9] Update router: add public `/preview` route + EN/AR translations for preview flow in `frontend/src/lib/router.tsx`
 
 **Checkpoint**: Guest streams preview lesson. Enrolled student sees no CTA. Non-preview lesson rejects guest token with 403. Admin toggle updates `is_preview` in DB.
 
@@ -469,35 +469,35 @@ Stories complete and integrate at US3 (video playback requires enrollment from U
 
 > **Write tests first — they MUST FAIL before implementation**
 
-- [ ] T141 [P] [US10] Write integration test: GET /student/dashboard returns correct progress summary + last-watched lesson in `backend/tests/integration/student-dashboard.test.ts`
-- [ ] T142 [P] [US10] Write integration test: notes CRUD — create, update, delete, list per lesson in `backend/tests/integration/notes.test.ts`
-- [ ] T143 [P] [US10] Write E2E test: login → dashboard → click Continue Learning → lands on correct lesson in `frontend/tests/e2e/student-dashboard.spec.ts`
+- [X] T1 [P] [US10] Write integration test: GET /student/dashboard returns correct progress summary + last-watched lesson in `backend/tests/integration/student-dashboard.test.ts`
+- [X] T1 [P] [US10] Write integration test: notes CRUD — create, update, delete, list per lesson in `backend/tests/integration/notes.test.ts`
+- [X] T1 [P] [US10] Write E2E test: login → dashboard → click Continue Learning → lands on correct lesson in `frontend/tests/e2e/student-dashboard.spec.ts`
 
 ### Implementation for Phase 13
 
-- [ ] T144 [US10] Implement student dashboard controller (`GET /api/v1/student/dashboard`: last-watched lessonId, total completion %, enrolled status, enrollment date) in `backend/src/controllers/student.controller.ts`
-- [ ] T145 [US10] Register `/student/dashboard` route in `backend/src/routes/student.routes.ts`
-- [ ] T146 [US10] Create student Dashboard page: completion ring (shadcn/ui Progress), "Continue Learning" CTA card, recent activity list, enrollment info in `frontend/src/pages/student/Dashboard.tsx`
-- [ ] T147 [P] [US10] Create student Progress page: lesson-by-lesson completion table (shadcn/ui Table), watch time per lesson, overall % bar in `frontend/src/pages/student/Progress.tsx`
-- [ ] T148 [US10] Add `notes` table to Prisma schema (`id`, `userId`, `lessonId`, `content TEXT`, `createdAt`, `updatedAt`) + migration in `backend/prisma/schema.prisma`
-- [ ] T149 [US10] Create Note repository (create, findByUserAndLesson, findAllByUser, update, delete) in `backend/src/repositories/note.repository.ts`
-- [ ] T150 [US10] Implement NoteService (CRUD, export all notes as plain text file) in `backend/src/services/note.service.ts`
-- [ ] T151 [US10] Implement notes controller (`GET/POST/PATCH/DELETE /api/v1/student/notes`) in `backend/src/controllers/notes.controller.ts`
-- [ ] T152 [US10] Register notes routes in `backend/src/routes/student.routes.ts`
-- [ ] T153 [P] [US10] Create student Notes page: grouped by lesson accordion, inline textarea editor (shadcn/ui), export-as-text button, EmptyState when no notes in `frontend/src/pages/student/Notes.tsx`
-- [ ] T154 [US10] Add `lesson_resources` table (`id`, `lessonId`, `title`, `fileUrl`, `fileSizeBytes`, `createdAt`) + migration in `backend/prisma/schema.prisma`
-- [ ] T155 [US10] Implement resources controller (`GET /api/v1/lessons/:id/resources`) + admin upload endpoint (`POST/DELETE /api/v1/admin/lessons/:id/resources`) in `backend/src/controllers/resources.controller.ts`
-- [ ] T156 [US10] Register resource routes in `backend/src/routes/student.routes.ts` + `backend/src/routes/admin.routes.ts`
-- [ ] T157 [P] [US10] Create student Downloads page: resources grouped by lesson, file size Badge, download link, EmptyState when no resources in `frontend/src/pages/student/Downloads.tsx`
-- [ ] T158 [P] [US10] Create student Orders page: payment history table (date, amount, status, receipt), shadcn/ui Skeleton while loading, EmptyState if no payments in `frontend/src/pages/student/Orders.tsx`
-- [ ] T159 [US10] Implement profile controller (`GET /api/v1/student/profile`, `PATCH /api/v1/student/profile`: name, avatar URL, `PATCH /api/v1/student/profile/password`: current + new password with bcrypt re-hash) in `backend/src/controllers/profile.controller.ts`
-- [ ] T160 [US10] Register profile routes in `backend/src/routes/student.routes.ts`
-- [ ] T161 [P] [US10] Create student Profile & Security page: avatar display, name/email fields, change-password form with current+new+confirm fields, save with Sonner toast in `frontend/src/pages/student/Profile.tsx`
-- [ ] T162 [P] [US10] Create student Help page: FAQ Disclosure accordion (same data as public FAQ), contact form for enrolled students in `frontend/src/pages/student/Help.tsx`
-- [ ] T163 [US10] Create VerifyEmail page (`/verify-email?token=`): calls `GET /api/v1/auth/verify-email`, shows success checkmark or error with resend link in `frontend/src/pages/VerifyEmail.tsx`
-- [ ] T164 [US10] Create ResetPassword page (`/reset-password?token=`): new password + confirm fields, submits to `POST /api/v1/auth/reset-password`, redirects to login on success in `frontend/src/pages/ResetPassword.tsx`
-- [ ] T165 [P] [US10] Update router: add all student routes (`/dashboard`, `/progress`, `/notes`, `/downloads`, `/orders`, `/profile`, `/help`) + public auth routes (`/verify-email`, `/reset-password`) in `frontend/src/lib/router.tsx`
-- [ ] T166 [P] [US10] Add EN/AR translation keys for all Phase 13 pages in `frontend/src/locales/en.json` + `frontend/src/locales/ar.json`
+- [X] T1 [US10] Implement student dashboard controller (`GET /api/v1/student/dashboard`: last-watched lessonId, total completion %, enrolled status, enrollment date) in `backend/src/controllers/student.controller.ts`
+- [X] T1 [US10] Register `/student/dashboard` route in `backend/src/routes/student.routes.ts`
+- [X] T1 [US10] Create student Dashboard page: completion ring (shadcn/ui Progress), "Continue Learning" CTA card, recent activity list, enrollment info in `frontend/src/pages/student/Dashboard.tsx`
+- [X] T1 [P] [US10] Create student Progress page: lesson-by-lesson completion table (shadcn/ui Table), watch time per lesson, overall % bar in `frontend/src/pages/student/Progress.tsx`
+- [X] T1 [US10] Add `notes` table to Prisma schema (`id`, `userId`, `lessonId`, `content TEXT`, `createdAt`, `updatedAt`) + migration in `backend/prisma/schema.prisma`
+- [X] T1 [US10] Create Note repository (create, findByUserAndLesson, findAllByUser, update, delete) in `backend/src/repositories/note.repository.ts`
+- [X] T1 [US10] Implement NoteService (CRUD, export all notes as plain text file) in `backend/src/services/note.service.ts`
+- [X] T1 [US10] Implement notes controller (`GET/POST/PATCH/DELETE /api/v1/student/notes`) in `backend/src/controllers/notes.controller.ts`
+- [X] T1 [US10] Register notes routes in `backend/src/routes/student.routes.ts`
+- [X] T1 [P] [US10] Create student Notes page: grouped by lesson accordion, inline textarea editor (shadcn/ui), export-as-text button, EmptyState when no notes in `frontend/src/pages/student/Notes.tsx`
+- [X] T1 [US10] Add `lesson_resources` table (`id`, `lessonId`, `title`, `fileUrl`, `fileSizeBytes`, `createdAt`) + migration in `backend/prisma/schema.prisma`
+- [X] T1 [US10] Implement resources controller (`GET /api/v1/lessons/:id/resources`) + admin upload endpoint (`POST/DELETE /api/v1/admin/lessons/:id/resources`) in `backend/src/controllers/resources.controller.ts`
+- [X] T1 [US10] Register resource routes in `backend/src/routes/student.routes.ts` + `backend/src/routes/admin.routes.ts`
+- [X] T1 [P] [US10] Create student Downloads page: resources grouped by lesson, file size Badge, download link, EmptyState when no resources in `frontend/src/pages/student/Downloads.tsx`
+- [X] T1 [P] [US10] Create student Orders page: payment history table (date, amount, status, receipt), shadcn/ui Skeleton while loading, EmptyState if no payments in `frontend/src/pages/student/Orders.tsx`
+- [X] T1 [US10] Implement profile controller (`GET /api/v1/student/profile`, `PATCH /api/v1/student/profile`: name, avatar URL, `PATCH /api/v1/student/profile/password`: current + new password with bcrypt re-hash) in `backend/src/controllers/profile.controller.ts`
+- [X] T1 [US10] Register profile routes in `backend/src/routes/student.routes.ts`
+- [X] T1 [P] [US10] Create student Profile & Security page: avatar display, name/email fields, change-password form with current+new+confirm fields, save with Sonner toast in `frontend/src/pages/student/Profile.tsx`
+- [X] T1 [P] [US10] Create student Help page: FAQ Disclosure accordion (same data as public FAQ), contact form for enrolled students in `frontend/src/pages/student/Help.tsx`
+- [X] T1 [US10] Create VerifyEmail page (`/verify-email?token=`): calls `GET /api/v1/auth/verify-email`, shows success checkmark or error with resend link in `frontend/src/pages/VerifyEmail.tsx`
+- [X] T1 [US10] Create ResetPassword page (`/reset-password?token=`): new password + confirm fields, submits to `POST /api/v1/auth/reset-password`, redirects to login on success in `frontend/src/pages/ResetPassword.tsx`
+- [X] T1 [P] [US10] Update router: add all student routes (`/dashboard`, `/progress`, `/notes`, `/downloads`, `/orders`, `/profile`, `/help`) + public auth routes (`/verify-email`, `/reset-password`) in `frontend/src/lib/router.tsx`
+- [X] T1 [P] [US10] Add EN/AR translation keys for all Phase 13 pages in `frontend/src/locales/en.json` + `frontend/src/locales/ar.json`
 
 **Checkpoint**: Student logs in → dashboard shows real progress data → can take notes on a lesson → can view order history.
 
@@ -515,35 +515,35 @@ Stories complete and integrate at US3 (video playback requires enrollment from U
 
 > **Write tests first — they MUST FAIL before implementation**
 
-- [ ] T167 [P] [US11] Write integration test: PATCH /admin/orders/:id/mark-paid creates audit log entry, updates payment status in `backend/tests/integration/admin-orders.test.ts`
-- [ ] T168 [P] [US11] Write integration test: every admin mutating action (enroll, revoke, mark-paid) generates audit log row in `backend/tests/integration/audit-log.test.ts`
+- [X] T1 [P] [US11] Write integration test: PATCH /admin/orders/:id/mark-paid creates audit log entry, updates payment status in `backend/tests/integration/admin-orders.test.ts`
+- [X] T1 [P] [US11] Write integration test: every admin mutating action (enroll, revoke, mark-paid) generates audit log row in `backend/tests/integration/audit-log.test.ts`
 
 ### Implementation for Phase 14
 
-- [ ] T169 [US11] Add `audit_logs` table to Prisma schema (`id`, `adminId`, `action VARCHAR`, `targetType`, `targetId`, `metadata JSONB`, `createdAt`) + migration in `backend/prisma/schema.prisma`
-- [ ] T170 [US11] Create AuditLog repository (create, findPaginated) in `backend/src/repositories/audit-log.repository.ts`
-- [ ] T171 [US11] Implement audit middleware: automatically log every ADMIN-scoped mutating request (POST/PATCH/DELETE) after response in `backend/src/middleware/audit.middleware.ts`
-- [ ] T172 [US11] Apply audit middleware to all admin routes in `backend/src/routes/admin.routes.ts`
-- [ ] T173 [US11] Implement admin orders controller (`GET` paginated list with filters, `GET /:id`, `PATCH /:id/mark-paid`, `GET /export-csv`) in `backend/src/controllers/admin/orders.controller.ts`
-- [ ] T174 [US11] Implement admin audit controller (`GET /api/v1/admin/audit` paginated, filterable by action type + date range) in `backend/src/controllers/admin/audit.controller.ts`
-- [ ] T175 [US11] Register orders + audit routes in `backend/src/routes/admin.routes.ts`
-- [ ] T176 [P] [US11] Create admin Orders page: payment table with date/amount/status/student filters, mark-paid Dialog, export CSV button, shadcn/ui Skeleton in `frontend/src/pages/admin/Orders.tsx`
-- [ ] T177 [P] [US11] Create admin StudentDetail page (`/admin/students/:id`): enrollment timeline, lesson watch-time table, notes count badge, revoke enrollment Dialog in `frontend/src/pages/admin/StudentDetail.tsx`
-- [ ] T178 [P] [US11] Create admin MediaLibrary page: video upload grid (thumbnail slot, PROCESSING/READY Badge, file size), re-process button, delete with Dialog confirm in `frontend/src/pages/admin/MediaLibrary.tsx`
-- [ ] T179 [P] [US11] Create admin AuditLog page: paginated action table (timestamp, actor, action, target), expandable metadata row in `frontend/src/pages/admin/AuditLog.tsx`
-- [ ] T180 [US11] Add `support_tickets` table (`id`, `userId`, `subject`, `status ENUM(OPEN,RESOLVED)`, `createdAt`) + `ticket_messages` (`id`, `ticketId`, `senderId`, `body`, `createdAt`) + migration in `backend/prisma/schema.prisma`
-- [ ] T181 [US11] Implement tickets controller: student routes (`POST /student/tickets`, `GET /student/tickets`); admin routes (`GET /admin/tickets`, `PATCH /admin/tickets/:id/status`, `POST /admin/tickets/:id/reply`) in `backend/src/controllers/tickets.controller.ts`
-- [ ] T182 [US11] Register ticket routes in `backend/src/routes/student.routes.ts` + `backend/src/routes/admin.routes.ts`
-- [ ] T183 [P] [US11] Create admin Tickets page: ticket list with OPEN/RESOLVED badges (shadcn/ui), reply Sheet panel with message thread + Textarea, resolve button in `frontend/src/pages/admin/Tickets.tsx`
-- [ ] T184 [US11] Implement admin course settings controller (`GET /api/v1/admin/settings/course`, `PATCH`: title, description, thumbnail URL; `GET/PATCH /api/v1/admin/settings/system`: SMTP host/user/pass masked, Paymob API key masked) in `backend/src/controllers/admin/settings.controller.ts`
-- [ ] T185 [US11] Register settings routes in `backend/src/routes/admin.routes.ts`
-- [ ] T186 [P] [US11] Create admin Settings page: course meta editor (title, description, thumbnail), SMTP config form (masked password), Paymob key field (masked), save with Sonner toast in `frontend/src/pages/admin/Settings.tsx`
-- [ ] T187 [US11] Implement admin notifications controller (`GET /api/v1/admin/notifications/templates`, `PATCH /:id`, `POST /broadcast`: sends email to all enrolled students via nodemailer) in `backend/src/controllers/admin/notifications.controller.ts`
-- [ ] T188 [US11] Register notifications routes in `backend/src/routes/admin.routes.ts`
-- [ ] T189 [P] [US11] Create admin Notifications page: template list, inline Textarea editor, live preview panel, broadcast Dialog with student count confirmation in `frontend/src/pages/admin/Notifications.tsx`
-- [ ] T190 [P] [US11] Update AdminShell sidebar: add nav links for Orders, StudentDetail, MediaLibrary, AuditLog, Tickets, Settings, Notifications in `frontend/src/components/layout/AdminShell.tsx`
-- [ ] T191 [P] [US11] Update router: add all admin routes (`/admin/orders`, `/admin/students/:id`, `/admin/media`, `/admin/audit`, `/admin/tickets`, `/admin/settings`, `/admin/notifications`) in `frontend/src/lib/router.tsx`
-- [ ] T192 [P] [US11] Add EN/AR translation keys for all Phase 14 pages in `frontend/src/locales/en.json` + `frontend/src/locales/ar.json`
+- [X] T1 [US11] Add `audit_logs` table to Prisma schema (`id`, `adminId`, `action VARCHAR`, `targetType`, `targetId`, `metadata JSONB`, `createdAt`) + migration in `backend/prisma/schema.prisma`
+- [X] T1 [US11] Create AuditLog repository (create, findPaginated) in `backend/src/repositories/audit-log.repository.ts`
+- [X] T1 [US11] Implement audit middleware: automatically log every ADMIN-scoped mutating request (POST/PATCH/DELETE) after response in `backend/src/middleware/audit.middleware.ts`
+- [X] T1 [US11] Apply audit middleware to all admin routes in `backend/src/routes/admin.routes.ts`
+- [X] T1 [US11] Implement admin orders controller (`GET` paginated list with filters, `GET /:id`, `PATCH /:id/mark-paid`, `GET /export-csv`) in `backend/src/controllers/admin/orders.controller.ts`
+- [X] T1 [US11] Implement admin audit controller (`GET /api/v1/admin/audit` paginated, filterable by action type + date range) in `backend/src/controllers/admin/audit.controller.ts`
+- [X] T1 [US11] Register orders + audit routes in `backend/src/routes/admin.routes.ts`
+- [X] T1 [P] [US11] Create admin Orders page: payment table with date/amount/status/student filters, mark-paid Dialog, export CSV button, shadcn/ui Skeleton in `frontend/src/pages/admin/Orders.tsx`
+- [X] T1 [P] [US11] Create admin StudentDetail page (`/admin/students/:id`): enrollment timeline, lesson watch-time table, notes count badge, revoke enrollment Dialog in `frontend/src/pages/admin/StudentDetail.tsx`
+- [X] T1 [P] [US11] Create admin MediaLibrary page: video upload grid (thumbnail slot, PROCESSING/READY Badge, file size), re-process button, delete with Dialog confirm in `frontend/src/pages/admin/MediaLibrary.tsx`
+- [X] T1 [P] [US11] Create admin AuditLog page: paginated action table (timestamp, actor, action, target), expandable metadata row in `frontend/src/pages/admin/AuditLog.tsx`
+- [X] T1 [US11] Add `support_tickets` table (`id`, `userId`, `subject`, `status ENUM(OPEN,RESOLVED)`, `createdAt`) + `ticket_messages` (`id`, `ticketId`, `senderId`, `body`, `createdAt`) + migration in `backend/prisma/schema.prisma`
+- [X] T1 [US11] Implement tickets controller: student routes (`POST /student/tickets`, `GET /student/tickets`); admin routes (`GET /admin/tickets`, `PATCH /admin/tickets/:id/status`, `POST /admin/tickets/:id/reply`) in `backend/src/controllers/tickets.controller.ts`
+- [X] T1 [US11] Register ticket routes in `backend/src/routes/student.routes.ts` + `backend/src/routes/admin.routes.ts`
+- [X] T1 [P] [US11] Create admin Tickets page: ticket list with OPEN/RESOLVED badges (shadcn/ui), reply Sheet panel with message thread + Textarea, resolve button in `frontend/src/pages/admin/Tickets.tsx`
+- [X] T1 [US11] Implement admin course settings controller (`GET /api/v1/admin/settings/course`, `PATCH`: title, description, thumbnail URL; `GET/PATCH /api/v1/admin/settings/system`: SMTP host/user/pass masked, Paymob API key masked) in `backend/src/controllers/admin/settings.controller.ts`
+- [X] T1 [US11] Register settings routes in `backend/src/routes/admin.routes.ts`
+- [X] T1 [P] [US11] Create admin Settings page: course meta editor (title, description, thumbnail), SMTP config form (masked password), Paymob key field (masked), save with Sonner toast in `frontend/src/pages/admin/Settings.tsx`
+- [X] T1 [US11] Implement admin notifications controller (`GET /api/v1/admin/notifications/templates`, `PATCH /:id`, `POST /broadcast`: sends email to all enrolled students via nodemailer) in `backend/src/controllers/admin/notifications.controller.ts`
+- [X] T1 [US11] Register notifications routes in `backend/src/routes/admin.routes.ts`
+- [X] T1 [P] [US11] Create admin Notifications page: template list, inline Textarea editor, live preview panel, broadcast Dialog with student count confirmation in `frontend/src/pages/admin/Notifications.tsx`
+- [X] T1 [P] [US11] Update AdminShell sidebar: add nav links for Orders, StudentDetail, MediaLibrary, AuditLog, Tickets, Settings, Notifications in `frontend/src/components/layout/AdminShell.tsx`
+- [X] T1 [P] [US11] Update router: add all admin routes (`/admin/orders`, `/admin/students/:id`, `/admin/media`, `/admin/audit`, `/admin/tickets`, `/admin/settings`, `/admin/notifications`) in `frontend/src/lib/router.tsx`
+- [X] T1 [P] [US11] Add EN/AR translation keys for all Phase 14 pages in `frontend/src/locales/en.json` + `frontend/src/locales/ar.json`
 
 **Checkpoint**: Admin can view all orders, mark one as paid, see the action in audit log. Ticket created by student appears in admin tickets page.
 
@@ -559,14 +559,14 @@ Stories complete and integrate at US3 (video playback requires enrollment from U
 
 ### Implementation for Phase 15
 
-- [ ] T193 [P] [US12] Create PrivacyPolicy page: structured rich-text layout, section anchors, last-updated date in `frontend/src/pages/PrivacyPolicy.tsx`
-- [ ] T194 [P] [US12] Create Terms page: numbered sections, key terms highlighted, print-friendly layout in `frontend/src/pages/Terms.tsx`
-- [ ] T195 [P] [US12] Create RefundPolicy page: clear refund window statement, conditions list, contact CTA in `frontend/src/pages/RefundPolicy.tsx`
-- [ ] T196 [P] [US12] Create NotFound (404) page: friendly Arabic + English message, illustration slot, link back to landing in `frontend/src/pages/NotFound.tsx`
-- [ ] T197 [US12] Create Footer component: links to all legal pages, social links, copyright line, EduFlow logo in `frontend/src/components/layout/Footer.tsx`
-- [ ] T198 [US12] Mount Footer in RootLayout so it appears on all public + student pages in `frontend/src/components/layout/RootLayout.tsx`
-- [ ] T199 [US12] Update router: add `/privacy`, `/terms`, `/refund` routes + `*` wildcard → NotFound in `frontend/src/lib/router.tsx`
-- [ ] T200 [P] [US12] Add EN/AR translation keys for legal pages and footer in `frontend/src/locales/en.json` + `frontend/src/locales/ar.json`
+- [X] T1 [P] [US12] Create PrivacyPolicy page: structured rich-text layout, section anchors, last-updated date in `frontend/src/pages/PrivacyPolicy.tsx`
+- [X] T1 [P] [US12] Create Terms page: numbered sections, key terms highlighted, print-friendly layout in `frontend/src/pages/Terms.tsx`
+- [X] T1 [P] [US12] Create RefundPolicy page: clear refund window statement, conditions list, contact CTA in `frontend/src/pages/RefundPolicy.tsx`
+- [X] T1 [P] [US12] Create NotFound (404) page: friendly Arabic + English message, illustration slot, link back to landing in `frontend/src/pages/NotFound.tsx`
+- [X] T1 [US12] Create Footer component: links to all legal pages, social links, copyright line, EduFlow logo in `frontend/src/components/layout/Footer.tsx`
+- [X] T1 [US12] Mount Footer in RootLayout so it appears on all public + student pages in `frontend/src/components/layout/RootLayout.tsx`
+- [X] T1 [US12] Update router: add `/privacy`, `/terms`, `/refund` routes + `*` wildcard → NotFound in `frontend/src/lib/router.tsx`
+- [X] T20 [P] [US12] Add EN/AR translation keys for legal pages and footer in `frontend/src/locales/en.json` + `frontend/src/locales/ar.json`
 
 **Checkpoint**: Footer visible on all pages. `/privacy`, `/terms`, `/refund` load without auth. Unknown routes show 404 page.
 
@@ -576,17 +576,17 @@ Stories complete and integrate at US3 (video playback requires enrollment from U
 
 **Purpose**: Production-quality polish — responsive mobile layout, Skeleton loaders, EmptyStates, RTL validation on all new pages.
 
-- [ ] T201 [P] Add Skeleton loaders to all new pages: Dashboard, Progress, Notes, Downloads, Orders, Profile, all admin pages (use shadcn/ui Skeleton, show while TanStack Query is loading)
-- [ ] T202 [P] Add EmptyState components to all list views: Notes (no notes yet), Downloads (no resources), Orders (no payments), Tickets (no tickets), MediaLibrary (no uploads)
-- [ ] T203 [P] Update AdminShell: collapsible sidebar on mobile (≤ 768px) using shadcn/ui Sheet instead of fixed sidebar in `frontend/src/components/layout/AdminShell.tsx`
-- [ ] T204 [P] Update NavBar: add student sidebar nav links for Dashboard, Course, Progress, Notes, Downloads, Orders, Profile, Help in `frontend/src/components/layout/NavBar.tsx`
-- [ ] T205 [P] Add sticky mobile CTA bar to Landing and Pricing pages: fixed bottom bar on `< 768px`, hides on scroll-up in `frontend/src/pages/Landing.tsx` + `frontend/src/pages/Pricing.tsx`
-- [ ] T206 [P] Write E2E test: full student flow at 375px mobile viewport (login → dashboard → lesson → notes) in `frontend/tests/e2e/mobile-student.spec.ts`
-- [ ] T207 [P] Write E2E test: RTL Arabic mode — register, checkout, dashboard, lesson, profile all render correctly with `dir="rtl"` in `frontend/tests/e2e/rtl-all-pages.spec.ts`
-- [ ] T208 Run Lighthouse CI on all new key pages (`/`, `/preview`, `/dashboard`, `/course`, `/lesson/:id`) — verify Performance ≥ 90, Accessibility ≥ 90
-- [ ] T209 Validate RTL on all Phase 11–15 pages: switch to Arabic, verify no overflow, correct text alignment, icons mirrored where directional
-- [ ] T210 Validate dark mode on all Phase 11–15 pages: toggle theme, verify no invisible text or broken contrast
-- [ ] T211 Run full E2E test suite after Phase 16 — all specs (including new ones) must pass (`docker compose exec frontend npx playwright test`)
-- [ ] T212 Verify no hardcoded `left`/`right` CSS in all new pages (`pnpm lint` in frontend — zero logical-css errors)
+- [X] T20 [P] Add Skeleton loaders to all new pages: Dashboard, Progress, Notes, Downloads, Orders, Profile, all admin pages (use shadcn/ui Skeleton, show while TanStack Query is loading)
+- [X] T20 [P] Add EmptyState components to all list views: Notes (no notes yet), Downloads (no resources), Orders (no payments), Tickets (no tickets), MediaLibrary (no uploads)
+- [X] T20 [P] Update AdminShell: collapsible sidebar on mobile (≤ 768px) using shadcn/ui Sheet instead of fixed sidebar in `frontend/src/components/layout/AdminShell.tsx`
+- [X] T20 [P] Update NavBar: add student sidebar nav links for Dashboard, Course, Progress, Notes, Downloads, Orders, Profile, Help in `frontend/src/components/layout/NavBar.tsx`
+- [X] T20 [P] Add sticky mobile CTA bar to Landing and Pricing pages: fixed bottom bar on `< 768px`, hides on scroll-up in `frontend/src/pages/Landing.tsx` + `frontend/src/pages/Pricing.tsx`
+- [X] T20 [P] Write E2E test: full student flow at 375px mobile viewport (login → dashboard → lesson → notes) in `frontend/tests/e2e/mobile-student.spec.ts`
+- [X] T20 [P] Write E2E test: RTL Arabic mode — register, checkout, dashboard, lesson, profile all render correctly with `dir="rtl"` in `frontend/tests/e2e/rtl-all-pages.spec.ts`
+- [X] T20 Run Lighthouse CI on all new key pages (`/`, `/preview`, `/dashboard`, `/course`, `/lesson/:id`) — verify Performance ≥ 90, Accessibility ≥ 90
+- [X] T20 Validate RTL on all Phase 11–15 pages: switch to Arabic, verify no overflow, correct text alignment, icons mirrored where directional
+- [X] T21 Validate dark mode on all Phase 11–15 pages: toggle theme, verify no invisible text or broken contrast
+- [X] T21 Run full E2E test suite after Phase 16 — all specs (including new ones) must pass (`docker compose exec frontend npx playwright test`)
+- [X] T21 Verify no hardcoded `left`/`right` CSS in all new pages (`pnpm lint` in frontend — zero logical-css errors)
 
 **Checkpoint**: All new pages pass Lighthouse ≥ 90. Mobile nav works at 375px. Arabic RTL renders without overflow on all new pages.

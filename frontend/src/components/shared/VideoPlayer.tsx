@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FloatingPortal,
   offset,
@@ -9,9 +9,10 @@ import {
   useInteractions,
   useRole
 } from "@floating-ui/react";
+import { useTranslation } from "react-i18next";
 
-import { cn } from "@/lib/utils";
 import { WatermarkOverlay } from "@/components/shared/WatermarkOverlay";
+import { cn } from "@/lib/utils";
 
 type VideoPlayerProps = {
   lessonTitle: string;
@@ -23,6 +24,7 @@ type VideoPlayerProps = {
   initialPositionSeconds?: number;
   onProgress?: (payload: { lastPositionSeconds: number; watchTimeSeconds: number; completed: boolean }) => void;
   onTokenExpired?: () => void;
+  playbackExpiresAt?: string | null;
 };
 
 type TooltipButtonProps = {
@@ -74,16 +76,25 @@ export const VideoPlayer = ({
   watermark,
   initialPositionSeconds = 0,
   onProgress,
-  onTokenExpired
+  onTokenExpired,
+  playbackExpiresAt
 }: VideoPlayerProps) => {
+  const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<{ destroy: () => void } | null>(null);
   const hasAttachedRef = useRef(false);
   const lastReportedPositionRef = useRef(0);
-  // Track actual elapsed watch time (not playback position)
+  const streamKeyRef = useRef<string | null>(null);
+  const resumePlaybackRef = useRef(false);
+  const resumePositionRef = useRef(initialPositionSeconds);
   const watchStartTimeRef = useRef<number | null>(null);
   const accumulatedWatchSecondsRef = useRef(0);
-  const [status, setStatus] = useState("Protected playback ready");
+  const labelsRef = useRef({
+    readyProtected: t("video.readyProtected"),
+    readyDemo: t("video.readyDemo"),
+    unsupported: t("video.unsupported")
+  });
+  const [status, setStatus] = useState(t("video.readyProtected"));
   const [isAttaching, setIsAttaching] = useState(false);
   const [isAttached, setIsAttached] = useState(false);
 
@@ -94,11 +105,20 @@ export const VideoPlayer = ({
     setIsAttached(false);
   };
 
-  const attachStream = async () => {
+  useEffect(() => {
+    labelsRef.current = {
+      readyProtected: t("video.readyProtected"),
+      readyDemo: t("video.readyDemo"),
+      unsupported: t("video.unsupported")
+    };
+  }, [t]);
+
+  const attachStream = useCallback(async () => {
     const video = videoRef.current;
     if (!video || !sourceUrl || hasAttachedRef.current) {
       return;
     }
+
     setIsAttaching(true);
 
     if (sourceUrl === "/demo-video.m3u8") {
@@ -106,25 +126,27 @@ export const VideoPlayer = ({
       hasAttachedRef.current = true;
       setIsAttached(true);
       setIsAttaching(false);
-      setStatus("Demo playback ready");
+      setStatus(labelsRef.current.readyDemo);
       return;
     }
 
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    const attachNativeStream = () => {
       video.src = sourceUrl;
       hasAttachedRef.current = true;
       setIsAttached(true);
       setIsAttaching(false);
-      return;
-    }
+    };
 
+    const hasNativeHls = Boolean(video.canPlayType("application/vnd.apple.mpegurl"));
     const module = await import("hls.js");
     const Hls = module.default;
     if (!Hls.isSupported()) {
-      video.src = sourceUrl;
-      hasAttachedRef.current = true;
-      setIsAttached(true);
-      setIsAttaching(false);
+      if (hasNativeHls) {
+        attachNativeStream();
+      } else {
+        setStatus(labelsRef.current.unsupported);
+        setIsAttaching(false);
+      }
       return;
     }
 
@@ -144,7 +166,7 @@ export const VideoPlayer = ({
     hasAttachedRef.current = true;
     setIsAttached(true);
     setIsAttaching(false);
-  };
+  }, [onTokenExpired, sourceUrl]);
 
   useEffect(() => {
     return () => {
@@ -153,46 +175,116 @@ export const VideoPlayer = ({
   }, []);
 
   useEffect(() => {
+    const nextStreamKey = sourceUrl.split("?")[0] ?? sourceUrl;
+    const isSameStream = streamKeyRef.current === nextStreamKey;
+    const video = videoRef.current;
+    if (video) {
+      resumePositionRef.current = Math.max(initialPositionSeconds, Math.floor(video.currentTime));
+      resumePlaybackRef.current = !video.paused && !video.ended;
+      if (resumePlaybackRef.current && watchStartTimeRef.current !== null) {
+        accumulatedWatchSecondsRef.current += Math.floor((Date.now() - watchStartTimeRef.current) / 1000);
+      }
+    } else {
+      resumePositionRef.current = initialPositionSeconds;
+      resumePlaybackRef.current = false;
+    }
+
     destroyHls();
-    setStatus("Protected playback ready");
-    accumulatedWatchSecondsRef.current = 0;
-    watchStartTimeRef.current = null;
-    lastReportedPositionRef.current = 0;
-  }, [sourceUrl]);
+    setStatus(labelsRef.current.readyProtected);
+    if (!isSameStream) {
+      accumulatedWatchSecondsRef.current = 0;
+      watchStartTimeRef.current = null;
+      lastReportedPositionRef.current = 0;
+    } else if (resumePlaybackRef.current) {
+      watchStartTimeRef.current = Date.now();
+    }
+    streamKeyRef.current = nextStreamKey;
+  }, [initialPositionSeconds, sourceUrl]);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || initialPositionSeconds <= 0) {
+    if (!video) {
+      return;
+    }
+
+    const targetPosition = resumePositionRef.current > 0 ? resumePositionRef.current : initialPositionSeconds;
+    if (targetPosition <= 0) {
       return;
     }
 
     const applyPosition = () => {
-      video.currentTime = initialPositionSeconds;
+      video.currentTime = targetPosition;
+      resumePositionRef.current = targetPosition;
     };
 
     video.addEventListener("loadedmetadata", applyPosition, { once: true });
     return () => {
       video.removeEventListener("loadedmetadata", applyPosition);
     };
-  }, [initialPositionSeconds]);
+  }, [initialPositionSeconds, sourceUrl]);
+
+  useEffect(() => {
+    if (!resumePlaybackRef.current) {
+      return;
+    }
+
+    let cancelled = false;
+    void attachStream().then(() => {
+      if (cancelled) {
+        return;
+      }
+
+      const video = videoRef.current;
+      if (video) {
+        void video.play().catch(() => undefined);
+      }
+      resumePlaybackRef.current = false;
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [attachStream, sourceUrl]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !playbackExpiresAt || !onTokenExpired) {
+      return;
+    }
+
+    const expiryMs = new Date(playbackExpiresAt).getTime();
+    if (!Number.isFinite(expiryMs)) {
+      return;
+    }
+
+    const delayMs = Math.max(expiryMs - Date.now() - 60 * 1000, 0);
+    const timer = window.setTimeout(() => {
+      onTokenExpired();
+    }, delayMs);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [onTokenExpired, playbackExpiresAt, sourceUrl]);
 
   const progressLabel = useMemo(
-    () => watermark ? `${watermark.name} - ${watermark.maskedEmail}` : "Preview",
-    [watermark]
+    () => (watermark ? `${watermark.name} - ${watermark.maskedEmail}` : t("preview.freePreview")),
+    [t, watermark]
   );
 
   return (
     <section className="rounded-[2rem] border border-slate-200 bg-white/90 p-4 shadow-[0_30px_90px_rgba(15,23,42,0.18)] backdrop-blur dark:border-white/5 dark:bg-zinc-900/90">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="m-0 text-xs font-semibold uppercase tracking-[0.25em] text-brand-600 dark:text-brand-400">Secure stream</p>
+          <p className="m-0 text-xs font-semibold uppercase tracking-[0.25em] text-brand-600 dark:text-brand-400">
+            {t("lesson.secureStream")}
+          </p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-zinc-50">{lessonTitle}</h2>
           <p className="mt-2 text-sm text-slate-500 dark:text-zinc-400">{status}</p>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
-          <TooltipButton label="WM" description={`Visible forensic watermark: ${progressLabel}`} />
-          <TooltipButton label="JWT" description="Playback URL is bound to the active session and expires automatically." />
-          <TooltipButton label="AES" description="Manifest requests the decryption key through a protected endpoint." />
+          <TooltipButton label="WM" description={t("video.watermarkTooltip", { label: progressLabel })} />
+          <TooltipButton label="JWT" description={t("video.jwtTooltip")} />
+          <TooltipButton label="AES" description={t("video.aesTooltip")} />
         </div>
       </div>
 
@@ -210,7 +302,7 @@ export const VideoPlayer = ({
               }}
               type="button"
             >
-              {isAttaching ? "Preparing stream…" : "▶ Play protected video"}
+              {isAttaching ? t("video.preparing") : t("video.playProtected")}
             </button>
           </div>
         ) : null}
@@ -221,20 +313,20 @@ export const VideoPlayer = ({
           playsInline
           onPlay={() => {
             void attachStream();
-            setStatus("Streaming protected HLS");
-            // Start tracking real watch time
-            watchStartTimeRef.current = Date.now();
+            setStatus(t("video.streaming"));
+            if (watchStartTimeRef.current === null) {
+              watchStartTimeRef.current = Date.now();
+            }
           }}
           onPause={() => {
-            setStatus("Playback paused");
-            // Accumulate watch time but DO NOT destroy HLS — keep stream attached
+            setStatus(t("video.paused"));
             if (watchStartTimeRef.current !== null) {
               accumulatedWatchSecondsRef.current += Math.floor((Date.now() - watchStartTimeRef.current) / 1000);
               watchStartTimeRef.current = null;
             }
           }}
           onEnded={() => {
-            setStatus("Playback ended");
+            setStatus(t("video.ended"));
             if (watchStartTimeRef.current !== null) {
               accumulatedWatchSecondsRef.current += Math.floor((Date.now() - watchStartTimeRef.current) / 1000);
               watchStartTimeRef.current = null;
@@ -249,8 +341,8 @@ export const VideoPlayer = ({
             }
 
             lastReportedPositionRef.current = currentTime;
+            resumePositionRef.current = currentTime;
 
-            // Compute actual accumulated watch time (elapsed real time while playing)
             const currentWatchSeconds =
               accumulatedWatchSecondsRef.current +
               (watchStartTimeRef.current !== null ? Math.floor((Date.now() - watchStartTimeRef.current) / 1000) : 0);

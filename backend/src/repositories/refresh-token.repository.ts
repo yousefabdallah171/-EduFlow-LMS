@@ -21,6 +21,13 @@ export const refreshTokenRepository = {
     });
   },
 
+  extendExpiryByHash(tokenHash: string, expiresAt: Date): Promise<RefreshToken> {
+    return prisma.refreshToken.update({
+      where: { tokenHash },
+      data: { expiresAt }
+    });
+  },
+
   revokeByHash(tokenHash: string): Promise<RefreshToken> {
     return prisma.refreshToken.update({
       where: { tokenHash },

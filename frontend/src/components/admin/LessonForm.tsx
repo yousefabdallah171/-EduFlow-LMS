@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useTranslation } from "react-i18next";
@@ -41,6 +41,34 @@ type LessonFormProps = {
   onSubmit?: () => void;
 };
 
+type LessonResponse = Lesson | { lesson: Lesson };
+
+const unwrapLesson = (response: LessonResponse) => "lesson" in response ? response.lesson : response;
+
+const buildInitialFormData = (sectionId?: string | null): Omit<Lesson, "id"> => ({
+  titleEn: "",
+  titleAr: "",
+  descriptionEn: "",
+  descriptionAr: "",
+  sectionId: sectionId || undefined,
+  sortOrder: 0,
+  isPublished: false,
+  isPreview: false,
+  dripDays: undefined
+});
+
+const cleanLessonPayload = (data: Omit<Lesson, "id">) => ({
+  titleEn: data.titleEn.trim(),
+  titleAr: data.titleAr.trim(),
+  descriptionEn: data.descriptionEn?.trim() || undefined,
+  descriptionAr: data.descriptionAr?.trim() || undefined,
+  sectionId: data.sectionId || undefined,
+  sortOrder: Number.isFinite(data.sortOrder) ? data.sortOrder : 0,
+  isPublished: data.isPublished,
+  isPreview: data.isPreview,
+  dripDays: typeof data.dripDays === "number" && Number.isFinite(data.dripDays) ? data.dripDays : undefined
+});
+
 export const LessonForm = ({
   lessonId,
   sectionId,
@@ -49,17 +77,8 @@ export const LessonForm = ({
   onSubmit
 }: LessonFormProps) => {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<Omit<Lesson, "id">>({
-    titleEn: "",
-    titleAr: "",
-    descriptionEn: "",
-    descriptionAr: "",
-    sectionId: sectionId || undefined,
-    sortOrder: 0,
-    isPublished: false,
-    isPreview: false,
-    dripDays: undefined
-  });
+  const emptyFormData = useMemo(() => buildInitialFormData(sectionId), [sectionId]);
+  const [formData, setFormData] = useState<Omit<Lesson, "id">>(emptyFormData);
 
   const sectionsQuery = useQuery({
     queryKey: ["admin-sections"],
@@ -73,15 +92,16 @@ export const LessonForm = ({
     queryKey: ["admin-lesson", lessonId],
     queryFn: async () => {
       if (!lessonId) return null;
-      const response = await api.get<Lesson>(`/admin/lessons/${lessonId}`);
-      return response.data;
+      const response = await api.get<LessonResponse>(`/admin/lessons/${lessonId}`);
+      return unwrapLesson(response.data);
     },
-    enabled: !!lessonId
+    enabled: open && !!lessonId,
+    retry: false
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: Omit<Lesson, "id">) =>
-      api.post<Lesson>("/admin/lessons", data),
+      api.post<LessonResponse>("/admin/lessons", cleanLessonPayload(data)),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["admin-lessons"] });
       onOpenChange(false);
@@ -92,17 +112,7 @@ export const LessonForm = ({
 
   const updateMutation = useMutation({
     mutationFn: async (data: Lesson) =>
-      api.put<Lesson>(`/admin/lessons/${data.id}`, {
-        titleEn: data.titleEn,
-        titleAr: data.titleAr,
-        descriptionEn: data.descriptionEn,
-        descriptionAr: data.descriptionAr,
-        sectionId: data.sectionId,
-        sortOrder: data.sortOrder,
-        isPublished: data.isPublished,
-        isPreview: data.isPreview,
-        dripDays: data.dripDays
-      }),
+      api.patch<LessonResponse>(`/admin/lessons/${data.id}`, cleanLessonPayload(data)),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["admin-lessons"] });
       onOpenChange(false);
@@ -112,17 +122,7 @@ export const LessonForm = ({
   });
 
   const resetForm = () => {
-    setFormData({
-      titleEn: "",
-      titleAr: "",
-      descriptionEn: "",
-      descriptionAr: "",
-      sectionId: sectionId || undefined,
-      sortOrder: 0,
-      isPublished: false,
-      isPreview: false,
-      dripDays: undefined
-    });
+    setFormData(buildInitialFormData(sectionId));
   };
 
   const handleSubmit = async () => {
@@ -133,35 +133,37 @@ export const LessonForm = ({
         await createMutation.mutateAsync(formData);
       }
     } catch (error) {
-      const apiError = error as AxiosError<{ message?: string }>;
-      window.alert(apiError.response?.data?.message ?? "Failed to save lesson.");
+      const apiError = error as AxiosError<{ message?: string; error?: string; fields?: Record<string, string> }>;
+      const fields = apiError.response?.data?.fields;
+      const fieldMessage = fields ? Object.entries(fields).map(([field, message]) => `${field}: ${message}`).join("\n") : null;
+      window.alert(fieldMessage ?? apiError.response?.data?.message ?? apiError.response?.data?.error ?? "Failed to save lesson.");
     }
   };
 
-  // Update form when lesson data is loaded
-  if (lessonId && lessonQuery.data && JSON.stringify(formData) === JSON.stringify({
-    titleEn: "",
-    titleAr: "",
-    descriptionEn: "",
-    descriptionAr: "",
-    sectionId: sectionId || undefined,
-    sortOrder: 0,
-    isPublished: false,
-    isPreview: false,
-    dripDays: undefined
-  })) {
-    setFormData({
-      titleEn: lessonQuery.data.titleEn,
-      titleAr: lessonQuery.data.titleAr,
-      descriptionEn: lessonQuery.data.descriptionEn || "",
-      descriptionAr: lessonQuery.data.descriptionAr || "",
-      sectionId: lessonQuery.data.sectionId || undefined,
-      sortOrder: lessonQuery.data.sortOrder,
-      isPublished: lessonQuery.data.isPublished,
-      isPreview: lessonQuery.data.isPreview,
-      dripDays: lessonQuery.data.dripDays
-    });
-  }
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    if (!lessonId) {
+      setFormData(emptyFormData);
+      return;
+    }
+
+    if (lessonQuery.data) {
+      setFormData({
+        titleEn: lessonQuery.data.titleEn,
+        titleAr: lessonQuery.data.titleAr,
+        descriptionEn: lessonQuery.data.descriptionEn || "",
+        descriptionAr: lessonQuery.data.descriptionAr || "",
+        sectionId: lessonQuery.data.sectionId || undefined,
+        sortOrder: lessonQuery.data.sortOrder,
+        isPublished: lessonQuery.data.isPublished,
+        isPreview: lessonQuery.data.isPreview,
+        dripDays: lessonQuery.data.dripDays ?? undefined
+      });
+    }
+  }, [emptyFormData, lessonId, lessonQuery.data, open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -175,11 +177,12 @@ export const LessonForm = ({
 
         <div className="space-y-4">
           <div>
-            <label className="mb-2 block text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
+            <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-section-id" style={{ color: "var(--color-text-muted)" }}>
               Section
             </label>
             <select
               className="w-full rounded-lg border px-3 py-2 text-sm transition-colors"
+              id="lesson-section-id"
               style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", backgroundColor: "var(--color-surface-2)" }}
               value={formData.sectionId || ""}
               onChange={(e) => setFormData({ ...formData, sectionId: e.target.value || undefined })}
@@ -194,10 +197,11 @@ export const LessonForm = ({
           </div>
 
           <div>
-            <label className="mb-2 block text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
+            <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-title-en" style={{ color: "var(--color-text-muted)" }}>
               Title (English)
             </label>
             <Input
+              id="lesson-title-en"
               placeholder="e.g., Introduction to React"
               value={formData.titleEn}
               onChange={(e) => setFormData({ ...formData, titleEn: e.target.value })}
@@ -205,10 +209,11 @@ export const LessonForm = ({
           </div>
 
           <div>
-            <label className="mb-2 block text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
+            <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-title-ar" style={{ color: "var(--color-text-muted)" }}>
               Title (Arabic)
             </label>
             <Input
+              id="lesson-title-ar"
               placeholder="مثال: مقدمة إلى React"
               value={formData.titleAr}
               onChange={(e) => setFormData({ ...formData, titleAr: e.target.value })}
@@ -216,11 +221,12 @@ export const LessonForm = ({
           </div>
 
           <div>
-            <label className="mb-2 block text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
+            <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-description-en" style={{ color: "var(--color-text-muted)" }}>
               Description (English)
             </label>
             <textarea
               className="w-full rounded-lg border px-3 py-2 text-sm transition-colors"
+              id="lesson-description-en"
               style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", backgroundColor: "var(--color-surface-2)" }}
               rows={3}
               placeholder="Optional description"
@@ -230,11 +236,12 @@ export const LessonForm = ({
           </div>
 
           <div>
-            <label className="mb-2 block text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
+            <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-description-ar" style={{ color: "var(--color-text-muted)" }}>
               Description (Arabic)
             </label>
             <textarea
               className="w-full rounded-lg border px-3 py-2 text-sm transition-colors"
+              id="lesson-description-ar"
               style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", backgroundColor: "var(--color-surface-2)" }}
               rows={3}
               placeholder="وصف اختياري"
@@ -245,10 +252,11 @@ export const LessonForm = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-2 block text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
+              <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-sort-order" style={{ color: "var(--color-text-muted)" }}>
                 Sort order
               </label>
               <Input
+                id="lesson-sort-order"
                 type="number"
                 value={formData.sortOrder}
                 onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
@@ -256,10 +264,11 @@ export const LessonForm = ({
             </div>
 
             <div>
-              <label className="mb-2 block text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
+              <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-drip-days" style={{ color: "var(--color-text-muted)" }}>
                 Drip days
               </label>
               <Input
+                id="lesson-drip-days"
                 type="number"
                 placeholder="Leave empty for no drip"
                 value={formData.dripDays ?? ""}

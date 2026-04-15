@@ -129,8 +129,47 @@ export const Lesson = () => {
   }
 
   if (!lessonQuery.data) {
-    return loadingState(lessonQuery.isError ? t("lesson.error") : t("lesson.loading"));
+    if (lessonQuery.isError) {
+      return (
+        <div className="flex min-h-dvh items-center justify-center px-6 py-12" style={{ backgroundColor: "var(--color-page)" }}>
+          <div
+            className="w-full max-w-md rounded-lg border p-6 shadow-card"
+            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+          >
+            <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("lesson.error")}</p>
+            <h1 className="mt-3 text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+              {t("lesson.titleFallback")}
+            </h1>
+            <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
+              {t("lesson.enrollmentRequiredDesc")}
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link
+                className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:bg-brand-700"
+                to={`${prefix}/course`}
+              >
+                {t("lesson.backToCourse")}
+              </Link>
+              <Link
+                className="rounded-lg border px-4 py-2.5 text-sm font-medium no-underline transition-colors hover:bg-surface2"
+                style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                to={`${prefix}/lessons`}
+              >
+                {t("lesson.allLessons")}
+              </Link>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return loadingState(t("lesson.loading"));
   }
+
+  const lessonProgress = lessonQuery.data.progress ?? {
+    lastPositionSeconds: 0,
+    completedAt: null
+  };
 
   const currentLessonTitle = pickLocalizedText(
     currentLocale,
@@ -179,7 +218,7 @@ export const Lesson = () => {
           lessonTitle={currentLessonTitle}
           sourceUrl={lessonQuery.data.hlsUrl}
           watermark={lessonQuery.data.watermark}
-          initialPositionSeconds={lessonQuery.data.progress.lastPositionSeconds}
+          initialPositionSeconds={lessonProgress.lastPositionSeconds}
           playbackExpiresAt={lessonQuery.data.expiresAt ?? null}
           onProgress={(payload) => {
             void progressMutation.mutateAsync(payload);

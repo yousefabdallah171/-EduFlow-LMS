@@ -3,15 +3,19 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { Progress } from "@/components/ui/progress";
+import { StudentShell } from "@/components/layout/StudentShell";
 import { useAuth } from "@/hooks/useAuth";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
 import { demoLessons, isDemoMode } from "@/lib/demo";
+import { formatDate, pickLocalizedText, resolveLocale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
 type LessonSummary = {
   id: string;
   title: string;
+  titleEn?: string;
+  titleAr?: string | null;
   durationSeconds: number | null;
   sortOrder: number;
   isUnlocked: boolean;
@@ -30,6 +34,11 @@ type PublicLesson = {
 
 type CourseInfo = {
   title: string;
+  titleEn?: string;
+  titleAr?: string | null;
+  descriptionHtml?: string;
+  descriptionHtmlEn?: string;
+  descriptionHtmlAr?: string;
   priceEgp: number;
   currency: string;
   lessonCount: number;
@@ -58,6 +67,7 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
   });
 
   const course = courseQuery.data;
+  const courseTitle = pickLocalizedText(isAr ? "ar" : "en", course?.titleEn ?? course?.title, course?.titleAr);
 
   return (
     <main className="min-h-dvh px-4 py-6 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
@@ -129,7 +139,7 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
               <div className="p-6">
                 <p className="text-xs font-bold uppercase tracking-widest text-brand-600">EduFlow</p>
                 <h1 className="mt-1.5 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-                  {course?.title ?? (isAr ? "مكتبة الدروس المحمية" : "Protected Lesson Library")}
+                  {courseTitle || (isAr ? "مكتبة الدروس المحمية" : "Protected Lesson Library")}
                 </h1>
                 <p className="mt-1.5 text-sm" style={{ color: "var(--color-text-secondary)" }}>
                   {isAr
@@ -228,7 +238,7 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
                               {isFirst
                                 ? (isAr ? "مجاني — شاهد الآن" : "Free — watch now")
                                 : (isAr ? "🔒 يتطلب التسجيل" : "🔒 Login required")}
-                              {lesson.durationSeconds ? ` · ${formatDuration(lesson.durationSeconds)}` : ""}
+                              {lesson.durationSeconds ? ` - ${formatDuration(lesson.durationSeconds)}` : ""}
                             </p>
                           </div>
                         </div>
@@ -259,9 +269,10 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
 /* ─── Student Dashboard (logged-in view) ─── */
 export const Course = () => {
   const { locale } = useParams();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const isAr = i18n.language === "ar";
+  const currentLocale = resolveLocale(locale);
+  const isAr = currentLocale === "ar";
   const demo = isDemoMode();
   const { user } = useAuth();
   const { statusQuery } = useEnrollment();
@@ -273,7 +284,13 @@ export const Course = () => {
     retry: false,
     refetchOnWindowFocus: false,
     queryFn: async () => {
-      if (demo) return demoLessons;
+      if (demo) {
+        return demoLessons.map((lesson) => ({
+          ...lesson,
+          titleEn: lesson.title,
+          titleAr: null
+        }));
+      }
       const response = await api.get<{ lessons: LessonSummary[] }>("/lessons");
       return response.data.lessons;
     }
@@ -291,75 +308,8 @@ export const Course = () => {
   }
 
   return (
-    <main className="min-h-dvh px-4 py-6 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
-      <div className="mx-auto max-w-6xl">
-        <div className="grid gap-5 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
-
-          {/* ── Sidebar ── */}
-          <aside
-            className="hidden rounded-2xl border p-3 shadow-card md:block"
-            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-          >
-            {/* User info */}
-            {user ? (
-              <div className="mb-3 flex items-center gap-3 rounded-xl px-3 py-2.5" style={{ backgroundColor: "var(--color-surface-2)" }}>
-                <span
-                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-                  style={{ backgroundColor: "var(--color-brand)" }}
-                >
-                  {user.fullName.charAt(0).toUpperCase()}
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                    {user.fullName}
-                  </p>
-                  <p className="truncate text-xs" style={{ color: "var(--color-text-muted)" }}>{user.email}</p>
-                </div>
-              </div>
-            ) : null}
-
-            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
-              {isAr ? "الدورة" : "Course"}
-            </p>
-
-            <nav className="space-y-0.5">
-              {[
-                { icon: "◈", label: isAr ? "لوحة المتابعة" : "Dashboard", href: `${prefix}/course` },
-                { icon: "▶", label: isAr ? "جميع الدروس" : "All lessons", href: `#lessons` },
-                ...(nextLesson ? [{ icon: "→", label: isAr ? "متابعة التعلم" : "Continue learning", href: `${prefix}/lessons/${nextLesson.id}` }] : []),
-                ...(!isEnrolled ? [{ icon: "◎", label: isAr ? "شراء الدورة" : "Get access", href: `${prefix}/checkout` }] : [])
-              ].map((item) => (
-                <Link
-                  key={item.label}
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium no-underline transition-colors hover:bg-surface2"
-                  style={{ color: "var(--color-text-secondary)" }}
-                  to={item.href}
-                >
-                  <span className="text-base leading-none text-brand-600 opacity-70">{item.icon}</span>
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-
-            {/* Progress in sidebar */}
-            {isEnrolled && totalCount > 0 ? (
-              <div className="mt-4 rounded-xl p-3" style={{ backgroundColor: "var(--color-surface-2)" }}>
-                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
-                  {t("course.completion")}
-                </p>
-                <p className="mt-1 text-2xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>
-                  {completionPct}%
-                </p>
-                <Progress className="mt-1.5 h-1.5" value={completionPct} />
-                <p className="mt-1.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                  {completedCount} / {totalCount} {isAr ? "دروس" : "lessons"}
-                </p>
-              </div>
-            ) : null}
-          </aside>
-
-          {/* ── Main content ── */}
-          <div className="space-y-5">
+    <StudentShell>
+      <>
 
             {/* Welcome header */}
             <div
@@ -508,7 +458,7 @@ export const Course = () => {
                           </span>
                           <div>
                             <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                              {lesson.title}
+                              {pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
                             </p>
                             <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
                               {lesson.completedAt
@@ -517,10 +467,10 @@ export const Course = () => {
                                   ? (isAr ? `متابعة من ${lesson.lastPositionSeconds}ث` : `Resume from ${lesson.lastPositionSeconds}s`)
                                   : !lesson.isUnlocked
                                     ? (isAr
-                                        ? `يُفتح ${lesson.unlocksAt ? new Date(lesson.unlocksAt).toLocaleDateString("ar") : "قريباً"}`
-                                        : `Unlocks ${lesson.unlocksAt ? new Date(lesson.unlocksAt).toLocaleDateString() : "soon"}`)
+                                        ? `يُفتح ${lesson.unlocksAt ? formatDate(lesson.unlocksAt, currentLocale) : "قريباً"}`
+                                        : `Unlocks ${lesson.unlocksAt ? formatDate(lesson.unlocksAt, currentLocale) : "soon"}`)
                                     : t("course.notStarted")}
-                              {lesson.durationSeconds ? ` · ${formatDuration(lesson.durationSeconds)}` : ""}
+                              {lesson.durationSeconds ? ` - ${formatDuration(lesson.durationSeconds)}` : ""}
                             </p>
                           </div>
                         </div>
@@ -555,7 +505,7 @@ export const Course = () => {
                 </p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                   <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                    {(nextLesson ?? lastLesson)?.title}
+                    {pickLocalizedText(currentLocale, (nextLesson ?? lastLesson)?.titleEn ?? (nextLesson ?? lastLesson)?.title, (nextLesson ?? lastLesson)?.titleAr)}
                   </p>
                   <Link
                     className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:bg-brand-700"
@@ -567,9 +517,10 @@ export const Course = () => {
                 </div>
               </div>
             ) : null}
-          </div>
-        </div>
-      </div>
-    </main>
+      </>
+    </StudentShell>
   );
 };
+
+
+

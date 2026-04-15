@@ -1,0 +1,11 @@
+CREATE TABLE "AuditLog" (
+  "id" TEXT NOT NULL,
+  "adminId" TEXT NOT NULL,
+  "action" TEXT NOT NULL,
+  "targetType" TEXT NOT NULL DEFAULT '',
+  "targetId" TEXT NOT NULL DEFAULT '',
+  "metadata" JSONB NOT NULL DEFAULT '{}',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
+);
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

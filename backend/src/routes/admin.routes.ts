@@ -44,6 +44,8 @@ router.post("/sections/reorder", sectionsController.reorderSections);
 
 router.get("/lessons", adminLessonsController.list);
 router.post("/lessons", adminLessonsController.create);
+router.get("/lessons/:lessonId", adminLessonsController.detail);
+router.put("/lessons/:lessonId", adminLessonsController.update);
 router.patch("/lessons/:lessonId", adminLessonsController.update);
 router.delete("/lessons/:lessonId", adminLessonsController.remove);
 router.post("/lessons/reorder", adminLessonsController.reorder);

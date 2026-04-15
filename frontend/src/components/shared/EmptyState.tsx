@@ -3,11 +3,12 @@ import type { ReactNode } from "react";
 type EmptyStateProps = {
   title: string;
   description: string;
+  icon?: string;
   action?: ReactNode;
   illustration?: ReactNode;
 };
 
-export const EmptyState = ({ title, description, action, illustration }: EmptyStateProps) => (
+export const EmptyState = ({ title, description, icon, action, illustration }: EmptyStateProps) => (
   <div
     className="rounded-2xl border border-dashed p-8 text-center"
     style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-surface-2)" }}
@@ -20,7 +21,7 @@ export const EmptyState = ({ title, description, action, illustration }: EmptySt
             className="mx-auto flex h-14 w-14 items-center justify-center rounded-full text-brand-600"
             style={{ backgroundColor: "var(--color-brand-muted)" }}
           >
-            <span className="text-xl">◎</span>
+            <span className="text-xl">{icon ?? "○"}</span>
           </div>
         )}
       </div>

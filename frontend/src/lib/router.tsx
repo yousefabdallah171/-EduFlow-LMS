@@ -1,10 +1,9 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
-import { Navigate, Route, Routes, useLocation, useParams, useSearchParams } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 
-import { api, isAccessTokenExpiringSoon, refreshAccessToken, setAuthenticatedSession } from "@/lib/api";
+import { isAccessTokenExpiringSoon, refreshAccessToken } from "@/lib/api";
 import { isDemoMode } from "@/lib/demo";
 import { hasStoredRefreshFlag, useAuthStore } from "@/stores/auth.store";
-import type { AuthUser } from "@/stores/auth.store";
 
 const Landing = lazy(async () => import("@/pages/Landing").then((module) => ({ default: module.Landing })));
 const Register = lazy(async () => import("@/pages/Register").then((module) => ({ default: module.Register })));
@@ -15,9 +14,6 @@ const Lesson = lazy(async () => import("@/pages/Lesson").then((module) => ({ def
 const Lessons = lazy(async () => import("@/pages/Lessons").then((module) => ({ default: module.Lessons })));
 const ForgotPassword = lazy(async () =>
   import("@/pages/ForgotPassword").then((module) => ({ default: module.ForgotPassword }))
-);
-const ResetPassword = lazy(async () =>
-  import("@/pages/ForgotPassword").then((module) => ({ default: module.ResetPassword }))
 );
 const AdminDashboard = lazy(async () =>
   import("@/pages/admin/Dashboard").then((module) => ({ default: module.AdminDashboard }))
@@ -63,32 +59,6 @@ const AdminNotifications = lazy(async () => import("@/pages/admin/Notifications"
 const VerifyEmailPage = lazy(async () => import("@/pages/VerifyEmail").then((m) => ({ default: m.VerifyEmail })));
 const ResetPasswordPage = lazy(async () => import("@/pages/ResetPassword").then((m) => ({ default: m.ResetPassword })));
 
-const VerifyEmail = () => {
-  const [searchParams] = useSearchParams();
-  const [message, setMessage] = useState("Verifying email...");
-
-  useEffect(() => {
-    void api
-      .get<{ message: string }>("/auth/verify-email", {
-        params: { token: searchParams.get("token") }
-      })
-      .then((response) => setMessage(response.data.message))
-      .catch((error) => setMessage(error.response?.data?.message ?? "Email verification failed."));
-  }, [searchParams]);
-
-  return (
-    <div className="flex min-h-dvh items-center justify-center px-6 py-12" style={{ backgroundColor: "var(--color-page)" }}>
-      <div
-        className="w-full max-w-md rounded-2xl border p-6 shadow-card"
-        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-      >
-        <h1 className="text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>Email verification</h1>
-        <p className="mt-3 text-sm" style={{ color: "var(--color-text-secondary)" }}>{message}</p>
-      </div>
-    </div>
-  );
-};
-
 const OAuthCallback = () => {
   const [message, setMessage] = useState("Signing in...");
   const hasStarted = useRef(false);
@@ -99,12 +69,13 @@ const OAuthCallback = () => {
     }
 
     hasStarted.current = true;
-    void api
-      .post<{ accessToken: string; user: AuthUser | null }>("/auth/refresh")
-      .then((response) => {
-        setAuthenticatedSession(response.data.accessToken, response.data.user);
-        setMessage("Signed in.");
-      })
+    if (!hasStoredRefreshFlag()) {
+      setMessage("Sign-in failed.");
+      return;
+    }
+
+    void refreshAccessToken()
+      .then((token) => setMessage(token ? "Signed in." : "Sign-in failed."))
       .catch(() => setMessage("Sign-in failed."));
   }, []);
 
@@ -297,8 +268,8 @@ export const AppRoutes = () => (
       <Route element={<RequireRole role="STUDENT"><Lesson /></RequireRole>} path="/:locale/lessons/:lessonId" />
       <Route element={<RequireRole role="STUDENT"><Lessons /></RequireRole>} path="/:locale/lessons" />
       <Route element={<ForgotPassword />} path="/:locale/forgot-password" />
-      <Route element={<ResetPassword />} path="/:locale/reset-password" />
-      <Route element={<VerifyEmail />} path="/:locale/verify-email" />
+      <Route element={<ResetPasswordPage />} path="/:locale/reset-password" />
+      <Route element={<VerifyEmailPage />} path="/:locale/verify-email" />
       <Route element={<OAuthCallback />} path="/:locale/auth/callback" />
       <Route element={<About />} path="/:locale/about" />
       <Route element={<Testimonials />} path="/:locale/testimonials" />

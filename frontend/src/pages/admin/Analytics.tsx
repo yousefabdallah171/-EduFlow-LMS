@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { AdminShell } from "@/components/layout/AdminShell";
@@ -57,6 +58,7 @@ const selectStyle = {
 };
 
 export const AdminAnalytics = () => {
+  const { t } = useTranslation();
   const [pendingPaymentId, setPendingPaymentId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [period, setPeriod] = useState<"7d" | "30d" | "90d" | "all">("30d");
@@ -113,18 +115,18 @@ export const AdminAnalytics = () => {
   });
 
   return (
-    <AdminShell title="Analytics and payments" description="Review lesson performance, identify drop-off points, and recover pending payments when webhooks miss.">
+    <AdminShell title={t("admin.analytics.title")} description={t("admin.analytics.desc")}>
 
       {/* Filters */}
       <section
         className="rounded-2xl border p-5 shadow-card"
         style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
       >
-        <p className="mb-4 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>Filters</p>
+        <p className="mb-4 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>{t("admin.analytics.filters.title")}</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }} htmlFor="analytics-period">
-              KPI period
+              {t("admin.analytics.filters.kpiPeriod")}
             </label>
             <select id="analytics-period" className={selectClass} style={selectStyle}
               onChange={(e) => setPeriod(e.target.value as typeof period)} value={period}>
@@ -136,7 +138,7 @@ export const AdminAnalytics = () => {
           </div>
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }} htmlFor="payment-status-filter">
-              Payment status
+              {t("admin.analytics.filters.paymentStatus")}
             </label>
             <select id="payment-status-filter" className={selectClass} style={selectStyle}
               onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)} value={statusFilter}>
@@ -149,14 +151,14 @@ export const AdminAnalytics = () => {
           </div>
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }} htmlFor="payment-from-filter">
-              From date
+              {t("admin.analytics.filters.fromDate")}
             </label>
             <input id="payment-from-filter" type="date" className={selectClass} style={selectStyle}
               onChange={(e) => setFromDate(e.target.value)} value={fromDate} />
           </div>
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }} htmlFor="payment-to-filter">
-              To date
+              {t("admin.analytics.filters.toDate")}
             </label>
             <input id="payment-to-filter" type="date" className={selectClass} style={selectStyle}
               onChange={(e) => setToDate(e.target.value)} value={toDate} />
@@ -171,7 +173,7 @@ export const AdminAnalytics = () => {
           className="rounded-2xl border p-5 shadow-card"
           style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
         >
-          <p className="mb-4 text-xs font-bold uppercase tracking-widest text-brand-600">Top performing lessons</p>
+          <p className="mb-4 text-xs font-bold uppercase tracking-widest text-brand-600">{t("admin.analytics.topLessons")}</p>
           <div className="space-y-3">
             {analyticsQuery.isLoading
               ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)
@@ -209,7 +211,7 @@ export const AdminAnalytics = () => {
           style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
         >
           <p className="mb-4 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
-            Drop-off analysis
+            {t("admin.analytics.dropOffAnalysis")}
           </p>
           <div className="space-y-3">
             {analyticsQuery.isLoading
@@ -250,7 +252,7 @@ export const AdminAnalytics = () => {
       >
         <div className="flex flex-wrap items-center justify-between gap-3 p-5" style={{ borderBottom: "1px solid var(--color-border)" }}>
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-brand-600">Payment history</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("admin.analytics.paymentHistory")}</p>
             <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
               Revenue {paymentsQuery.data?.summary.totalRevenue ?? 0} EGP
               &nbsp;·&nbsp;{paymentsQuery.data?.summary.completedCount ?? 0} completed
@@ -347,6 +349,25 @@ export const AdminAnalytics = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Preview conversion funnel */}
+      <div
+        className="rounded-2xl border p-5 shadow-card"
+        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+      >
+        <p className="mb-4 text-xs font-bold uppercase tracking-widest text-brand-600">{t("admin.analytics.previewFunnel")}</p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[
+            { label: t("admin.analytics.previewViews"), value: "—" },
+            { label: t("admin.analytics.registrationsFromPreview"), value: "—" },
+            { label: t("admin.analytics.purchasesFromPreview"), value: "—" },
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-xl p-4" style={{ backgroundColor: "var(--color-surface-2)" }}>
+              <p className="text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>{stat.value}</p>
+              <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </AdminShell>
   );
 };

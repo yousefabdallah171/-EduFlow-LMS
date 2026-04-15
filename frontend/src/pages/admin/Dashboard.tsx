@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { AdminShell } from "@/components/layout/AdminShell";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
+import { formatNumber, formatMinutesShort, resolveLocale } from "@/lib/locale";
 
 type AnalyticsPayload = {
   period: string;
@@ -37,6 +39,8 @@ const KpiCard = ({ label, value, sub, accent = false }: { label: string; value: 
 );
 
 export const AdminDashboard = () => {
+  const { i18n, t } = useTranslation();
+  const locale = resolveLocale(i18n.language);
   const analyticsQuery = useQuery({
     queryKey: ["admin-dashboard", "30d"],
     queryFn: async () => {
@@ -49,7 +53,7 @@ export const AdminDashboard = () => {
   const enrollmentMax = seriesMax(analyticsQuery.data?.enrollmentTimeseries.map((e) => e.newEnrollments) ?? []);
 
   return (
-    <AdminShell title="Admin dashboard" description="Track the core commercial and learning signals for the course over the last 30 days.">
+    <AdminShell title={t("admin.dashboard.title")} description={t("admin.dashboard.desc")}>
       {analyticsQuery.isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -61,25 +65,31 @@ export const AdminDashboard = () => {
           {/* KPI cards */}
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <KpiCard
-              label="Revenue"
-              value={`${analyticsQuery.data.kpis.totalRevenue.amountEgp} EGP`}
-              sub={`${analyticsQuery.data.kpis.totalRevenue.changePercent >= 0 ? "+" : ""}${analyticsQuery.data.kpis.totalRevenue.changePercent}% vs previous window`}
+              label={t("admin.dashboard.revenue")}
+              value={`${formatNumber(analyticsQuery.data.kpis.totalRevenue.amountEgp, locale)} ${t("common.currency.egp")}`}
+              sub={t("admin.dashboard.revenueSub", {
+                percent: `${analyticsQuery.data.kpis.totalRevenue.changePercent >= 0 ? "+" : ""}${formatNumber(analyticsQuery.data.kpis.totalRevenue.changePercent, locale)}`
+              })}
               accent
             />
             <KpiCard
-              label="Active students"
-              value={String(analyticsQuery.data.kpis.enrolledStudents.active)}
-              sub={`${analyticsQuery.data.kpis.enrolledStudents.newThisPeriod} new this period`}
+              label={t("admin.dashboard.activeStudents")}
+              value={formatNumber(analyticsQuery.data.kpis.enrolledStudents.active, locale)}
+              sub={t("admin.dashboard.activeStudentsSub", {
+                value: formatNumber(analyticsQuery.data.kpis.enrolledStudents.newThisPeriod, locale)
+              })}
             />
             <KpiCard
-              label="Avg. completion"
-              value={`${analyticsQuery.data.kpis.courseCompletion.averagePercent}%`}
-              sub={`${analyticsQuery.data.kpis.courseCompletion.fullyCompleted} fully completed`}
+              label={t("admin.dashboard.avgCompletion")}
+              value={`${formatNumber(analyticsQuery.data.kpis.courseCompletion.averagePercent, locale)}%`}
+              sub={t("admin.dashboard.avgCompletionSub", {
+                value: formatNumber(analyticsQuery.data.kpis.courseCompletion.fullyCompleted, locale)
+              })}
             />
             <KpiCard
-              label="Avg. watch time"
-              value={`${Math.round(analyticsQuery.data.kpis.videoEngagement.averageWatchTimeSeconds / 60)}m`}
-              sub="Average per active learner"
+              label={t("admin.dashboard.avgWatchTime")}
+              value={formatMinutesShort(analyticsQuery.data.kpis.videoEngagement.averageWatchTimeSeconds, locale)}
+              sub={t("admin.dashboard.avgWatchTimeSub")}
             />
           </section>
 
@@ -89,7 +99,7 @@ export const AdminDashboard = () => {
               className="rounded-2xl border p-5 shadow-card"
               style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
             >
-              <p className="mb-4 text-xs font-bold uppercase tracking-widest text-brand-600">Revenue (30 days)</p>
+              <p className="mb-4 text-xs font-bold uppercase tracking-widest text-brand-600">{t("admin.dashboard.revenueChart")}</p>
               <div className="flex h-48 items-end gap-1.5">
                 {analyticsQuery.data.revenueTimeseries.slice(-14).map((entry) => (
                   <div key={entry.date} className="flex flex-1 flex-col items-center gap-1.5">
@@ -110,7 +120,7 @@ export const AdminDashboard = () => {
               style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
             >
               <p className="mb-4 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
-                Enrollments (30 days)
+                {t("admin.dashboard.enrollmentsChart")}
               </p>
               <div className="flex h-48 items-end gap-1.5">
                 {analyticsQuery.data.enrollmentTimeseries.slice(-14).map((entry) => (
@@ -134,8 +144,8 @@ export const AdminDashboard = () => {
         </>
       ) : (
         <EmptyState
-          title="No analytics yet"
-          description="Payments, enrollments, and lesson progress will populate this dashboard once the first student journey completes."
+          title={t("admin.dashboard.emptyTitle")}
+          description={t("admin.dashboard.emptyDesc")}
         />
       )}
     </AdminShell>

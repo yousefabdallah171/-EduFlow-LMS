@@ -19,10 +19,19 @@ services:
       - redis
     env_file:
       - .env
+    environment:
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      FRONTEND_URL: ${FRONTEND_URL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      NODE_ENV: ${NODE_ENV}
     networks:
       - eduflow_net
     volumes:
-      - video_storage:/app/storage
+      - video_storage:/app/backend/storage
 
   postgres:
     image: postgres:16-alpine

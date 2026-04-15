@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import { Link, useLocation, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
+import { resolveLocale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -17,7 +19,9 @@ type MobileDrawerProps = {
 export const MobileDrawer = ({ items, footer }: MobileDrawerProps) => {
   const location = useLocation();
   const { locale } = useParams();
+  const { t } = useTranslation();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
+  const currentLocale = resolveLocale(locale);
 
   return (
     <Disclosure as="div" className="md:hidden">
@@ -25,7 +29,7 @@ export const MobileDrawer = ({ items, footer }: MobileDrawerProps) => {
         className="rounded-xl border px-4 py-2 text-sm font-semibold transition-colors hover:bg-surface2"
         style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", backgroundColor: "var(--color-surface)" }}
       >
-        Menu
+        {currentLocale === "ar" ? t("nav.menu") : "Menu"}
       </DisclosureButton>
       <DisclosurePanel
         className="mt-3 rounded-2xl border p-3 shadow-elevated"
@@ -58,3 +62,4 @@ export const MobileDrawer = ({ items, footer }: MobileDrawerProps) => {
     </Disclosure>
   );
 };
+

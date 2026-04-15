@@ -20,6 +20,20 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": path.resolve(__dirname, "./src")
       }
+    },
+    build: {
+      chunkSizeWarningLimit: 600,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ["react", "react-dom", "react-router-dom"],
+            query: ["@tanstack/react-query", "axios", "zustand"],
+            i18n: ["i18next", "react-i18next", "i18next-browser-languagedetector"],
+            ui: ["@headlessui/react", "@floating-ui/react", "lucide-react"],
+            hls: ["hls.js"]
+          }
+        }
+      }
     }
   };
 });
