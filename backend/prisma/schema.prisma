@@ -92,6 +92,10 @@ model User {
   videoUploads         VideoUpload[]    @relation("UploadUser")
   revokedEnrollments   Enrollment[]     @relation("RevokedBy")
   updatedCourse        CourseSettings[] @relation("CourseUpdatedBy")
+  notes                Note[]
+  auditLogs            AuditLog[]       @relation("AdminAuditLogs")
+  tickets              SupportTicket[]  @relation("TicketUser")
+  ticketMessages       TicketMessage[]  @relation("MessageSender")
 }
 
 model RefreshToken {
@@ -152,6 +156,18 @@ model Coupon {
   payments      Payment[]
 }
 
+model Section {
+  id            String   @id @default(uuid())
+  titleEn       String
+  titleAr       String
+  descriptionEn String?
+  descriptionAr String?
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lessons       Lesson[]
+}
+
 model Lesson {
   id              String           @id @default(uuid())
   titleEn         String
@@ -163,12 +179,17 @@ model Lesson {
   durationSeconds Int?
   sortOrder       Int              @default(0)
   isPublished     Boolean          @default(false)
+  isPreview       Boolean          @default(false)
   dripDays        Int?
+  sectionId       String?
+  section         Section?         @relation(fields: [sectionId], references: [id], onDelete: SetNull)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   progress        LessonProgress[]
   videoTokens     VideoToken[]
   uploads         VideoUpload[]
+  notes           Note[]
+  resources       LessonResource[]
 }
 
 model LessonProgress {
@@ -226,4 +247,71 @@ model CourseSettings {
   updatedAt        DateTime @updatedAt
   updatedById      String?
   updatedBy        User?    @relation("CourseUpdatedBy", fields: [updatedById], references: [id])
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+}
+
+model LessonResource {
+  id            String   @id @default(uuid())
+  lessonId      String
+  lesson        Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  title         String
+  fileUrl       String
+  fileSizeBytes BigInt   @default(0)
+  createdAt     DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  adminId    String
+  admin      User     @relation("AdminAuditLogs", fields: [adminId], references: [id])
+  action     String
+  targetType String   @default("")
+  targetId   String   @default("")
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now())
+}
+
+enum TicketStatus {
+  OPEN
+  RESOLVED
+}
+
+model SupportTicket {
+  id        String        @id @default(uuid())
+  userId    String
+  user      User          @relation("TicketUser", fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  status    TicketStatus  @default(OPEN)
+  createdAt DateTime      @default(now())
+  messages  TicketMessage[]
+}
+
+model TicketMessage {
+  id        String        @id @default(uuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User          @relation("MessageSender", fields: [senderId], references: [id])
+  body      String
+  createdAt DateTime      @default(now())
+}
+
+model NotificationTemplate {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  subject   String
+  bodyHtml  String
+  updatedAt DateTime @updatedAt
 }
