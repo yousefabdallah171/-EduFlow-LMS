@@ -1,7 +1,20 @@
+import type { Prisma, Section } from "@prisma/client";
 import { prisma } from "../config/database.js";
 
 export const sectionRepository = {
-  async getAllSections() {
+  async getAllSections(): Promise<
+    Array<
+      Section & {
+        lessons: Array<{
+          id: string;
+          titleEn: string;
+          titleAr: string;
+          sortOrder: number;
+          isPublished: boolean;
+        }>;
+      }
+    >
+  > {
     return prisma.section.findMany({
       include: {
         lessons: {
@@ -18,7 +31,19 @@ export const sectionRepository = {
     });
   },
 
-  async getSectionById(id: string) {
+  async getSectionById(
+    id: string
+  ): Promise<
+    (Section & {
+      lessons: Array<{
+        id: string;
+        titleEn: string;
+        titleAr: string;
+        sortOrder: number;
+        isPublished: boolean;
+      }>;
+    }) | null
+  > {
     return prisma.section.findUnique({
       where: { id },
       include: {
@@ -35,30 +60,37 @@ export const sectionRepository = {
     });
   },
 
-  async createSection(data: { titleEn: string; titleAr: string; descriptionEn?: string; descriptionAr?: string }) {
+  async createSection(data: Prisma.SectionCreateInput): Promise<Section> {
+    const maxSortOrder = await prisma.section.findFirst({
+      orderBy: { sortOrder: "desc" },
+      select: { sortOrder: true }
+    });
+
     return prisma.section.create({
       data: {
         ...data,
-        sortOrder: (await prisma.section.count()) + 1
+        sortOrder: (maxSortOrder?.sortOrder ?? 0) + 1
       }
     });
   },
 
-  async updateSection(id: string, data: Partial<{ titleEn: string; titleAr: string; descriptionEn: string; descriptionAr: string; sortOrder: number }>) {
+  async updateSection(id: string, data: Prisma.SectionUpdateInput): Promise<Section> {
     return prisma.section.update({
       where: { id },
       data
     });
   },
 
-  async deleteSection(id: string) {
+  async deleteSection(id: string): Promise<Section> {
     return prisma.section.delete({
       where: { id }
     });
   },
 
-  async reorderSections(sections: Array<{ id: string; sortOrder: number }>) {
-    return Promise.all(
+  async reorderSections(
+    sections: Array<{ id: string; sortOrder: number }>
+  ): Promise<Section[]> {
+    return prisma.$transaction(
       sections.map((section) =>
         prisma.section.update({
           where: { id: section.id },
