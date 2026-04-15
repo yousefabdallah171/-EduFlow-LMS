@@ -3,15 +3,19 @@ import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { VideoPlayer } from "@/components/shared/VideoPlayer";
+import { ResourcesList } from "@/components/student/ResourcesList";
 import { Progress } from "@/components/ui/progress";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { useVideoToken } from "@/hooks/useVideoToken";
 import { api, queryClient } from "@/lib/api";
 import { demoLessons, isDemoMode } from "@/lib/demo";
+import { pickLocalizedText, resolveLocale } from "@/lib/locale";
 
 type LessonSummary = {
   id: string;
   title: string;
+  titleEn?: string;
+  titleAr?: string | null;
   sortOrder: number;
   completedAt: string | null;
   isUnlocked: boolean;
@@ -20,8 +24,8 @@ type LessonSummary = {
 export const Lesson = () => {
   const { lessonId, locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const currentLocale = resolveLocale(locale);
+  const { t } = useTranslation();
   const demo = isDemoMode();
   const { statusQuery } = useEnrollment();
   const isEnrolled = statusQuery.data?.enrolled && statusQuery.data?.status === "ACTIVE";
@@ -33,14 +37,17 @@ export const Lesson = () => {
     refetchOnWindowFocus: false,
     queryFn: async () => {
       if (demo) {
-        return demoLessons.map((l) => ({
-          id: l.id,
-          title: l.title,
-          sortOrder: l.sortOrder,
-          completedAt: l.completedAt,
-          isUnlocked: l.isUnlocked
+        return demoLessons.map((lesson) => ({
+          id: lesson.id,
+          title: lesson.title,
+          titleEn: lesson.title,
+          titleAr: null,
+          sortOrder: lesson.sortOrder,
+          completedAt: lesson.completedAt,
+          isUnlocked: lesson.isUnlocked
         }));
       }
+
       const response = await api.get<{ lessons: LessonSummary[] }>("/lessons");
       return response.data.lessons;
     }
@@ -48,7 +55,10 @@ export const Lesson = () => {
 
   const progressMutation = useMutation({
     mutationFn: async (payload: { lastPositionSeconds: number; watchTimeSeconds: number; completed: boolean }) => {
-      if (!lessonId) return null;
+      if (!lessonId) {
+        return null;
+      }
+
       if (demo) {
         return {
           ...payload,
@@ -56,6 +66,7 @@ export const Lesson = () => {
           courseCompletionPercentage: payload.completed ? 100 : 50
         };
       }
+
       const response = await api.post(`/lessons/${lessonId}/progress`, payload);
       return response.data;
     },
@@ -65,12 +76,12 @@ export const Lesson = () => {
   });
 
   const orderedLessons = lessonsQuery.data ?? [];
-  const currentIndex = orderedLessons.findIndex((l) => l.id === lessonId);
+  const currentIndex = orderedLessons.findIndex((lesson) => lesson.id === lessonId);
   const previousLesson = currentIndex > 0 ? orderedLessons[currentIndex - 1] : null;
   const nextLesson = currentIndex >= 0 ? orderedLessons[currentIndex + 1] : null;
   const completionPercentage =
     orderedLessons.length > 0
-      ? Math.round((orderedLessons.filter((l) => l.completedAt).length / orderedLessons.length) * 100)
+      ? Math.round((orderedLessons.filter((lesson) => lesson.completedAt).length / orderedLessons.length) * 100)
       : 0;
 
   const loadingState = (message: string) => (
@@ -79,7 +90,9 @@ export const Lesson = () => {
     </div>
   );
 
-  if (statusQuery.isLoading) return loadingState(isAr ? "جاري التحقق من اشتراكك…" : "Checking your enrollment…");
+  if (statusQuery.isLoading) {
+    return loadingState(t("lesson.checkingEnrollment"));
+  }
 
   if (!isEnrolled) {
     return (
@@ -115,13 +128,24 @@ export const Lesson = () => {
     );
   }
 
-  if (!lessonQuery.data) return loadingState(lessonQuery.isError ? t("lesson.error") : t("lesson.loading"));
+  if (!lessonQuery.data) {
+    return loadingState(lessonQuery.isError ? t("lesson.error") : t("lesson.loading"));
+  }
+
+  const currentLessonTitle = pickLocalizedText(
+    currentLocale,
+    lessonQuery.data.titleEn ?? lessonQuery.data.title,
+    lessonQuery.data.titleAr
+  );
+  const currentLessonDescription = pickLocalizedText(
+    currentLocale,
+    lessonQuery.data.descriptionHtmlEn ?? lessonQuery.data.descriptionHtml,
+    lessonQuery.data.descriptionHtmlAr
+  );
 
   return (
     <main className="min-h-dvh px-4 py-6 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
       <section className="mx-auto max-w-6xl space-y-5">
-
-        {/* Breadcrumb + title */}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <Link
@@ -129,15 +153,14 @@ export const Lesson = () => {
               style={{ color: "var(--color-text-muted)" }}
               to={`${prefix}/course`}
             >
-              <span className="icon-dir text-base leading-none">←</span>
+              <span className="icon-dir text-base leading-none">&larr;</span>
               {t("lesson.backToCourse")}
             </Link>
             <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl" style={{ color: "var(--color-text-primary)" }}>
-              {lessonQuery.data.title}
+              {currentLessonTitle}
             </h1>
           </div>
 
-          {/* Progress chip */}
           <div
             className="min-w-48 rounded-2xl border p-4 shadow-card"
             style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
@@ -152,17 +175,20 @@ export const Lesson = () => {
           </div>
         </div>
 
-        {/* Video player */}
         <VideoPlayer
-          lessonTitle={lessonQuery.data.title}
+          lessonTitle={currentLessonTitle}
           sourceUrl={lessonQuery.data.hlsUrl}
           watermark={lessonQuery.data.watermark}
           initialPositionSeconds={lessonQuery.data.progress.lastPositionSeconds}
-          onProgress={(payload) => { void progressMutation.mutateAsync(payload); }}
-          onTokenExpired={() => { void renewToken(); }}
+          playbackExpiresAt={lessonQuery.data.expiresAt ?? null}
+          onProgress={(payload) => {
+            void progressMutation.mutateAsync(payload);
+          }}
+          onTokenExpired={() => {
+            void renewToken();
+          }}
         />
 
-        {/* Notes + navigation */}
         <div
           className="rounded-2xl border p-5 shadow-card"
           style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
@@ -173,7 +199,7 @@ export const Lesson = () => {
                 {t("lesson.notes")}
               </p>
               <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-                {lessonQuery.data.descriptionHtml || t("lesson.titleFallback")}
+                {currentLessonDescription || t("lesson.titleFallback")}
               </p>
             </div>
 
@@ -184,7 +210,7 @@ export const Lesson = () => {
                   style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
                   to={`${prefix}/lessons/${previousLesson.id}`}
                 >
-                  <span className="icon-dir">←</span>
+                  <span className="icon-dir">&larr;</span>
                   {t("lesson.previous")}
                 </Link>
               ) : null}
@@ -194,14 +220,17 @@ export const Lesson = () => {
                   to={`${prefix}/lessons/${nextLesson.id}`}
                 >
                   {t("lesson.nextLesson")}
-                  <span className="icon-dir">→</span>
+                  <span className="icon-dir">&rarr;</span>
                 </Link>
               ) : null}
             </div>
           </div>
         </div>
 
-        {/* Lesson list sidebar strip */}
+        {lessonQuery.data?.resources && lessonQuery.data.resources.length > 0 && (
+          <ResourcesList resources={lessonQuery.data.resources} />
+        )}
+
         {orderedLessons.length > 0 ? (
           <div
             className="rounded-2xl border p-4 shadow-card"
@@ -211,8 +240,10 @@ export const Lesson = () => {
               {t("lesson.allLessons")}
             </p>
             <div className="space-y-1">
-              {orderedLessons.map((lesson, idx) => {
+              {orderedLessons.map((lesson, index) => {
                 const isCurrent = lesson.id === lessonId;
+                const lessonTitle = pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr);
+
                 return (
                   <Link
                     key={lesson.id}
@@ -222,7 +253,11 @@ export const Lesson = () => {
                       color: isCurrent ? "var(--color-brand)" : "var(--color-text-secondary)"
                     }}
                     to={lesson.isUnlocked ? `${prefix}/lessons/${lesson.id}` : "#"}
-                    onClick={(e) => { if (!lesson.isUnlocked) e.preventDefault(); }}
+                    onClick={(event) => {
+                      if (!lesson.isUnlocked) {
+                        event.preventDefault();
+                      }
+                    }}
                   >
                     <span
                       className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
@@ -232,14 +267,20 @@ export const Lesson = () => {
                           : isCurrent
                             ? "var(--color-brand-muted)"
                             : "var(--color-surface-2)",
-                        color: lesson.completedAt ? "rgb(34 197 94)" : isCurrent ? "var(--color-brand)" : "var(--color-text-muted)"
+                        color: lesson.completedAt
+                          ? "rgb(34 197 94)"
+                          : isCurrent
+                            ? "var(--color-brand)"
+                            : "var(--color-text-muted)"
                       }}
                     >
-                      {lesson.completedAt ? "✓" : idx + 1}
+                      {lesson.completedAt ? "OK" : index + 1}
                     </span>
-                    <span className="flex-1 truncate text-sm font-medium">{lesson.title}</span>
+                    <span className="flex-1 truncate text-sm font-medium">{lessonTitle}</span>
                     {!lesson.isUnlocked ? (
-                      <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>🔒</span>
+                      <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                        {t("lesson.locked")}
+                      </span>
                     ) : null}
                   </Link>
                 );

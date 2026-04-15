@@ -6,10 +6,15 @@ import { demoLessonPlayback, isDemoMode } from "@/lib/demo";
 export type LessonPlayback = {
   id: string;
   title: string;
+  titleEn?: string;
+  titleAr?: string | null;
   descriptionHtml: string;
+  descriptionHtmlEn?: string;
+  descriptionHtmlAr?: string;
   durationSeconds: number | null;
   videoToken: string;
   hlsUrl: string;
+  expiresAt?: string;
   watermark: {
     name: string;
     maskedEmail: string;
@@ -18,6 +23,13 @@ export type LessonPlayback = {
     lastPositionSeconds: number;
     completedAt: string | null;
   };
+  resources?: Array<{
+    id: string;
+    title: string;
+    fileUrl: string;
+    fileSizeBytes: number | bigint;
+    createdAt: string;
+  }>;
 };
 
 export const useVideoToken = (lessonId: string | undefined, enabled = true) => {
