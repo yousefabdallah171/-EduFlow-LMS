@@ -99,15 +99,15 @@ model User {
 }
 
 model RefreshToken {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash String   @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
   familyId  String
   sessionId String
   expiresAt DateTime
   revokedAt DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 }
 
 model Enrollment {
@@ -125,22 +125,22 @@ model Enrollment {
 }
 
 model Payment {
-  id                   String        @id @default(uuid())
-  userId               String
-  user                 User          @relation(fields: [userId], references: [id], onDelete: Restrict)
-  amountPiasters       Int
-  currency             String        @default("EGP")
-  paymobOrderId        String?
-  paymobTransactionId  String?       @unique
-  couponId             String?
-  coupon               Coupon?       @relation(fields: [couponId], references: [id])
-  discountPiasters     Int           @default(0)
-  status               PaymentStatus @default(PENDING)
-  webhookReceivedAt    DateTime?
-  webhookHmac          String?
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
-  enrollment           Enrollment?
+  id                  String        @id @default(uuid())
+  userId              String
+  user                User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  amountPiasters      Int
+  currency            String        @default("EGP")
+  paymobOrderId       String?
+  paymobTransactionId String?       @unique
+  couponId            String?
+  coupon              Coupon?       @relation(fields: [couponId], references: [id])
+  discountPiasters    Int           @default(0)
+  status              PaymentStatus @default(PENDING)
+  webhookReceivedAt   DateTime?
+  webhookHmac         String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  enrollment          Enrollment?
 }
 
 model Coupon {
@@ -193,30 +193,30 @@ model Lesson {
 }
 
 model LessonProgress {
-  id                  String   @id @default(uuid())
+  id                  String    @id @default(uuid())
   userId              String
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   lessonId            String
-  lesson              Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson              Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   completedAt         DateTime?
-  watchTimeSeconds    Int      @default(0)
-  lastPositionSeconds Int      @default(0)
-  updatedAt           DateTime @updatedAt
+  watchTimeSeconds    Int       @default(0)
+  lastPositionSeconds Int       @default(0)
+  updatedAt           DateTime  @updatedAt
 
   @@unique([userId, lessonId])
 }
 
 model VideoToken {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   lessonId  String
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  tokenHash String   @unique
+  lesson    Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
   sessionId String
   expiresAt DateTime
   revokedAt DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 }
 
 model VideoUpload {
@@ -289,12 +289,12 @@ enum TicketStatus {
 }
 
 model SupportTicket {
-  id        String        @id @default(uuid())
+  id        String          @id @default(uuid())
   userId    String
-  user      User          @relation("TicketUser", fields: [userId], references: [id], onDelete: Cascade)
+  user      User            @relation("TicketUser", fields: [userId], references: [id], onDelete: Cascade)
   subject   String
-  status    TicketStatus  @default(OPEN)
-  createdAt DateTime      @default(now())
+  status    TicketStatus    @default(OPEN)
+  createdAt DateTime        @default(now())
   messages  TicketMessage[]
 }
 
