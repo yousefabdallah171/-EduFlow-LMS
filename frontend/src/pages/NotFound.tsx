@@ -20,7 +20,8 @@ export const NotFound = () => {
         {t("notFound.message")}
       </p>
       <Link
-        className="mt-8 rounded-xl bg-brand-600 px-6 py-3 text-sm font-bold text-white no-underline transition-all hover:bg-brand-700"
+        className="mt-8 rounded-xl px-6 py-3 text-sm font-bold text-white no-underline transition-all hover:opacity-95"
+        style={{ background: "var(--gradient-brand)" }}
         to={`${prefix}/`}
       >
         {t("notFound.backHome")}

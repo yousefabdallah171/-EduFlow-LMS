@@ -112,8 +112,14 @@ const buildPlaylist = (lessonId: string, token: string) => {
 };
 
 export const lessonController = {
-  async getAllLessonsGrouped(req: Request, res: Response, next: NextFunction) {
+  async getAllLessonsGrouped(req: Request, res: Response) {
     try {
+      const enrollment = await enrollmentRepository.findByUserId(req.user!.userId);
+      if (!enrollment || enrollment.status !== "ACTIVE") {
+        res.status(403).json({ error: "NOT_ENROLLED" });
+        return;
+      }
+
       const sections = await prisma.section.findMany({
         include: {
           lessons: {
@@ -125,7 +131,16 @@ export const lessonController = {
               descriptionEn: true,
               descriptionAr: true,
               durationSeconds: true,
-              sortOrder: true
+              sortOrder: true,
+              dripDays: true,
+              progress: {
+                where: { userId: req.user!.userId },
+                select: {
+                  completedAt: true,
+                  lastPositionSeconds: true
+                },
+                take: 1
+              }
             },
             orderBy: { sortOrder: "asc" }
           }
@@ -133,17 +148,43 @@ export const lessonController = {
         orderBy: { sortOrder: "asc" }
       });
 
-      res.json({ sections });
+      res.json({
+        sections: sections.map((section) => ({
+          ...section,
+          lessons: section.lessons.map((lesson) => {
+            const progress = lesson.progress[0];
+            const unlocksAt =
+              typeof lesson.dripDays === "number"
+                ? new Date(enrollment.enrolledAt.getTime() + lesson.dripDays * 24 * 60 * 60 * 1000)
+                : null;
+            const isUnlocked = !unlocksAt || unlocksAt <= new Date();
+
+            return {
+              id: lesson.id,
+              titleEn: lesson.titleEn,
+              titleAr: lesson.titleAr,
+              descriptionEn: lesson.descriptionEn,
+              descriptionAr: lesson.descriptionAr,
+              durationSeconds: lesson.durationSeconds,
+              sortOrder: lesson.sortOrder,
+              isUnlocked,
+              unlocksAt: isUnlocked ? null : unlocksAt?.toISOString() ?? null,
+              completedAt: progress?.completedAt ?? null,
+              lastPositionSeconds: progress?.lastPositionSeconds ?? 0
+            };
+          })
+        }))
+      });
     } catch (error) {
       console.error("Error fetching lessons:", error);
       res.status(500).json({ message: "Failed to fetch lessons" });
     }
   },
 
-  async getLessonDetail(req: Request, res: Response, next: NextFunction) {
+  async getLessonDetail(req: Request, res: Response) {
     try {
       const lessonId = getFirstValue(req.params.lessonId);
-      const userId = (req as any).user?.userId;
+      const userId = req.user?.userId;
 
       if (!lessonId) {
         res.status(400).json({ message: "Lesson ID is required" });
@@ -268,7 +309,13 @@ export const lessonController = {
         progress: {
           lastPositionSeconds: progress?.lastPositionSeconds ?? 0,
           completedAt: progress?.completedAt ?? null
-        }
+        },
+        section: access.lesson.sectionId
+          ? await prisma.section.findUnique({
+              where: { id: access.lesson.sectionId },
+              select: { id: true, titleEn: true, titleAr: true }
+            })
+          : null
       });
     } catch (error) {
       if (error instanceof VideoTokenError && error.code === "LESSON_LOCKED") {

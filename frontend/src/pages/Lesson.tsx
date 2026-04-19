@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { ArrowLeft, ArrowRight, Check, LockKeyhole, TriangleAlert } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -19,6 +20,22 @@ type LessonSummary = {
   sortOrder: number;
   completedAt: string | null;
   isUnlocked: boolean;
+};
+
+type GroupedLessonSummary = {
+  id: string;
+  titleEn: string;
+  titleAr?: string | null;
+  sortOrder: number;
+  completedAt: string | null;
+  isUnlocked: boolean;
+};
+
+type LessonSection = {
+  id: string;
+  titleEn: string;
+  titleAr: string;
+  lessons: GroupedLessonSummary[];
 };
 
 export const Lesson = () => {
@@ -50,6 +67,16 @@ export const Lesson = () => {
 
       const response = await api.get<{ lessons: LessonSummary[] }>("/lessons");
       return response.data.lessons;
+    }
+  });
+  const groupedLessonsQuery = useQuery({
+    queryKey: ["course-lessons-grouped"],
+    enabled: Boolean(isEnrolled) && !demo,
+    retry: false,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      const response = await api.get<{ sections: LessonSection[] }>("/lessons/grouped");
+      return response.data.sections;
     }
   });
 
@@ -86,7 +113,12 @@ export const Lesson = () => {
 
   const loadingState = (message: string) => (
     <div className="flex min-h-dvh items-center justify-center" style={{ backgroundColor: "var(--color-page)" }}>
-      <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>{message}</p>
+      <div
+        className="rounded-3xl border px-6 py-5 text-center shadow-card"
+        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+      >
+        <p className="text-sm font-medium" style={{ color: "var(--color-text-muted)" }}>{message}</p>
+      </div>
     </div>
   );
 
@@ -98,11 +130,14 @@ export const Lesson = () => {
     return (
       <div className="flex min-h-dvh items-center justify-center px-6 py-12" style={{ backgroundColor: "var(--color-page)" }}>
         <div
-          className="w-full max-w-md rounded-2xl border p-8 shadow-card"
+          className="w-full max-w-md rounded-[28px] border p-8 shadow-card"
           style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
         >
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("lesson.enrollmentRequired")}</p>
-          <h1 className="mt-3 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600/10 text-brand-600">
+            <LockKeyhole className="h-5 w-5" />
+          </div>
+          <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-brand-600">{t("lesson.enrollmentRequired")}</p>
+          <h1 className="font-display mt-3 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
             {t("lesson.enrollmentRequired")}
           </h1>
           <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
@@ -110,7 +145,8 @@ export const Lesson = () => {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              className="rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:bg-brand-700"
+              className="rounded-xl px-4 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+              style={{ background: "var(--gradient-brand)" }}
               to={`${prefix}/checkout`}
             >
               {t("lesson.goToCheckout")}
@@ -133,11 +169,14 @@ export const Lesson = () => {
       return (
         <div className="flex min-h-dvh items-center justify-center px-6 py-12" style={{ backgroundColor: "var(--color-page)" }}>
           <div
-            className="w-full max-w-md rounded-lg border p-6 shadow-card"
+            className="w-full max-w-md rounded-[28px] border p-8 shadow-card"
             style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
           >
-            <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("lesson.error")}</p>
-            <h1 className="mt-3 text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600/10 text-brand-600">
+              <TriangleAlert className="h-5 w-5" />
+            </div>
+            <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-brand-600">{t("lesson.error")}</p>
+            <h1 className="font-display mt-3 text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
               {t("lesson.titleFallback")}
             </h1>
             <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
@@ -145,13 +184,14 @@ export const Lesson = () => {
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
-                className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:bg-brand-700"
+                className="rounded-xl px-4 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                style={{ background: "var(--gradient-brand)" }}
                 to={`${prefix}/course`}
               >
                 {t("lesson.backToCourse")}
               </Link>
               <Link
-                className="rounded-lg border px-4 py-2.5 text-sm font-medium no-underline transition-colors hover:bg-surface2"
+                className="rounded-xl border px-4 py-2.5 text-sm font-medium no-underline transition-colors hover:bg-surface2"
                 style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
                 to={`${prefix}/lessons`}
               >
@@ -176,6 +216,9 @@ export const Lesson = () => {
     lessonQuery.data.titleEn ?? lessonQuery.data.title,
     lessonQuery.data.titleAr
   );
+  const currentSectionTitle = lessonQuery.data.section
+    ? pickLocalizedText(currentLocale, lessonQuery.data.section.titleEn, lessonQuery.data.section.titleAr)
+    : "";
   const currentLessonDescription = pickLocalizedText(
     currentLocale,
     lessonQuery.data.descriptionHtmlEn ?? lessonQuery.data.descriptionHtml,
@@ -183,31 +226,55 @@ export const Lesson = () => {
   );
 
   return (
-    <main className="min-h-dvh px-4 py-6 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
+    <main
+      className="min-h-dvh px-4 py-6 sm:px-6"
+      style={{
+        backgroundColor: "var(--color-page)",
+        backgroundImage:
+          "radial-gradient(circle at 10% 0%, color-mix(in oklab, var(--color-brand) 12%, transparent), transparent 22rem), radial-gradient(circle at 100% 10%, color-mix(in oklab, var(--color-brand-accent) 12%, transparent), transparent 20rem)"
+      }}
+    >
       <section className="mx-auto max-w-6xl space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
+          <div
+            className="min-w-0 flex-1 rounded-[28px] border p-5 shadow-card sm:p-6"
+            style={{
+              background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 88%, transparent))",
+              borderColor: "color-mix(in oklab, var(--color-brand) 18%, var(--color-border))"
+            }}
+          >
             <Link
               className="inline-flex items-center gap-1.5 text-xs font-semibold no-underline transition-colors hover:text-brand-600"
               style={{ color: "var(--color-text-muted)" }}
               to={`${prefix}/course`}
             >
-              <span className="icon-dir text-base leading-none">&larr;</span>
+              <ArrowLeft className="icon-dir h-4 w-4" />
               {t("lesson.backToCourse")}
             </Link>
             <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl" style={{ color: "var(--color-text-primary)" }}>
               {currentLessonTitle}
             </h1>
+            {currentSectionTitle ? (
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold"
+                style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-secondary)", backgroundColor: "var(--color-surface)" }}>
+                <span style={{ color: "var(--color-text-muted)" }}>{t("lesson.sectionLabel")}</span>
+                <span style={{ color: "var(--color-text-primary)" }}>{currentSectionTitle}</span>
+              </div>
+            ) : null}
           </div>
 
           <div
-            className="min-w-48 rounded-2xl border p-4 shadow-card"
-            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+            className="min-w-48 rounded-[24px] border p-4 shadow-card"
+            style={{
+              background:
+                "linear-gradient(180deg, color-mix(in oklab, var(--color-brand) 8%, var(--color-surface)), color-mix(in oklab, var(--color-surface-2) 92%, transparent))",
+              borderColor: "color-mix(in oklab, var(--color-brand) 22%, var(--color-border))"
+            }}
           >
-            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
               {t("lesson.courseProgress")}
             </p>
-            <p className="mt-1.5 text-2xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>
+            <p className="mt-1.5 font-display text-2xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>
               {completionPercentage}%
             </p>
             <Progress className="mt-2 h-1.5" value={completionPercentage} />
@@ -229,12 +296,15 @@ export const Lesson = () => {
         />
 
         <div
-          className="rounded-2xl border p-5 shadow-card"
-          style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+          className="rounded-[28px] border p-5 shadow-card"
+          style={{
+            background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 88%, transparent))",
+            borderColor: "var(--color-border)"
+          }}
         >
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
                 {t("lesson.notes")}
               </p>
               <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
@@ -249,17 +319,18 @@ export const Lesson = () => {
                   style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
                   to={`${prefix}/lessons/${previousLesson.id}`}
                 >
-                  <span className="icon-dir">&larr;</span>
+                  <ArrowLeft className="icon-dir h-4 w-4" />
                   {t("lesson.previous")}
                 </Link>
               ) : null}
               {nextLesson?.isUnlocked ? (
                 <Link
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:bg-brand-700"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                  style={{ background: "var(--gradient-brand)" }}
                   to={`${prefix}/lessons/${nextLesson.id}`}
                 >
                   {t("lesson.nextLesson")}
-                  <span className="icon-dir">&rarr;</span>
+                  <ArrowRight className="icon-dir h-4 w-4" />
                 </Link>
               ) : null}
             </div>
@@ -270,61 +341,93 @@ export const Lesson = () => {
           <ResourcesList resources={lessonQuery.data.resources} />
         )}
 
-        {orderedLessons.length > 0 ? (
+        {groupedLessonsQuery.data && groupedLessonsQuery.data.length > 0 ? (
           <div
-            className="rounded-2xl border p-4 shadow-card"
-            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+            className="rounded-[28px] border p-4 shadow-card"
+            style={{
+              background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 88%, transparent))",
+              borderColor: "var(--color-border)"
+            }}
           >
-            <p className="mb-3 px-1 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
+            <p className="mb-3 px-1 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
               {t("lesson.allLessons")}
             </p>
-            <div className="space-y-1">
-              {orderedLessons.map((lesson, index) => {
-                const isCurrent = lesson.id === lessonId;
-                const lessonTitle = pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr);
+            <div className="space-y-4">
+              {groupedLessonsQuery.data.map((section) => {
+                const sectionTitle = pickLocalizedText(currentLocale, section.titleEn, section.titleAr);
 
                 return (
-                  <Link
-                    key={lesson.id}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 no-underline transition-colors"
-                    style={{
-                      backgroundColor: isCurrent ? "var(--color-brand-muted)" : "transparent",
-                      color: isCurrent ? "var(--color-brand)" : "var(--color-text-secondary)"
-                    }}
-                    to={lesson.isUnlocked ? `${prefix}/lessons/${lesson.id}` : "#"}
-                    onClick={(event) => {
-                      if (!lesson.isUnlocked) {
-                        event.preventDefault();
-                      }
-                    }}
-                  >
-                    <span
-                      className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                      style={{
-                        backgroundColor: lesson.completedAt
-                          ? "rgb(34 197 94 / 0.15)"
-                          : isCurrent
-                            ? "var(--color-brand-muted)"
-                            : "var(--color-surface-2)",
-                        color: lesson.completedAt
-                          ? "rgb(34 197 94)"
-                          : isCurrent
-                            ? "var(--color-brand)"
-                            : "var(--color-text-muted)"
-                      }}
-                    >
-                      {lesson.completedAt ? "OK" : index + 1}
-                    </span>
-                    <span className="flex-1 truncate text-sm font-medium">{lessonTitle}</span>
-                    {!lesson.isUnlocked ? (
-                      <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-                        {t("lesson.locked")}
-                      </span>
-                    ) : null}
-                  </Link>
+                  <div key={section.id} className="space-y-2">
+                    <div className="px-1 text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                      {sectionTitle}
+                    </div>
+                    <div className="space-y-1">
+                      {section.lessons.map((lesson, index) => {
+                        const isCurrent = lesson.id === lessonId;
+                        const lessonTitle = pickLocalizedText(currentLocale, lesson.titleEn, lesson.titleAr);
+
+                        return (
+                          <Link
+                            key={lesson.id}
+                            className="flex items-center gap-3 rounded-2xl border px-3 py-3 no-underline transition-colors"
+                            style={{
+                              background:
+                                isCurrent
+                                  ? "linear-gradient(135deg, color-mix(in oklab, var(--color-brand) 12%, var(--color-surface)), color-mix(in oklab, var(--color-surface-2) 92%, transparent))"
+                                  : "color-mix(in oklab, var(--color-surface-2) 58%, transparent)",
+                              borderColor: isCurrent ? "color-mix(in oklab, var(--color-brand) 28%, transparent)" : "var(--color-border)",
+                              color: isCurrent ? "var(--color-brand-text)" : "var(--color-text-secondary)"
+                            }}
+                            to={lesson.isUnlocked ? `${prefix}/lessons/${lesson.id}` : "#"}
+                            onClick={(event) => {
+                              if (!lesson.isUnlocked) {
+                                event.preventDefault();
+                              }
+                            }}
+                          >
+                            <span
+                              className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                              style={{
+                                backgroundColor: lesson.completedAt
+                                  ? "rgb(34 197 94 / 0.15)"
+                                  : isCurrent
+                                    ? "var(--color-brand-muted)"
+                                    : "var(--color-surface-2)",
+                                color: lesson.completedAt
+                                  ? "rgb(34 197 94)"
+                                  : isCurrent
+                                    ? "var(--color-brand)"
+                                    : "var(--color-text-muted)"
+                              }}
+                            >
+                              {lesson.completedAt ? <Check className="h-3.5 w-3.5" /> : index + 1}
+                            </span>
+                            <span className="flex-1 truncate text-sm font-medium">{lessonTitle}</span>
+                            {!lesson.isUnlocked ? (
+                              <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                                {t("lesson.locked")}
+                              </span>
+                            ) : null}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
             </div>
+          </div>
+        ) : orderedLessons.length > 0 ? (
+          <div
+            className="rounded-[28px] border p-4 shadow-card"
+            style={{
+              background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 88%, transparent))",
+              borderColor: "var(--color-border)"
+            }}
+          >
+            <p className="mb-3 px-1 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+              {t("lesson.allLessons")}
+            </p>
           </div>
         ) : null}
       </section>

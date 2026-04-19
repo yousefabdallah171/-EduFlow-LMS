@@ -118,11 +118,8 @@ export const AdminAnalytics = () => {
     <AdminShell title={t("admin.analytics.title")} description={t("admin.analytics.desc")}>
 
       {/* Filters */}
-      <section
-        className="rounded-2xl border p-5 shadow-card"
-        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-      >
-        <p className="mb-4 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>{t("admin.analytics.filters.title")}</p>
+      <section className="dashboard-panel p-5">
+        <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{t("admin.analytics.filters.title")}</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }} htmlFor="analytics-period">
@@ -169,20 +166,13 @@ export const AdminAnalytics = () => {
       {/* Lesson analytics */}
       <section className="grid gap-5 xl:grid-cols-2">
         {/* Top lessons */}
-        <div
-          className="rounded-2xl border p-5 shadow-card"
-          style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-        >
-          <p className="mb-4 text-xs font-bold uppercase tracking-widest text-brand-600">{t("admin.analytics.topLessons")}</p>
+        <div className="dashboard-panel p-5">
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("admin.analytics.topLessons")}</p>
           <div className="space-y-3">
             {analyticsQuery.isLoading
               ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)
               : analyticsQuery.data?.topLessons.map((lesson) => (
-                  <div
-                    key={lesson.lessonId}
-                    className="rounded-xl border p-4"
-                    style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-surface-2)" }}
-                  >
+                  <div key={lesson.lessonId} className="dashboard-panel rounded-xl p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>{lesson.titleEn}</p>
@@ -206,22 +196,15 @@ export const AdminAnalytics = () => {
         </div>
 
         {/* Drop-off */}
-        <div
-          className="rounded-2xl border p-5 shadow-card"
-          style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-        >
-          <p className="mb-4 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
+        <div className="dashboard-panel p-5">
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
             {t("admin.analytics.dropOffAnalysis")}
           </p>
           <div className="space-y-3">
             {analyticsQuery.isLoading
               ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)
               : analyticsQuery.data?.dropOffLessons.map((lesson) => (
-                  <div
-                    key={lesson.lessonId}
-                    className="rounded-xl border p-4"
-                    style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-surface-2)" }}
-                  >
+                  <div key={lesson.lessonId} className="dashboard-panel rounded-xl p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>{lesson.titleEn}</p>
@@ -246,17 +229,14 @@ export const AdminAnalytics = () => {
       </section>
 
       {/* Payments */}
-      <section
-        className="rounded-2xl border shadow-card"
-        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-      >
+      <section className="dashboard-panel overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 p-5" style={{ borderBottom: "1px solid var(--color-border)" }}>
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("admin.analytics.paymentHistory")}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("admin.analytics.paymentHistory")}</p>
             <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
               Revenue {paymentsQuery.data?.summary.totalRevenue ?? 0} EGP
-              &nbsp;·&nbsp;{paymentsQuery.data?.summary.completedCount ?? 0} completed
-              &nbsp;·&nbsp;{paymentsQuery.data?.summary.failedCount ?? 0} failed
+              {" / "}{paymentsQuery.data?.summary.completedCount ?? 0} completed
+              {" / "}{paymentsQuery.data?.summary.failedCount ?? 0} failed
             </p>
           </div>
         </div>
@@ -266,7 +246,7 @@ export const AdminAnalytics = () => {
             <thead>
               <tr style={{ borderBottom: "1px solid var(--color-border)" }}>
                 {["Student", "Amount", "Coupon", "Status", "Created", "Action"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-start text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
+                  <th key={h} className="px-4 py-3 text-start text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
                     {h}
                   </th>
                 ))}
@@ -291,7 +271,7 @@ export const AdminAnalytics = () => {
                         {payment.amountEgp} EGP
                       </td>
                       <td className="px-4 py-3 font-mono text-xs" style={{ color: "var(--color-text-secondary)" }}>
-                        {payment.couponCode ?? "—"}
+                        {payment.couponCode ?? "-"}
                       </td>
                       <td className="px-4 py-3"><PaymentStatusBadge status={payment.status} /></td>
                       <td className="px-4 py-3 text-xs" style={{ color: "var(--color-text-secondary)" }}>
@@ -308,7 +288,7 @@ export const AdminAnalytics = () => {
                             Mark paid
                           </button>
                         ) : (
-                          <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>—</span>
+                          <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>-</span>
                         )}
                       </td>
                     </tr>
@@ -339,27 +319,25 @@ export const AdminAnalytics = () => {
               Cancel
             </button>
             <button
-              className="rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-brand-700 disabled:opacity-50"
+              className="rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95 disabled:opacity-50"
+              style={{ background: "var(--gradient-brand)" }}
               disabled={markPaidMutation.isPending}
               onClick={() => { if (pendingPaymentId) markPaidMutation.mutate(pendingPaymentId); }}
               type="button"
             >
-              {markPaidMutation.isPending ? "Working…" : "Confirm"}
+              {markPaidMutation.isPending ? "Working..." : "Confirm"}
             </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       {/* Preview conversion funnel */}
-      <div
-        className="rounded-2xl border p-5 shadow-card"
-        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-      >
-        <p className="mb-4 text-xs font-bold uppercase tracking-widest text-brand-600">{t("admin.analytics.previewFunnel")}</p>
+      <div className="dashboard-panel p-5">
+        <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("admin.analytics.previewFunnel")}</p>
         <div className="grid gap-4 sm:grid-cols-3">
           {[
-            { label: t("admin.analytics.previewViews"), value: "—" },
-            { label: t("admin.analytics.registrationsFromPreview"), value: "—" },
-            { label: t("admin.analytics.purchasesFromPreview"), value: "—" },
+            { label: t("admin.analytics.previewViews"), value: "-" },
+            { label: t("admin.analytics.registrationsFromPreview"), value: "-" },
+            { label: t("admin.analytics.purchasesFromPreview"), value: "-" },
           ].map((stat) => (
             <div key={stat.label} className="rounded-xl p-4" style={{ backgroundColor: "var(--color-surface-2)" }}>
               <p className="text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>{stat.value}</p>

@@ -47,7 +47,6 @@ export const AdminTickets = () => {
         .tickets-container { font-family: 'Plus Jakarta Sans', sans-serif; }
         .ticket-item {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          border-left: 3px solid transparent;
           position: relative;
           animation: slideIn 0.4s ease-out forwards;
           animation-fill-mode: both;
@@ -61,10 +60,10 @@ export const AdminTickets = () => {
           to { opacity: 1; transform: translateX(0); }
         }
         .ticket-item:hover {
-          border-left-color: #eb2027;
           transform: translateX(2px);
+          background: var(--color-surface-2);
         }
-        .ticket-item.active { background: rgba(235, 32, 39, 0.04); border-left-color: #eb2027; }
+        .ticket-item.active { background: var(--color-brand-muted); }
         .filter-btn {
           position: relative;
           font-size: 13px;
@@ -79,7 +78,7 @@ export const AdminTickets = () => {
           left: 0;
           width: 0;
           height: 2px;
-          background: #eb2027;
+          background: var(--color-brand);
           transition: width 0.3s ease;
         }
         .filter-btn.active::after { width: 100%; }
@@ -90,45 +89,45 @@ export const AdminTickets = () => {
           from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .admin-bubble { background: linear-gradient(135deg, #eb2027 0%, rgba(235, 32, 39, 0.1) 100%); }
-        .customer-bubble { background: rgba(0, 0, 0, 0.03); }
+        .admin-bubble { background: var(--gradient-brand); }
+        .customer-bubble { background: var(--color-surface-2); }
         .reply-input {
           transition: all 0.2s ease;
-          border: 1.5px solid rgba(0,0,0,0.06);
+          border: 1.5px solid var(--color-border-strong);
         }
         .reply-input:focus {
-          border-color: #eb2027;
-          box-shadow: 0 0 0 3px rgba(235, 32, 39, 0.1);
+          border-color: var(--color-brand);
+          box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-brand) 14%, transparent);
         }
         .reply-btn {
-          background: linear-gradient(135deg, #eb2027 0%, #c4191f 100%);
+          background: var(--gradient-brand);
           transition: all 0.2s ease;
           font-weight: 600;
           letter-spacing: 0.3px;
         }
         .reply-btn:hover:not(:disabled) {
           transform: translateY(-2px);
-          box-shadow: 0 8px 16px rgba(235, 32, 39, 0.3);
+          box-shadow: 0 8px 16px color-mix(in oklab, var(--color-brand) 24%, transparent);
         }
         .reply-btn:disabled { opacity: 0.4; }
         .stat-card {
-          background: linear-gradient(135deg, rgba(235, 32, 39, 0.05) 0%, rgba(235, 32, 39, 0.02) 100%);
-          border: 1px solid rgba(235, 32, 39, 0.1);
+          background: var(--color-brand-muted);
+          border: 1px solid var(--color-border);
           border-radius: 12px;
           padding: 16px;
         }
-        .stat-number { font-size: 28px; font-weight: 700; color: #eb2027; }
+        .stat-number { font-size: 28px; font-weight: 700; color: var(--color-brand); }
         .stat-label { font-size: 12px; font-weight: 500; color: var(--color-text-muted); letter-spacing: 0.5px; }
       `}</style>
 
       <div className="tickets-container space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="stat-card">
+          <div className="dashboard-panel dashboard-panel--accent stat-card">
             <div className="stat-number">{openCount}</div>
             <div className="stat-label">OPEN TICKETS</div>
           </div>
-          <div className="stat-card">
+          <div className="dashboard-panel stat-card">
             <div className="stat-number">{resolvedCount}</div>
             <div className="stat-label">RESOLVED</div>
           </div>
@@ -143,7 +142,7 @@ export const AdminTickets = () => {
               className={`filter-btn pb-3 uppercase transition-colors ${
                 filter === f ? "active" : ""
               }`}
-              style={{ color: filter === f ? "#eb2027" : "var(--color-text-muted)" }}
+              style={{ color: filter === f ? "var(--color-brand)" : "var(--color-text-muted)" }}
             >
               {f === "all" ? "All Tickets" : f === "open" ? "Open" : "Resolved"}
             </button>
@@ -151,7 +150,7 @@ export const AdminTickets = () => {
         </div>
 
         {/* Tickets List */}
-        <div className="rounded-2xl border overflow-hidden" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
+        <div className="dashboard-panel overflow-hidden">
           {isLoading ? (
             <div className="p-6 space-y-4">
               {Array.from({ length: 4 }).map((_, i) => (
@@ -175,7 +174,7 @@ export const AdminTickets = () => {
                   className={`ticket-item flex items-center justify-between gap-4 px-6 py-4 cursor-pointer ${
                     selected?.id === ticket.id ? "active" : ""
                   }`}
-                  style={{ backgroundColor: selected?.id === ticket.id ? "rgba(235, 32, 39, 0.04)" : "transparent" }}
+                  style={{ backgroundColor: selected?.id === ticket.id ? "var(--color-brand-muted)" : "transparent" }}
                 >
                   <div className="flex-1 min-w-0">
                     <p
@@ -230,7 +229,7 @@ export const AdminTickets = () => {
                 style={{ animationDelay: `${idx * 0.1}s` }}
               >
                 <div
-                  className={`rounded-2xl px-5 py-3 max-w-xs ${
+                  className={`max-w-xs rounded-[24px] px-5 py-3 ${
                     msg.sender.role === "ADMIN"
                       ? "admin-bubble text-white rounded-br-none"
                       : "customer-bubble text-left rounded-bl-none"

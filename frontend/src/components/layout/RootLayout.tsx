@@ -73,10 +73,10 @@ export const RootLayout = ({ children }: RootLayoutProps) => {
   }, [locale, theme]);
 
   return (
-    <>
+    <div>
       <NavBar />
       {children}
       <Footer />
-    </>
+    </div>
   );
 };

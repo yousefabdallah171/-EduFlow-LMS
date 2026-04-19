@@ -33,6 +33,8 @@ router.patch("/coupons/:couponId", adminCouponsController.update);
 router.delete("/coupons/:couponId", adminCouponsController.remove);
 router.get("/pricing", adminPricingController.get);
 router.patch("/pricing", adminPricingController.update);
+router.post("/pricing/packages", adminPricingController.createPackage);
+router.patch("/pricing/packages/:packageId", adminPricingController.updatePackage);
 
 // Sections
 router.get("/sections", sectionsController.getAllSections);

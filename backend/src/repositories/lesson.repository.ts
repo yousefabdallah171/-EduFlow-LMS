@@ -1,6 +1,29 @@
-import type { Lesson } from "@prisma/client";
+import type { Lesson, Prisma } from "@prisma/client";
 
 import { prisma } from "../config/database.js";
+
+const adminLessonInclude = {
+  section: {
+    select: {
+      id: true,
+      titleEn: true,
+      titleAr: true
+    }
+  }
+} satisfies Prisma.LessonInclude;
+
+const sectionLessonInclude = {
+  section: true,
+  resources: true,
+  progress: true
+} satisfies Prisma.LessonInclude;
+
+const lessonDetailsInclude = {
+  section: true,
+  resources: true,
+  progress: true,
+  videoTokens: true
+} satisfies Prisma.LessonInclude;
 
 export const lessonRepository = {
   findAll(): Promise<Lesson[]> {
@@ -9,29 +32,17 @@ export const lessonRepository = {
     });
   },
 
-  getLessonsByAdmin(): Promise<any[]> {
+  getLessonsByAdmin() {
     return prisma.lesson.findMany({
-      include: {
-        section: {
-          select: {
-            id: true,
-            titleEn: true,
-            titleAr: true
-          }
-        }
-      },
+      include: adminLessonInclude,
       orderBy: [{ sectionId: "asc" }, { sortOrder: "asc" }]
     });
   },
 
-  getLessonsBySection(sectionId: string): Promise<any[]> {
+  getLessonsBySection(sectionId: string) {
     return prisma.lesson.findMany({
       where: { sectionId },
-      include: {
-        section: true,
-        resources: true,
-        progress: true
-      },
+      include: sectionLessonInclude,
       orderBy: { sortOrder: "asc" }
     });
   },
@@ -40,15 +51,10 @@ export const lessonRepository = {
     return prisma.lesson.findUnique({ where: { id } });
   },
 
-  async findByIdWithDetails(id: string): Promise<any> {
+  async findByIdWithDetails(id: string) {
     return prisma.lesson.findUnique({
       where: { id },
-      include: {
-        section: true,
-        resources: true,
-        progress: true,
-        videoTokens: true
-      }
+      include: lessonDetailsInclude
     });
   },
 

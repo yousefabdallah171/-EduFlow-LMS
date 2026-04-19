@@ -5,7 +5,7 @@ test("T206: mobile student flow at 375px viewport", async ({ page }) => {
   await page.goto("/login");
   await expect(page.locator("form")).toBeVisible();
   await page.goto("/course");
-  await expect(page.locator("nav")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open navigation" })).toBeVisible();
   await page.goto("/register");
   await expect(page.locator("form")).toBeVisible();
 });

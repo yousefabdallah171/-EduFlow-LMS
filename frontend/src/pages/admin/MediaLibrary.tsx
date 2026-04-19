@@ -33,16 +33,16 @@ export const AdminMediaLibrary = () => {
     <AdminShell title={t("admin.media.title")} description={t("admin.media.desc")}>
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-2xl" />)}
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40 rounded-[28px]" />)}
         </div>
       ) : uploads.length === 0 ? (
-        <EmptyState icon="🎬" title={t("admin.media.empty")} description={t("admin.media.emptyDesc")} />
+        <EmptyState icon="Video" title={t("admin.media.empty")} description={t("admin.media.emptyDesc")} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {uploads.map((u) => (
-            <div key={u.id} className="rounded-2xl border p-4 shadow-card" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+            <div key={u.id} className="dashboard-panel p-4">
               <div className="mb-3 flex h-20 items-center justify-center rounded-xl" style={{ backgroundColor: "var(--color-surface-2)" }}>
-                <span className="text-3xl">🎬</span>
+                <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>Video</span>
               </div>
               <p className="truncate text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>{u.filename}</p>
               <div className="mt-2 flex items-center justify-between">
@@ -56,7 +56,7 @@ export const AdminMediaLibrary = () => {
 
       {deletingId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="rounded-2xl border p-6 max-w-sm w-full mx-4" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+          <div className="mx-4 w-full max-w-sm rounded-[28px] border p-6" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
             <p className="font-bold mb-4" style={{ color: "var(--color-text-primary)" }}>Delete this upload?</p>
             <div className="flex gap-2">
               <button onClick={() => void deleteMut.mutateAsync(deletingId)} disabled={deleteMut.isPending} className="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-bold text-white disabled:opacity-50" type="button">{t("actions.confirm")}</button>

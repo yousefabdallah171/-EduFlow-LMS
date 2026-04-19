@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
 import { LessonCard } from "./LessonCard";
 
 interface Lesson {
@@ -22,38 +24,40 @@ interface SectionGroupProps {
 }
 
 export const SectionGroup = ({
+  sectionId,
   sectionTitleEn,
   sectionTitleAr,
   lessons,
   locale = "en",
   defaultExpanded = true
 }: SectionGroupProps) => {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const sectionTitle = locale === "ar" ? sectionTitleAr : sectionTitleEn;
 
   return (
-    <div className="space-y-3">
+    <section
+      id={`section-${sectionId}`}
+      className="overflow-hidden rounded-[30px] border shadow-card"
+      style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+    >
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 rounded-lg border transition-colors hover:bg-opacity-50"
-        style={{
-          backgroundColor: "var(--color-surface-2)",
-          borderColor: "var(--color-border)"
-        }}
+        className="flex w-full items-center justify-between gap-4 p-5 text-start transition-colors hover:bg-surface2 sm:p-6"
+        style={{ backgroundColor: "transparent" }}
       >
-        <div className="flex items-center gap-3">
-          <h2 className="font-semibold text-lg" style={{ color: "var(--color-text-primary)" }}>
-            {sectionTitle}
-          </h2>
-          <span
-            className="text-sm font-medium px-2 py-1 rounded-full"
-            style={{
-              backgroundColor: "var(--color-surface)",
-              color: "var(--color-text-secondary)"
-            }}
-          >
-            {lessons.length}
-          </span>
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-600/10 text-sm font-bold text-brand-600">
+            {String(lessons.length).padStart(2, "0")}
+          </div>
+          <div className="min-w-0">
+            <h2 className="font-display truncate text-lg font-semibold sm:text-xl" style={{ color: "var(--color-text-primary)" }}>
+              {sectionTitle}
+            </h2>
+            <p className="mt-1 text-xs font-medium uppercase tracking-[0.18em]" style={{ color: "var(--color-text-muted)" }}>
+              {t("lessons.lessonCount", { count: lessons.length })}
+            </p>
+          </div>
         </div>
         <ChevronDown
           size={20}
@@ -66,7 +70,7 @@ export const SectionGroup = ({
       </button>
 
       {isExpanded && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pl-4">
+        <div className="grid grid-cols-1 gap-4 border-t p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3" style={{ borderColor: "var(--color-border)" }}>
           {lessons.map((lesson) => (
             <LessonCard
               key={lesson.id}
@@ -82,6 +86,6 @@ export const SectionGroup = ({
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 };

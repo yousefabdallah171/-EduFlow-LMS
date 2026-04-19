@@ -1,115 +1,156 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 
-const included = [
-  "Full access to all lessons",
-  "Session-protected HLS streaming",
-  "Arabic & English bilingual support",
-  "Lifetime access — no subscription",
-  "Resume from last position on any device",
-  "Drip-unlocked content schedule",
-  "Dynamic watermark protection",
-  "Future lesson updates included",
+type CoursePackage = {
+  id: string;
+  titleEn: string;
+  titleAr: string;
+  descriptionEn?: string | null;
+  descriptionAr?: string | null;
+  priceEgp: number;
+  currency: string;
+};
+
+const packageFallbacks: CoursePackage[] = [
+  {
+    id: "core-course",
+    titleEn: "AI Workflow Course",
+    titleAr: "كورس AI Workflow",
+    descriptionEn: "The full 7-phase workflow with lifetime access and future updates.",
+    descriptionAr: "الـ workflow الكامل في ٧ مراحل مع وصول دائم وتحديثات مستقبلية.",
+    priceEgp: 1000,
+    currency: "EGP"
+  },
+  {
+    id: "course-review-session",
+    titleEn: "Course + Review Session",
+    titleAr: "الكورس + جلسة مراجعة",
+    descriptionEn: "Everything in the course plus one private project review session.",
+    descriptionAr: "كل محتوى الكورس بالإضافة إلى جلسة مراجعة خاصة لمشروعك.",
+    priceEgp: 2500,
+    currency: "EGP"
+  }
+];
+
+const features = [
+  "الـ workflow الكامل من الفكرة إلى الـ production",
+  "PRD وSpec Kit وClaude Code وCodex",
+  "اتجاه UI قبل الكود بدل التنفيذ العشوائي",
+  "مراجعة كود واختبارات E2E",
+  "أمان وأداء وSEO وتتبع",
+  "Docker وProduction وCI/CD",
+  "مشاهدة محمية وتقدم محفوظ",
+  "تحديثات مستقبلية بدون اشتراك"
 ];
 
 export const Pricing = () => {
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const { t } = useTranslation();
-  const [price, setPrice] = useState<number | null>(null);
+  const [packages, setPackages] = useState<CoursePackage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [scrollDir, setScrollDir] = useState<"up" | "down">("down");
 
   useEffect(() => {
-    void api.get<{ priceEgp: number }>("/course").then((r) => { setPrice(r.data.priceEgp); setLoading(false); }).catch(() => setLoading(false));
+    void api
+      .get<{ priceEgp: number; currency: string; packages?: CoursePackage[] }>("/course")
+      .then((response) => {
+        setPackages(response.data.packages?.length ? response.data.packages : packageFallbacks);
+      })
+      .catch(() => setPackages(packageFallbacks))
+      .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    let last = window.scrollY;
-    const handler = () => { setScrollDir(window.scrollY < last ? "up" : "down"); last = window.scrollY; };
-    window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
-  }, []);
+  const visiblePackages = useMemo(() => (packages.length ? packages : packageFallbacks).slice(0, 2), [packages]);
 
   return (
-    <div className="min-h-dvh pb-16 md:pb-0" style={{ backgroundColor: "var(--color-page)" }}>
-      <div className="mx-auto max-w-3xl px-6 py-16">
-
-        <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("pricing.oneTimePayment")}</p>
-          <h1 className="mt-2 text-4xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-            {t("pricing.title")}
+    <main className="reference-page">
+      <div className="reference-shell">
+        <header className="reference-hero">
+          <span className="reference-badge">
+            <span className="reference-dot" aria-hidden="true" />
+            Early Access Pricing
+          </span>
+          <h1 className="reference-title">
+            احجز مقعدك في <span className="accent-word">AI Workflow</span>
           </h1>
-          <p className="mt-3 text-base" style={{ color: "var(--color-text-secondary)" }}>
-            {t("pricing.subtitle")}
+          <p className="reference-subtitle">
+            باقتين واضحتين: ابدأ بالكورس الأساسي أو اختار باقة المراجعة لو عايز feedback مباشر على مشروعك.
           </p>
-        </div>
+        </header>
 
-        <div
-          className="rounded-2xl border p-8 shadow-card"
-          style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-        >
-          {/* Price */}
-          <div className="mb-8 text-center">
-            {loading ? (
-              <Skeleton className="mx-auto h-14 w-40" />
-            ) : (
-              <p className="text-5xl font-bold text-brand-600">
-                {price !== null ? t("pricing.price", { price }) : "—"}
-              </p>
-            )}
-            <p className="mt-2 text-sm" style={{ color: "var(--color-text-muted)" }}>{t("pricing.oneTimePayment")}</p>
+        {loading ? (
+          <div className="reference-grid">
+            <Skeleton className="h-[520px] rounded-[18px]" />
+            <Skeleton className="h-[520px] rounded-[18px]" />
           </div>
+        ) : (
+          <div className="reference-grid">
+            {visiblePackages.map((coursePackage, index) => {
+              const featured = index === 0;
+              return (
+                <article
+                  className={`reference-card pricing-card-reference ${featured ? "reference-card--lime featured" : "reference-card--amber"}`}
+                  key={coursePackage.id}
+                >
+                  {featured ? <span className="reference-chip self-start">Recommended</span> : <span className="reference-chip self-start">Review Track</span>}
+                  <h2 className="mt-5 font-display text-2xl font-black">{coursePackage.titleAr}</h2>
+                  <p className="mt-2 min-h-[56px] leading-8" style={{ color: "var(--color-text-secondary)" }}>
+                    {coursePackage.descriptionAr}
+                  </p>
 
-          {/* Included */}
-          <div className="mb-8">
-            <p className="mb-4 text-xs font-bold uppercase tracking-widest text-brand-600">{t("pricing.includes")}</p>
-            <ul className="space-y-2.5">
-              {included.map((item) => (
-                <li key={item} className="flex items-start gap-2.5 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                  <span className="mt-0.5 flex-shrink-0 text-brand-600">✓</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
+                  <div className="pricing-price">
+                    {coursePackage.priceEgp.toLocaleString("ar-EG")}
+                    <span className="ms-2 text-base font-black">جنيه</span>
+                  </div>
+                  <p className="m-0 text-sm font-bold" style={{ color: "var(--color-text-muted)" }}>
+                    دفعة واحدة. وصول دائم. بدون اشتراك شهري.
+                  </p>
+
+                  <ul className="pricing-features">
+                    {features.map((feature) => (
+                      <li key={feature}>{feature}</li>
+                    ))}
+                  </ul>
+
+                  <div className="mt-auto rounded-xl p-4" style={{ backgroundColor: "var(--color-surface-2)" }}>
+                    <div className="flex items-start gap-3">
+                      <ShieldCheck className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-600" />
+                      <div>
+                        <p className="m-0 text-sm font-black">ضمان ملاءمة واضح</p>
+                        <p className="m-0 mt-1 text-xs leading-6" style={{ color: "var(--color-text-muted)" }}>
+                          لو طبقت بجد والكورس لم يناسبك، تواصل معنا خلال فترة الضمان.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Link className="reference-button mt-6 w-full" to={`${prefix}/checkout?package=${coursePackage.id}`}>
+                    احجز هذه الباقة
+                    <ArrowLeft className="h-4 w-4" />
+                  </Link>
+                </article>
+              );
+            })}
           </div>
+        )}
 
-          {/* Guarantee badge */}
-          <div
-            className="mb-8 flex items-center gap-3 rounded-xl p-4"
-            style={{ backgroundColor: "var(--color-surface-2)", borderColor: "var(--color-border)" }}
-          >
-            <span className="text-2xl">🛡️</span>
+        <section className="reference-card mt-12 p-6 md:p-8">
+          <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
             <div>
-              <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>{t("pricing.guarantee")}</p>
-              <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>No questions asked.</p>
+              <h2 className="m-0 font-display text-2xl font-black">مش متأكد تختار إيه؟</h2>
+              <p className="mt-2 leading-8" style={{ color: "var(--color-text-secondary)" }}>
+                لو هدفك تتعلم النظام خُد الكورس الأساسي. لو عندك مشروع فعلي وعايز مراجعة مباشرة، اختار باقة المراجعة.
+              </p>
             </div>
+            <Link className="reference-button-secondary" to={`${prefix}/contact`}>
+              اسأل قبل الحجز
+            </Link>
           </div>
-
-          <Link
-            className="block w-full rounded-xl bg-brand-600 py-4 text-center text-sm font-bold text-white no-underline transition-all hover:bg-brand-700 hover:shadow-md"
-            to={`${prefix}/checkout`}
-          >
-            {t("pricing.cta")} <span className="icon-dir opacity-70">→</span>
-          </Link>
-        </div>
+        </section>
       </div>
-
-      {/* Sticky mobile CTA */}
-      <div
-        className={`fixed bottom-0 start-0 end-0 z-40 border-t px-4 py-3 transition-transform duration-300 md:hidden ${scrollDir === "up" ? "translate-y-full" : "translate-y-0"}`}
-        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-      >
-        <Link
-          className="block w-full rounded-xl bg-brand-600 py-3 text-center text-sm font-bold text-white no-underline"
-          to={`${prefix}/checkout`}
-        >
-          {t("pricing.cta")}
-        </Link>
-      </div>
-    </div>
+    </main>
   );
 };

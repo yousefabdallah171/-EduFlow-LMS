@@ -19,6 +19,9 @@ test("admin enrolls and revokes a student from student management", async ({ pag
     await route.fulfill({
       status: 200,
       contentType: "application/json",
+      headers: {
+        "set-cookie": "eduflow_refresh_present=1; Path=/; SameSite=Strict"
+      },
       body: JSON.stringify({
         accessToken: "admin-access-token",
         user: {
@@ -132,13 +135,13 @@ test("admin enrolls and revokes a student from student management", async ({ pag
   await page.goto(`${baseUrl}/login`);
   await page.getByLabel("Email").fill("admin@example.com");
   await page.getByLabel("Password").fill("Securepass123");
-  await page.getByRole("button", { name: "Log in" }).click();
-  await expect(page.getByText("Welcome, Admin User")).toBeVisible();
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(`${baseUrl}/admin/dashboard`);
 
   await page.goto(`${baseUrl}/admin/students`);
   await expect(page.getByRole("heading", { name: "Student management" })).toBeVisible();
   await expect(page.getByText("Manual Student")).toBeVisible();
-  await expect(page.getByText("NONE", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("None", { exact: true }).first()).toBeVisible();
 
   await page.getByLabel("Search students").fill("manual");
   await page.getByRole("option", { name: /Manual Student/ }).click();

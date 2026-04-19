@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { ArrowRight, BookOpenCheck, Download, FileText, Gauge, ReceiptText } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,30 +31,28 @@ export const StudentDashboard = () => {
     <StudentShell>
       <>
 
-        <header
-          className="rounded-2xl border p-6 shadow-card"
-          style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-        >
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("student.shell.section")}</p>
-          <h1 className="mt-1.5 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-            {t("course.welcomeBack")}
-          </h1>
+        <header className="dashboard-panel dashboard-hero dashboard-panel--strong p-6">
+          <div className="relative">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("student.shell.section")}</p>
+            <h1 className="mt-2 font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+              {t("course.welcomeBack")}
+            </h1>
+          </div>
         </header>
 
         {isLoading ? (
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Skeleton className="h-40 rounded-2xl" />
-            <Skeleton className="h-40 rounded-2xl" />
+          <div className="dashboard-stat-grid">
+            <Skeleton className="h-40 rounded-[24px]" />
+            <Skeleton className="h-40 rounded-[24px]" />
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2">
             {/* Progress card */}
             <div
-              className="rounded-2xl border p-6 shadow-card"
-              style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+              className="dashboard-panel dashboard-panel--accent p-6"
             >
-              <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("student.dashboard.progress")}</p>
-              <p className="mt-3 text-4xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("student.dashboard.progress")}</p>
+              <p className="mt-3 font-display text-4xl font-bold" style={{ color: "var(--color-text-primary)" }}>
                 {data?.completionPercent ?? 0}%
               </p>
               <Progress className="mt-3" value={data?.completionPercent ?? 0} />
@@ -64,23 +63,26 @@ export const StudentDashboard = () => {
 
             {/* Continue learning */}
             <div
-              className="flex flex-col rounded-2xl border p-6 shadow-card"
-              style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+              className="dashboard-panel flex flex-col p-6"
             >
-              <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("student.dashboard.continueLearning")}</p>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("student.dashboard.continueLearning")}</p>
               {data?.lastLessonId ? (
                 <Link
-                  className="mt-auto block w-full rounded-xl bg-brand-600 py-3 text-center text-sm font-bold text-white no-underline transition-all hover:bg-brand-700"
+                  className="mt-auto inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl py-3 text-center text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                  style={{ background: "var(--gradient-brand)" }}
                   to={`${prefix}/lessons/${data.lastLessonId}`}
                 >
-                  {t("student.dashboard.continueLearning")} <span className="icon-dir opacity-70">→</span>
+                  {t("student.dashboard.continueLearning")}
+                  <ArrowRight className="icon-dir h-4 w-4 opacity-80" />
                 </Link>
               ) : (
                 <Link
-                  className="mt-auto block w-full rounded-xl bg-brand-600 py-3 text-center text-sm font-bold text-white no-underline transition-all hover:bg-brand-700"
+                  className="mt-auto inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl py-3 text-center text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                  style={{ background: "var(--gradient-brand)" }}
                   to={`${prefix}/course`}
                 >
-                  {t("course.allLessons")} <span className="icon-dir opacity-70">→</span>
+                  {t("course.allLessons")}
+                  <ArrowRight className="icon-dir h-4 w-4 opacity-80" />
                 </Link>
               )}
               {data?.enrolledAt && (
@@ -93,28 +95,30 @@ export const StudentDashboard = () => {
         )}
 
         {/* Quick links */}
-        <div
-          className="rounded-2xl border p-5 shadow-card"
-          style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-        >
-          <p className="mb-4 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>{t("student.dashboard.quickLinks")}</p>
+        <div className="dashboard-panel p-5">
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{t("student.dashboard.quickLinks")}</p>
           <div className="flex flex-wrap gap-2">
             {[
-              { to: "/course",    label: t("nav.course") },
-              { to: "/progress",  label: t("student.progress.title") },
-              { to: "/notes",     label: t("nav.notes") },
-              { to: "/downloads", label: t("nav.downloads") },
-              { to: "/orders",    label: t("nav.orders") },
-            ].map((link) => (
+              { to: "/course",    label: t("nav.course"), icon: BookOpenCheck },
+              { to: "/progress",  label: t("student.progress.title"), icon: Gauge },
+              { to: "/notes",     label: t("nav.notes"), icon: FileText },
+              { to: "/downloads", label: t("nav.downloads"), icon: Download },
+              { to: "/orders",    label: t("nav.orders"), icon: ReceiptText },
+            ].map((link) => {
+              const Icon = link.icon;
+
+              return (
               <Link
                 key={link.to}
-                className="rounded-lg border px-3 py-2 text-sm font-medium no-underline transition-colors hover:bg-surface2"
+                className="inline-flex min-h-10 items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium no-underline transition-colors hover:bg-surface2"
                 style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-secondary)" }}
                 to={`${prefix}${link.to}`}
               >
+                <Icon className="h-4 w-4 text-brand-600" />
                 {link.label}
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       </>

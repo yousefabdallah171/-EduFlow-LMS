@@ -61,7 +61,7 @@ export const adminLessonsController = {
         ? await lessonRepository.getLessonsBySection(sectionId)
         : await lessonRepository.getLessonsByAdmin();
       res.json({
-        lessons: lessons.map((lesson: any) => ({
+        lessons: lessons.map((lesson) => ({
           id: lesson.id,
           titleEn: lesson.titleEn,
           titleAr: lesson.titleAr,

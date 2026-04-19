@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { AdminShell } from "@/components/layout/AdminShell";
 import { SectionManager } from "@/components/admin/SectionManager";
@@ -21,6 +22,11 @@ type LessonAdmin = {
   durationSeconds: number | null;
   dripDays: number | null;
   sectionId?: string;
+  section?: {
+    id: string;
+    titleEn: string;
+    titleAr: string;
+  } | null;
 };
 
 const VideoStatusBadge = ({ status }: { status: LessonAdmin["videoStatus"] }) => {
@@ -69,7 +75,7 @@ export const AdminLessons = () => {
       await deleteMutation.mutateAsync(lessonId);
     } catch (error) {
       const apiError = error as AxiosError<{ message?: string }>;
-      window.alert(apiError.response?.data?.message ?? "Failed to delete lesson.");
+      toast.error(apiError.response?.data?.message ?? "Failed to delete lesson.");
     }
   };
 
@@ -95,11 +101,12 @@ export const AdminLessons = () => {
           {/* Right panel: Lessons for selected section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
+              <h3 className="text-sm font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
                 Lessons {selectedSectionId ? "in Section" : ""}
               </h3>
               <button
-                className="rounded-lg bg-brand-600 px-3 py-2 text-xs font-semibold text-white transition-all hover:bg-brand-700"
+                className="rounded-xl px-3 py-2 text-xs font-bold text-white transition-all hover:opacity-95"
+                style={{ background: "var(--gradient-brand)" }}
                 onClick={() => {
                   setEditingLessonId(null);
                   setLessonFormOpen(true);
@@ -111,22 +118,20 @@ export const AdminLessons = () => {
             </div>
 
             {/* Lessons grid/table */}
-            <div
-              className="overflow-hidden rounded-2xl border shadow-card"
-              style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-            >
+            <div className="dashboard-panel overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr style={{ borderBottom: "1px solid var(--color-border)" }}>
                       {[
                         t("admin.lessons.table.lesson"),
+                        t("admin.lessons.table.section"),
                         t("admin.lessons.table.videoStatus"),
                         t("admin.lessons.table.order"),
                         t("admin.lessons.table.duration"),
                         t("admin.lessons.table.actions")
                       ].map((h) => (
-                        <th key={h} className="px-4 py-3 text-start text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
+                        <th key={h} className="px-4 py-3 text-start text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
                           {h}
                         </th>
                       ))}
@@ -139,18 +144,28 @@ export const AdminLessons = () => {
                           <p className="font-semibold" style={{ color: "var(--color-text-primary)" }}>{lesson.titleEn}</p>
                           <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{lesson.titleAr}</p>
                         </td>
+                        <td className="px-4 py-3">
+                          <p className="text-xs font-medium" style={{ color: "var(--color-text-primary)" }}>
+                            {lesson.sectionId ? lesson.section?.titleEn ?? t("admin.lessons.noSection") : t("admin.lessons.noSection")}
+                          </p>
+                          {lesson.sectionId ? (
+                            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                              {lesson.section?.titleAr}
+                            </p>
+                          ) : null}
+                        </td>
                         <td className="px-4 py-3"><VideoStatusBadge status={lesson.videoStatus} /></td>
                         <td className="px-4 py-3 tabular-nums text-xs" style={{ color: "var(--color-text-secondary)" }}>{lesson.sortOrder}</td>
                         <td className="px-4 py-3 tabular-nums text-xs" style={{ color: "var(--color-text-secondary)" }}>
-                          {lesson.durationSeconds ? `${Math.floor(lesson.durationSeconds / 60)}m ${lesson.durationSeconds % 60}s` : "—"}
+                          {lesson.durationSeconds ? `${Math.floor(lesson.durationSeconds / 60)}m ${lesson.durationSeconds % 60}s` : "-"}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex gap-2">
                             <button
-                              className="rounded-lg bg-brand-600 px-3 py-2 text-xs font-bold text-white transition-all hover:bg-brand-700"
+                              className="rounded-xl px-3 py-2 text-xs font-bold text-white transition-all hover:opacity-95"
+                              style={{ background: "var(--gradient-brand)" }}
                               onClick={() => {
                                 setSelectedLessonId(lesson.id);
-                                startUpload;
                               }}
                               type="button"
                             >
@@ -195,16 +210,13 @@ export const AdminLessons = () => {
             {/* Selected lesson editor */}
             {selectedLessonId ? (
               <div className="space-y-4">
-                <h4 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
+                <h4 className="text-sm font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
                   Lesson details & resources
                 </h4>
 
                 <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
                   {/* Video upload */}
-                  <div
-                    className="rounded-2xl border p-4 shadow-card"
-                    style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-                  >
+                  <div className="dashboard-panel p-4">
                     <h5 className="mb-4 text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
                       Upload video
                     </h5>
@@ -215,7 +227,7 @@ export const AdminLessons = () => {
                         </label>
                         <input
                           accept="video/*"
-                          className="block w-full rounded-lg border px-3 py-2 text-sm transition-colors file:mr-2 file:rounded-lg file:border-0 file:bg-brand-600 file:px-2 file:py-1 file:text-xs file:font-bold file:text-white"
+                          className="block w-full rounded-lg border px-3 py-2 text-sm transition-colors file:mr-2 file:rounded-lg file:border-0 file:bg-zinc-950 file:px-2 file:py-1 file:text-xs file:font-bold file:text-white"
                           style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", backgroundColor: "var(--color-surface-2)" }}
                           disabled={isUploading}
                           type="file"

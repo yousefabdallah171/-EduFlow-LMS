@@ -49,7 +49,7 @@ export const ResetPassword = () => {
       <div className="flex min-h-dvh items-center justify-center px-6 py-12" style={{ backgroundColor: "var(--color-page)" }}>
         <div className="w-full max-w-md">
           <div
-            className="rounded-2xl border p-8 text-center shadow-card"
+            className="rounded-[28px] border p-8 text-center shadow-card"
             style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
           >
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
@@ -71,7 +71,7 @@ export const ResetPassword = () => {
     <div className="flex min-h-dvh items-center justify-center px-6 py-12" style={{ backgroundColor: "var(--color-page)" }}>
       <div className="w-full max-w-md">
         <div
-          className="rounded-2xl border p-8 shadow-card"
+          className="rounded-[28px] border p-8 shadow-card"
           style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
         >
           <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
@@ -103,7 +103,8 @@ export const ResetPassword = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-brand-600 py-3 text-sm font-bold text-white transition-all hover:bg-brand-700 disabled:opacity-60"
+              className="w-full rounded-xl py-3 text-sm font-bold text-white transition-all hover:opacity-95 disabled:opacity-60"
+              style={{ background: "var(--gradient-brand)" }}
             >
               {loading ? t("auth.resetPassword.updating") : t("auth.resetPassword.update")}
             </button>

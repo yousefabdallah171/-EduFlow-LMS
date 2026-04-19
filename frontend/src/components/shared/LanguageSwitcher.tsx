@@ -1,4 +1,6 @@
+import { Languages } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+
 import { useLocaleStore } from "@/stores/locale.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { api } from "@/lib/api";
@@ -24,22 +26,26 @@ export const LanguageSwitcher = () => {
     setLocale(next);
     navigate(`${replaceLocaleInPathname(location.pathname, next)}${location.search}${location.hash}`, { replace: true });
 
-    // Save to account if logged in
     if (user && user.role === "STUDENT") {
       updateUser({ locale: next });
-      void api.patch("/student/profile", { locale: next }).catch(() => {/* non-blocking */});
+      void api.patch("/student/profile", { locale: next }).catch(() => {});
     }
   };
 
   return (
     <button
       aria-label="Switch language"
-      className="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors hover:bg-surface2"
-      style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", backgroundColor: "var(--color-surface)" }}
+      className="inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold transition-colors hover:bg-surface2"
+      style={{
+        color: "var(--color-text-primary)",
+        backgroundColor: "var(--color-surface)"
+      }}
       onClick={toggle}
+      title={locale === "ar" ? "Switch to English" : "التبديل إلى العربية"}
       type="button"
     >
-      {locale === "ar" ? "EN" : "AR"}
+      <Languages className="h-4 w-4" />
+      <span>{locale === "ar" ? "EN" : "AR"}</span>
     </button>
   );
 };

@@ -61,7 +61,7 @@ const StatusBadge = ({ status }: { status: EnrollmentStatus }) => {
   );
 };
 
-const formatDate = (value: string | null) => (value ? new Date(value).toLocaleDateString() : "—");
+const formatDate = (value: string | null) => (value ? new Date(value).toLocaleDateString() : "-");
 
 export const AdminStudents = () => {
   const { t } = useTranslation();
@@ -158,7 +158,8 @@ export const AdminStudents = () => {
       </button>
     ) : (
       <button
-        className="rounded-lg bg-brand-600 px-3 py-2 text-xs font-semibold text-white transition-all hover:bg-brand-700"
+        className="rounded-lg px-3 py-2 text-xs font-semibold text-white transition-all hover:opacity-95"
+        style={{ background: "var(--gradient-brand)" }}
         onClick={() => openAction(student, "enroll")}
         type="button"
       >
@@ -171,13 +172,10 @@ export const AdminStudents = () => {
       <section className="space-y-5">
 
         {/* Search */}
-        <div
-          className="rounded-2xl border p-5 shadow-card"
-          style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-        >
+        <div className="dashboard-panel p-5">
           <Combobox value={selectedSearchStudent} onChange={setSelectedSearchStudent}>
             <div className="relative">
-              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }} htmlFor="student-search">
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }} htmlFor="student-search">
                 Search students
               </label>
               <ComboboxInput
@@ -191,7 +189,7 @@ export const AdminStudents = () => {
                 displayValue={(s: StudentSearchResult | null) => s?.fullName ?? searchValue}
                 id="student-search"
                 onChange={(e) => setSearchValue(e.target.value)}
-                placeholder="Type at least 2 characters…"
+                placeholder="Type at least 2 characters..."
               />
               <ComboboxOptions
                 className="absolute z-50 mt-2 max-h-72 w-full max-w-md overflow-auto rounded-xl border p-1 shadow-elevated"
@@ -228,10 +226,7 @@ export const AdminStudents = () => {
           </Combobox>
 
           {searchedStudent ? (
-            <div
-              className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"
-              style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-surface-2)" }}
-            >
+            <div className="dashboard-panel dashboard-panel--accent mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[22px] p-4">
               <div>
                 <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>{searchedStudent.fullName}</p>
                 <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{searchedStudent.email}</p>
@@ -245,10 +240,7 @@ export const AdminStudents = () => {
         </div>
 
         {/* Table */}
-        <div
-          className="overflow-hidden rounded-2xl border shadow-card"
-          style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-        >
+        <div className="dashboard-panel overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -256,7 +248,7 @@ export const AdminStudents = () => {
                   {["Student", "Status", "Type", "Enrolled", "Completion", "Actions"].map((h) => (
                     <th
                       key={h}
-                      className="px-4 py-3 text-start text-xs font-bold uppercase tracking-widest"
+                      className="px-4 py-3 text-start text-xs font-bold uppercase tracking-[0.16em]"
                       style={{ color: "var(--color-text-muted)" }}
                     >
                       {h}
@@ -294,13 +286,13 @@ export const AdminStudents = () => {
                       </div>
                     </td>
                     <td className="px-4 py-3"><StatusBadge status={student.enrollmentStatus} /></td>
-                    <td className="px-4 py-3 text-xs" style={{ color: "var(--color-text-secondary)" }}>{student.enrollmentType ?? "—"}</td>
+                    <td className="px-4 py-3 text-xs" style={{ color: "var(--color-text-secondary)" }}>{student.enrollmentType ?? "-"}</td>
                     <td className="px-4 py-3 text-xs" style={{ color: "var(--color-text-secondary)" }}>{formatDate(student.enrolledAt)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <span className="tabular-nums text-xs font-semibold" style={{ color: "var(--color-text-primary)" }}>{student.courseCompletion}%</span>
                         <div className="h-1.5 w-16 overflow-hidden rounded-full" style={{ backgroundColor: "var(--color-surface-2)" }}>
-                          <div className="h-full rounded-full bg-brand-600" style={{ width: `${student.courseCompletion}%` }} />
+                          <div className="h-full rounded-full" style={{ width: `${student.courseCompletion}%`, background: "var(--gradient-brand)" }} />
                         </div>
                       </div>
                     </td>
@@ -353,13 +345,14 @@ export const AdminStudents = () => {
             <button
               className={cn(
                 "rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all disabled:opacity-60",
-                pendingAction?.action === "revoke" ? "bg-red-600 hover:bg-red-700" : "bg-brand-600 hover:bg-brand-700"
+                pendingAction?.action === "revoke" ? "bg-red-600 hover:bg-red-700" : "hover:opacity-95"
               )}
+              style={pendingAction?.action === "revoke" ? undefined : { background: "var(--gradient-brand)" }}
               disabled={isMutating}
               onClick={() => void confirmAction()}
               type="button"
             >
-              {isMutating ? "Working…" : pendingAction?.action === "revoke" ? "Revoke access" : "Enroll"}
+              {isMutating ? "Working..." : pendingAction?.action === "revoke" ? "Revoke access" : "Enroll"}
             </button>
           </DialogFooter>
         </DialogContent>

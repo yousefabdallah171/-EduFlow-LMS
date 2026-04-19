@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { AxiosError } from "axios";
 import { useTranslation } from "react-i18next";
@@ -43,10 +44,10 @@ export const ForgotPassword = () => {
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="mb-7 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600 shadow-elevated">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl shadow-elevated" style={{ background: "var(--gradient-brand)" }}>
             <span className="text-xl font-bold text-white">E</span>
           </div>
-          <h1 className="text-xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+          <h1 className="font-display text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
             {t("auth.forgotPassword.title")}
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
@@ -56,16 +57,17 @@ export const ForgotPassword = () => {
 
         {isSuccess ? (
           <div
-            className="rounded-2xl border p-6 text-center shadow-card"
+            className="rounded-[28px] border p-6 text-center shadow-card"
             style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
           >
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
-              ✓
+              <CheckCircle2 className="h-6 w-6" />
             </div>
             <h2 className="text-base font-bold" style={{ color: "var(--color-text-primary)" }}>{t("auth.forgotPassword.checkEmail")}</h2>
             <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>{message}</p>
             <Link
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white no-underline"
+              className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white no-underline shadow-sm transition-all hover:opacity-95"
+              style={{ background: "var(--gradient-brand)" }}
               to={`${prefix}/login`}
             >
               {t("auth.login.signIn")}
@@ -73,7 +75,7 @@ export const ForgotPassword = () => {
           </div>
         ) : (
           <form
-            className="rounded-2xl border p-6 shadow-card"
+            className="rounded-[28px] border p-6 shadow-card"
             style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
             onSubmit={submit}
           >
@@ -94,7 +96,8 @@ export const ForgotPassword = () => {
             </div>
 
             <button
-              className="mt-5 w-full rounded-xl bg-brand-600 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-brand-700 hover:shadow disabled:opacity-50"
+              className="mt-5 w-full rounded-xl py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:opacity-95 hover:shadow disabled:opacity-50"
+              style={{ background: "var(--gradient-brand)" }}
               disabled={isSubmitting}
               type="submit"
             >
@@ -154,10 +157,10 @@ export const ResetPassword = () => {
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="mb-7 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600 shadow-elevated">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl shadow-elevated" style={{ background: "var(--gradient-brand)" }}>
             <span className="text-xl font-bold text-white">E</span>
           </div>
-          <h1 className="text-xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+          <h1 className="font-display text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
             {t("auth.resetPassword.title")}
           </h1>
           <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
@@ -167,16 +170,17 @@ export const ResetPassword = () => {
 
         {isSuccess ? (
           <div
-            className="rounded-2xl border p-6 text-center shadow-card"
+            className="rounded-[28px] border p-6 text-center shadow-card"
             style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
           >
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
-              ✓
+              <CheckCircle2 className="h-6 w-6" />
             </div>
             <h2 className="text-base font-bold" style={{ color: "var(--color-text-primary)" }}>{t("auth.resetPassword.updated")}</h2>
             <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>{message}</p>
             <Link
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white no-underline"
+              className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white no-underline shadow-sm transition-all hover:opacity-95"
+              style={{ background: "var(--gradient-brand)" }}
               to={`${prefix}/login`}
             >
               {t("auth.login.signIn")}
@@ -184,7 +188,7 @@ export const ResetPassword = () => {
           </div>
         ) : (
           <form
-            className="rounded-2xl border p-6 shadow-card"
+            className="rounded-[28px] border p-6 shadow-card"
             style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
             onSubmit={submit}
           >
@@ -205,7 +209,8 @@ export const ResetPassword = () => {
             </div>
 
             <button
-              className="mt-5 w-full rounded-xl bg-brand-600 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-brand-700 hover:shadow disabled:opacity-50"
+              className="mt-5 w-full rounded-xl py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:opacity-95 hover:shadow disabled:opacity-50"
+              style={{ background: "var(--gradient-brand)" }}
               disabled={isSubmitting}
               type="submit"
             >

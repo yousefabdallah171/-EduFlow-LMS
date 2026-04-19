@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { ReceiptText } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { api } from "@/lib/api";
 import { formatDate, formatNumber, resolveLocale } from "@/lib/locale";
@@ -31,13 +33,12 @@ export const StudentOrders = () => {
   return (
     <StudentShell>
       <>
-
-        <header
-          className="rounded-2xl border p-6 shadow-card"
-          style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-        >
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("student.shell.section")}</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+        <header className="dashboard-panel dashboard-hero dashboard-panel--strong p-6">
+          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+            <ReceiptText className="h-3.5 w-3.5" />
+            {t("student.shell.section")}
+          </p>
+          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
             {t("student.orders.title")}
           </h1>
         </header>
@@ -47,17 +48,18 @@ export const StudentOrders = () => {
             {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
           </div>
         ) : orders.length === 0 ? (
-          <EmptyState icon="🧾" title={t("student.orders.empty")} description={t("student.orders.emptyDesc")} />
+          <EmptyState
+            illustration={<ReceiptText className="mx-auto h-10 w-10 text-brand-600" />}
+            title={t("student.orders.empty")}
+            description={t("student.orders.emptyDesc")}
+          />
         ) : (
-          <div
-            className="rounded-2xl border shadow-card overflow-hidden"
-            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-          >
+          <div className="dashboard-panel overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b" style={{ borderColor: "var(--color-border)" }}>
-                  {[t("student.orders.date"), t("student.orders.amount"), t("student.orders.status")].map((h) => (
-                    <th key={h} className="px-5 py-3 text-start text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>{h}</th>
+                  {[t("student.orders.date"), t("student.orders.amount"), t("student.orders.status")].map((heading) => (
+                    <th key={heading} className="px-5 py-3 text-start text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{heading}</th>
                   ))}
                 </tr>
               </thead>

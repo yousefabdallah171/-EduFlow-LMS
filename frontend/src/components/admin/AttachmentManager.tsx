@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { Progress } from "@/components/ui/progress";
 import { api, queryClient } from "@/lib/api";
@@ -21,7 +21,6 @@ type AttachmentManagerProps = {
 };
 
 export const AttachmentManager = ({ lessonId }: AttachmentManagerProps) => {
-  const { t } = useTranslation();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -86,7 +85,7 @@ export const AttachmentManager = ({ lessonId }: AttachmentManagerProps) => {
       await uploadMutation.mutateAsync(file);
     } catch (error) {
       const apiError = error as AxiosError<{ message?: string }>;
-      window.alert(apiError.response?.data?.message ?? "Failed to upload file.");
+      toast.error(apiError.response?.data?.message ?? "Failed to upload file.");
     }
     e.target.value = "";
   };
@@ -97,7 +96,7 @@ export const AttachmentManager = ({ lessonId }: AttachmentManagerProps) => {
       await deleteMutation.mutateAsync(resourceId);
     } catch (error) {
       const apiError = error as AxiosError<{ message?: string }>;
-      window.alert(apiError.response?.data?.message ?? "Failed to delete attachment.");
+      toast.error(apiError.response?.data?.message ?? "Failed to delete attachment.");
     }
   };
 
@@ -110,7 +109,7 @@ export const AttachmentManager = ({ lessonId }: AttachmentManagerProps) => {
   if (!lessonId) {
     return (
       <div
-        className="rounded-2xl border p-4 shadow-card"
+        className="rounded-[28px] border p-4 shadow-card"
         style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
       >
         <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
@@ -122,10 +121,10 @@ export const AttachmentManager = ({ lessonId }: AttachmentManagerProps) => {
 
   return (
     <div
-      className="rounded-2xl border p-4 shadow-card"
+      className="rounded-[28px] border p-4 shadow-card"
       style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
     >
-      <h3 className="mb-4 text-sm font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
+      <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
         Attachments
       </h3>
 
@@ -136,7 +135,7 @@ export const AttachmentManager = ({ lessonId }: AttachmentManagerProps) => {
           </label>
           <input
             accept="*/*"
-            className="block w-full rounded-lg border px-4 py-3 text-sm transition-colors file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-1 file:text-xs file:font-bold file:text-white"
+            className="block w-full rounded-lg border px-4 py-3 text-sm transition-colors file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-950 file:px-3 file:py-1 file:text-xs file:font-bold file:text-white"
             style={{
               borderColor: "var(--color-border-strong)",
               color: "var(--color-text-primary)",

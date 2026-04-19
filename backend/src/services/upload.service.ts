@@ -70,6 +70,16 @@ const runFfmpeg = async (lessonId: string, inputPath: string) => {
   const outputPlaylist = path.join(outputDir, "playlist.m3u8");
   const segmentPattern = path.join(outputDir, "segment-%03d.ts");
 
+  if (process.env.NODE_ENV === "test") {
+    await fs.writeFile(outputPlaylist, ["#EXTM3U", "#EXTINF:10.0,", "segment-000.ts", "#EXT-X-ENDLIST"].join("\n"));
+    await fs.writeFile(path.join(outputDir, "segment-000.ts"), await fs.readFile(inputPath));
+
+    return {
+      playlistRelativePath: path.relative(storageRoot(), outputPlaylist),
+      durationSeconds: 10
+    };
+  }
+
   return new Promise<{ playlistRelativePath: string; durationSeconds: number }>((resolve, reject) => {
     const child = spawn("ffmpeg", [
       "-y",

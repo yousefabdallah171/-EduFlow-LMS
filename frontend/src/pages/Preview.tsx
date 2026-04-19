@@ -1,9 +1,13 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useParams } from "react-router-dom";
+import { LockKeyhole, PlayCircle } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { VideoPlayer } from "@/components/shared/VideoPlayer";
 import { PreviewCTABanner } from "@/components/shared/PreviewCTABanner";
+import { useAuth } from "@/hooks/useAuth";
+import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
 import { formatClockDuration, pickLocalizedText, resolveLocale } from "@/lib/locale";
 
@@ -22,12 +26,33 @@ type PreviewLesson = {
   sortOrder: number;
 };
 
+type CourseLesson = {
+  id: string;
+  title: string;
+  titleAr: string | null;
+  durationSeconds: number | null;
+  sortOrder: number;
+};
+
+type CourseInfo = {
+  title: string;
+  titleEn?: string;
+  titleAr?: string | null;
+  lessonCount: number;
+  lessons: CourseLesson[];
+};
+
 export const Preview = () => {
   const { locale } = useParams();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const currentLocale = resolveLocale(locale);
   const isAr = currentLocale === "ar";
+  const { user, isAuthReady } = useAuth();
+  const { statusQuery } = useEnrollment();
+  const isLoggedIn = Boolean(user);
+  const isEnrolled = statusQuery.data?.enrolled && statusQuery.data?.status === "ACTIVE";
 
   const previewQuery = useQuery({
     queryKey: ["lesson-preview"],
@@ -39,10 +64,32 @@ export const Preview = () => {
     }
   });
 
-  if (previewQuery.isLoading) {
+  const courseQuery = useQuery({
+    queryKey: ["course-summary-public"],
+    retry: false,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      const response = await api.get<CourseInfo>("/course");
+      return response.data;
+    }
+  });
+
+  useEffect(() => {
+    if (!isAuthReady) {
+      return;
+    }
+
+    if (isEnrolled && previewQuery.data?.id) {
+      navigate(`${prefix}/lessons/${previewQuery.data.id}`, { replace: true });
+    }
+  }, [isAuthReady, isEnrolled, navigate, prefix, previewQuery.data?.id]);
+
+  if (previewQuery.isLoading || courseQuery.isLoading || (isLoggedIn && statusQuery.isLoading)) {
     return (
       <div className="flex min-h-dvh items-center justify-center" style={{ backgroundColor: "var(--color-page)" }}>
-        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>{t("common.loading")}</p>
+        <div className="rounded-[28px] border p-8 text-center shadow-card" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+          <p className="text-sm font-medium" style={{ color: "var(--color-text-muted)" }}>{t("common.loading")}</p>
+        </div>
       </div>
     );
   }
@@ -51,7 +98,7 @@ export const Preview = () => {
     return (
       <div className="flex min-h-dvh items-center justify-center px-6" style={{ backgroundColor: "var(--color-page)" }}>
         <div
-          className="w-full max-w-md rounded-2xl border p-8 text-center shadow-card"
+          className="w-full max-w-md rounded-[28px] border p-8 text-center shadow-card"
           style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
         >
           <p className="text-base font-bold" style={{ color: "var(--color-text-primary)" }}>
@@ -61,7 +108,8 @@ export const Preview = () => {
             {isAr ? "لم يتم نشر أي دروس بعد." : "No lessons have been published yet."}
           </p>
           <Link
-            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:bg-brand-700"
+            className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+            style={{ background: "var(--gradient-brand)" }}
             to={`${prefix}/`}
           >
             {t("actions.backToHome")}
@@ -72,126 +120,265 @@ export const Preview = () => {
   }
 
   const lesson = previewQuery.data;
+  const course = courseQuery.data;
   const title = pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr);
   const description = pickLocalizedText(
     currentLocale,
     lesson.descriptionHtmlEn ?? lesson.descriptionHtml,
     lesson.descriptionHtmlAr
   );
+  const courseTitle = course
+    ? pickLocalizedText(currentLocale, course.titleEn ?? course.title, course.titleAr)
+    : title;
+  const lockedActionLabel = isLoggedIn ? t("preview.getAccessCta") : t("actions.logIn");
+  const lockedActionHref = isLoggedIn ? `${prefix}/checkout` : `${prefix}/login`;
 
   return (
-    <main className="min-h-dvh px-4 py-8 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
-      <section className="mx-auto max-w-4xl space-y-5">
-
-        {/* Preview banner */}
-        <div
-          className="rounded-2xl border p-4 shadow-card"
-          style={{ backgroundColor: "var(--color-brand-muted)", borderColor: "rgba(235,32,39,0.2)" }}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-sm font-bold text-white">
-                ▶
-              </span>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-brand-600">
-                  {t("preview.freePreview")}
-                </p>
-                <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                  {t("preview.forEveryone")}
-                </p>
-              </div>
-            </div>
-            <Link
-              className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-bold text-white no-underline shadow-sm transition-all hover:bg-brand-700"
-              to={`${prefix}/register`}
-            >
-              {t("preview.registerFree")}
-            </Link>
-          </div>
-        </div>
-
-        {/* Lesson title */}
-        <div
-          className="rounded-2xl border p-5 shadow-card"
-          style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-        >
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-600">
-            {t("preview.firstLesson")}
-          </p>
-          <h1 className="mt-1.5 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-            {title}
-          </h1>
-          {lesson.durationSeconds ? (
-            <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
-              {formatClockDuration(lesson.durationSeconds)}
+    <main className="marketing-dark min-h-dvh px-4 py-6 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
+      <section className="mx-auto max-w-6xl space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+              {t("preview.freePreview")}
             </p>
-          ) : null}
-        </div>
-
-        {/* Video player — no watermark for preview */}
-        <VideoPlayer
-          lessonTitle={title}
-          sourceUrl={lesson.hlsUrl}
-          watermark={null}
-          initialPositionSeconds={0}
-          playbackExpiresAt={lesson.expiresAt ?? null}
-          onProgress={() => {/* Preview — no progress tracking */}}
-          onTokenExpired={() => {
-            void previewQuery.refetch();
-          }}
-        />
-
-        {/* CTA after video */}
-        <div
-          className="relative overflow-hidden rounded-2xl border p-8 text-center shadow-elevated"
-          style={{ backgroundColor: "var(--color-invert)", borderColor: "transparent" }}
-        >
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{ background: "radial-gradient(ellipse 60% 80% at 50% 120%, rgba(235,32,39,0.3), transparent)" }}
-          />
-          <p className="relative text-xs font-bold uppercase tracking-widest opacity-60" style={{ color: "var(--color-text-invert)" }}>
-            {t("preview.likedIt")}
-          </p>
-          <h2 className="relative mt-3 text-xl font-bold tracking-tight" style={{ color: "var(--color-text-invert)" }}>
-            {t("preview.getFullAccess")}
-          </h2>
-          <p className="relative mt-2 text-sm opacity-70" style={{ color: "var(--color-text-invert)" }}>
-            {t("preview.onePayment")}
-          </p>
-          <div className="relative mt-6 flex flex-wrap justify-center gap-3">
-            <Link
-              className="rounded-xl bg-brand-600 px-6 py-3 text-sm font-bold text-white no-underline transition-all hover:bg-brand-500 shadow-sm"
-              to={`${prefix}/checkout`}
-            >
-              {t("preview.getAccessCta")}
-            </Link>
-            <Link
-              className="rounded-xl border border-white/20 px-6 py-3 text-sm font-medium text-white no-underline transition-all hover:bg-white/10"
-              to={`${prefix}/register`}
-            >
-              {t("landing.createAccount")}
-            </Link>
+            <h1 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: "var(--color-text-primary)" }}>
+              {title}
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
+              {t("preview.forEveryone")}
+            </p>
           </div>
-        </div>
 
-        {/* Description */}
-        {description ? (
           <div
-            className="rounded-2xl border p-5 shadow-card"
+            className="min-w-52 rounded-[24px] border p-4 shadow-card"
             style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
           >
-            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
-              {t("lesson.notes")}
+            <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+              {courseTitle}
             </p>
-            <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-              {description}
+            <p className="mt-1.5 font-display text-2xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>
+              {course?.lessonCount ?? 1}
+            </p>
+            <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
+              {isAr ? "دروس متاحة داخل الدورة الكاملة" : "Lessons inside the full course"}
             </p>
           </div>
-        ) : null}
+        </div>
 
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="space-y-5">
+            <div
+              className="rounded-[28px] border p-4 shadow-card"
+              style={{ backgroundColor: "var(--color-brand-muted)", borderColor: "rgba(163,230,53,0.2)" }}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold text-white" style={{ background: "var(--gradient-brand)" }}>
+                    <PlayCircle className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                      {t("preview.freePreview")}
+                    </p>
+                    <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
+                      {isAr ? "الدرس الأول مفتوح للمشاهدة الآن" : "Lesson 1 is unlocked and ready to watch"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {!isLoggedIn ? (
+                    <Link
+                      className="rounded-xl border px-4 py-2 text-sm font-medium no-underline transition-colors hover:bg-surface2"
+                      style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                      to={`${prefix}/login`}
+                    >
+                      {t("actions.logIn")}
+                    </Link>
+                  ) : null}
+                  <Link
+                    className="rounded-xl px-4 py-2 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                    style={{ background: "var(--gradient-brand)" }}
+                    to={`${prefix}/checkout`}
+                  >
+                    {t("preview.getAccessCta")}
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            <VideoPlayer
+              lessonTitle={title}
+              sourceUrl={lesson.hlsUrl}
+              watermark={null}
+              initialPositionSeconds={0}
+              playbackExpiresAt={lesson.expiresAt ?? null}
+              onProgress={() => {}}
+              onTokenExpired={() => {
+                void previewQuery.refetch();
+              }}
+            />
+
+            <div
+              className="rounded-[28px] border p-5 shadow-card"
+              style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+            >
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                    {t("preview.firstLesson")}
+                  </p>
+                  <h2 className="mt-2 font-display text-xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+                    {title}
+                  </h2>
+                  {lesson.durationSeconds ? (
+                    <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
+                      {formatClockDuration(lesson.durationSeconds)}
+                    </p>
+                  ) : null}
+                </div>
+
+                <Link
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                  style={{ background: "var(--gradient-brand)" }}
+                  to={`${prefix}/checkout`}
+                >
+                  {t("preview.getAccessCta")}
+                </Link>
+              </div>
+            </div>
+
+            {description ? (
+              <div
+                className="rounded-[28px] border p-5 shadow-card"
+                style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+              >
+                <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                  {t("lesson.notes")}
+                </p>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
+                  {description}
+                </p>
+              </div>
+            ) : null}
+
+            <div
+              className="relative overflow-hidden rounded-[32px] border p-8 text-center shadow-elevated"
+              style={{ backgroundColor: "var(--color-invert)", borderColor: "transparent" }}
+            >
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{ background: "radial-gradient(ellipse 60% 80% at 50% 120%, rgba(163,230,53,0.3), transparent)" }}
+              />
+              <p className="relative text-xs font-bold uppercase tracking-[0.16em] opacity-60" style={{ color: "var(--color-text-invert)" }}>
+                {t("preview.likedIt")}
+              </p>
+              <h2 className="relative mt-3 font-display text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-invert)" }}>
+                {t("preview.getFullAccess")}
+              </h2>
+              <p className="relative mt-2 text-sm opacity-70" style={{ color: "var(--color-text-invert)" }}>
+                {t("preview.onePayment")}
+              </p>
+              <div className="relative mt-6 flex flex-wrap justify-center gap-3">
+                <Link
+                  className="rounded-xl px-6 py-3 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                  style={{ background: "var(--gradient-brand)" }}
+                  to={`${prefix}/checkout`}
+                >
+                  {t("preview.getAccessCta")}
+                </Link>
+                <Link
+                  className="rounded-xl border border-white/20 px-6 py-3 text-sm font-medium text-white no-underline transition-all hover:bg-white/10"
+                  to={`${prefix}/register`}
+                >
+                  {t("landing.createAccount")}
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <aside
+            className="rounded-[28px] border p-4 shadow-card xl:sticky xl:top-28 xl:h-fit"
+            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+          >
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                  {t("course.public.content")}
+                </p>
+                <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
+                  {course ? `${course.lessonCount} ${isAr ? "دروس" : "lessons"}` : null}
+                </p>
+              </div>
+              <Link
+                className="rounded-xl px-3 py-2 text-xs font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                style={{ background: "var(--gradient-brand)" }}
+                to={`${prefix}/checkout`}
+              >
+                {t("preview.getAccessCta")}
+              </Link>
+            </div>
+
+            <div className="space-y-2">
+              {course?.lessons.map((courseLesson, index) => {
+                const lessonTitle = pickLocalizedText(currentLocale, courseLesson.title, courseLesson.titleAr);
+                const isPreviewLesson = courseLesson.id === lesson.id || index === 0;
+
+                return (
+                  <div
+                    key={courseLesson.id}
+                    className="flex items-center gap-3 rounded-xl border px-3 py-3"
+                    style={{
+                      borderColor: isPreviewLesson ? "rgba(163,230,53,0.18)" : "var(--color-border)",
+                      backgroundColor: isPreviewLesson ? "var(--color-brand-muted)" : "var(--color-surface)"
+                    }}
+                  >
+                    <span
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                      style={{
+                        backgroundColor: isPreviewLesson ? "rgba(163,230,53,0.14)" : "var(--color-surface-2)",
+                        color: isPreviewLesson ? "var(--color-brand)" : "var(--color-text-muted)"
+                      }}
+                    >
+                      {isPreviewLesson ? <PlayCircle className="h-4 w-4" /> : <LockKeyhole className="h-4 w-4" />}
+                    </span>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
+                        {lessonTitle}
+                      </p>
+                      <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
+                        {isPreviewLesson
+                          ? (isAr ? "متاح الآن" : "Available now")
+                          : (isAr ? "مغلق حتى تسجيل الدخول والاشتراك" : "Locked until login and enrollment")}
+                        {courseLesson.durationSeconds ? ` - ${formatClockDuration(courseLesson.durationSeconds)}` : ""}
+                      </p>
+                    </div>
+
+                    {isPreviewLesson ? (
+                      <Link
+                        className="rounded-lg px-3 py-2 text-xs font-bold no-underline"
+                        style={{ backgroundColor: "var(--color-surface)", color: "var(--color-brand)" }}
+                        to={`${prefix}/preview`}
+                      >
+                        {t("course.public.preview")}
+                      </Link>
+                    ) : (
+                      <Link
+                        className="rounded-lg border px-3 py-2 text-xs font-semibold no-underline transition-colors hover:bg-surface2"
+                        style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                        to={lockedActionHref}
+                      >
+                        {lockedActionLabel}
+                      </Link>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </aside>
+        </div>
       </section>
+
       <PreviewCTABanner />
     </main>
   );

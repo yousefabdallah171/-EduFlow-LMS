@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import {
   Dialog,
@@ -76,7 +76,6 @@ export const LessonForm = ({
   onOpenChange,
   onSubmit
 }: LessonFormProps) => {
-  const { t } = useTranslation();
   const emptyFormData = useMemo(() => buildInitialFormData(sectionId), [sectionId]);
   const [formData, setFormData] = useState<Omit<Lesson, "id">>(emptyFormData);
 
@@ -136,7 +135,7 @@ export const LessonForm = ({
       const apiError = error as AxiosError<{ message?: string; error?: string; fields?: Record<string, string> }>;
       const fields = apiError.response?.data?.fields;
       const fieldMessage = fields ? Object.entries(fields).map(([field, message]) => `${field}: ${message}`).join("\n") : null;
-      window.alert(fieldMessage ?? apiError.response?.data?.message ?? apiError.response?.data?.error ?? "Failed to save lesson.");
+      toast.error(fieldMessage ?? apiError.response?.data?.message ?? apiError.response?.data?.error ?? "Failed to save lesson.");
     }
   };
 
@@ -308,7 +307,8 @@ export const LessonForm = ({
             Cancel
           </button>
           <button
-            className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-brand-700"
+            className="rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95"
+            style={{ background: "var(--gradient-brand)" }}
             onClick={() => void handleSubmit()}
             type="button"
           >

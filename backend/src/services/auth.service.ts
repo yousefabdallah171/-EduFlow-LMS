@@ -178,16 +178,9 @@ export const authService = {
       throw new AuthError("INVALID_REFRESH_TOKEN", 401, "Invalid refresh token.");
     }
 
-    await Promise.all([
-      refreshTokenRepository.extendExpiryByHash(tokenHash, getRefreshExpiry()),
-      redis.set(sessionCacheKey(user.id, payload.sessionId), "active", "EX", REFRESH_SESSION_WINDOW_SECONDS)
-    ]);
+    await refreshTokenRepository.revokeByHash(tokenHash);
 
-    return {
-      accessToken: issueAccessToken(user, payload.sessionId),
-      refreshToken: rawRefreshToken,
-      user: toAuthUser(user)
-    };
+    return issueSession(user, payload.sessionId, storedToken.familyId);
   },
 
   async logout(rawRefreshToken: string | undefined) {

@@ -24,29 +24,29 @@ const getEmailTemplate = (title: string, content: string): string => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-          body { font-family: "Inter", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #18181b; background: #faf8f5; }
+          body { font-family: "Cairo", "Manrope", -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #e5e5e5; background: #020202; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #eb2027 0%, #c4191f 100%); color: white; padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0; box-shadow: 0 4px 12px rgba(235, 32, 39, 0.15); }
+          .header { background: linear-gradient(135deg, #a3e635 0%, #38bdf8 100%); color: #050505; padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0; box-shadow: 0 4px 20px rgba(163, 230, 53, 0.18); }
           .header h1 { margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; }
           .header p { margin: 8px 0 0 0; font-size: 14px; opacity: 0.95; }
-          .content { background: white; padding: 40px 30px; border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 0 0 12px 12px; }
-          .content h2 { margin: 0 0 15px 0; color: #18181b; font-size: 22px; font-weight: 600; }
-          .content p { margin: 15px 0; color: #52525b; line-height: 1.7; }
-          .cta-button { display: inline-block; background: white; color: #eb2027; padding: 14px 36px; text-decoration: none; border-radius: 8px; margin: 24px 0; font-weight: 600; font-size: 16px; transition: all 0.2s; border: 2px solid #eb2027; }
-          .cta-button:hover { background: #fef2f2; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(235, 32, 39, 0.25); }
+          .content { background: #080808; padding: 40px 30px; border: 1px solid rgba(163, 230, 53, 0.14); border-radius: 0 0 12px 12px; }
+          .content h2 { margin: 0 0 15px 0; color: #f5f5f5; font-size: 22px; font-weight: 600; }
+          .content p { margin: 15px 0; color: #b8b8b8; line-height: 1.7; }
+          .cta-button { display: inline-block; background: #a3e635; color: #050505; padding: 14px 36px; text-decoration: none; border-radius: 8px; margin: 24px 0; font-weight: 700; font-size: 16px; transition: all 0.2s; border: 2px solid #a3e635; }
+          .cta-button:hover { background: #b5f53f; transform: translateY(-1px); box-shadow: 0 4px 18px rgba(163, 230, 53, 0.25); }
           .footer { text-align: center; padding: 20px; color: #a1a1aa; font-size: 12px; }
           .divider { border-top: 1px solid rgba(0, 0, 0, 0.08); margin: 24px 0; }
-          .highlight { background: #fef2f2; padding: 16px 20px; border-left: 4px solid #eb2027; border-radius: 6px; margin: 20px 0; }
-          .highlight p { margin: 0; color: #52525b; font-size: 14px; }
-          ul { color: #52525b; line-height: 1.8; }
+          .highlight { background: #0d0d0d; padding: 16px 20px; border-left: 4px solid #a3e635; border-radius: 6px; margin: 20px 0; }
+          .highlight p { margin: 0; color: #cfcfcf; font-size: 14px; }
+          ul { color: #cfcfcf; line-height: 1.8; }
           ul li { margin: 8px 0; }
-          strong { color: #18181b; font-weight: 600; }
+          strong { color: #f5f5f5; font-weight: 600; }
         </style>
       </head>
       <body>
         <div class="container">
           <div class="header">
-            <h1>🎓 EduFlow</h1>
+            <h1>AI Workflow</h1>
             <p>${title}</p>
           </div>
           <div class="content">
@@ -57,7 +57,7 @@ const getEmailTemplate = (title: string, content: string): string => {
             </p>
           </div>
           <div class="footer">
-            <p style="margin: 8px 0;">© 2024 EduFlow. All rights reserved.</p>
+            <p style="margin: 8px 0;">&copy; 2026 AI Workflow. All rights reserved.</p>
             <p style="margin: 4px 0;">This is an automated message, please do not reply to this email.</p>
           </div>
         </div>
@@ -69,19 +69,19 @@ const getEmailTemplate = (title: string, content: string): string => {
 const sendTemplate = async (to: string, subject: string, content: string) => {
   try {
     const currentTransporter = getTransporter();
-    // eslint-disable-next-line no-console
-    console.log(`📧 Sending email to ${to} via ${process.env.SMTP_HOST || env.SMTP_HOST}:${process.env.SMTP_PORT || env.SMTP_PORT}`);
     const result = await currentTransporter.sendMail({
       from: process.env.SMTP_USER || env.SMTP_USER,
       to,
       subject,
       html: content
     });
-    // eslint-disable-next-line no-console
-    console.log(`✅ Email sent successfully: ${result.messageId}`);
+    if (env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.log(`Email sent successfully: ${result.messageId}`);
+    }
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error(`❌ Email send failed:`, error);
+    console.error("Email send failed:", error);
     throw error;
   }
 };
@@ -92,7 +92,7 @@ export const sendVerificationEmail = async (
   verificationUrl: string
 ): Promise<void> => {
   const content = `
-    <h2>Welcome to EduFlow, ${fullName}! 👋</h2>
+    <h2>Welcome to AI Workflow, ${fullName}! &#128075;</h2>
     <p>Thank you for signing up! To get started, please verify your email address by clicking the button below.</p>
     <div style="text-align: center;">
       <a href="${verificationUrl}" class="cta-button">Verify Email Address</a>
@@ -106,7 +106,7 @@ export const sendVerificationEmail = async (
 
   await sendTemplate(
     to,
-    "Verify your EduFlow account - Welcome! 🎉",
+    "Verify your AI Workflow account - Welcome!",
     getEmailTemplate("Verify Your Account", content)
   );
 };
@@ -117,7 +117,7 @@ export const sendPasswordResetEmail = async (
   resetUrl: string
 ): Promise<void> => {
   const content = `
-    <h2>Password Reset Request 🔐</h2>
+    <h2>Password Reset Request &#128272;</h2>
     <p>Hi ${fullName},</p>
     <p>We received a request to reset your password. If this was you, click the button below to set a new password.</p>
     <div style="text-align: center;">
@@ -137,7 +137,7 @@ export const sendPasswordResetEmail = async (
 
   await sendTemplate(
     to,
-    "Reset your EduFlow password",
+    "Reset your AI Workflow password",
     getEmailTemplate("Reset Password", content)
   );
 };
@@ -149,7 +149,7 @@ export const sendTicketReplyEmail = async (
   message: string
 ): Promise<void> => {
   const content = `
-    <h2>Support Ticket Reply 💬</h2>
+    <h2>Support Ticket Reply &#128172;</h2>
     <p>Hi ${customerName},</p>
     <p><strong>${adminName}</strong> has replied to your support ticket:</p>
     <div class="highlight">

@@ -8,6 +8,9 @@ test("student progress updates mark the lesson as completed", async ({ page }) =
     await route.fulfill({
       status: 200,
       contentType: "application/json",
+      headers: {
+        "set-cookie": "eduflow_refresh_present=1; Path=/; SameSite=Strict"
+      },
       body: JSON.stringify({
         accessToken: "student-access-token",
         user: {
@@ -35,7 +38,7 @@ test("student progress updates mark the lesson as completed", async ({ page }) =
     });
   });
 
-  await page.route("**/api/v1/lessons", async (route) => {
+  await page.route(/\/api\/v1\/lessons$/, async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -56,7 +59,37 @@ test("student progress updates mark the lesson as completed", async ({ page }) =
     });
   });
 
-  await page.route("**/api/v1/lessons/lesson-1", async (route) => {
+  await page.route(/\/api\/v1\/lessons\/grouped$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        sections: [
+          {
+            id: "section-1",
+            titleEn: "Foundations",
+            titleAr: "Foundations",
+            sortOrder: 1,
+            lessons: [
+              {
+                id: "lesson-1",
+                titleEn: "Progress Lesson",
+                titleAr: "Progress Lesson",
+                durationSeconds: 100,
+                sortOrder: 1,
+                isUnlocked: true,
+                unlocksAt: null,
+                completedAt: progressSaved ? "2026-04-12T12:00:00.000Z" : null,
+                lastPositionSeconds: progressSaved ? 95 : 0
+              }
+            ]
+          }
+        ]
+      })
+    });
+  });
+
+  await page.route(/\/api\/v1\/lessons\/lesson-1$/, async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -87,7 +120,7 @@ test("student progress updates mark the lesson as completed", async ({ page }) =
     });
   });
 
-  await page.route("**/api/v1/lessons/lesson-1/progress", async (route) => {
+  await page.route(/\/api\/v1\/lessons\/lesson-1\/progress$/, async (route) => {
     progressSaved = true;
     await route.fulfill({
       status: 200,
@@ -104,8 +137,14 @@ test("student progress updates mark the lesson as completed", async ({ page }) =
   await page.goto(`${baseUrl}/login`);
   await page.getByLabel("Email").fill("student@example.com");
   await page.getByLabel("Password").fill("Securepass123");
-  await page.getByRole("button", { name: "Log in" }).click();
-  await page.goto(`${baseUrl}/lessons/lesson-1`);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.context().addCookies([{ name: "eduflow_refresh_present", value: "1", url: baseUrl, sameSite: "Strict" }]);
+  await expect(page).toHaveURL(`${baseUrl}/dashboard`);
+  await page.evaluate(() => {
+    window.history.pushState({}, "", "/lessons/lesson-1");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+  await expect(page.getByRole("heading", { name: "Progress Lesson", level: 1 })).toBeVisible();
 
   await page.locator("video").evaluate((video) => {
     Object.defineProperty(video, "duration", { configurable: true, value: 100 });
@@ -113,7 +152,10 @@ test("student progress updates mark the lesson as completed", async ({ page }) =
     video.dispatchEvent(new Event("timeupdate"));
   });
 
-  await page.goto(`${baseUrl}/course`);
+  await page.evaluate(() => {
+    window.history.pushState({}, "", "/course");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
   await expect(page.getByText("100%")).toBeVisible();
-  await expect(page.getByText("Completed")).toBeVisible();
+  await expect(page.getByText(/Completed - 1:40/)).toBeVisible();
 });

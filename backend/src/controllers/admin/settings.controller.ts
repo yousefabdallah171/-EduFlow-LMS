@@ -24,7 +24,13 @@ export const adminSettingsController = {
       const settings = await prisma.courseSettings.upsert({
         where: { id: 1 },
         update: data,
-        create: { id: 1, titleEn: data.titleEn ?? "EduFlow", titleAr: data.titleAr ?? "EduFlow", pricePiasters: 0, ...data }
+        create: {
+          id: 1,
+          titleEn: data.titleEn ?? "AI Workflow: From Idea to Production",
+          titleAr: data.titleAr ?? "AI Workflow: من الفكرة إلى الـ Production",
+          pricePiasters: 0,
+          ...data
+        }
       });
       res.json(settings);
     } catch (e) { next(e); }

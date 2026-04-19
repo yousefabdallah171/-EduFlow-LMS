@@ -5,7 +5,8 @@ import { enrollmentService } from "../services/enrollment.service.js";
 import { paymentService } from "../services/payment.service.js";
 
 const couponSchema = z.object({
-  couponCode: z.string().trim().optional()
+  couponCode: z.string().trim().optional(),
+  packageId: z.string().trim().optional()
 });
 
 const handlePaymentError = (error: unknown, res: Response, next: NextFunction) => {
@@ -32,7 +33,7 @@ export const paymentController = {
   async checkout(req: Request, res: Response, next: NextFunction) {
     try {
       const body = couponSchema.parse(req.body ?? {});
-      const result = await paymentService.createPaymobOrder(req.user!.userId, body.couponCode);
+      const result = await paymentService.createPaymobOrder(req.user!.userId, body.couponCode, body.packageId);
       res.json(result);
     } catch (error) {
       handlePaymentError(error, res, next);
@@ -42,7 +43,7 @@ export const paymentController = {
   async validateCoupon(req: Request, res: Response, next: NextFunction) {
     try {
       const body = couponSchema.parse(req.body ?? {});
-      res.json(await paymentService.validateCouponPreview(body.couponCode));
+      res.json(await paymentService.validateCouponPreview(body.couponCode, body.packageId));
     } catch (error) {
       handlePaymentError(error, res, next);
     }

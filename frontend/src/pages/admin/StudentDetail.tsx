@@ -30,7 +30,7 @@ export const AdminStudentDetail = () => {
         <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}</div>
       ) : student ? (
         <div className="space-y-5">
-          <div className="rounded-2xl border p-6 shadow-card" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+          <div className="dashboard-panel p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>{student.fullName as string}</p>
@@ -48,7 +48,7 @@ export const AdminStudentDetail = () => {
 
       {revoking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="rounded-2xl border p-6 shadow-elevated max-w-sm w-full mx-4" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+          <div className="mx-4 w-full max-w-sm rounded-[28px] border p-6 shadow-elevated" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
             <p className="font-bold mb-2" style={{ color: "var(--color-text-primary)" }}>{t("actions.revokeAccess")}?</p>
             <p className="text-sm mb-4" style={{ color: "var(--color-text-secondary)" }}>This will remove the student's access to all course content.</p>
             <div className="flex gap-2">

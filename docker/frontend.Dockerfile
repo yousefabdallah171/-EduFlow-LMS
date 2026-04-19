@@ -7,6 +7,7 @@ RUN pnpm install --filter frontend... --frozen-lockfile=false
 
 FROM deps AS dev
 WORKDIR /app/frontend
+RUN apk add --no-cache chromium nss freetype harfbuzz ca-certificates ttf-freefont
 
 FROM node:20-alpine AS build
 WORKDIR /app

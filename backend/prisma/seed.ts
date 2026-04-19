@@ -91,21 +91,34 @@ const ensureSeedHls = async (lessonId: string, toneHz: number) => {
 async function main() {
   const adminPasswordHash = await bcrypt.hash("Admin1234!", 12);
   const studentPasswordHash = await bcrypt.hash("Student12345!", 12);
-  const [seedOneHlsPath, seedTwoHlsPath, seedThreeHlsPath] = await Promise.all([
+  const [
+    seedOneHlsPath,
+    seedTwoHlsPath,
+    seedThreeHlsPath,
+    seedFourHlsPath,
+    seedFiveHlsPath,
+    seedSixHlsPath,
+    seedSevenHlsPath
+  ] = await Promise.all([
     ensureSeedHls("seed-1", 440),
     ensureSeedHls("seed-2", 554),
-    ensureSeedHls("seed-3", 659)
+    ensureSeedHls("seed-3", 659),
+    ensureSeedHls("seed-4", 740),
+    ensureSeedHls("seed-5", 831),
+    ensureSeedHls("seed-6", 932),
+    ensureSeedHls("seed-7", 1047)
   ]);
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@eduflow.com" },
     update: {
-      passwordHash: adminPasswordHash
+      passwordHash: adminPasswordHash,
+      fullName: "AI Workflow Admin"
     },
     create: {
       email: "admin@eduflow.com",
       passwordHash: adminPasswordHash,
-      fullName: "EduFlow Admin",
+      fullName: "AI Workflow Admin",
       role: "ADMIN",
       emailVerified: true
     }
@@ -114,12 +127,13 @@ async function main() {
   const student = await prisma.user.upsert({
     where: { email: "student@eduflow.com" },
     update: {
-      passwordHash: studentPasswordHash
+      passwordHash: studentPasswordHash,
+      fullName: "AI Workflow Student"
     },
     create: {
       email: "student@eduflow.com",
       passwordHash: studentPasswordHash,
-      fullName: "EduFlow Student",
+      fullName: "AI Workflow Student",
       role: "STUDENT",
       emailVerified: true
     }
@@ -127,33 +141,117 @@ async function main() {
 
   await prisma.courseSettings.upsert({
     where: { id: 1 },
-    update: { updatedById: admin.id },
+    update: {
+      titleEn: "AI Workflow: From Idea to Production",
+      titleAr: "AI Workflow: من الفكرة إلى الـ Production",
+      descriptionEn: "A practical Arabic-first workflow course that turns ideas into production-ready applications using PRDs, Spec Kit, Claude Code, Codex, Docker, testing, SEO, and CI/CD.",
+      descriptionAr: "كورس عربي عملي يعلّمك الـ workflow الكامل من الفكرة إلى تطبيق production باستخدام PRD وSpec Kit وClaude Code وCodex وDocker والاختبارات والـ SEO والـ CI/CD.",
+      pricePiasters: 100000,
+      updatedById: admin.id
+    },
     create: {
       id: 1,
-      titleEn: "EduFlow Course",
-      titleAr: "دورة EduFlow",
-      descriptionEn: "Seeded course settings",
-      descriptionAr: "إعدادات الدورة الأولية",
-      pricePiasters: 49900,
+      titleEn: "AI Workflow: From Idea to Production",
+      titleAr: "AI Workflow: من الفكرة إلى الـ Production",
+      descriptionEn: "A practical Arabic-first workflow course that turns ideas into production-ready applications using PRDs, Spec Kit, Claude Code, Codex, Docker, testing, SEO, and CI/CD.",
+      descriptionAr: "كورس عربي عملي يعلّمك الـ workflow الكامل من الفكرة إلى تطبيق production باستخدام PRD وSpec Kit وClaude Code وCodex وDocker والاختبارات والـ SEO والـ CI/CD.",
+      pricePiasters: 100000,
       updatedById: admin.id
     }
   });
 
+  await prisma.lesson.deleteMany({
+    where: {
+      id: {
+        in: ["dashboard-lesson-1", "dashboard-lesson-2"]
+      }
+    }
+  });
+
+  await Promise.all([
+    prisma.coursePackage.upsert({
+      where: { id: "core-course" },
+      update: {
+        titleEn: "AI Workflow Course",
+        titleAr: "كورس AI Workflow",
+        descriptionEn: "The complete 7-phase workflow with lifetime access and future updates.",
+        descriptionAr: "الـ workflow الكامل في 7 مراحل مع وصول دائم وتحديثات مستقبلية.",
+        pricePiasters: 100000,
+        currency: "EGP",
+        isActive: true,
+        sortOrder: 1
+      },
+      create: {
+        id: "core-course",
+        titleEn: "AI Workflow Course",
+        titleAr: "كورس AI Workflow",
+        descriptionEn: "The complete 7-phase workflow with lifetime access and future updates.",
+        descriptionAr: "الـ workflow الكامل في 7 مراحل مع وصول دائم وتحديثات مستقبلية.",
+        pricePiasters: 100000,
+        currency: "EGP",
+        isActive: true,
+        sortOrder: 1
+      }
+    }),
+    prisma.coursePackage.upsert({
+      where: { id: "course-review-session" },
+      update: {
+        titleEn: "Course + Review Session",
+        titleAr: "الكورس + جلسة مراجعة",
+        descriptionEn: "Everything in the course plus one personal review session for your real project.",
+        descriptionAr: "كل محتوى الكورس مع جلسة شخصية لمراجعة مشروعك الحقيقي والخطوات التالية.",
+        pricePiasters: 250000,
+        currency: "EGP",
+        isActive: true,
+        sortOrder: 2
+      },
+      create: {
+        id: "course-review-session",
+        titleEn: "Course + Review Session",
+        titleAr: "الكورس + جلسة مراجعة",
+        descriptionEn: "Everything in the course plus one personal review session for your real project.",
+        descriptionAr: "كل محتوى الكورس مع جلسة شخصية لمراجعة مشروعك الحقيقي والخطوات التالية.",
+        pricePiasters: 250000,
+        currency: "EGP",
+        isActive: true,
+        sortOrder: 2
+      }
+    }),
+    prisma.coursePackage.upsert({
+      where: { id: "course-month-followup" },
+      update: {
+        isActive: false,
+        sortOrder: 3
+      },
+      create: {
+        id: "course-month-followup",
+        titleEn: "Course + One Month Follow-up",
+        titleAr: "الكورس + شهر متابعة",
+        descriptionEn: "Weekly follow-up for a month. Disabled by default until you are ready to sell it inside checkout.",
+        descriptionAr: "جلسة أسبوعية لمدة شهر. غير مفعّل افتراضياً إلى أن تكون جاهزاً لبيعه داخل الدفع.",
+        pricePiasters: 800000,
+        currency: "EGP",
+        isActive: false,
+        sortOrder: 3
+      }
+    })
+  ]);
+
   const foundationsSection = await prisma.section.upsert({
     where: { id: "section-foundations" },
     update: {
-      titleEn: "Foundations",
-      titleAr: "الأساسيات",
-      descriptionEn: "Start with the platform and core workflow.",
-      descriptionAr: "ابدأ بالمنصة وسير العمل الأساسي.",
+      titleEn: "Planning and Product Shape",
+      titleAr: "التخطيط وشكل المنتج",
+      descriptionEn: "Turn the idea into a PRD, technical map, and UI direction before writing code.",
+      descriptionAr: "حوّل الفكرة إلى PRD وخريطة تقنية واتجاه UI واضح قبل كتابة الكود.",
       sortOrder: 1
     },
     create: {
       id: "section-foundations",
-      titleEn: "Foundations",
-      titleAr: "الأساسيات",
-      descriptionEn: "Start with the platform and core workflow.",
-      descriptionAr: "ابدأ بالمنصة وسير العمل الأساسي.",
+      titleEn: "Planning and Product Shape",
+      titleAr: "التخطيط وشكل المنتج",
+      descriptionEn: "Turn the idea into a PRD, technical map, and UI direction before writing code.",
+      descriptionAr: "حوّل الفكرة إلى PRD وخريطة تقنية واتجاه UI واضح قبل كتابة الكود.",
       sortOrder: 1
     }
   });
@@ -161,19 +259,38 @@ async function main() {
   const advancedSection = await prisma.section.upsert({
     where: { id: "section-advanced" },
     update: {
-      titleEn: "Advanced Workflow",
-      titleAr: "سير العمل المتقدم",
-      descriptionEn: "Production practices for delivery and scaling.",
-      descriptionAr: "ممارسات الإنتاج للتسليم والتوسع.",
+      titleEn: "Structured Implementation",
+      titleAr: "التنفيذ المنظم",
+      descriptionEn: "Use Spec Kit and AI agents to build in focused, testable phases.",
+      descriptionAr: "استخدم Spec Kit ووكلاء الذكاء الاصطناعي للبناء على مراحل واضحة وقابلة للاختبار.",
       sortOrder: 2
     },
     create: {
       id: "section-advanced",
-      titleEn: "Advanced Workflow",
-      titleAr: "سير العمل المتقدم",
-      descriptionEn: "Production practices for delivery and scaling.",
-      descriptionAr: "ممارسات الإنتاج للتسليم والتوسع.",
+      titleEn: "Structured Implementation",
+      titleAr: "التنفيذ المنظم",
+      descriptionEn: "Use Spec Kit and AI agents to build in focused, testable phases.",
+      descriptionAr: "استخدم Spec Kit ووكلاء الذكاء الاصطناعي للبناء على مراحل واضحة وقابلة للاختبار.",
       sortOrder: 2
+    }
+  });
+
+  const productionSection = await prisma.section.upsert({
+    where: { id: "section-production" },
+    update: {
+      titleEn: "Launch and Production",
+      titleAr: "الإطلاق والـ Production",
+      descriptionEn: "Harden security, performance, SEO, tracking, Docker, deployment, and CI/CD.",
+      descriptionAr: "قوّي الأمان والأداء والـ SEO والتتبع وDocker والنشر والـ CI/CD.",
+      sortOrder: 3
+    },
+    create: {
+      id: "section-production",
+      titleEn: "Launch and Production",
+      titleAr: "الإطلاق والـ Production",
+      descriptionEn: "Harden security, performance, SEO, tracking, Docker, deployment, and CI/CD.",
+      descriptionAr: "قوّي الأمان والأداء والـ SEO والتتبع وDocker والنشر والـ CI/CD.",
+      sortOrder: 3
     }
   });
 
@@ -181,10 +298,10 @@ async function main() {
     [
       {
         id: "seed-1",
-        titleEn: "Welcome",
-        titleAr: "مقدمة",
-        descriptionEn: "A quick tour of the course experience.",
-        descriptionAr: "جولة سريعة في تجربة الدورة.",
+        titleEn: "Planning Before Code",
+        titleAr: "التخطيط قبل الكود",
+        descriptionEn: "Convert your idea into a clear PRD, scope, and technical map before asking AI to build.",
+        descriptionAr: "حوّل فكرتك إلى PRD واضح ونطاق وخريطة تقنية قبل أن تطلب من الـ AI تنفيذ المشروع.",
         sortOrder: 1,
         isPublished: true,
         isPreview: true,
@@ -196,10 +313,10 @@ async function main() {
       },
       {
         id: "seed-2",
-        titleEn: "Getting Started",
-        titleAr: "البدء",
-        descriptionEn: "Set up your workflow and first project steps.",
-        descriptionAr: "جهز سير عملك وخطوات المشروع الأولى.",
+        titleEn: "UI Before Code",
+        titleAr: "الـ UI قبل الكود",
+        descriptionEn: "Use Stitch and structured screens to define the product experience before implementation.",
+        descriptionAr: "استخدم Stitch والشاشات المنظمة لتحديد تجربة المنتج قبل مرحلة التنفيذ.",
         sortOrder: 2,
         isPublished: true,
         isPreview: false,
@@ -211,15 +328,75 @@ async function main() {
       },
       {
         id: "seed-3",
-        titleEn: "Advanced Workflow",
-        titleAr: "المرحلة المتقدمة",
-        descriptionEn: "Move from prototype to a production-ready delivery flow.",
-        descriptionAr: "انتقل من النموذج الأولي إلى سير تسليم جاهز للإنتاج.",
+        titleEn: "Spec Kit Execution",
+        titleAr: "التنفيذ باستخدام Spec Kit",
+        descriptionEn: "Split the project into small tasks so a cheaper model can build correctly without chaos.",
+        descriptionAr: "قسّم المشروع إلى مهام صغيرة حتى يستطيع موديل أرخص التنفيذ بدقة وبدون فوضى.",
         sortOrder: 3,
         isPublished: true,
         isPreview: false,
         sectionId: advancedSection.id,
         videoHlsPath: seedThreeHlsPath,
+        videoStatus: "READY" as const,
+        durationSeconds: 12,
+        dripDays: 0
+      },
+      {
+        id: "seed-4",
+        titleEn: "AI Code Review and Tests",
+        titleAr: "مراجعة الكود والاختبارات",
+        descriptionEn: "Use Claude for review, TODO extraction, and E2E coverage before moving forward.",
+        descriptionAr: "استخدم Claude للمراجعة واستخراج TODOs وبناء اختبارات E2E قبل الانتقال للمرحلة التالية.",
+        sortOrder: 4,
+        isPublished: true,
+        isPreview: false,
+        sectionId: advancedSection.id,
+        videoHlsPath: seedFourHlsPath,
+        videoStatus: "READY" as const,
+        durationSeconds: 12,
+        dripDays: 0
+      },
+      {
+        id: "seed-5",
+        titleEn: "Security and Performance",
+        titleAr: "الأمان والأداء",
+        descriptionEn: "Run security checks, performance audits, and Lighthouse improvements before launch.",
+        descriptionAr: "نفّذ فحوصات الأمان وتحسينات الأداء وLighthouse قبل الإطلاق.",
+        sortOrder: 5,
+        isPublished: true,
+        isPreview: false,
+        sectionId: productionSection.id,
+        videoHlsPath: seedFiveHlsPath,
+        videoStatus: "READY" as const,
+        durationSeconds: 12,
+        dripDays: 0
+      },
+      {
+        id: "seed-6",
+        titleEn: "SEO, Marketing, and Tracking",
+        titleAr: "SEO والتسويق والتتبع",
+        descriptionEn: "Prepare technical SEO, Meta Pixel, GA4, and the signals needed to understand conversion.",
+        descriptionAr: "جهّز الـ SEO التقني وMeta Pixel وGA4 والإشارات التي تحتاجها لفهم التحويلات.",
+        sortOrder: 6,
+        isPublished: true,
+        isPreview: false,
+        sectionId: productionSection.id,
+        videoHlsPath: seedSixHlsPath,
+        videoStatus: "READY" as const,
+        durationSeconds: 12,
+        dripDays: 0
+      },
+      {
+        id: "seed-7",
+        titleEn: "Docker and Production Deployment",
+        titleAr: "Docker والنشر على Production",
+        descriptionEn: "Package the app with Docker, deploy to a server, and wire a CI/CD pipeline for automatic updates.",
+        descriptionAr: "جهّز التطبيق بـ Docker وانشره على السيرفر واربط CI/CD حتى يتحدث تلقائياً.",
+        sortOrder: 7,
+        isPublished: true,
+        isPreview: false,
+        sectionId: productionSection.id,
+        videoHlsPath: seedSevenHlsPath,
         videoStatus: "READY" as const,
         durationSeconds: 12,
         dripDays: 0

@@ -13,9 +13,9 @@ process.env.JWT_ACCESS_SECRET ??= "test-access-secret-at-least-32-chars";
 process.env.JWT_REFRESH_SECRET ??= "test-refresh-secret-at-least-32-chars";
 process.env.VIDEO_TOKEN_SECRET ??= "test-video-secret-at-least-32-chars";
 process.env.PAYMOB_API_KEY ??= "test";
-process.env.PAYMOB_HMAC_SECRET ??= "test-hmac-secret";
-process.env.PAYMOB_INTEGRATION_ID ??= "12345";
-process.env.PAYMOB_IFRAME_ID ??= "67890";
+process.env.PAYMOB_HMAC_SECRET = "test-hmac-secret";
+process.env.PAYMOB_INTEGRATION_ID = "12345";
+process.env.PAYMOB_IFRAME_ID = "67890";
 process.env.GOOGLE_CLIENT_ID ??= "test";
 process.env.GOOGLE_CLIENT_SECRET ??= "test";
 process.env.SMTP_HOST ??= "localhost";
@@ -77,16 +77,16 @@ beforeEach(async () => {
     where: { id: 1 },
     update: {
       titleEn: "EduFlow Course",
-      titleAr: "Ø¯ÙˆØ±Ø© EduFlow",
-      pricePiasters: 49900,
+      titleAr: "EduFlow Course",
+      pricePiasters: 100000,
       currency: "EGP",
       isEnrollmentOpen: true
     },
     create: {
       id: 1,
       titleEn: "EduFlow Course",
-      titleAr: "Ø¯ÙˆØ±Ø© EduFlow",
-      pricePiasters: 49900,
+      titleAr: "EduFlow Course",
+      pricePiasters: 100000,
       currency: "EGP",
       isEnrollmentOpen: true
     }
@@ -144,8 +144,8 @@ describe("US2 checkout and webhook enrollment", () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(checkout.body).toMatchObject({
       paymentKey: "payment-key",
-      amount: 39920,
-      discountApplied: 9980,
+      amount: 80000,
+      discountApplied: 20000,
       iframeId: "67890",
       currency: "EGP"
     });
@@ -158,7 +158,7 @@ describe("US2 checkout and webhook enrollment", () => {
     const hmacModule = await import("../../src/utils/hmac.js");
     const webhookPayload = {
       obj: {
-        amount_cents: "39920",
+        amount_cents: "80000",
         created_at: "2026-04-12T18:00:00Z",
         currency: "EGP",
         error_occured: false,

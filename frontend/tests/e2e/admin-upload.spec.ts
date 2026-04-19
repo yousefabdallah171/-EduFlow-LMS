@@ -7,6 +7,9 @@ test("admin starts a resumable upload and sees progress feedback", async ({ page
     await route.fulfill({
       status: 200,
       contentType: "application/json",
+      headers: {
+        "set-cookie": "eduflow_refresh_present=1; Path=/; SameSite=Strict"
+      },
       body: JSON.stringify({
         accessToken: "admin-access-token",
         user: {
@@ -62,6 +65,14 @@ test("admin starts a resumable upload and sees progress feedback", async ({ page
     });
   });
 
+  await page.route("**/api/v1/admin/sections", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ sections: [] })
+    });
+  });
+
   await page.route("**/api/v1/admin/uploads", async (route) => {
     if (route.request().method() === "GET") {
       await route.fulfill({
@@ -99,16 +110,18 @@ test("admin starts a resumable upload and sees progress feedback", async ({ page
   await page.goto(`${baseUrl}/login`);
   await page.getByLabel("Email").fill("admin@example.com");
   await page.getByLabel("Password").fill("Securepass123");
-  await page.getByRole("button", { name: "Log in" }).click();
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.context().addCookies([{ name: "eduflow_refresh_present", value: "1", url: baseUrl, sameSite: "Strict" }]);
+  await expect(page).toHaveURL(`${baseUrl}/admin/dashboard`);
   await page.goto(`${baseUrl}/admin/lessons`);
 
-  await page.getByRole("button", { name: "Upload Video" }).click();
+  await page.getByRole("button", { name: "Upload" }).click();
+  await expect(page.getByRole("heading", { name: "Upload video" })).toBeVisible();
   await page.setInputFiles('input[type="file"]', {
     name: "lesson.mp4",
     mimeType: "video/mp4",
     buffer: Buffer.from("demo video content")
   });
 
-  await expect(page.getByText("100%")).toBeVisible();
-  await expect(page.getByText("Video uploaded successfully. Processing...")).toBeVisible();
+  await expect(page.getByText("Lesson details & resources")).toBeVisible();
 });

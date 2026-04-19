@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { Download, FileDown } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { api } from "@/lib/api";
 import { formatNumber, pickLocalizedText, resolveLocale } from "@/lib/locale";
@@ -51,46 +53,46 @@ export const StudentDownloads = () => {
   return (
     <StudentShell>
       <>
-
-        <header
-          className="rounded-2xl border p-6 shadow-card"
-          style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-        >
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("student.shell.section")}</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+        <header className="dashboard-panel dashboard-hero dashboard-panel--strong p-6">
+          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+            <Download className="h-3.5 w-3.5" />
+            {t("student.shell.section")}
+          </p>
+          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
             {t("student.downloads.title")}
           </h1>
         </header>
 
         {isLoading || resourceQueries.isLoading ? (
           <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />)}
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-[24px]" />)}
           </div>
         ) : grouped.length === 0 ? (
-          <EmptyState icon="📥" title={t("student.downloads.empty")} description={t("student.downloads.emptyDesc")} />
+          <EmptyState
+            illustration={<FileDown className="mx-auto h-10 w-10 text-brand-600" />}
+            title={t("student.downloads.empty")}
+            description={t("student.downloads.emptyDesc")}
+          />
         ) : (
           <div className="space-y-4">
             {grouped.map(({ lesson, resources }) => (
-              <div
-                key={lesson.id}
-                className="rounded-2xl border p-5 shadow-card"
-                style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-              >
-                <p className="mb-3 text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>
+              <div key={lesson.id} className="dashboard-panel p-5">
+                <p className="mb-3 font-display text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
                   {pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
                 </p>
                 <div className="space-y-2">
-                  {resources.map((r) => (
-                    <div key={r.id} className="flex items-center justify-between gap-4">
+                  {resources.map((resource) => (
+                    <div key={resource.id} className="dashboard-panel flex flex-wrap items-center justify-between gap-3 rounded-[24px] px-4 py-3">
                       <a
-                        href={r.fileUrl}
+                        href={resource.fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm font-medium text-brand-600 no-underline hover:underline"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-brand-600 no-underline hover:underline"
                       >
-                        {r.title}
+                        <FileDown className="h-4 w-4" />
+                        {resource.title}
                       </a>
-                      <Badge variant="outline">{formatSize(r.fileSizeBytes, currentLocale)}</Badge>
+                      <Badge variant="outline">{formatSize(resource.fileSizeBytes, currentLocale)}</Badge>
                     </div>
                   ))}
                 </div>

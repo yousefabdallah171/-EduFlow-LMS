@@ -272,14 +272,22 @@ export const VideoPlayer = ({
   );
 
   return (
-    <section className="rounded-[2rem] border border-slate-200 bg-white/90 p-4 shadow-[0_30px_90px_rgba(15,23,42,0.18)] backdrop-blur dark:border-white/5 dark:bg-zinc-900/90">
+    <section
+      className="rounded-[2rem] border p-4 backdrop-blur"
+      style={{
+        borderColor: "color-mix(in oklab, var(--color-brand) 16%, var(--color-border))",
+        background:
+          "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 90%, transparent))",
+        boxShadow: "var(--shadow-elevated)"
+      }}
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="m-0 text-xs font-semibold uppercase tracking-[0.25em] text-brand-600 dark:text-brand-400">
+          <p className="m-0 text-xs font-semibold uppercase tracking-[0.25em] text-brand-600">
             {t("lesson.secureStream")}
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-zinc-50">{lessonTitle}</h2>
-          <p className="mt-2 text-sm text-slate-500 dark:text-zinc-400">{status}</p>
+          <h2 className="mt-2 text-2xl font-semibold" style={{ color: "var(--color-text-primary)" }}>{lessonTitle}</h2>
+          <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>{status}</p>
         </div>
         <div className="flex flex-wrap justify-end gap-2">
           <TooltipButton label="WM" description={t("video.watermarkTooltip", { label: progressLabel })} />
@@ -288,11 +296,18 @@ export const VideoPlayer = ({
         </div>
       </div>
 
-      <div className="relative mt-6 overflow-hidden rounded-[1.75rem] bg-zinc-950">
+      <div
+        className="relative mt-6 overflow-hidden rounded-[1.75rem]"
+        style={{
+          background:
+            "linear-gradient(180deg, color-mix(in oklab, var(--color-invert) 92%, black), color-mix(in oklab, var(--color-invert-2) 96%, black))"
+        }}
+      >
         {!isAttached ? (
-          <div className="absolute inset-0 z-20 grid place-items-center bg-zinc-950/80">
+          <div className="absolute inset-0 z-20 grid place-items-center" style={{ background: "rgba(9, 13, 9, 0.72)" }}>
             <button
-              className="rounded-full bg-white/90 px-5 py-3 text-sm font-semibold text-slate-950 transition-transform hover:scale-105 active:scale-95"
+              className="rounded-full px-5 py-3 text-sm font-semibold transition-transform hover:scale-105 active:scale-95"
+              style={{ background: "var(--gradient-brand)", color: "var(--color-text-invert)" }}
               onClick={async () => {
                 await attachStream();
                 const video = videoRef.current;
@@ -308,7 +323,8 @@ export const VideoPlayer = ({
         ) : null}
         <video
           ref={videoRef}
-          className={cn("aspect-video w-full bg-zinc-950")}
+          className={cn("aspect-video w-full")}
+          style={{ backgroundColor: "var(--color-invert)" }}
           controls
           playsInline
           onPlay={() => {

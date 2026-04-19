@@ -38,20 +38,38 @@ const paymobRequest = async <T>(path: string, body: Record<string, unknown>) => 
 };
 
 export const paymentService = {
-  async validateCouponPreview(couponCode: string | undefined) {
+  async getCheckoutPackage(packageId?: string) {
+    const coursePackage = packageId
+      ? await prisma.coursePackage.findFirst({ where: { id: packageId, isActive: true } })
+      : await prisma.coursePackage.findFirst({ where: { isActive: true }, orderBy: { sortOrder: "asc" } });
+
+    if (coursePackage) {
+      return coursePackage;
+    }
+
     const settings = await prisma.courseSettings.findUnique({ where: { id: 1 } });
     if (!settings) {
       throw new PaymentError("COURSE_SETTINGS_MISSING", 500, "Course settings are not configured.");
     }
 
+    return {
+      id: null,
+      pricePiasters: settings.pricePiasters,
+      currency: settings.currency
+    };
+  },
+
+  async validateCouponPreview(couponCode: string | undefined, packageId?: string) {
+    const coursePackage = await this.getCheckoutPackage(packageId);
+
     if (!couponCode?.trim()) {
       return { valid: false, reason: "NOT_FOUND" };
     }
 
-    return couponService.validateCoupon(couponCode, settings.pricePiasters);
+    return couponService.validateCoupon(couponCode, coursePackage.pricePiasters);
   },
 
-  async createPaymobOrder(userId: string, couponCode?: string) {
+  async createPaymobOrder(userId: string, couponCode?: string, packageId?: string) {
     const student = await userRepository.findById(userId);
     if (!student) {
       throw new PaymentError("USER_NOT_FOUND", 404, "Student not found.");
@@ -62,17 +80,14 @@ export const paymentService = {
       throw new PaymentError("ALREADY_ENROLLED", 409, "Student is already enrolled.");
     }
 
-    const settings = await prisma.courseSettings.findUnique({ where: { id: 1 } });
-    if (!settings) {
-      throw new PaymentError("COURSE_SETTINGS_MISSING", 500, "Course settings are not configured.");
-    }
+    const coursePackage = await this.getCheckoutPackage(packageId);
 
     const payment = await prisma.$transaction(async (db) => {
       let couponApplication = null;
 
       if (couponCode?.trim()) {
         try {
-          couponApplication = await couponService.applyCoupon(couponCode, settings.pricePiasters, db);
+          couponApplication = await couponService.applyCoupon(couponCode, coursePackage.pricePiasters, db);
         } catch (error) {
           if (error instanceof couponService.CouponError) {
             throw new PaymentError("INVALID_COUPON", 400, "This coupon is expired or has reached its usage limit.");
@@ -85,8 +100,9 @@ export const paymentService = {
       return db.payment.create({
         data: {
           user: { connect: { id: userId } },
-          amountPiasters: couponApplication?.discountedAmountPiasters ?? settings.pricePiasters,
-          currency: settings.currency,
+          package: coursePackage.id ? { connect: { id: coursePackage.id } } : undefined,
+          amountPiasters: couponApplication?.discountedAmountPiasters ?? coursePackage.pricePiasters,
+          currency: coursePackage.currency,
           discountPiasters: couponApplication?.discountPiasters ?? 0,
           coupon: couponApplication ? { connect: { id: couponApplication.coupon.id } } : undefined
         }

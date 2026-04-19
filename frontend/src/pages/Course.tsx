@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { ArrowRight, Check, CircleDot, LockKeyhole, LogIn, PlayCircle, Plus } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -68,61 +69,61 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
 
   const course = courseQuery.data;
   const courseTitle = pickLocalizedText(isAr ? "ar" : "en", course?.titleEn ?? course?.title, course?.titleAr);
+  const sidebarActions = [
+    { icon: CircleDot, label: t("actions.getCourseAccess"), href: `${prefix}/checkout`, accent: true },
+    { icon: PlayCircle, label: t("course.public.watchFreePreview"), href: `${prefix}/preview` },
+    { icon: LogIn, label: t("actions.logIn"), href: `${prefix}/login` },
+    { icon: Plus, label: t("actions.createAccount"), href: `${prefix}/register` }
+  ];
 
   return (
-    <main className="min-h-dvh px-4 py-6 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
+    <main className="dashboard-page min-h-dvh px-4 py-6 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-5 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
 
           {/* ── Sidebar ── */}
-          <aside
-            className="hidden rounded-2xl border p-3 shadow-card md:block"
-            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-          >
+          <aside className="dashboard-panel dashboard-sidebar hidden p-3 md:block">
             <div className="mb-3 rounded-xl p-3 text-center" style={{ backgroundColor: "var(--color-brand-muted)" }}>
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 shadow-sm">
-                <span className="text-lg font-bold text-white">E</span>
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl shadow-sm" style={{ background: "var(--gradient-brand)" }}>
+                <span className="font-mono text-sm font-black text-black">AI</span>
               </div>
-              <p className="mt-2 text-xs font-bold text-brand-600">EduFlow</p>
+              <p className="mt-2 text-xs font-bold text-brand-600">AI Workflow</p>
             </div>
 
-            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
-              {isAr ? "الإجراءات" : "Actions"}
+            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+              {t("course.public.actions")}
             </p>
             <nav className="space-y-0.5">
-              {[
-                { icon: "◎", label: isAr ? "احصل على الدورة" : "Get course access", href: `${prefix}/checkout`, accent: true },
-                { icon: "▶", label: isAr ? "معاينة مجانية" : "Watch free preview", href: `${prefix}/preview` },
-                { icon: "→", label: isAr ? "تسجيل الدخول" : "Log in", href: `${prefix}/login` },
-                { icon: "+", label: isAr ? "إنشاء حساب" : "Create account", href: `${prefix}/register` }
-              ].map((item) => (
+              {sidebarActions.map((item) => {
+                const Icon = item.icon;
+
+                return (
                 <Link
                   key={item.label}
                   className={cn(
                     "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium no-underline transition-colors",
-                    item.accent ? "bg-brand-600 text-white hover:bg-brand-700" : "hover:bg-surface2"
+                    item.accent ? "text-white shadow-sm hover:opacity-95" : "hover:bg-surface2"
                   )}
-                  style={item.accent ? {} : { color: "var(--color-text-secondary)" }}
+                  style={item.accent ? { background: "var(--gradient-brand)" } : { color: "var(--color-text-secondary)" }}
                   to={item.href}
                 >
-                  <span className={cn("text-base leading-none", item.accent ? "opacity-80" : "text-brand-600 opacity-70")}>
-                    {item.icon}
-                  </span>
+                  <Icon className={cn("h-4 w-4", item.accent ? "opacity-85" : "text-brand-600 opacity-70")} />
                   {item.label}
                 </Link>
-              ))}
+                );
+              })}
             </nav>
 
             {course ? (
-              <div className="mt-4 rounded-xl p-3" style={{ backgroundColor: "var(--color-surface-2)" }}>
-                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
-                  {isAr ? "سعر الدورة" : "Course price"}
+              <div className="dashboard-panel dashboard-panel--accent mt-4 rounded-[22px] p-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                  {t("checkout.coursePrice")}
                 </p>
                 <p className="mt-1 text-2xl font-bold text-brand-600">
                   {course.priceEgp} <span className="text-sm">{course.currency}</span>
                 </p>
                 <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                  {isAr ? `${course.lessonCount} درس` : `${course.lessonCount} lessons`}
+                  {t("course.public.lessonCount", { count: course.lessonCount })}
                 </p>
               </div>
             ) : null}
@@ -132,48 +133,46 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
           <div className="space-y-5">
 
             {/* Hero */}
-            <div
-              className="overflow-hidden rounded-2xl border shadow-card"
-              style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-            >
-              <div className="p-6">
-                <p className="text-xs font-bold uppercase tracking-widest text-brand-600">EduFlow</p>
-                <h1 className="mt-1.5 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+            <div className="dashboard-panel dashboard-hero dashboard-panel--strong relative overflow-hidden rounded-[32px]">
+              <div
+                className="pointer-events-none absolute inset-x-0 top-0 h-44 opacity-75"
+                style={{ background: "radial-gradient(circle at top right, rgba(163,230,53,0.16), transparent 58%)" }}
+              />
+              <div className="relative p-6 sm:p-8">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">AI Workflow</p>
+                <h1 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: "var(--color-text-primary)" }}>
                   {courseTitle || (isAr ? "مكتبة الدروس المحمية" : "Protected Lesson Library")}
                 </h1>
-                <p className="mt-1.5 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                  {isAr
-                    ? "سجّل الدخول أو اشترِ الدورة للوصول إلى جميع الدروس."
-                    : "Log in or purchase the course to unlock all lessons."}
+                <p className="mt-3 max-w-2xl text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>
+                  {t("course.public.unlockMessage")}
                 </p>
 
                 {/* Free preview banner */}
-                <div
-                  className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"
-                  style={{ backgroundColor: "var(--color-brand-muted)", borderColor: "rgba(235,32,39,0.2)" }}
-                >
+              <div className="dashboard-panel dashboard-panel--accent mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[22px] p-4">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-widest text-brand-600">
-                      {isAr ? "معاينة مجانية" : "Free preview"}
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                      {t("course.freePreview")}
                     </p>
                     <p className="mt-0.5 text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>
-                      {isAr ? "شاهد الدرس الأول مجاناً بدون تسجيل" : "Watch lesson 1 free — no login required"}
+                      {t("course.public.firstLessonFree")}
                     </p>
                   </div>
                   <Link
-                    className="flex-shrink-0 rounded-xl bg-brand-600 px-4 py-2 text-sm font-bold text-white no-underline shadow-sm transition-all hover:bg-brand-700"
+                    className="flex-shrink-0 rounded-xl px-4 py-2 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    style={{ background: "var(--gradient-brand)", outlineColor: "var(--color-brand)" }}
                     to={`${prefix}/preview`}
                   >
-                    {isAr ? "شاهد المعاينة" : "Watch preview"}
+                    {t("actions.watchPreview")}
                   </Link>
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-3">
                   <Link
-                    className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:bg-brand-700"
+                    className="inline-flex min-h-11 items-center rounded-xl px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    style={{ background: "var(--gradient-brand)", outlineColor: "var(--color-brand)" }}
                     to={`${prefix}/checkout`}
                   >
-                    {isAr ? "احصل على الدورة" : "Get course access"}
+                    {t("actions.getCourseAccess")}
                   </Link>
                   <Link
                     className="rounded-xl border px-5 py-2.5 text-sm font-medium no-underline transition-colors hover:bg-surface2"
@@ -188,18 +187,17 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
 
             {/* Lesson list — all locked, click → login */}
             {courseQuery.isLoading ? (
-              <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>{t("common.loading")}</p>
+              <div className="rounded-[28px] border p-8 text-center shadow-card" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+                <p className="text-sm font-medium" style={{ color: "var(--color-text-muted)" }}>{t("common.loading")}</p>
+              </div>
             ) : course?.lessons && course.lessons.length > 0 ? (
-              <div
-                className="rounded-2xl border shadow-card"
-                style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-              >
+              <div className="dashboard-panel overflow-hidden">
                 <div className="flex items-center justify-between p-5" style={{ borderBottom: "1px solid var(--color-border)" }}>
-                  <p className="text-xs font-bold uppercase tracking-widest text-brand-600">
-                    {isAr ? "محتوى الدورة" : "Course content"}
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                    {t("course.public.content")}
                   </p>
                   <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ backgroundColor: "var(--color-surface-2)", color: "var(--color-text-muted)" }}>
-                    {course.lessons.length} {isAr ? "درس" : "lessons"}
+                    {t("course.public.lessonCount", { count: course.lessons.length })}
                   </span>
                 </div>
 
@@ -228,7 +226,7 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
                               color: isFirst ? "var(--color-brand)" : "var(--color-text-muted)"
                             }}
                           >
-                            {isFirst ? "▶" : "🔒"}
+                            {isFirst ? <PlayCircle className="h-4 w-4" /> : <LockKeyhole className="h-4 w-4" />}
                           </span>
                           <div>
                             <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
@@ -236,14 +234,14 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
                             </p>
                             <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
                               {isFirst
-                                ? (isAr ? "مجاني — شاهد الآن" : "Free — watch now")
-                                : (isAr ? "🔒 يتطلب التسجيل" : "🔒 Login required")}
+                                ? t("course.public.freeWatchNow")
+                                : t("course.public.loginRequired")}
                               {lesson.durationSeconds ? ` - ${formatDuration(lesson.durationSeconds)}` : ""}
                             </p>
                           </div>
                         </div>
                         <span className="text-xs font-medium text-brand-600">
-                          {isFirst ? (isAr ? "معاينة" : "Preview") : (isAr ? "تسجيل الدخول" : "Log in")}
+                          {isFirst ? t("course.public.preview") : t("actions.logIn")}
                         </span>
                       </button>
                     );
@@ -254,9 +252,9 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
 
             {/* Sign up CTA */}
             <p className="text-center text-xs" style={{ color: "var(--color-text-muted)" }}>
-              {isAr ? "هل أنت جديد؟" : "New here?"}{" "}
+              {t("course.public.newHere")}{" "}
               <Link className="font-semibold text-brand-600 no-underline hover:underline" to={`${prefix}/register`}>
-                {isAr ? "إنشاء حساب مجاني" : "Create a free account"}
+                {t("landing.createAccount")}
               </Link>
             </p>
           </div>
@@ -312,21 +310,18 @@ export const Course = () => {
       <>
 
             {/* Welcome header */}
-            <div
-              className="rounded-2xl border p-6 shadow-card"
-              style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-            >
+            <div className="dashboard-panel dashboard-hero dashboard-panel--strong p-6">
               {user ? (
                 <>
-                  <p className="text-xs font-bold uppercase tracking-widest text-brand-600">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
                     {isAr ? "مرحباً بك" : "Welcome back"}
                   </p>
-                  <h1 className="mt-1.5 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+                  <h1 className="mt-2 font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
                     {user.fullName}
                   </h1>
                 </>
               ) : (
-                <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+                <h1 className="font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
                   {isAr ? "مكتبة الدروس" : "Course library"}
                 </h1>
               )}
@@ -340,27 +335,24 @@ export const Course = () => {
             {/* Stats row */}
             {isEnrolled && totalCount > 0 ? (
               <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-2xl border p-4 shadow-card" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
-                  <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
+                <div className="dashboard-panel dashboard-panel--accent p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
                     {t("course.completion")}
                   </p>
-                  <p className="mt-2 text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>{completionPct}%</p>
+                  <p className="mt-2 font-display text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>{completionPct}%</p>
                   <Progress className="mt-2 h-1.5" value={completionPct} />
                 </div>
-                <div className="rounded-2xl border p-4 shadow-card" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
-                  <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
+                <div className="dashboard-panel p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
                     {t("course.completedLessons")}
                   </p>
-                  <p className="mt-2 text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>{completedCount}</p>
+                  <p className="mt-2 font-display text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>{completedCount}</p>
                   <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
                     {t("course.outOf", { total: totalCount })}
                   </p>
                 </div>
-                <div
-                  className="flex flex-col justify-between rounded-2xl border p-4 shadow-card"
-                  style={{ backgroundColor: "var(--color-invert)", borderColor: "transparent" }}
-                >
-                  <p className="text-xs font-semibold uppercase tracking-widest opacity-60" style={{ color: "var(--color-text-invert)" }}>
+                <div className="dashboard-panel dashboard-panel--strong flex flex-col justify-between p-4" style={{ backgroundColor: "var(--color-invert)" }}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-60" style={{ color: "var(--color-text-invert)" }}>
                     {t("course.playbackPolicy")}
                   </p>
                   <p className="mt-3 text-xs font-medium leading-relaxed" style={{ color: "var(--color-text-invert)" }}>
@@ -372,15 +364,12 @@ export const Course = () => {
 
             {/* Not enrolled state */}
             {!statusQuery.isLoading && !isEnrolled ? (
-              <div
-                className="rounded-2xl border p-6 shadow-card"
-                style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-              >
+              <div className="dashboard-panel p-6">
                 <div
                   className="rounded-xl border border-dashed p-6 text-center"
                   style={{ borderColor: "var(--color-border-strong)" }}
                 >
-                  <p className="text-base font-bold" style={{ color: "var(--color-text-primary)" }}>
+                  <p className="font-display text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
                     {t("course.noAccess")}
                   </p>
                   <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
@@ -388,7 +377,8 @@ export const Course = () => {
                   </p>
                   <div className="mt-5 flex flex-wrap justify-center gap-3">
                     <Link
-                      className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:bg-brand-700"
+                      className="inline-flex min-h-11 items-center rounded-xl px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                      style={{ background: "var(--gradient-brand)" }}
                       to={`${prefix}/checkout`}
                     >
                       {t("course.getAccess")}
@@ -407,13 +397,9 @@ export const Course = () => {
 
             {/* Lesson list */}
             {isEnrolled ? (
-              <div
-                id="lessons"
-                className="rounded-2xl border shadow-card"
-                style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-              >
+              <div id="lessons" className="dashboard-panel overflow-hidden">
                 <div className="flex items-center justify-between p-5" style={{ borderBottom: "1px solid var(--color-border)" }}>
-                  <p className="text-xs font-bold uppercase tracking-widest text-brand-600">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
                     {isAr ? "الدروس" : "Lessons"}
                   </p>
                   {lessonsQuery.isLoading ? (
@@ -454,7 +440,7 @@ export const Course = () => {
                                   : "var(--color-text-muted)"
                             }}
                           >
-                            {lesson.completedAt ? "✓" : lesson.isUnlocked ? idx + 1 : "🔒"}
+                            {lesson.completedAt ? <Check className="h-4 w-4" /> : lesson.isUnlocked ? idx + 1 : <LockKeyhole className="h-4 w-4" />}
                           </span>
                           <div>
                             <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
@@ -462,7 +448,7 @@ export const Course = () => {
                             </p>
                             <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
                               {lesson.completedAt
-                                ? (isAr ? "✓ مكتمل" : "✓ Completed")
+                                ? t("common.completed")
                                 : isResume
                                   ? (isAr ? `متابعة من ${lesson.lastPositionSeconds}ث` : `Resume from ${lesson.lastPositionSeconds}s`)
                                   : !lesson.isUnlocked
@@ -477,7 +463,8 @@ export const Course = () => {
 
                         {lesson.isUnlocked ? (
                           <Link
-                            className="rounded-lg bg-brand-600 px-3.5 py-2 text-xs font-bold text-white no-underline shadow-sm transition-all hover:bg-brand-700"
+                            className="rounded-lg px-3.5 py-2 text-xs font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                            style={{ background: "var(--gradient-brand)" }}
                             to={`${prefix}/lessons/${lesson.id}`}
                           >
                             {lesson.completedAt
@@ -496,11 +483,8 @@ export const Course = () => {
 
             {/* Continue learning quick-access */}
             {isEnrolled && (nextLesson ?? lastLesson) ? (
-              <div
-                className="rounded-2xl border p-5 shadow-card"
-                style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-              >
-                <p className="text-xs font-bold uppercase tracking-widest text-brand-600">
+              <div className="dashboard-panel p-5">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
                   {t("course.continueLearning")}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
@@ -508,11 +492,12 @@ export const Course = () => {
                     {pickLocalizedText(currentLocale, (nextLesson ?? lastLesson)?.titleEn ?? (nextLesson ?? lastLesson)?.title, (nextLesson ?? lastLesson)?.titleAr)}
                   </p>
                   <Link
-                    className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:bg-brand-700"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                    style={{ background: "var(--gradient-brand)" }}
                     to={`${prefix}/lessons/${(nextLesson ?? lastLesson)!.id}`}
                   >
                     {t("actions.continue")}
-                    <span className="icon-dir">→</span>
+                    <ArrowRight className="icon-dir h-4 w-4" />
                   </Link>
                 </div>
               </div>

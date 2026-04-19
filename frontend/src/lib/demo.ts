@@ -18,7 +18,7 @@ export const demoEnrollment = {
 export const demoLessons = [
   {
     id: "demo-lesson-1",
-    title: "Introduction to EduFlow",
+    title: "Planning Before Code",
     durationSeconds: 480,
     sortOrder: 1,
     isUnlocked: true,
@@ -28,7 +28,7 @@ export const demoLessons = [
   },
   {
     id: "demo-lesson-2",
-    title: "Protected Playback Walkthrough",
+    title: "Spec Kit Execution",
     durationSeconds: 900,
     sortOrder: 2,
     isUnlocked: true,
@@ -40,8 +40,8 @@ export const demoLessons = [
 
 export const demoLessonPlayback = (lessonId: string): LessonPlayback => ({
   id: lessonId,
-  title: lessonId === "demo-lesson-2" ? "Protected Playback Walkthrough" : "Introduction to EduFlow",
-  descriptionHtml: "Demo playback fixture used for local validation and performance auditing.",
+  title: lessonId === "demo-lesson-2" ? "Spec Kit Execution" : "Planning Before Code",
+  descriptionHtml: "Demo playback fixture for validating the AI Workflow lesson experience locally.",
   durationSeconds: lessonId === "demo-lesson-2" ? 900 : 480,
   videoToken: "demo-video-token",
   hlsUrl: "/demo-video.m3u8",

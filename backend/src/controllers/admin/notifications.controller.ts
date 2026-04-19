@@ -34,8 +34,8 @@ export const adminNotificationsController = {
         include: { user: { select: { email: true, fullName: true } } }
       });
 
-      const subject = template?.subject ?? "Message from EduFlow";
-      const html = template?.bodyHtml ?? "<p>Hello from EduFlow!</p>";
+      const subject = template?.subject ?? "Message from AI Workflow";
+      const html = template?.bodyHtml ?? "<p>Hello from AI Workflow!</p>";
 
       let sent = 0;
       for (const enrollment of enrollments) {

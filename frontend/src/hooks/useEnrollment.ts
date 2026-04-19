@@ -51,7 +51,7 @@ export const useEnrollment = () => {
   });
 
   const validateCoupon = useMutation({
-    mutationFn: async (couponCode: string) => {
+    mutationFn: async ({ couponCode, packageId }: { couponCode: string; packageId?: string }) => {
       if (!canFetchEnrollment) {
         throw new Error("Please log in as a student to apply a coupon.");
       }
@@ -60,17 +60,17 @@ export const useEnrollment = () => {
           valid: true as const,
           discountType: "PERCENTAGE" as const,
           discountValue: 20,
-          originalAmountEgp: 499,
-          discountedAmountEgp: 399.2
+          originalAmountEgp: 1000,
+          discountedAmountEgp: 800
         };
       }
-      const response = await api.post<CouponValidationResponse>("/checkout/validate-coupon", { couponCode });
+      const response = await api.post<CouponValidationResponse>("/checkout/validate-coupon", { couponCode, packageId });
       return response.data;
     }
   });
 
   const checkout = useMutation({
-    mutationFn: async (couponCode?: string) => {
+    mutationFn: async (payload?: { couponCode?: string; packageId?: string }) => {
       if (!canFetchEnrollment) {
         throw new Error("Please log in as a student to continue checkout.");
       }
@@ -78,13 +78,13 @@ export const useEnrollment = () => {
         return {
           paymentKey: "demo-payment-key",
           orderId: "demo-order-1",
-          amount: 39_920,
+          amount: 80_000,
           currency: "EGP",
-          discountApplied: 9_980,
+          discountApplied: 20_000,
           iframeId: "12345"
         };
       }
-      const response = await api.post<CheckoutResponse>("/checkout", couponCode ? { couponCode } : {});
+      const response = await api.post<CheckoutResponse>("/checkout", payload ?? {});
       return response.data;
     }
   });

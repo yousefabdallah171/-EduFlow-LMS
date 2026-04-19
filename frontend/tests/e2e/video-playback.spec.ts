@@ -7,6 +7,9 @@ test("video playback shows watermark for the enrolled student", async ({ page })
     await route.fulfill({
       status: 200,
       contentType: "application/json",
+      headers: {
+        "set-cookie": "eduflow_refresh_present=1; Path=/; SameSite=Strict"
+      },
       body: JSON.stringify({
         accessToken: "student-access-token",
         user: {
@@ -56,6 +59,36 @@ test("video playback shows watermark for the enrolled student", async ({ page })
             unlocksAt: null,
             completedAt: null,
             lastPositionSeconds: 18
+          }
+        ]
+      })
+    });
+  });
+
+  await page.route("**/api/v1/lessons/grouped", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        sections: [
+          {
+            id: "section-1",
+            titleEn: "Foundations",
+            titleAr: "Foundations",
+            sortOrder: 1,
+            lessons: [
+              {
+                id: "lesson-1",
+                titleEn: "Protected Lesson",
+                titleAr: "Protected Lesson",
+                durationSeconds: 120,
+                sortOrder: 1,
+                isUnlocked: true,
+                unlocksAt: null,
+                completedAt: null,
+                lastPositionSeconds: 18
+              }
+            ]
           }
         ]
       })
@@ -121,8 +154,8 @@ test("video playback shows watermark for the enrolled student", async ({ page })
   await page.goto(`${baseUrl}/login`);
   await page.getByLabel("Email").fill("student@example.com");
   await page.getByLabel("Password").fill("Securepass123");
-  await page.getByRole("button", { name: "Log in" }).click();
-  await expect(page).toHaveURL(`${baseUrl}/course`);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(`${baseUrl}/dashboard`);
 
   await page.evaluate(() => {
     window.history.pushState({}, "", "/en/lessons/lesson-1");

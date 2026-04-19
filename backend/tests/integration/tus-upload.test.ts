@@ -44,7 +44,16 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await prisma.videoUpload.deleteMany();
+  await prisma.videoToken.deleteMany();
+  await prisma.lessonProgress.deleteMany();
+  await prisma.note.deleteMany();
+  await prisma.lessonResource.deleteMany();
   await prisma.lesson.deleteMany();
+  await prisma.auditLog.deleteMany();
+  await prisma.courseSettings.updateMany({
+    where: { updatedBy: { email: "admin-upload@example.com" } },
+    data: { updatedById: null }
+  });
   await prisma.refreshToken.deleteMany();
   await prisma.user.deleteMany({ where: { role: "ADMIN" } });
   await fs.rm(path.resolve(process.cwd(), "storage", "uploads"), { recursive: true, force: true }).catch(() => undefined);

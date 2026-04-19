@@ -14,6 +14,9 @@ export const noteRepository = {
   findByUserAndLesson(userId: string, lessonId: string) {
     return prisma.note.findUnique({ where: { userId_lessonId: { userId, lessonId } } });
   },
+  findByIdForUser(id: string, userId: string) {
+    return prisma.note.findFirst({ where: { id, userId } });
+  },
   findAllByUser(userId: string) {
     return prisma.note.findMany({
       where: { userId },
@@ -21,10 +24,10 @@ export const noteRepository = {
       orderBy: { updatedAt: "desc" }
     });
   },
-  update(id: string, content: string) {
-    return prisma.note.update({ where: { id }, data: { content } });
+  updateForUser(id: string, userId: string, content: string) {
+    return prisma.note.update({ where: { id, userId }, data: { content } });
   },
-  delete(id: string) {
-    return prisma.note.delete({ where: { id } });
+  deleteForUser(id: string, userId: string) {
+    return prisma.note.delete({ where: { id, userId } });
   }
 };

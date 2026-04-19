@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import {
   Dialog,
@@ -29,7 +29,6 @@ type SectionManagerProps = {
 };
 
 export const SectionManager = ({ selectedSectionId, onSelectSection }: SectionManagerProps) => {
-  const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Omit<Section, "id">>({
@@ -121,7 +120,7 @@ export const SectionManager = ({ selectedSectionId, onSelectSection }: SectionMa
       }
     } catch (error) {
       const apiError = error as AxiosError<{ message?: string }>;
-      window.alert(apiError.response?.data?.message ?? "Failed to save section.");
+      toast.error(apiError.response?.data?.message ?? "Failed to save section.");
     }
   };
 
@@ -133,22 +132,23 @@ export const SectionManager = ({ selectedSectionId, onSelectSection }: SectionMa
       await deleteMutation.mutateAsync(sectionId);
     } catch (error) {
       const apiError = error as AxiosError<{ message?: string }>;
-      window.alert(apiError.response?.data?.message ?? "Failed to delete section.");
+      toast.error(apiError.response?.data?.message ?? "Failed to delete section.");
     }
   };
 
   return (
     <>
       <div
-        className="rounded-2xl border p-4 shadow-card"
+        className="rounded-[28px] border p-4 shadow-card"
         style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
+          <h3 className="text-sm font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
             Sections
           </h3>
           <button
-            className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition-all hover:bg-brand-700"
+            className="rounded-xl px-3 py-1.5 text-xs font-bold text-white transition-all hover:opacity-95"
+            style={{ background: "var(--gradient-brand)" }}
             onClick={() => handleOpen()}
             type="button"
           >
@@ -294,7 +294,8 @@ export const SectionManager = ({ selectedSectionId, onSelectSection }: SectionMa
               Cancel
             </button>
             <button
-              className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-brand-700"
+              className="rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95"
+              style={{ background: "var(--gradient-brand)" }}
               onClick={() => void handleSubmit()}
               type="button"
             >

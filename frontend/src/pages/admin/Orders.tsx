@@ -52,7 +52,7 @@ export const AdminOrders = () => {
         </button>
       </div>
 
-      <div className="rounded-2xl border shadow-card overflow-hidden" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+      <div className="dashboard-panel overflow-hidden">
         {isLoading ? (
           <div className="p-5 space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-xl" />)}</div>
         ) : (
@@ -60,7 +60,7 @@ export const AdminOrders = () => {
             <thead>
               <tr className="border-b" style={{ borderColor: "var(--color-border)" }}>
                 {["Student", "Email", "Amount", "Status", "Date", ""].map((h) => (
-                  <th key={h} className="px-4 py-3 text-start text-xs font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>{h}</th>
+                  <th key={h} className="px-4 py-3 text-start text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -76,7 +76,8 @@ export const AdminOrders = () => {
                     {p.status !== "COMPLETED" && (
                       <button
                         onClick={() => setMarkingId(p.id)}
-                        className="rounded-lg bg-brand-600 px-3 py-1 text-xs font-bold text-white transition-all hover:bg-brand-700"
+                        className="rounded-lg px-3 py-1 text-xs font-bold text-white transition-all hover:opacity-95"
+                        style={{ background: "var(--gradient-brand)" }}
                         type="button"
                       >
                         {t("actions.markPaid")}
@@ -92,7 +93,7 @@ export const AdminOrders = () => {
 
       {markingId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="rounded-2xl border p-6 shadow-elevated max-w-sm w-full mx-4" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+          <div className="w-full max-w-sm rounded-[28px] border p-6 shadow-elevated mx-4" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
             <p className="font-bold mb-2" style={{ color: "var(--color-text-primary)" }}>{t("actions.markPaid")}?</p>
             <p className="text-sm mb-4" style={{ color: "var(--color-text-secondary)" }}>This will mark the payment as completed and activate enrollment.</p>
             {error && (
@@ -107,7 +108,8 @@ export const AdminOrders = () => {
                   void markPaidMut.mutateAsync(markingId);
                 }}
                 disabled={markPaidMut.isPending}
-                className="flex-1 rounded-xl bg-brand-600 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                className="flex-1 rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                style={{ background: "var(--gradient-brand)" }}
                 type="button"
               >
                 {markPaidMut.isPending ? "Processing..." : t("actions.confirm")}

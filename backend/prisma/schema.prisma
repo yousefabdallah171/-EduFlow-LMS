@@ -125,22 +125,39 @@ model Enrollment {
 }
 
 model Payment {
-  id                  String        @id @default(uuid())
+  id                  String         @id @default(uuid())
   userId              String
-  user                User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user                User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  packageId           String?
+  package             CoursePackage? @relation(fields: [packageId], references: [id])
   amountPiasters      Int
-  currency            String        @default("EGP")
+  currency            String         @default("EGP")
   paymobOrderId       String?
-  paymobTransactionId String?       @unique
+  paymobTransactionId String?        @unique
   couponId            String?
-  coupon              Coupon?       @relation(fields: [couponId], references: [id])
-  discountPiasters    Int           @default(0)
-  status              PaymentStatus @default(PENDING)
+  coupon              Coupon?        @relation(fields: [couponId], references: [id])
+  discountPiasters    Int            @default(0)
+  status              PaymentStatus  @default(PENDING)
   webhookReceivedAt   DateTime?
   webhookHmac         String?
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
   enrollment          Enrollment?
+}
+
+model CoursePackage {
+  id            String    @id
+  titleEn       String
+  titleAr       String
+  descriptionEn String?
+  descriptionAr String?
+  pricePiasters Int
+  currency      String    @default("EGP")
+  isActive      Boolean   @default(true)
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  payments      Payment[]
 }
 
 model Coupon {

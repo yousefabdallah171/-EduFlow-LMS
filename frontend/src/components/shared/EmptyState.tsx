@@ -10,8 +10,8 @@ type EmptyStateProps = {
 
 export const EmptyState = ({ title, description, icon, action, illustration }: EmptyStateProps) => (
   <div
-    className="rounded-2xl border border-dashed p-8 text-center"
-    style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-surface-2)" }}
+    className="dashboard-panel rounded-[28px] border-dashed p-8 text-center"
+    style={{ borderColor: "var(--color-border-strong)" }}
   >
     <div className="mx-auto max-w-md">
       <div className="mb-4">
@@ -21,7 +21,7 @@ export const EmptyState = ({ title, description, icon, action, illustration }: E
             className="mx-auto flex h-14 w-14 items-center justify-center rounded-full text-brand-600"
             style={{ backgroundColor: "var(--color-brand-muted)" }}
           >
-            <span className="text-xl">{icon ?? "○"}</span>
+            <span className="text-sm font-bold">{icon ?? "i"}</span>
           </div>
         )}
       </div>

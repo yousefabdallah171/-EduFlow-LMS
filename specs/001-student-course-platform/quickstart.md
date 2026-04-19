@@ -84,15 +84,15 @@ NODE_ENV="development"
 ## 3. Start the Full Stack (Docker)
 
 ```bash
-# Development — hot reload (backend tsx watch + frontend Vite HMR)
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# Default Docker workflow — frontend runs via Vite dev server for fast UI updates
+docker compose up --build
 
-# Production build
-docker compose up --build -d
+# Optional: include the dev override when you also want backend hot reload and extra tooling
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
-All four services start together: `frontend` (Nginx on port 80), `backend` (Express on port 3000,
-internal only), `postgres`, and `redis`.
+All core services start together: `frontend` (Vite dev server exposed on port 80), `backend`
+(Express on port 3000, internal only), `postgres`, and `redis`.
 
 **Run migrations + seed** (first time only):
 ```bash

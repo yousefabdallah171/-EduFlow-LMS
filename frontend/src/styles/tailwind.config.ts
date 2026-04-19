@@ -8,16 +8,16 @@ const config: Config = {
       colors: {
         /* Brand */
         brand: {
-          50:  "#fef2f2",
-          100: "#fee2e2",
-          200: "#fecaca",
-          300: "#fca5a5",
-          400: "#f87171",
-          500: "#ef4444",
-          600: "#EB2027",
-          700: "#b91c1c",
-          800: "#991b1b",
-          900: "#7f1d1d"
+          50:  "#f8fde8",
+          100: "#effcc7",
+          200: "#ddf998",
+          300: "#c6f062",
+          400: "#aee23a",
+          500: "#93d11f",
+          600: "#7cbb12",
+          700: "#628f12",
+          800: "#4f7014",
+          900: "#425d15"
         },
         /* Design token colors — these track CSS custom properties */
         page:       "var(--color-page)",
@@ -31,8 +31,11 @@ const config: Config = {
         muted:      "var(--color-text-muted)"
       },
       fontFamily: {
-        sans:   ["Inter", "system-ui", "sans-serif"],
-        arabic: ["Noto Kufi Arabic", "sans-serif"]
+        sans: ["Manrope", "system-ui", "sans-serif"],
+        display: ["Sora", "Manrope", "system-ui", "sans-serif"],
+        arabic: ["Cairo", "sans-serif"],
+        "arabic-display": ["Noto Kufi Arabic", "Cairo", "sans-serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "monospace"]
       },
       boxShadow: {
         card:    "var(--shadow-card)",
@@ -50,8 +53,8 @@ const config: Config = {
         xl: "var(--radius-xl)"
       },
       backgroundImage: {
-        "page-gradient-light": "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(235,32,39,0.08), transparent)",
-        "page-gradient-dark":  "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(235,32,39,0.12), transparent)"
+        "page-gradient-light": "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(163,230,53,0.1), transparent)",
+        "page-gradient-dark":  "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(163,230,53,0.14), transparent)"
       }
     }
   },

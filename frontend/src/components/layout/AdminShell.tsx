@@ -1,4 +1,17 @@
 import type { ReactNode } from "react";
+import {
+  BarChart3,
+  Bell,
+  BookOpen,
+  CreditCard,
+  FileClock,
+  Gauge,
+  Image,
+  LifeBuoy,
+  ReceiptText,
+  Settings,
+  Users
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useParams } from "react-router-dom";
 
@@ -6,17 +19,17 @@ import { MobileDrawer } from "@/components/layout/MobileDrawer";
 import { cn } from "@/lib/utils";
 
 const adminItems = [
-  { labelKey: "admin.nav.dashboard",     to: "/admin/dashboard",      icon: "◈" },
-  { labelKey: "admin.nav.lessons",       to: "/admin/lessons",        icon: "▶" },
-  { labelKey: "admin.nav.students",      to: "/admin/students",       icon: "◉" },
-  { labelKey: "admin.nav.pricing",       to: "/admin/pricing",        icon: "◎" },
-  { labelKey: "admin.nav.analytics",     to: "/admin/analytics",      icon: "◇" },
-  { labelKey: "admin.nav.orders",        to: "/admin/orders",         icon: "◈" },
-  { labelKey: "admin.nav.media",         to: "/admin/media",          icon: "⬡" },
-  { labelKey: "admin.nav.audit",         to: "/admin/audit",          icon: "◎" },
-  { labelKey: "admin.nav.tickets",       to: "/admin/tickets",        icon: "◉" },
-  { labelKey: "admin.nav.settings",      to: "/admin/settings",       icon: "◇" },
-  { labelKey: "admin.nav.notifications", to: "/admin/notifications",  icon: "▶" },
+  { labelKey: "admin.nav.dashboard", to: "/admin/dashboard", icon: Gauge },
+  { labelKey: "admin.nav.lessons", to: "/admin/lessons", icon: BookOpen },
+  { labelKey: "admin.nav.students", to: "/admin/students", icon: Users },
+  { labelKey: "admin.nav.pricing", to: "/admin/pricing", icon: CreditCard },
+  { labelKey: "admin.nav.analytics", to: "/admin/analytics", icon: BarChart3 },
+  { labelKey: "admin.nav.orders", to: "/admin/orders", icon: ReceiptText },
+  { labelKey: "admin.nav.media", to: "/admin/media", icon: Image },
+  { labelKey: "admin.nav.audit", to: "/admin/audit", icon: FileClock },
+  { labelKey: "admin.nav.tickets", to: "/admin/tickets", icon: LifeBuoy },
+  { labelKey: "admin.nav.settings", to: "/admin/settings", icon: Settings },
+  { labelKey: "admin.nav.notifications", to: "/admin/notifications", icon: Bell }
 ];
 
 type AdminShellProps = {
@@ -33,36 +46,31 @@ export const AdminShell = ({ title, description, children }: AdminShellProps) =>
   const localizedItems = adminItems.map((item) => ({ ...item, label: t(item.labelKey) }));
 
   return (
-    <main className="min-h-dvh px-4 py-6 sm:px-6 sm:py-8" style={{ backgroundColor: "var(--color-page)" }}>
+    <main className="dashboard-page min-h-dvh px-4 py-6 sm:px-6 sm:py-8" style={{ backgroundColor: "var(--color-page)" }}>
       <section className="mx-auto max-w-7xl">
         <MobileDrawer items={localizedItems} />
         <div className="mt-4 grid gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:items-start">
-
-          {/* Sidebar */}
-          <aside
-            className="hidden rounded-2xl border p-3 shadow-card md:block"
-            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-          >
-            <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--color-text-muted)" }}>
+          <aside className="dashboard-panel dashboard-sidebar hidden p-3 md:block">
+            <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
               {t("admin.shell.workspace")}
             </p>
             <nav aria-label="Admin navigation" className="space-y-0.5">
               {localizedItems.map((item) => {
                 const target = `${prefix}${item.to}`;
                 const active = location.pathname === target;
+                const Icon = item.icon;
 
                 return (
                   <Link
                     key={item.to}
                     className={cn(
-                      "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium no-underline transition-colors",
-                      active
-                        ? "bg-brand-600/10 text-brand-600 dark:bg-brand-600/20 dark:text-brand-400"
-                        : "text-secondary hover:bg-surface2 hover:text-primary"
+                      "dashboard-nav-link flex items-center gap-2.5 px-3 py-3 text-sm font-medium no-underline transition-colors",
+                      !active && "text-secondary hover:bg-surface2 hover:text-primary"
                     )}
+                    data-active={active ? "true" : "false"}
                     to={target}
                   >
-                    <span className="text-base leading-none opacity-70">{item.icon}</span>
+                    <Icon className="h-4 w-4 opacity-70" />
                     {item.label}
                   </Link>
                 );
@@ -70,16 +78,12 @@ export const AdminShell = ({ title, description, children }: AdminShellProps) =>
             </nav>
           </aside>
 
-          {/* Content */}
           <div className="space-y-5">
-            <header
-              className="rounded-2xl border p-5 shadow-card"
-              style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-            >
-              <p className="text-xs font-bold uppercase tracking-widest text-brand-600 dark:text-brand-400">
+            <header className="dashboard-panel dashboard-hero dashboard-panel--strong p-5">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600 dark:text-brand-400">
                 {t("admin.shell.workspace")}
               </p>
-              <h1 className="mt-1.5 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+              <h1 className="mt-2 font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
                 {title}
               </h1>
               <p className="mt-1.5 text-sm" style={{ color: "var(--color-text-secondary)" }}>

@@ -72,8 +72,8 @@ test.describe("frontend smoke (chromium)", () => {
     await page.waitForTimeout(1000);
     await page.goto(`${baseUrl}/en/course`, { waitUntil: "networkidle" });
     await expect(page).toHaveURL(`${baseUrl}/en/course`);
-    await expect(page.getByRole("heading", { name: "EduFlow Student" })).toBeVisible();
-    await expect(page.getByText("Lessons", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "AI Workflow Student" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Lessons" })).toBeVisible();
     await page.goto(`${baseUrl}/en/lessons/seed-1`, { waitUntil: "networkidle" });
     await expect(page).toHaveURL(`${baseUrl}/en/lessons/seed-1`);
 

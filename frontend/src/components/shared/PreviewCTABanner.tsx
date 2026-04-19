@@ -18,14 +18,15 @@ export const PreviewCTABanner = ({ lessonCount = 0 }: { lessonCount?: number }) 
       className="fixed bottom-0 start-0 end-0 z-50 border-t shadow-elevated"
       style={{ backgroundColor: "var(--color-invert)", borderColor: "rgba(255,255,255,0.1)" }}
     >
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-3">
-        <p className="text-sm font-medium" style={{ color: "var(--color-text-invert)", opacity: 0.9 }}>
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <p className="max-w-[68ch] text-sm font-medium leading-6" style={{ color: "var(--color-text-invert)", opacity: 0.9 }}>
           {lessonCount > 0
             ? `Enroll to access all ${lessonCount} lessons`
             : t("preview.ctaBanner")}
         </p>
         <Link
-          className="flex-shrink-0 rounded-lg bg-brand-600 px-5 py-2 text-sm font-bold text-white no-underline transition-all hover:bg-brand-500"
+          className="flex min-h-11 flex-shrink-0 items-center rounded-xl px-5 py-2 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+          style={{ background: "var(--gradient-brand)" }}
           to={`${prefix}/checkout`}
         >
           {t("preview.ctaButton")}

@@ -59,6 +59,8 @@ beforeEach(async () => {
   await prisma.videoToken.deleteMany();
   await prisma.lessonProgress.deleteMany();
   await prisma.enrollment.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.auditLog.deleteMany();
   await prisma.refreshToken.deleteMany();
   await prisma.user.deleteMany({ where: { email: { in: [adminEmail, studentEmail] } } });
   await prisma.lesson.deleteMany({ where: { id: lessonId } });

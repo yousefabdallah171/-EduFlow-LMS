@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("public funnel: Landing → About → Pricing → Register", async ({ page }) => {
+test("public funnel: Landing -> About -> Pricing -> Register", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("h1")).toBeVisible();
 

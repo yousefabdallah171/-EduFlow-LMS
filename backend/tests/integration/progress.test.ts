@@ -39,6 +39,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   await prisma.lessonProgress.deleteMany();
   await prisma.enrollment.deleteMany();
+  await prisma.payment.deleteMany();
   await prisma.refreshToken.deleteMany();
   await prisma.user.deleteMany({ where: { role: "STUDENT" } });
   await prisma.lesson.deleteMany();

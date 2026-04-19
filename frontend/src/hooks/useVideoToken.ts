@@ -8,6 +8,11 @@ export type LessonPlayback = {
   title: string;
   titleEn?: string;
   titleAr?: string | null;
+  section?: {
+    id: string;
+    titleEn: string;
+    titleAr: string;
+  } | null;
   descriptionHtml: string;
   descriptionHtmlEn?: string;
   descriptionHtmlAr?: string;
@@ -48,6 +53,7 @@ const normalizeLessonPlayback = (payload: LessonPlaybackApiResponse): LessonPlay
     title: lesson.title ?? lesson.titleEn ?? "Lesson",
     titleEn: lesson.titleEn,
     titleAr: lesson.titleAr ?? null,
+    section: lesson.section ?? null,
     descriptionHtml: lesson.descriptionHtml ?? "",
     descriptionHtmlEn: lesson.descriptionHtmlEn ?? lesson.descriptionHtml ?? "",
     descriptionHtmlAr: lesson.descriptionHtmlAr ?? "",

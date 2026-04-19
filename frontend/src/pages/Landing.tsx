@@ -1,248 +1,447 @@
-import { Link, useParams } from "react-router-dom";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
-import { useTranslation } from "react-i18next";
+import { ArrowRight, Cpu, FileText, Layers3, Rocket, Search, ShieldCheck, TestTube2 } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
 
-const FAQ_KEYS = ["workflow", "prerequisites", "guarantee", "lifetime"] as const;
+const phaseIcons = [FileText, Layers3, Cpu, TestTube2, ShieldCheck, Search, Rocket];
 
-const phases = [
-  { number: "01", title: "Planning", body: "Turn your ideas into PRDs and technical specs. Set up CLAUDE.md and define your project scope clearly." },
-  { number: "02", title: "Design", body: "Create UI direction and design all screens before touching code. Generate components from Figma or Stitch." },
-  { number: "03", title: "Implementation", body: "Build phase by phase with focused tasks. Keep the AI aligned to specs and prevent scope creep." },
-  { number: "04", title: "Code Review", body: "Use Claude to review your code and generate E2E tests with Playwright. Maintain quality and test coverage." },
-  { number: "05", title: "Security & Performance", body: "Run security audits and performance optimization. Harden before launch with Lighthouse 90+." },
-  { number: "06", title: "SEO & Marketing", body: "Set up SEO, Meta Pixel, GA4, and conversion tracking. Make your project discoverable and measurable." },
-  { number: "07", title: "Docker & Production", body: "Deploy with Docker, CI/CD, and server setup. Take your project live and keep it running." }
-];
-
-const features = [
-  { icon: "📋", title: "PRD to Production", body: "From idea to shipped product. A complete roadmap that works every time." },
-  { icon: "🤖", title: "AI as Your Partner", body: "Systematic prompts and workflows that turn AI into a reliable teammate, not a guessing game." },
-  { icon: "⚡", title: "7 Proven Phases", body: "Planning, Design, Implementation, Review, Security, SEO, and Production — in the right order." },
-  { icon: "📊", title: "Real Outputs", body: "Each phase delivers tangible results: specs, screens, code, tests, audits, and a live project." },
-  { icon: "🔄", title: "Repeatable System", body: "Apply this workflow to any project size. SaaS, landing page, e-commerce, or internal tool." },
-  { icon: "🎓", title: "Practical + Theory", body: "Watch real execution, learn the why, adapt to your context. Not just copy-paste prompts." }
-];
-
-const courseStats = [
-  { value: "7", label: "Phases" },
-  { value: "100%", label: "Practical" },
-  { value: "0$", label: "Setup costs" },
-  { value: "∞", label: "Lifetime access" }
-];
-
-const testimonials = [
-  { quote: "This workflow changed how I work with AI. No more constant explanations — the system just works.", author: "Developer 1" },
-  { quote: "الـ workflow الفعلي ليس theory. كل مرة بشتغل فيه بتطلع النتايج نفسها.", author: "مطور مصري" },
-  { quote: "Takes what could be months and compresses it to weeks. The system does the heavy lifting.", author: "Founder" }
-];
+const copy = {
+  ar: {
+    eyebrow: "EARLY ACCESS",
+    seats: "أول 30 مقعد بس",
+    titleStart: "الـ",
+    titleAccent: "AI",
+    titleEnd: " بيبني مشاريع",
+    titleLine2: "انت لسه بتشرح الفكرة",
+    subtitle: "تعلم الـ workflow اللي بيحول الأفكار لتطبيقات حقيقية من الفكرة إلى الـ production باستخدام PRD وSpec Kit وClaude Code وCodex وStitch وDocker والاختبارات والـ SEO والـ CI/CD.",
+    primaryCta: "احجز مكانك بسعر الـ Early Access",
+    secondaryCta: "شوف الـ Roadmap بالتفصيل",
+    trust: ["بدون بطاقة", "بس اسمك وإيميلك", "ردود خلال ساعة"],
+    stats: [
+      ["7", "مراحل", "من الفكرة للـ production"],
+      ["١٠٠٪", "عملي", "مشروع حقيقي مش نظري"],
+      ["∞", "وصول", "محتوى بيتحدث دايمًا"]
+    ],
+    audienceEyebrow: "لمين ده؟",
+    audienceTitle: "لو واحد من دول",
+    audienceAccent: "فأنت في المكان الصح",
+    audienceSubtitle: "قبل أي تفاصيل تقنية، المهم تعرف إذا الكورس ده معمول ليك أصلًا ولا لا.",
+    audience: [
+      ["مش تقني بس عندك فكرة", "لو عندك فكرة SaaS أو landing page أو منتج صغير، وعايز تبدأ تنفذه من غير ما تستنى فريق كامل، فالـ workflow ده معمول عشان يوصلك لأول نسخة شغالة بسرعة وبشكل منظم."],
+      ["Developer عايز يسرّع شغله", "لو أنت Developer وعايز تشتغل أسرع، بوضوح أكتر، ومن غير ما تضيع وقتك في إعادة الشرح والتصحيح، فالكورس ده هيغير طريقة شغلك اليومية مع الـ AI."],
+      ["عندك أساس وعايز نظام", "لو مش مبتدئ كامل، وعندك أساس برمجي أو خبرة عملية بسيطة، لكن محتاج workflow واضح من أول الفكرة لحد الـ production، فده بالضبط اللي هتتعلمه هنا."]
+    ],
+    problemEyebrow: "ليه الـ AI مش بيشتغل معاك؟",
+    problemTitle: "مش المشكلة فيك",
+    problemAccent: "المشكلة في الـ workflow",
+    problemSubtitle: "مش لازم تبقى خبير في الـ AI، بس محتاج تعرف الـ workflow الصح.",
+    problems: [
+      ["بتشرحله المشروع كل مرة من الأول", "الـ CLAUDE.md والـ Spec Kit بيخلي الـ AI فاكر كل حاجة: هيكل المشروع، قراراته، والـ conventions من أول سطر لآخر سطر.", ["CLAUDE.md", "Spec Kit"]],
+      ["بتقوله اعمللي UI ويطلعلك عام", "Stitch بيحول الـ spec بتاعك لـ UI احترافي في ثواني، وبعدها Codex أو Cursor يحوله لكود شغال من غير ما تضيع وقت في تصحيح الاتجاه.", ["Stitch", "Codex"]],
+      ["لما المشروع يكبر الأخطاء بتزيد", "الـ Spec Kit بيقسم أي مشروع لـ tasks صغيرة، وكل task الـ AI يخلصها صح من أول مرة من غير ما يتوه أو يتناقض مع نفسه.", ["Spec Kit", "Tasks"]]
+    ],
+    roadmapEyebrow: "محتوى الكورس بالتفصيل",
+    roadmapTitle: "هتتعلم إيه في",
+    roadmapAccent: "7 مراحل",
+    roadmapSubtitle: "مش عناوين عامة ولا كلام نظري. دي خريطة الكورس كاملة من أول التخطيط لحد ما المشروع يبقى live على السيرفر ويتحدث أوتوماتيك.",
+    phases: [
+      ["التخطيط قبل الكود", "تحويل الفكرة إلى PRD ونطاق واضح وخريطة تقنية.", "المخرج: PRD + اتجاه تنفيذي"],
+      ["الـ UI قبل الكود", "تصميم الشاشات والمكونات باستخدام Stitch قبل التنفيذ.", "المخرج: شاشات جاهزة للكود"],
+      ["التنفيذ بـ Spec Kit", "تقسيم المشروع لمهام واضحة وبناء frontend + backend.", "المخرج: نسخة شغالة"],
+      ["المراجعة والاختبارات", "مراجعة الكود، TODOs، واختبارات E2E.", "المخرج: كود أنظف وتغطية أفضل"],
+      ["الأمان والأداء", "تقوية الأمان وتحسين Lighthouse والأداء.", "المخرج: تطبيق أسرع وأكثر أمانًا"],
+      ["SEO والتتبع", "تجهيز SEO وGA4 وMeta Pixel وتتبع التحويل.", "المخرج: موقع قابل للاكتشاف والتتبع"],
+      ["Docker وProduction", "نشر Docker وربط CI/CD للتحديثات التلقائية.", "المخرج: تطبيق live + pipeline"]
+    ],
+    pricingEyebrow: "التسعير",
+    pricingSubtitle: "ابدأ بالكورس الأساسي أو اختار باقة المراجعة لو عايز feedback مباشر على مشروعك.",
+    pricing: [
+      ["الكورس كامل", "الـ 7 مراحل كاملة وكل تحديثات الكورس المستقبلية.", "1000 جنيه", "احجز الكورس", "core-course"],
+      ["الكورس + جلسة مراجعة", "جلسة واحدة لمراجعة مشروعك الحقيقي والخطوات التالية.", "2500 جنيه", "احجز مع المراجعة", "course-review-session"]
+    ],
+    faqEyebrow: "أسئلة قبل الاشتراك",
+    faqTitle: "كل اللي محتاج تعرفه",
+    faq: [
+      ["هل مناسب لو أنا مش تقني؟", "نعم، لو تقدر تمشي على خطوات منظمة. الكورس يشرح الطريق من الفكرة إلى PRD ثم التنفيذ، مع دعم يساعدك لو وقفت."],
+      ["أنا frontend developer، هيفيدني؟", "نعم. هيساعدك تتوسع في backend والاختبارات والنشر وتبني نظام شغل قابل للتكرار مع AI."],
+      ["أنا مبتدئ جدًا في البرمجة، أدخل؟", "الأفضل تبدأ بالأساسيات الأول. الكورس معمول للي عنده أساس وعايز workflow عملي واضح."],
+      ["هل فيه ضمان؟", "لو الكورس غير مناسب لك، تواصل معنا خلال أول 7 أيام. الهدف إن الطالب الجاد ياخد قيمة حقيقية."]
+    ],
+    finalTitle: "ابنِ بنظام، مش بالتخمين.",
+    finalSubtitle: "ابدأ بالمعاينة المجانية، ثم افتح كورس AI Workflow الكامل عندما تكون جاهزًا."
+  },
+  en: {
+    eyebrow: "EARLY ACCESS",
+    seats: "First 30 seats",
+    titleStart: "AI is building projects",
+    titleAccent: " while you",
+    titleEnd: " are still",
+    titleLine2: "explaining the idea",
+    subtitle: "Learn the workflow that turns ideas into real production applications using PRD, Spec Kit, Claude Code, Codex, Stitch, Docker, testing, SEO, and CI/CD.",
+    primaryCta: "Reserve your early-access seat",
+    secondaryCta: "See the full roadmap",
+    trust: ["No card required", "Name and email only", "Replies within an hour"],
+    stats: [
+      ["7", "Phases", "From idea to production"],
+      ["100%", "Practical", "A real project workflow"],
+      ["∞", "Access", "Future updates included"]
+    ],
+    audienceEyebrow: "Who is this for?",
+    audienceTitle: "If one of these sounds like you,",
+    audienceAccent: "you are in the right place",
+    audienceSubtitle: "Before the tools, make sure this is the right workflow for you.",
+    audience: [
+      ["You have an idea but are not technical", "Turn a SaaS, landing page, or product idea into a structured execution plan."],
+      ["You are a developer who wants to move faster", "Work with AI more clearly, with less repeated explanation and less rework."],
+      ["You have basics and need a system", "Not for absolute beginners. Built for people ready to follow a serious workflow."]
+    ],
+    problemEyebrow: "Why AI is not working for you",
+    problemTitle: "The problem is not you",
+    problemAccent: "the problem is the workflow",
+    problemSubtitle: "You do not need more random prompts. You need a better execution system.",
+    problems: [
+      ["You re-explain the project every time", "CLAUDE.md and Spec Kit preserve the structure, decisions, and conventions.", ["CLAUDE.md", "Spec Kit"]],
+      ["The UI comes out generic", "Stitch gives you a strong UI direction before Codex or Cursor turns it into code.", ["Stitch", "Codex"]],
+      ["As the project grows, mistakes multiply", "Spec Kit breaks the project into smaller tasks the model can finish correctly.", ["Spec Kit", "Tasks"]]
+    ],
+    roadmapEyebrow: "Course content",
+    roadmapTitle: "What you will learn in",
+    roadmapAccent: "7 phases",
+    roadmapSubtitle: "This is the real roadmap from planning to a live production deployment.",
+    phases: [
+      ["Planning before code", "Turn the idea into a PRD, scope, and technical map.", "Output: PRD + execution direction"],
+      ["UI before code", "Design screens and components with Stitch before implementation.", "Output: code-ready screens"],
+      ["Spec Kit execution", "Split the project into clear tasks and build frontend + backend.", "Output: working app"],
+      ["Review and tests", "Run code review, TODO extraction, and E2E tests.", "Output: cleaner code"],
+      ["Security and performance", "Audit security and improve Lighthouse and performance.", "Output: safer faster app"],
+      ["SEO and tracking", "Set up SEO, GA4, Meta Pixel, and conversion tracking.", "Output: discoverable tracked site"],
+      ["Docker and production", "Deploy with Docker and wire CI/CD.", "Output: live app + pipeline"]
+    ],
+    pricingEyebrow: "Pricing",
+    pricingSubtitle: "Start with the course or choose the review package for direct feedback on your project.",
+    pricing: [
+      ["Core course", "All 7 phases plus future course updates.", "1000 EGP", "Reserve the course", "core-course"],
+      ["Course + review session", "One direct session to review your real project.", "2500 EGP", "Reserve with review", "course-review-session"]
+    ],
+    faqEyebrow: "Questions before enrolling",
+    faqTitle: "What you need to know",
+    faq: [
+      ["Is this useful if I am not technical?", "Yes, if you can follow a structured process. The course walks from idea to PRD to implementation."],
+      ["I am a frontend developer. Will it help me?", "Yes. It helps you expand into backend, testing, and deployment with a repeatable AI workflow."],
+      ["I am completely new to programming. Should I join?", "Start with the basics first. This course is designed for people with some foundation."],
+      ["Is there a guarantee?", "If the course is not a fit, contact support in the first 7 days."]
+    ],
+    finalTitle: "Build with a workflow, not guesswork.",
+    finalSubtitle: "Start with the free preview, then unlock the full AI Workflow course when you are ready."
+  }
+} as const;
 
 export const Landing = () => {
   const { locale } = useParams();
-  const { t } = useTranslation();
+  const isAr = locale !== "en";
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const faqItems = FAQ_KEYS.map((key) => ({ key, q: t(`faq.items.${key}.q`), a: t(`faq.items.${key}.a`) }));
+  const data = isAr ? copy.ar : copy.en;
 
   return (
-    <div className="min-h-dvh" style={{ backgroundColor: "var(--color-page)" }}>
-
-      {/* ── Hero ── */}
-      <section className="relative overflow-hidden px-6 pb-24 pt-16">
-        {/* Ambient glow */}
+    <div className="min-h-dvh overflow-hidden">
+      <section className="relative px-6 pb-24 pt-16">
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-[600px] opacity-25 dark:opacity-15"
-          style={{ background: "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(235,32,39,0.35), transparent)" }}
+          className="pointer-events-none absolute inset-x-0 top-0 h-[680px]"
+          style={{
+            background:
+              "radial-gradient(circle at 15% 10%, rgba(163,230,53,0.14), transparent 30%), radial-gradient(circle at 86% 0%, rgba(56,189,248,0.1), transparent 24%)"
+          }}
         />
 
-        <div className="relative mx-auto max-w-5xl">
-          {/* Badge */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold"
-            style={{ backgroundColor: "var(--color-brand-muted)", borderColor: "rgba(235,32,39,0.2)", color: "var(--color-brand)" }}>
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-600" />
-            AI Workflow Course
-          </div>
+        <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[minmax(0,1.02fr)_minmax(360px,0.98fr)] lg:items-center">
+          <div>
+            <div className="inline-flex items-center gap-3 rounded-full border px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em]" style={{ borderColor: "rgba(163,230,53,0.18)", backgroundColor: "rgba(163,230,53,0.08)", color: "var(--color-brand)" }}>
+              <span className="h-2 w-2 rounded-full bg-brand-600" />
+              {data.eyebrow}
+              <span style={{ color: "var(--color-text-muted)" }}>{data.seats}</span>
+            </div>
 
-          <h1
-            className="max-w-3xl text-balance text-[clamp(2.25rem,6vw,4.25rem)] font-bold leading-[1.06] tracking-tight"
-            style={{ color: "var(--color-text-primary)" }}
-          >
-            {t("landing.heroTitle")}
-          </h1>
+            <h1 className="mt-7 font-display text-[clamp(2.8rem,7vw,6rem)] font-black leading-[0.95] tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+              {isAr ? (
+                <>
+                  {data.titleStart} <span className="accent-word">{data.titleAccent}</span> {data.titleEnd}
+                  <br />
+                  {data.titleLine2}
+                </>
+              ) : (
+                <>
+                  {data.titleStart}
+                  <span className="accent-word">{data.titleAccent}</span>
+                  {data.titleEnd}
+                  <br />
+                  {data.titleLine2}
+                </>
+              )}
+            </h1>
 
-          <p className="mt-6 max-w-xl text-base leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-            {t("landing.heroSubtitle")}
-          </p>
+            <p className="mt-7 max-w-2xl text-base leading-8 sm:text-lg" style={{ color: "var(--color-text-secondary)" }}>
+              {data.subtitle}
+            </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-3.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:bg-brand-700 hover:shadow-md"
-              to={`${prefix}/register`}
-            >
-              {t("actions.startFree")}
-              <span className="opacity-70 icon-dir">→</span>
-            </Link>
-            <Link
-              className="inline-flex items-center gap-2 rounded-xl border px-6 py-3.5 text-sm font-medium no-underline transition-colors hover:bg-surface2"
-              style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
-              to={`${prefix}/faq`}
-            >
-              Learn More
-            </Link>
-          </div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link className="inline-flex items-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-black no-underline transition-all hover:-translate-y-0.5" style={{ background: "var(--gradient-brand)", color: "var(--color-text-invert)", boxShadow: "0 18px 35px rgba(163,230,53,0.2)" }} to={`${prefix}/checkout`}>
+                {data.primaryCta}
+                <ArrowRight className="icon-dir h-4 w-4" />
+              </Link>
+              <Link className="inline-flex items-center gap-2 rounded-2xl border px-6 py-3.5 text-sm font-semibold no-underline transition-colors hover:bg-white/5" style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }} to={`${prefix}/pricing`}>
+                {data.secondaryCta}
+              </Link>
+            </div>
 
-          {/* Stats row */}
-          <div className="mt-14 grid grid-cols-2 gap-x-8 gap-y-5 sm:flex sm:flex-wrap sm:gap-10">
-            {courseStats.map((stat) => (
-              <div key={stat.value}>
-                <p className="text-3xl font-bold tracking-tight text-brand-600">{stat.value}</p>
-                <p className="mt-1 text-xs font-medium" style={{ color: "var(--color-text-muted)" }}>{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            <div className="mt-6 flex flex-wrap gap-3">
+              {data.trust.map((item) => (
+                <span key={item} className="inline-flex items-center gap-2 text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
+                  <span className="h-1.5 w-1.5 rounded-full bg-brand-600" />
+                  {item}
+                </span>
+              ))}
+            </div>
 
-      {/* ── 7 Phases ── */}
-      <section className="px-6 pb-20">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-10 text-center">
-            <p className="text-xs font-bold uppercase tracking-widest text-brand-600">The Complete Workflow</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-              7 Phases from Idea to Production
-            </h2>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {phases.map((phase) => (
-              <div
-                key={phase.number}
-                className="relative rounded-2xl border p-6 transition-all hover:shadow-card-hover"
-                style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-              >
-                <p className="text-4xl font-bold opacity-10" style={{ color: "var(--color-brand)" }}>{phase.number}</p>
-                <h3 className="mt-2 text-base font-bold" style={{ color: "var(--color-text-primary)" }}>{phase.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>{phase.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Features grid ── */}
-      <section className="px-6 pb-20">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-8">
-            <p className="text-xs font-bold uppercase tracking-widest text-brand-600">Why this course works</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-              A System, Not Just Tips
-            </h2>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((feat) => (
-              <div
-                key={feat.title}
-                className="group rounded-2xl border p-5 transition-all hover:shadow-card-hover"
-                style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-              >
-                <span className="text-2xl">{feat.icon}</span>
-                <h3 className="mt-3 text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>{feat.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>{feat.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Social proof ── */}
-      <section className="px-6 pb-20">
-        <div className="mx-auto max-w-5xl">
-          <div
-            className="rounded-2xl border p-8"
-            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-          >
-            <p className="mb-6 text-center text-xs font-bold uppercase tracking-widest text-brand-600">What students say</p>
-            <div className="grid gap-6 md:grid-cols-3">
-              {testimonials.map((item) => (
-                <div key={item.author} className="rounded-xl p-4" style={{ backgroundColor: "var(--color-surface-2)" }}>
-                  <p className="text-sm leading-relaxed italic" style={{ color: "var(--color-text-secondary)" }}>
-                    "{item.quote}"
-                  </p>
-                  <p className="mt-3 text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>{item.author}</p>
+            <div className="mt-10 grid gap-3 sm:grid-cols-3">
+              {data.stats.map(([value, label, desc]) => (
+                <div
+                  key={label}
+                  className="rounded-[24px] border px-5 py-5 shadow-card"
+                  style={{
+                    background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 82%, transparent))",
+                    borderColor: "var(--color-border)"
+                  }}
+                >
+                  <p className="font-display text-3xl font-black text-brand-600">{value}</p>
+                  <p className="mt-1 text-xs font-black uppercase tracking-[0.14em]" style={{ color: "var(--color-text-primary)" }}>{label}</p>
+                  <p className="mt-1 text-xs leading-5" style={{ color: "var(--color-text-muted)" }}>{desc}</p>
                 </div>
               ))}
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* ── CTA Banner ── */}
-      <section className="px-6 pb-20">
-        <div className="mx-auto max-w-5xl">
           <div
-            className="relative overflow-hidden rounded-2xl p-10 text-center"
-            style={{ backgroundColor: "var(--color-invert)", color: "var(--color-text-invert)" }}
+            className="relative overflow-hidden rounded-[36px] border p-6 shadow-elevated"
+            style={{
+              background:
+                "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 92%, transparent))",
+              borderColor: "color-mix(in oklab, var(--color-brand) 18%, var(--color-border))"
+            }}
           >
-            <div
-              className="pointer-events-none absolute inset-0"
-              style={{ background: "radial-gradient(ellipse 60% 80% at 50% 120%, rgba(235,32,39,0.35), transparent)" }}
-            />
-            <p className="relative text-xs font-bold uppercase tracking-widest opacity-60">Early Access</p>
-            <h2 className="relative mt-3 text-2xl font-bold tracking-tight sm:text-3xl">Ready to master the workflow?</h2>
-            <p className="relative mt-3 mx-auto max-w-md text-sm opacity-70">
-              Limited spots available at Early Access pricing. 30-day money-back guarantee.
-            </p>
-            <div className="relative mt-8 flex flex-wrap justify-center gap-3">
-              <Link
-                className="rounded-xl bg-brand-600 px-7 py-3.5 text-sm font-bold text-white no-underline transition-all hover:bg-brand-500 shadow-sm"
-                to={`${prefix}/checkout`}
-              >
-                Enroll Now
-              </Link>
-              <Link
-                className="rounded-xl border border-white/20 px-7 py-3.5 text-sm font-medium text-white no-underline transition-all hover:bg-white/10"
-                to={`${prefix}/register`}
-              >
-                {t("actions.createAccount")}
-              </Link>
+            <div className="absolute inset-0 opacity-70" style={{ background: "radial-gradient(circle at 50% 0%, rgba(163,230,53,0.12), transparent 45%)" }} />
+            <div className="relative">
+              <div className="mb-5 flex items-center justify-between border-b pb-4" style={{ borderColor: "var(--color-border)" }}>
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full bg-red-400/80" />
+                  <span className="h-3 w-3 rounded-full bg-amber-300/80" />
+                  <span className="h-3 w-3 rounded-full bg-brand-600" />
+                </div>
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em]" style={{ color: "var(--color-text-muted)" }}>
+                  {isAr ? "خريطة التنفيذ" : "Execution map"}
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {data.phases.slice(0, 4).map(([title, body], index) => {
+                  const Icon = phaseIcons[index];
+                  return (
+                    <div
+                      key={title}
+                      className="flex gap-4 rounded-[24px] border p-4"
+                      style={{
+                        backgroundColor: "color-mix(in oklab, var(--color-surface-2) 72%, transparent)",
+                        borderColor: "var(--color-border)"
+                      }}
+                    >
+                      <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl" style={{ backgroundColor: "rgba(163,230,53,0.1)", color: "var(--color-brand)" }}>
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <div>
+                        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-text-muted)" }}>
+                          {String(index + 1).padStart(2, "0")}
+                        </p>
+                        <p className="mt-1 text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>{title}</p>
+                        <p className="mt-1 text-xs leading-6" style={{ color: "var(--color-text-secondary)" }}>{body}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── FAQ ── */}
+      <section className="px-6 pb-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-2xl">
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-brand-600">{data.audienceEyebrow}</p>
+            <h2 className="mt-3 font-display text-3xl font-black tracking-tight sm:text-5xl" style={{ color: "var(--color-text-primary)" }}>
+              {data.audienceTitle}
+              <br />
+              <span className="accent-word">{data.audienceAccent}</span>
+            </h2>
+            <p className="mt-4 text-sm leading-8" style={{ color: "var(--color-text-secondary)" }}>{data.audienceSubtitle}</p>
+          </div>
+
+          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+            {data.audience.map(([title, body], index) => (
+              <div
+                key={title}
+                className="rounded-[28px] border p-6 shadow-card"
+                style={{
+                  background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 95%, white), color-mix(in oklab, var(--color-surface-2) 85%, transparent))",
+                  borderColor: "var(--color-border)"
+                }}
+              >
+                <p className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-brand-600">{String(index + 1).padStart(2, "0")}</p>
+                <h3 className="mt-4 text-xl font-black" style={{ color: "var(--color-text-primary)" }}>{title}</h3>
+                <p className="mt-3 text-sm leading-8" style={{ color: "var(--color-text-secondary)" }}>{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 pb-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-2xl">
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-brand-600">{data.problemEyebrow}</p>
+            <h2 className="mt-3 font-display text-3xl font-black tracking-tight sm:text-5xl" style={{ color: "var(--color-text-primary)" }}>
+              {data.problemTitle}
+              <br />
+              <span className="accent-word">{data.problemAccent}</span>
+            </h2>
+            <p className="mt-4 text-sm leading-8" style={{ color: "var(--color-text-secondary)" }}>{data.problemSubtitle}</p>
+          </div>
+
+          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+            {data.problems.map(([problem, solution, tools]) => (
+              <div
+                key={problem}
+                className="rounded-[28px] border p-6 shadow-card"
+                style={{
+                  background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 95%, white), color-mix(in oklab, var(--color-surface-2) 85%, transparent))",
+                  borderColor: "var(--color-border)"
+                }}
+              >
+                <p className="text-lg font-black" style={{ color: "var(--color-text-primary)" }}>{problem}</p>
+                <p className="mt-3 text-sm leading-8" style={{ color: "var(--color-text-secondary)" }}>{solution}</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {tools.map((tool) => (
+                    <span key={tool} className="rounded-full border px-3 py-1.5 font-mono text-[11px] font-semibold" style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-secondary)" }}>
+                      {tool}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 pb-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-9 max-w-3xl">
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-brand-600">{data.roadmapEyebrow}</p>
+            <h2 className="mt-3 font-display text-3xl font-black tracking-tight sm:text-5xl" style={{ color: "var(--color-text-primary)" }}>
+              {data.roadmapTitle} <span className="accent-word">{data.roadmapAccent}</span>
+            </h2>
+            <p className="mt-4 text-sm leading-8 sm:text-base" style={{ color: "var(--color-text-secondary)" }}>
+              {data.roadmapSubtitle}
+            </p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-7">
+            {data.phases.map(([title, body, output], index) => {
+              const Icon = phaseIcons[index];
+              return (
+                <div
+                  key={title}
+                  className="rounded-[28px] border p-5 shadow-card"
+                  style={{
+                    background:
+                      index === 0
+                        ? "linear-gradient(180deg, color-mix(in oklab, var(--color-brand) 12%, var(--color-surface)), color-mix(in oklab, var(--color-surface-2) 88%, transparent))"
+                        : "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 95%, white), color-mix(in oklab, var(--color-surface-2) 85%, transparent))",
+                    borderColor: index === 0 ? "color-mix(in oklab, var(--color-brand) 28%, transparent)" : "var(--color-border)"
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-2xl font-black text-brand-600">{String(index + 1).padStart(2, "0")}</span>
+                    <Icon className="h-5 w-5 text-brand-600" />
+                  </div>
+                  <h3 className="mt-5 text-base font-black leading-7" style={{ color: "var(--color-text-primary)" }}>{title}</h3>
+                  <p className="mt-3 text-xs leading-7" style={{ color: "var(--color-text-secondary)" }}>{body}</p>
+                  <p className="mt-4 rounded-2xl border px-3 py-2 text-[11px] font-semibold leading-5" style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}>
+                    {output}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 pb-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8 max-w-2xl">
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-brand-600">{data.pricingEyebrow}</p>
+            <p className="mt-3 text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>{data.pricingSubtitle}</p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            {data.pricing.map(([title, body, price, cta, packageId], index) => (
+              <div
+                key={title}
+                className="rounded-[32px] border p-6 shadow-card"
+                style={{
+                  background:
+                    index === 0
+                      ? "linear-gradient(180deg, color-mix(in oklab, var(--color-brand) 12%, var(--color-surface)), color-mix(in oklab, var(--color-surface-2) 88%, transparent))"
+                      : "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 95%, white), color-mix(in oklab, var(--color-surface-2) 85%, transparent))",
+                  borderColor: index === 0 ? "color-mix(in oklab, var(--color-brand) 28%, transparent)" : "var(--color-border)"
+                }}
+              >
+                <p className="text-lg font-black" style={{ color: "var(--color-text-primary)" }}>{title}</p>
+                <p className="mt-3 min-h-16 text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>{body}</p>
+                <p className="mt-5 font-display text-3xl font-black text-brand-600">{price}</p>
+                <Link className="mt-6 inline-flex w-full justify-center rounded-2xl px-5 py-3 text-sm font-black no-underline" style={{ background: index === 0 ? "var(--gradient-brand)" : "var(--color-surface-2)", color: index === 0 ? "var(--color-text-invert)" : "var(--color-text-primary)" }} to={`${prefix}/checkout?package=${packageId}`}>
+                  {cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="px-6 pb-24">
-        <div className="mx-auto max-w-2xl">
-          <div className="mb-6 text-center">
-            <p className="text-xs font-bold uppercase tracking-widest text-brand-600">{t("landing.faq")}</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-              {t("faq.title")}
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-8 text-center">
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-brand-600">{data.faqEyebrow}</p>
+            <h2 className="mt-4 font-display text-3xl font-black tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+              {data.faqTitle}
             </h2>
           </div>
-          <div className="space-y-2">
-            {faqItems.map((item) => (
-              <Disclosure key={item.key}>
+
+          <div className="space-y-3">
+            {data.faq.map(([question, answer]) => (
+              <Disclosure key={question}>
                 {({ open }) => (
                   <div
-                    className="overflow-hidden rounded-xl border transition-all"
+                    className="overflow-hidden rounded-[24px] border shadow-card"
                     style={{
-                      backgroundColor: "var(--color-surface)",
+                      background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 95%, white), color-mix(in oklab, var(--color-surface-2) 85%, transparent))",
                       borderColor: open ? "var(--color-border-strong)" : "var(--color-border)"
                     }}
                   >
-                    <DisclosureButton
-                      className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-medium transition-colors"
-                      style={{ color: "var(--color-text-primary)" }}
-                    >
-                      <span>{item.q}</span>
-                      <span
-                        className="flex-shrink-0 text-lg font-thin transition-transform duration-200"
-                        style={{ transform: open ? "rotate(45deg)" : "none", color: "var(--color-text-muted)" }}
-                      >
+                    <DisclosureButton className="flex w-full items-center justify-between gap-4 px-5 py-5 text-start text-sm font-black transition-colors sm:px-6" style={{ color: "var(--color-text-primary)" }}>
+                      <span>{question}</span>
+                      <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border text-lg font-light transition-transform" style={{ transform: open ? "rotate(45deg)" : "none", color: "var(--color-text-muted)", borderColor: "var(--color-border)" }}>
                         +
                       </span>
                     </DisclosureButton>
-                    <DisclosurePanel className="px-5 pb-4 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-                      {item.a}
+                    <DisclosurePanel className="px-5 pb-5 text-sm leading-8 sm:px-6" style={{ color: "var(--color-text-secondary)" }}>
+                      {answer}
                     </DisclosurePanel>
                   </div>
                 )}
@@ -252,6 +451,36 @@ export const Landing = () => {
         </div>
       </section>
 
+      <section className="px-6 pb-24">
+        <div className="mx-auto max-w-7xl">
+          <div
+            className="relative overflow-hidden rounded-[36px] border p-8 text-center shadow-elevated sm:p-12"
+            style={{
+              background:
+                "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 90%, transparent))",
+              borderColor: "color-mix(in oklab, var(--color-brand) 18%, var(--color-border))"
+            }}
+          >
+            <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(circle at 50% 120%, rgba(163,230,53,0.2), transparent 42%)" }} />
+            <div className="relative">
+              <h2 className="mt-4 font-display text-3xl font-black tracking-tight sm:text-5xl" style={{ color: "var(--color-text-primary)" }}>
+                {data.finalTitle}
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-8 sm:text-base" style={{ color: "var(--color-text-secondary)" }}>
+                {data.finalSubtitle}
+              </p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <Link className="rounded-2xl px-6 py-3.5 text-sm font-black no-underline transition-all" style={{ background: "var(--gradient-brand)", color: "var(--color-text-invert)" }} to={`${prefix}/checkout`}>
+                  {data.primaryCta}
+                </Link>
+                <Link className="rounded-2xl border px-6 py-3.5 text-sm font-semibold no-underline transition-colors hover:bg-white/5" style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }} to={`${prefix}/preview`}>
+                  {isAr ? "شاهد المعاينة المجانية" : "Watch the free preview"}
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

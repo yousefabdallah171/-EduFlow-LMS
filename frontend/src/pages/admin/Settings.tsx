@@ -40,7 +40,7 @@ export const AdminSettings = () => {
   return (
     <AdminShell title={t("admin.settings.title")} description={t("admin.settings.desc")}>
       {/* Course settings */}
-      <div className="rounded-2xl border p-6 shadow-card space-y-4" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+      <div className="dashboard-panel p-6 space-y-4">
         <p className="text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>{t("admin.settings.course")}</p>
         {courseLoading ? <div className="space-y-2">{Array.from({length:3}).map((_,i) => <Skeleton key={i} className="h-10" />)}</div> : (
           <>
@@ -59,13 +59,13 @@ export const AdminSettings = () => {
                 )}
               </div>
             ))}
-            <button onClick={() => void courseMut.mutateAsync()} disabled={courseMut.isPending} className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60" type="button">{courseMut.isPending ? "Saving..." : t("actions.save")}</button>
+            <button onClick={() => void courseMut.mutateAsync()} disabled={courseMut.isPending} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95 disabled:opacity-60" style={{ background: "var(--gradient-brand)" }} type="button">{courseMut.isPending ? "Saving..." : t("actions.save")}</button>
           </>
         )}
       </div>
 
       {/* System settings */}
-      <div className="rounded-2xl border p-6 shadow-card space-y-4" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
+      <div className="dashboard-panel p-6 space-y-4">
         <p className="text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>{t("admin.settings.system")}</p>
         {systemLoading ? <div className="space-y-2">{Array.from({length:4}).map((_,i) => <Skeleton key={i} className="h-10" />)}</div> : (
           <>
@@ -80,7 +80,7 @@ export const AdminSettings = () => {
                 <input type={field.includes("Pass") || field.includes("Key") ? "password" : "text"} className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:border-brand-600" style={{ backgroundColor: "var(--color-page)", borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }} value={system[field] ?? ""} onChange={(e) => setSystem({ ...system, [field]: e.target.value })} placeholder={field.includes("Pass") || field.includes("Key") ? "••••••••••" : ""} />
               </div>
             ))}
-            <button onClick={() => void systemMut.mutateAsync()} disabled={systemMut.isPending} className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60" type="button">{systemMut.isPending ? "Saving..." : t("actions.save")}</button>
+            <button onClick={() => void systemMut.mutateAsync()} disabled={systemMut.isPending} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95 disabled:opacity-60" style={{ background: "var(--gradient-brand)" }} type="button">{systemMut.isPending ? "Saving..." : t("actions.save")}</button>
           </>
         )}
       </div>

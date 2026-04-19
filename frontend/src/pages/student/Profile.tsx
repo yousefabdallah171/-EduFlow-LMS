@@ -1,15 +1,25 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Check, ImagePlus, KeyRound, Save, ShieldCheck, UserCircle2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import { StudentShell } from "@/components/layout/StudentShell";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 
-type ProfileData = { id: string; email: string; fullName: string; avatarUrl: string | null; role: string; emailVerified: boolean };
+type ProfileData = {
+  id: string;
+  email: string;
+  fullName: string;
+  avatarUrl: string | null;
+  role: string;
+  emailVerified: boolean;
+};
 
 export const StudentProfile = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
   const [profile, setProfile] = useState({ fullName: "", avatarUrl: "" });
   const [passwords, setPasswords] = useState({ currentPassword: "", newPassword: "", confirmNewPassword: "" });
   const [imageError, setImageError] = useState(false);
@@ -25,20 +35,26 @@ export const StudentProfile = () => {
 
   const profileMut = useMutation({
     mutationFn: () => api.patch("/student/profile", { fullName: profile.fullName, avatarUrl: profile.avatarUrl || null }),
-    onSuccess: () => { setImageError(false); toast.success(t("student.profile.saved")); },
+    onSuccess: () => {
+      setImageError(false);
+      toast.success(t("student.profile.saved"));
+    },
     onError: () => toast.error(t("student.profile.failedSave"))
   });
 
   const validatePassword = (pwd: string): string | null => {
-    if (pwd.length < 8) return "Password must be at least 8 characters";
-    if (!/[A-Z]/.test(pwd)) return "Password must contain at least one uppercase letter";
-    if (!/[0-9]/.test(pwd)) return "Password must contain at least one number";
+    if (pwd.length < 8) return isAr ? "كلمة المرور يجب أن تكون 8 أحرف على الأقل" : "Password must be at least 8 characters";
+    if (!/[A-Z]/.test(pwd)) return isAr ? "كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل" : "Password must contain at least one uppercase letter";
+    if (!/[0-9]/.test(pwd)) return isAr ? "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل" : "Password must contain at least one number";
     return null;
   };
 
   const passwordMut = useMutation({
     mutationFn: () => api.patch("/student/profile/password", { currentPassword: passwords.currentPassword, newPassword: passwords.newPassword }),
-    onSuccess: () => { toast.success(t("auth.resetPassword.updated")); setPasswords({ currentPassword: "", newPassword: "", confirmNewPassword: "" }); },
+    onSuccess: () => {
+      toast.success(t("auth.resetPassword.updated"));
+      setPasswords({ currentPassword: "", newPassword: "", confirmNewPassword: "" });
+    },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string; fields?: Record<string, string> } } };
       const errorMsg = error.response?.data?.message || (error.response?.data?.fields ? Object.values(error.response.data.fields)[0] : t("student.profile.failedPassword"));
@@ -46,257 +62,189 @@ export const StudentProfile = () => {
     }
   });
 
-  const initials = data?.fullName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "?";
+  const initials = data?.fullName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "?";
   const avatarUrl = profile.avatarUrl?.trim() && !imageError ? profile.avatarUrl : null;
 
   return (
     <StudentShell>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
-
-        .profile-container { font-family: 'Outfit', sans-serif; }
-        .avatar-preview {
-          width: 120px;
-          height: 120px;
-          border-radius: 20px;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 48px;
-          font-weight: 700;
-          color: white;
-          position: relative;
-          background: linear-gradient(135deg, #eb2027 0%, #c4191f 100%);
-          box-shadow: 0 8px 24px rgba(235, 32, 39, 0.2);
-          transition: all 0.3s ease;
-          border: 3px solid var(--color-surface);
-        }
-        .avatar-preview img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .avatar-label {
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          color: #eb2027;
-          margin-bottom: 8px;
-        }
-        .profile-field {
-          position: relative;
-        }
-        .profile-field label {
-          display: block;
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-          margin-bottom: 8px;
-        }
-        .profile-field input {
-          width: 100%;
-          padding: 12px 16px;
-          border: 1.5px solid var(--color-border-strong);
-          border-radius: 12px;
-          font-size: 14px;
-          transition: all 0.2s ease;
-          background-color: var(--color-page);
-          color: var(--color-text-primary);
-        }
-        .profile-field input:focus {
-          outline: none;
-          border-color: #eb2027;
-          box-shadow: 0 0 0 3px rgba(235, 32, 39, 0.1);
-        }
-        .btn-save {
-          background: linear-gradient(135deg, #eb2027 0%, #c4191f 100%);
-          color: white;
-          padding: 12px 24px;
-          border-radius: 12px;
-          border: none;
-          font-weight: 600;
-          font-size: 14px;
-          letter-spacing: 0.5px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
-        .btn-save:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(235, 32, 39, 0.3);
-        }
-        .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
-        .section-card {
-          border-radius: 16px;
-          border: 1px solid var(--color-border);
-          background-color: var(--color-surface);
-          padding: 28px;
-          animation: fadeInUp 0.4s ease-out;
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .section-card:nth-child(2) { animation-delay: 0.1s; }
-        .section-card:nth-child(3) { animation-delay: 0.2s; }
-        .section-title {
-          font-size: 13px;
-          font-weight: 700;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          color: #eb2027;
-          margin-bottom: 20px;
-        }
-        .security-section { margin-top: 32px; }
-        .password-field { margin-bottom: 16px; }
-      `}</style>
-
-      <div className="profile-container space-y-6">
-        <header className="section-card">
-          <p className="avatar-label">{t("student.shell.section")}</p>
-          <h1 className="text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-            {t("student.profile.title")}
-          </h1>
+      <div className="space-y-6">
+        <header className="dashboard-panel dashboard-hero dashboard-panel--strong p-6">
+          <div className="relative">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("student.shell.section")}</p>
+            <h1 className="mt-2 font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+              {t("student.profile.title")}
+            </h1>
+          </div>
         </header>
 
-        {/* Profile Card */}
-        <div className="section-card">
-          <div className="section-title">{t("student.profile.info")}</div>
+        <section className="dashboard-panel p-6">
+          <div className="mb-5 flex items-center gap-2 text-brand-600">
+            <UserCircle2 className="h-4 w-4" />
+            <h2 className="text-xs font-bold uppercase tracking-[0.16em]">{t("student.profile.info")}</h2>
+          </div>
+
           {isLoading ? (
             <div className="space-y-3">
-              <Skeleton className="h-24 rounded-2xl" />
-              <Skeleton className="h-12" />
-              <Skeleton className="h-12" />
+              <Skeleton className="h-24 rounded-[24px]" />
+              <Skeleton className="h-12 rounded-xl" />
+              <Skeleton className="h-12 rounded-xl" />
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Avatar Preview and Input */}
-              <div className="space-y-4">
-                <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-                  <div className="avatar-preview">
-                    {avatarUrl ? (
-                      <img
-                        src={avatarUrl}
-                        alt={data?.fullName}
-                        onError={() => setImageError(true)}
-                        onLoad={() => setImageError(false)}
-                      />
-                    ) : (
-                      <span>{initials}</span>
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-2 text-center sm:text-left">
-                    <p className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
-                      {data?.fullName}
+              <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
+                <div
+                  className="flex h-28 w-28 flex-shrink-0 items-center justify-center overflow-hidden rounded-[24px] text-4xl font-bold text-white shadow-card"
+                  style={{ background: "var(--gradient-brand)", border: "3px solid var(--color-surface)" }}
+                >
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={data?.fullName}
+                      className="h-full w-full object-cover"
+                      onError={() => setImageError(true)}
+                      onLoad={() => setImageError(false)}
+                    />
+                  ) : (
+                    <span>{initials}</span>
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1 text-center sm:text-start">
+                  <p className="font-display text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+                    {data?.fullName}
+                  </p>
+                  <p className="mt-1 break-all text-sm" style={{ color: "var(--color-text-muted)" }}>
+                    {data?.email}
+                  </p>
+                  {data?.emailVerified ? (
+                    <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                      <Check className="h-3.5 w-3.5" />
+                      {isAr ? "تم التحقق" : "Verified"}
                     </p>
-                    <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-                      {data?.email}
-                    </p>
-                    {data?.emailVerified && (
-                      <p className="text-xs font-semibold text-green-600">✓ Verified</p>
-                    )}
-                  </div>
+                  ) : null}
                 </div>
               </div>
 
-              {/* Form Fields */}
-              <div className="space-y-4 pt-4 border-t" style={{ borderColor: "var(--color-border)" }}>
-                <div className="profile-field">
-                  <label style={{ color: "var(--color-text-primary)" }}>Full Name</label>
+              <div className="grid gap-4 border-t pt-5 sm:grid-cols-2" style={{ borderColor: "var(--color-border)" }}>
+                <label className="block">
+                  <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--color-text-muted)" }}>
+                    {t("common.fullName")}
+                  </span>
                   <input
+                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+                    style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-page)", color: "var(--color-text-primary)" }}
                     value={profile.fullName}
                     onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
-                    placeholder="Your full name"
+                    placeholder={t("common.fullName")}
                   />
-                </div>
+                </label>
 
-                <div className="profile-field">
-                  <label style={{ color: "var(--color-text-primary)" }}>Avatar URL</label>
+                <label className="block">
+                  <span className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--color-text-muted)" }}>
+                    <ImagePlus className="h-3.5 w-3.5" />
+                    {t("student.profile.avatarUrl")}
+                  </span>
                   <input
+                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+                    style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-page)", color: "var(--color-text-primary)" }}
                     value={profile.avatarUrl}
-                    onChange={(e) => { setImageError(false); setProfile({ ...profile, avatarUrl: e.target.value }); }}
+                    onChange={(e) => {
+                      setImageError(false);
+                      setProfile({ ...profile, avatarUrl: e.target.value });
+                    }}
                     placeholder="https://example.com/avatar.jpg"
                     type="url"
                   />
-                  <p className="text-xs mt-2" style={{ color: "var(--color-text-muted)" }}>
-                    Enter an image URL to customize your avatar
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => void profileMut.mutateAsync()}
-                  disabled={profileMut.isPending}
-                  className="btn-save w-full sm:w-auto"
-                  type="button"
-                >
-                  {profileMut.isPending ? t("student.profile.saving") : t("actions.save")}
-                </button>
+                </label>
               </div>
+
+              <button
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:opacity-95 disabled:opacity-50 sm:w-auto"
+                style={{ background: "var(--gradient-brand)" }}
+                onClick={() => void profileMut.mutateAsync()}
+                disabled={profileMut.isPending}
+                type="button"
+              >
+                <Save className="h-4 w-4" />
+                {profileMut.isPending ? t("student.profile.saving") : t("actions.save")}
+              </button>
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Security Card */}
-        <div className="section-card security-section">
-          <div className="section-title">{t("student.profile.security")}</div>
-          <div className="space-y-4">
-            <div className="password-field">
-              <label style={{ color: "var(--color-text-primary)" }} className="block text-xs font-bold uppercase tracking-wider mb-2">
+        <section className="dashboard-panel p-6">
+          <div className="mb-5 flex items-center gap-2 text-brand-600">
+            <ShieldCheck className="h-4 w-4" />
+            <h2 className="text-xs font-bold uppercase tracking-[0.16em]">{t("student.profile.security")}</h2>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <label className="block">
+              <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--color-text-muted)" }}>
                 {t("student.profile.currentPassword")}
-              </label>
+              </span>
               <input
                 type="password"
-                className="w-full rounded-xl border px-4 py-3 text-sm outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600 focus:ring-opacity-10"
+                className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
                 style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-page)", color: "var(--color-text-primary)" }}
                 value={passwords.currentPassword}
                 onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
               />
-            </div>
+            </label>
 
-            <div className="password-field">
-              <label style={{ color: "var(--color-text-primary)" }} className="block text-xs font-bold uppercase tracking-wider mb-2">
+            <label className="block">
+              <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--color-text-muted)" }}>
                 {t("common.newPassword")}
-              </label>
+              </span>
               <input
                 type="password"
-                className="w-full rounded-xl border px-4 py-3 text-sm outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600 focus:ring-opacity-10"
+                className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
                 style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-page)", color: "var(--color-text-primary)" }}
                 value={passwords.newPassword}
                 onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
               />
-            </div>
+            </label>
 
-            <div className="password-field">
-              <label style={{ color: "var(--color-text-primary)" }} className="block text-xs font-bold uppercase tracking-wider mb-2">
+            <label className="block">
+              <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--color-text-muted)" }}>
                 {t("student.profile.confirmPassword")}
-              </label>
+              </span>
               <input
                 type="password"
-                className="w-full rounded-xl border px-4 py-3 text-sm outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600 focus:ring-opacity-10"
+                className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
                 style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-page)", color: "var(--color-text-primary)" }}
                 value={passwords.confirmNewPassword}
                 onChange={(e) => setPasswords({ ...passwords, confirmNewPassword: e.target.value })}
               />
-            </div>
-
-            <button
-              onClick={() => {
-                if (!passwords.currentPassword) { toast.error("Current password is required"); return; }
-                const pwdError = validatePassword(passwords.newPassword);
-                if (pwdError) { toast.error(pwdError); return; }
-                if (passwords.newPassword !== passwords.confirmNewPassword) { toast.error(t("student.profile.passwordMismatch")); return; }
-                void passwordMut.mutateAsync();
-              }}
-              disabled={passwordMut.isPending}
-              className="btn-save w-full sm:w-auto"
-              type="button"
-            >
-              {passwordMut.isPending ? t("student.profile.updating") : t("actions.updatePassword")}
-            </button>
+            </label>
           </div>
-        </div>
+
+          <button
+            className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:opacity-95 disabled:opacity-50 sm:w-auto"
+            style={{ background: "var(--gradient-brand)" }}
+            onClick={() => {
+              if (!passwords.currentPassword) {
+                toast.error(isAr ? "كلمة المرور الحالية مطلوبة" : "Current password is required");
+                return;
+              }
+              const pwdError = validatePassword(passwords.newPassword);
+              if (pwdError) {
+                toast.error(pwdError);
+                return;
+              }
+              if (passwords.newPassword !== passwords.confirmNewPassword) {
+                toast.error(t("student.profile.passwordMismatch"));
+                return;
+              }
+              void passwordMut.mutateAsync();
+            }}
+            disabled={passwordMut.isPending}
+            type="button"
+          >
+            <KeyRound className="h-4 w-4" />
+            {passwordMut.isPending ? t("student.profile.updating") : t("actions.updatePassword")}
+          </button>
+        </section>
       </div>
     </StudentShell>
   );

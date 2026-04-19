@@ -33,7 +33,7 @@ export const ResourcesList = ({ resources }: ResourcesListProps) => {
   }
 
   return (
-    <div className="space-y-4 mt-8 pt-8 border-t" style={{ borderColor: "var(--color-border)" }}>
+    <div className="mt-8 space-y-4 border-t pt-8" style={{ borderColor: "var(--color-border)" }}>
       <h3 className="text-lg font-semibold" style={{ color: "var(--color-text-primary)" }}>
         {t("lesson.courseMaterials") || "Course Materials"}
       </h3>
@@ -44,16 +44,16 @@ export const ResourcesList = ({ resources }: ResourcesListProps) => {
             key={resource.id}
             href={resource.fileUrl}
             download
-            className="flex items-center justify-between p-3 rounded-lg border transition-colors hover:bg-opacity-50"
+            className="flex items-center justify-between rounded-2xl border p-4 transition-colors"
             style={{
-              backgroundColor: "var(--color-surface-2)",
+              background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 94%, white), color-mix(in oklab, var(--color-surface-2) 86%, transparent))",
               borderColor: "var(--color-border)"
             }}
           >
             <div className="flex items-center gap-3 flex-1">
               <FileText
                 size={20}
-                style={{ color: "rgb(59, 130, 246)" }}
+                style={{ color: "var(--color-brand-accent)" }}
               />
               <div className="flex-1">
                 <p className="font-medium text-sm" style={{ color: "var(--color-text-primary)" }}>

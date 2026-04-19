@@ -20,26 +20,32 @@ router.get("/student/dashboard", authenticate, requireRole("STUDENT"), studentCo
 
 router.get("/course", async (_req, res, next) => {
   try {
-    const [settings, lessons] = await Promise.all([
+    const [settings, lessons, packages] = await Promise.all([
       prisma.courseSettings.findUnique({ where: { id: 1 } }),
       prisma.lesson.findMany({
         where: { isPublished: true },
         select: { id: true, titleEn: true, titleAr: true, durationSeconds: true, sortOrder: true },
         orderBy: { sortOrder: "asc" }
+      }),
+      prisma.coursePackage.findMany({
+        where: { isActive: true },
+        orderBy: { sortOrder: "asc" }
       })
     ]);
 
+    const primaryPackage = packages[0];
+
     res.json({
-      title: settings?.titleEn ?? "EduFlow Course",
-      titleEn: settings?.titleEn ?? "EduFlow Course",
-      titleAr: settings?.titleAr ?? "EduFlow Course",
+      title: settings?.titleEn ?? "AI Workflow: From Idea to Production",
+      titleEn: settings?.titleEn ?? "AI Workflow: From Idea to Production",
+      titleAr: settings?.titleAr ?? "AI Workflow: من الفكرة إلى الـ Production",
       descriptionHtml: settings?.descriptionEn ?? "",
       descriptionHtmlEn: settings?.descriptionEn ?? "",
       descriptionHtmlAr: settings?.descriptionAr ?? "",
-      priceEgp: settings ? settings.pricePiasters / 100 : 0,
-      currency: settings?.currency ?? "EGP",
+      priceEgp: primaryPackage ? primaryPackage.pricePiasters / 100 : settings ? settings.pricePiasters / 100 : 0,
+      currency: primaryPackage?.currency ?? settings?.currency ?? "EGP",
       lessonCount: lessons.length,
-      totalDurationSeconds: 0,
+      totalDurationSeconds: lessons.reduce((total, lesson) => total + (lesson.durationSeconds ?? 0), 0),
       isEnrollmentOpen: settings?.isEnrollmentOpen ?? false,
       enrolled: false,
       lessons: lessons.map((l) => ({
@@ -48,6 +54,16 @@ router.get("/course", async (_req, res, next) => {
         titleAr: l.titleAr,
         durationSeconds: l.durationSeconds,
         sortOrder: l.sortOrder
+      })),
+      packages: packages.map((coursePackage) => ({
+        id: coursePackage.id,
+        titleEn: coursePackage.titleEn,
+        titleAr: coursePackage.titleAr,
+        descriptionEn: coursePackage.descriptionEn,
+        descriptionAr: coursePackage.descriptionAr,
+        priceEgp: coursePackage.pricePiasters / 100,
+        currency: coursePackage.currency,
+        sortOrder: coursePackage.sortOrder
       }))
     });
   } catch (error) {

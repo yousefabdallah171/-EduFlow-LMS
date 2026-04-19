@@ -7,6 +7,9 @@ test("student applies a coupon and starts Paymob checkout", async ({ page }) => 
     await route.fulfill({
       status: 200,
       contentType: "application/json",
+      headers: {
+        "set-cookie": "eduflow_refresh_present=1; Path=/; SameSite=Strict"
+      },
       body: JSON.stringify({
         accessToken: "student-access-token",
         user: {
@@ -35,13 +38,13 @@ test("student applies a coupon and starts Paymob checkout", async ({ page }) => 
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
-        priceEgp: 499,
+        priceEgp: 1000,
         currency: "EGP"
       })
     });
   });
 
-  await page.route("**/api/v1/checkout/validate-coupon", async (route) => {
+  await page.route(/\/api\/v1\/checkout\/validate-coupon$/, async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -49,22 +52,22 @@ test("student applies a coupon and starts Paymob checkout", async ({ page }) => 
         valid: true,
         discountType: "PERCENTAGE",
         discountValue: 20,
-        originalAmountEgp: 499,
-        discountedAmountEgp: 399.2
+        originalAmountEgp: 1000,
+        discountedAmountEgp: 800
       })
     });
   });
 
-  await page.route("**/api/v1/checkout", async (route) => {
+  await page.route(/\/api\/v1\/checkout$/, async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
         paymentKey: "paymob-token",
         orderId: "order-1",
-        amount: 39920,
+        amount: 80000,
         currency: "EGP",
-        discountApplied: 9980,
+        discountApplied: 20000,
         iframeId: "12345"
       })
     });
@@ -81,14 +84,21 @@ test("student applies a coupon and starts Paymob checkout", async ({ page }) => 
   await page.goto(`${baseUrl}/login`);
   await page.getByLabel("Email").fill("student@example.com");
   await page.getByLabel("Password").fill("Securepass123");
-  await page.getByRole("button", { name: "Log in" }).click();
-  await page.goto(`${baseUrl}/checkout`);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.context().addCookies([{ name: "eduflow_refresh_present", value: "1", url: baseUrl, sameSite: "Strict" }]);
+  await expect(page).toHaveURL(`${baseUrl}/dashboard`);
+  await page.evaluate(() => {
+    window.history.pushState({}, "", "/checkout");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+  await expect(page.getByRole("heading", { name: "Complete your purchase" })).toBeVisible();
 
-  await page.getByLabel("Coupon code").fill("SAVE20");
+  await page.getByRole("button", { name: /Have a coupon code/ }).click();
+  await page.getByPlaceholder("SAVE20").fill("SAVE20");
   await page.getByRole("button", { name: "Apply" }).click();
-  await expect(page.getByText("Coupon applied. New total: 399.20 EGP")).toBeVisible();
+  await expect(page.getByText("800.00 EGP", { exact: true })).toBeVisible();
 
-  await page.getByRole("button", { name: "Pay now" }).click();
+  await page.getByRole("button", { name: /Pay 800\.00 EGP/ }).click();
   await expect(page).toHaveURL(/accept\.paymob\.com/);
   await expect(page.getByRole("heading", { name: "Mock Paymob Checkout" })).toBeVisible();
 });
