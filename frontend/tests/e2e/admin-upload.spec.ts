@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 
 test("admin starts a resumable upload and sees progress feedback", async ({ page }) => {
   const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5173";
+  let uploadCreated = 0;
+  let uploadPatched = 0;
 
   await page.route("**/api/v1/auth/login", async (route) => {
     await route.fulfill({
@@ -73,6 +75,14 @@ test("admin starts a resumable upload and sees progress feedback", async ({ page
     });
   });
 
+  await page.route("**/api/v1/admin/lessons/lesson-1/resources", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ resources: [] })
+    });
+  });
+
   await page.route("**/api/v1/admin/uploads", async (route) => {
     if (route.request().method() === "GET") {
       await route.fulfill({
@@ -85,6 +95,8 @@ test("admin starts a resumable upload and sees progress feedback", async ({ page
       return;
     }
 
+    uploadCreated += 1;
+
     await route.fulfill({
       status: 201,
       headers: {
@@ -96,6 +108,7 @@ test("admin starts a resumable upload and sees progress feedback", async ({ page
   });
 
   await page.route("**/api/v1/admin/uploads/upload-1", async (route) => {
+    uploadPatched += 1;
     const totalBytes = route.request().postDataBuffer()?.byteLength ?? 1024;
     await route.fulfill({
       status: 204,
@@ -107,21 +120,23 @@ test("admin starts a resumable upload and sees progress feedback", async ({ page
     });
   });
 
-  await page.goto(`${baseUrl}/login`);
+  await page.goto("/en/login");
   await page.getByLabel("Email").fill("admin@example.com");
   await page.getByLabel("Password").fill("Securepass123");
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.context().addCookies([{ name: "eduflow_refresh_present", value: "1", url: baseUrl, sameSite: "Strict" }]);
-  await expect(page).toHaveURL(`${baseUrl}/admin/dashboard`);
-  await page.goto(`${baseUrl}/admin/lessons`);
+  await expect(page).toHaveURL(/\/en\/admin\/dashboard$/);
+  await page.goto("/en/admin/lessons");
 
-  await page.getByRole("button", { name: "Upload" }).click();
-  await expect(page.getByRole("heading", { name: "Upload video" })).toBeVisible();
+  await expect(page.getByText("Selected lesson")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Replace or add the lesson video" })).toBeVisible();
   await page.setInputFiles('input[type="file"]', {
     name: "lesson.mp4",
     mimeType: "video/mp4",
     buffer: Buffer.from("demo video content")
   });
 
-  await expect(page.getByText("Lesson details & resources")).toBeVisible();
+  await expect.poll(() => uploadCreated).toBeGreaterThan(0);
+  await expect.poll(() => uploadPatched).toBeGreaterThan(0);
+  await expect(page.getByRole("heading", { name: "Resources and links" })).toBeVisible();
 });

@@ -73,7 +73,7 @@ export const RootLayout = ({ children }: RootLayoutProps) => {
   }, [locale, theme]);
 
   return (
-    <div>
+    <div className="min-h-dvh">
       <NavBar />
       {children}
       <Footer />

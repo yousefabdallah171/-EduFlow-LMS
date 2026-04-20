@@ -8,6 +8,8 @@ RUN pnpm install --filter frontend... --frozen-lockfile=false
 FROM deps AS dev
 WORKDIR /app/frontend
 RUN apk add --no-cache chromium nss freetype harfbuzz ca-certificates ttf-freefont
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+ENV PLAYWRIGHT_CHROMIUM_PATH=/usr/bin/chromium
 
 FROM node:20-alpine AS build
 WORKDIR /app

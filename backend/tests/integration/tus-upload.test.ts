@@ -43,6 +43,9 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  await prisma.ticketMessage.deleteMany();
+  await prisma.supportTicket.deleteMany();
+  await prisma.videoSecurityEvent.deleteMany();
   await prisma.videoUpload.deleteMany();
   await prisma.videoToken.deleteMany();
   await prisma.lessonProgress.deleteMany();
@@ -56,8 +59,9 @@ beforeEach(async () => {
   });
   await prisma.refreshToken.deleteMany();
   await prisma.user.deleteMany({ where: { role: "ADMIN" } });
-  await fs.rm(path.resolve(process.cwd(), "storage", "uploads"), { recursive: true, force: true }).catch(() => undefined);
-  await fs.rm(path.resolve(process.cwd(), "storage", "hls"), { recursive: true, force: true }).catch(() => undefined);
+  const storagePath = process.env.STORAGE_PATH || "storage";
+  await fs.rm(path.resolve(process.cwd(), storagePath, "uploads"), { recursive: true, force: true }).catch(() => undefined);
+  await fs.rm(path.resolve(process.cwd(), storagePath, "hls"), { recursive: true, force: true }).catch(() => undefined);
 
   const admin = await prisma.user.create({
     data: {
@@ -147,7 +151,8 @@ describe("US4 tus upload", () => {
       .send(uploadBuffer.subarray(firstChunk.length))
       .expect(204);
 
-    const playlistPath = path.resolve(process.cwd(), "storage", "hls", lessonId, "playlist.m3u8");
+    const storagePath = process.env.STORAGE_PATH || "storage";
+    const playlistPath = path.resolve(process.cwd(), storagePath, "hls", lessonId, "playlist.m3u8");
     await expect(fs.access(playlistPath)).resolves.toBeUndefined();
 
     const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });

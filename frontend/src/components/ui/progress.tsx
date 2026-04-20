@@ -14,8 +14,8 @@ export const Progress = forwardRef<
     {...props}
   >
     <ProgressPrimitive.Indicator
-      className="h-full bg-brand-600 transition-all"
-      style={{ transform: `translateX(-${100 - (value ?? 0)}%)` }}
+      className="relative h-full origin-left overflow-hidden bg-brand-600 transition-transform after:absolute after:inset-y-0 after:w-1/2 after:bg-gradient-to-r after:from-transparent after:via-white/30 after:to-transparent after:content-['']"
+      style={{ transform: `scaleX(${Math.max(0, Math.min(100, value ?? 0)) / 100})` }}
     />
   </ProgressPrimitive.Root>
 ));

@@ -12,6 +12,7 @@ declare global {
 export const redis =
   global.__redis__ ??
   new IORedis(env.REDIS_URL, {
+    keyPrefix: env.REDIS_KEY_PREFIX || undefined,
     maxRetriesPerRequest: 3,
     lazyConnect: process.env.NODE_ENV === "test"
   });

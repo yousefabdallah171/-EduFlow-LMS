@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Check, CircleDot, LockKeyhole, LogIn, PlayCircle, Plus } from "lucide-react";
+import { ArrowRight, Check, CircleDot, LockKeyhole, LogIn, PlayCircle, Plus, Trophy } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { Progress } from "@/components/ui/progress";
 import { StudentShell } from "@/components/layout/StudentShell";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
@@ -53,7 +54,6 @@ const formatDuration = (seconds: number | null) => {
   return `${m}:${String(s).padStart(2, "0")}`;
 };
 
-/* ─── Public course overview for non-authenticated visitors ─── */
 const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, opts?: Record<string, unknown>) => string; isAr: boolean }) => {
   const navigate = useNavigate();
 
@@ -80,8 +80,6 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
     <main className="dashboard-page min-h-dvh px-4 py-6 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-5 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
-
-          {/* ── Sidebar ── */}
           <aside className="dashboard-panel dashboard-sidebar hidden p-3 md:block">
             <div className="mb-3 rounded-xl p-3 text-center" style={{ backgroundColor: "var(--color-brand-muted)" }}>
               <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl shadow-sm" style={{ background: "var(--gradient-brand)" }}>
@@ -98,18 +96,18 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
                 const Icon = item.icon;
 
                 return (
-                <Link
-                  key={item.label}
-                  className={cn(
-                    "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium no-underline transition-colors",
-                    item.accent ? "text-white shadow-sm hover:opacity-95" : "hover:bg-surface2"
-                  )}
-                  style={item.accent ? { background: "var(--gradient-brand)" } : { color: "var(--color-text-secondary)" }}
-                  to={item.href}
-                >
-                  <Icon className={cn("h-4 w-4", item.accent ? "opacity-85" : "text-brand-600 opacity-70")} />
-                  {item.label}
-                </Link>
+                  <Link
+                    key={item.label}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium no-underline transition-colors",
+                      item.accent ? "text-white shadow-sm hover:opacity-95" : "hover:bg-surface2"
+                    )}
+                    style={item.accent ? { background: "var(--gradient-brand)" } : { color: "var(--color-text-secondary)" }}
+                    to={item.href}
+                  >
+                    <Icon className={cn("h-4 w-4", item.accent ? "opacity-85" : "text-brand-600 opacity-70")} />
+                    {item.label}
+                  </Link>
                 );
               })}
             </nav>
@@ -129,47 +127,17 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
             ) : null}
           </aside>
 
-          {/* ── Main content ── */}
           <div className="space-y-5">
-
-            {/* Hero */}
-            <div className="dashboard-panel dashboard-hero dashboard-panel--strong relative overflow-hidden rounded-[32px]">
-              <div
-                className="pointer-events-none absolute inset-x-0 top-0 h-44 opacity-75"
-                style={{ background: "radial-gradient(circle at top right, rgba(163,230,53,0.16), transparent 58%)" }}
-              />
-              <div className="relative p-6 sm:p-8">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">AI Workflow</p>
-                <h1 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: "var(--color-text-primary)" }}>
-                  {courseTitle || (isAr ? "مكتبة الدروس المحمية" : "Protected Lesson Library")}
-                </h1>
-                <p className="mt-3 max-w-2xl text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>
-                  {t("course.public.unlockMessage")}
-                </p>
-
-                {/* Free preview banner */}
-              <div className="dashboard-panel dashboard-panel--accent mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[22px] p-4">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-                      {t("course.freePreview")}
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>
-                      {t("course.public.firstLessonFree")}
-                    </p>
-                  </div>
+            <PageHeader
+              hero
+              eyebrow="AI Workflow"
+              title={courseTitle || (isAr ? "مكتبة الدروس المحمية" : "Protected lesson library")}
+              description={t("course.public.unlockMessage")}
+              actions={
+                <div className="flex flex-wrap gap-3">
                   <Link
-                    className="flex-shrink-0 rounded-xl px-4 py-2 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                    style={{ background: "var(--gradient-brand)", outlineColor: "var(--color-brand)" }}
-                    to={`${prefix}/preview`}
-                  >
-                    {t("actions.watchPreview")}
-                  </Link>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <Link
-                    className="inline-flex min-h-11 items-center rounded-xl px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                    style={{ background: "var(--gradient-brand)", outlineColor: "var(--color-brand)" }}
+                    className="inline-flex min-h-11 items-center rounded-xl px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                    style={{ background: "var(--gradient-brand)" }}
                     to={`${prefix}/checkout`}
                   >
                     {t("actions.getCourseAccess")}
@@ -182,10 +150,27 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
                     {t("actions.logIn")}
                   </Link>
                 </div>
+              }
+            />
+
+            <div className="dashboard-panel dashboard-panel--accent flex flex-wrap items-center justify-between gap-3 rounded-[22px] p-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                  {t("course.freePreview")}
+                </p>
+                <p className="mt-0.5 text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>
+                  {t("course.public.firstLessonFree")}
+                </p>
               </div>
+              <Link
+                className="flex-shrink-0 rounded-xl px-4 py-2 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                style={{ background: "var(--gradient-brand)" }}
+                to={`${prefix}/preview`}
+              >
+                {t("actions.watchPreview")}
+              </Link>
             </div>
 
-            {/* Lesson list — all locked, click → login */}
             {courseQuery.isLoading ? (
               <div className="rounded-[28px] border p-8 text-center shadow-card" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
                 <p className="text-sm font-medium" style={{ color: "var(--color-text-muted)" }}>{t("common.loading")}</p>
@@ -233,9 +218,7 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
                               {title}
                             </p>
                             <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                              {isFirst
-                                ? t("course.public.freeWatchNow")
-                                : t("course.public.loginRequired")}
+                              {isFirst ? t("course.public.freeWatchNow") : t("course.public.loginRequired")}
                               {lesson.durationSeconds ? ` - ${formatDuration(lesson.durationSeconds)}` : ""}
                             </p>
                           </div>
@@ -250,7 +233,6 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
               </div>
             ) : null}
 
-            {/* Sign up CTA */}
             <p className="text-center text-xs" style={{ color: "var(--color-text-muted)" }}>
               {t("course.public.newHere")}{" "}
               <Link className="font-semibold text-brand-600 no-underline hover:underline" to={`${prefix}/register`}>
@@ -264,7 +246,6 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
   );
 };
 
-/* ─── Student Dashboard (logged-in view) ─── */
 export const Course = () => {
   const { locale } = useParams();
   const { t } = useTranslation();
@@ -298,9 +279,9 @@ export const Course = () => {
   const totalCount = lessonsQuery.data?.length ?? 0;
   const completionPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   const nextLesson = lessonsQuery.data?.find((l) => l.isUnlocked && !l.completedAt);
-  const lastLesson = lessonsQuery.data?.filter((l) => l.lastPositionSeconds > 0).at(-1);
+  const resumeLesson = lessonsQuery.data?.find((l) => l.lastPositionSeconds > 0 && !l.completedAt);
+  const featuredLesson = resumeLesson ?? nextLesson ?? lessonsQuery.data?.find((l) => l.isUnlocked) ?? null;
 
-  // Show public view if not logged in
   if (!user && !demo) {
     return <PublicCourseView prefix={prefix} t={t} isAr={isAr} />;
   }
@@ -308,204 +289,239 @@ export const Course = () => {
   return (
     <StudentShell>
       <>
-
-            {/* Welcome header */}
-            <div className="dashboard-panel dashboard-hero dashboard-panel--strong p-6">
-              {user ? (
-                <>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-                    {isAr ? "مرحباً بك" : "Welcome back"}
-                  </p>
-                  <h1 className="mt-2 font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-                    {user.fullName}
-                  </h1>
-                </>
-              ) : (
-                <h1 className="font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-                  {isAr ? "مكتبة الدروس" : "Course library"}
-                </h1>
-              )}
-              <p className="mt-1.5 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                {isEnrolled
-                  ? (isAr ? "دورتك نشطة — كل الدروس في انتظارك." : "Your course is active — all lessons are ready.")
-                  : (isAr ? "اشترِ الدورة لفتح جميع الدروس." : "Purchase the course to unlock all lessons.")}
-              </p>
-            </div>
-
-            {/* Stats row */}
-            {isEnrolled && totalCount > 0 ? (
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="dashboard-panel dashboard-panel--accent p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                    {t("course.completion")}
-                  </p>
-                  <p className="mt-2 font-display text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>{completionPct}%</p>
-                  <Progress className="mt-2 h-1.5" value={completionPct} />
-                </div>
-                <div className="dashboard-panel p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                    {t("course.completedLessons")}
-                  </p>
-                  <p className="mt-2 font-display text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>{completedCount}</p>
-                  <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                    {t("course.outOf", { total: totalCount })}
-                  </p>
-                </div>
-                <div className="dashboard-panel dashboard-panel--strong flex flex-col justify-between p-4" style={{ backgroundColor: "var(--color-invert)" }}>
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-60" style={{ color: "var(--color-text-invert)" }}>
-                    {t("course.playbackPolicy")}
-                  </p>
-                  <p className="mt-3 text-xs font-medium leading-relaxed" style={{ color: "var(--color-text-invert)" }}>
-                    {t("course.tokenPolicy")}
-                  </p>
-                </div>
-              </div>
-            ) : null}
-
-            {/* Not enrolled state */}
-            {!statusQuery.isLoading && !isEnrolled ? (
-              <div className="dashboard-panel p-6">
-                <div
-                  className="rounded-xl border border-dashed p-6 text-center"
-                  style={{ borderColor: "var(--color-border-strong)" }}
-                >
-                  <p className="font-display text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
-                    {t("course.noAccess")}
-                  </p>
-                  <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                    {t("course.purchaseToUnlock")}
-                  </p>
-                  <div className="mt-5 flex flex-wrap justify-center gap-3">
-                    <Link
-                      className="inline-flex min-h-11 items-center rounded-xl px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
-                      style={{ background: "var(--gradient-brand)" }}
-                      to={`${prefix}/checkout`}
-                    >
-                      {t("course.getAccess")}
-                    </Link>
-                    <Link
-                      className="rounded-xl border px-5 py-2.5 text-sm font-medium no-underline transition-colors hover:bg-surface2"
-                      style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
-                      to={`${prefix}/preview`}
-                    >
-                      {t("course.watchFreeLesson")}
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {/* Lesson list */}
-            {isEnrolled ? (
-              <div id="lessons" className="dashboard-panel overflow-hidden">
-                <div className="flex items-center justify-between p-5" style={{ borderBottom: "1px solid var(--color-border)" }}>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-                    {isAr ? "الدروس" : "Lessons"}
-                  </p>
-                  {lessonsQuery.isLoading ? (
-                    <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>{t("common.loading")}</span>
-                  ) : null}
-                </div>
-
-                {lessonsQuery.isError ? (
-                  <p className="p-5 text-sm text-red-500">
-                    {isAr ? "تعذّر تحميل الدروس." : "Unable to load lessons."}
-                  </p>
-                ) : null}
-
-                <div className="divide-y" style={{ borderColor: "var(--color-border)" }}>
-                  {lessonsQuery.data?.map((lesson, idx) => {
-                    const isResume = lesson.lastPositionSeconds > 0 && !lesson.completedAt;
-                    return (
-                      <div
-                        key={lesson.id}
-                        className={cn(
-                          "flex flex-wrap items-center justify-between gap-4 px-5 py-4 transition-colors",
-                          lesson.isUnlocked ? "hover:bg-surface2" : "opacity-60"
-                        )}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span
-                            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                            style={{
-                              backgroundColor: lesson.completedAt
-                                ? "rgba(34,197,94,0.12)"
-                                : lesson.isUnlocked
-                                  ? "var(--color-brand-muted)"
-                                  : "var(--color-surface-2)",
-                              color: lesson.completedAt
-                                ? "rgb(21,128,61)"
-                                : lesson.isUnlocked
-                                  ? "var(--color-brand)"
-                                  : "var(--color-text-muted)"
-                            }}
-                          >
-                            {lesson.completedAt ? <Check className="h-4 w-4" /> : lesson.isUnlocked ? idx + 1 : <LockKeyhole className="h-4 w-4" />}
-                          </span>
-                          <div>
-                            <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                              {pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
-                            </p>
-                            <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                              {lesson.completedAt
-                                ? t("common.completed")
-                                : isResume
-                                  ? (isAr ? `متابعة من ${lesson.lastPositionSeconds}ث` : `Resume from ${lesson.lastPositionSeconds}s`)
-                                  : !lesson.isUnlocked
-                                    ? (isAr
-                                        ? `يُفتح ${lesson.unlocksAt ? formatDate(lesson.unlocksAt, currentLocale) : "قريباً"}`
-                                        : `Unlocks ${lesson.unlocksAt ? formatDate(lesson.unlocksAt, currentLocale) : "soon"}`)
-                                    : t("course.notStarted")}
-                              {lesson.durationSeconds ? ` - ${formatDuration(lesson.durationSeconds)}` : ""}
-                            </p>
-                          </div>
-                        </div>
-
-                        {lesson.isUnlocked ? (
-                          <Link
-                            className="rounded-lg px-3.5 py-2 text-xs font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
-                            style={{ background: "var(--gradient-brand)" }}
-                            to={`${prefix}/lessons/${lesson.id}`}
-                          >
-                            {lesson.completedAt
-                              ? t("actions.rewatch")
-                              : isResume
-                                ? t("actions.resume")
-                                : t("actions.start")}
-                          </Link>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-
-            {/* Continue learning quick-access */}
-            {isEnrolled && (nextLesson ?? lastLesson) ? (
-              <div className="dashboard-panel p-5">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-                  {t("course.continueLearning")}
-                </p>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                    {pickLocalizedText(currentLocale, (nextLesson ?? lastLesson)?.titleEn ?? (nextLesson ?? lastLesson)?.title, (nextLesson ?? lastLesson)?.titleAr)}
-                  </p>
+        <PageHeader
+          hero
+          eyebrow={isEnrolled ? t("course.welcomeBack") : t("course.title")}
+          title={user ? user.fullName : (isAr ? "مكتبة الدروس" : "Course library")}
+          description={isEnrolled ? t("course.active") : t("course.notEnrolled")}
+          actions={
+            isEnrolled ? (
+              <div className="flex flex-wrap gap-3">
+                {featuredLesson ? (
                   <Link
-                    className="inline-flex min-h-11 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
                     style={{ background: "var(--gradient-brand)" }}
-                    to={`${prefix}/lessons/${(nextLesson ?? lastLesson)!.id}`}
+                    to={`${prefix}/lessons/${featuredLesson.id}`}
                   >
-                    {t("actions.continue")}
+                    {resumeLesson ? t("actions.resume") : t("course.continueLearning")}
                     <ArrowRight className="icon-dir h-4 w-4" />
                   </Link>
-                </div>
+                ) : null}
+                <Link
+                  className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-5 py-3 text-sm font-medium no-underline transition-colors hover:bg-surface2"
+                  style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                  to={`${prefix}/progress`}
+                >
+                  <Trophy className="h-4 w-4 text-brand-600" />
+                  {t("student.progress.title")}
+                </Link>
               </div>
+            ) : (
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  className="inline-flex min-h-11 items-center rounded-xl px-5 py-3 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                  style={{ background: "var(--gradient-brand)" }}
+                  to={`${prefix}/checkout`}
+                >
+                  {t("course.getAccess")}
+                </Link>
+                <Link
+                  className="inline-flex min-h-11 items-center rounded-xl border px-5 py-3 text-sm font-medium no-underline transition-colors hover:bg-surface2"
+                  style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                  to={`${prefix}/preview`}
+                >
+                  {t("course.watchFreeLesson")}
+                </Link>
+              </div>
+            )
+          }
+        />
+
+        {isEnrolled && totalCount > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="dashboard-panel dashboard-panel--accent p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                {t("course.completion")}
+              </p>
+              <p className="mt-2 font-display text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>{completionPct}%</p>
+              <Progress className="mt-3 h-2" value={completionPct} />
+            </div>
+            <div className="dashboard-panel p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                {t("course.completedLessons")}
+              </p>
+              <p className="mt-2 font-display text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>{completedCount}</p>
+              <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
+                {t("course.outOf", { total: totalCount })}
+              </p>
+            </div>
+            <div className="dashboard-panel p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                {isAr ? "وتيرة التعلم" : "Learning rhythm"}
+              </p>
+              <p className="mt-2 text-sm font-semibold leading-6" style={{ color: "var(--color-text-primary)" }}>
+                {completionPct >= 75
+                  ? (isAr ? "أنت قريب من إنهاء المسار بالكامل." : "You are close to finishing the whole workflow.")
+                  : completionPct >= 35
+                    ? (isAr ? "أنت في منتصف الطريق تقريبًا." : "You are building through the middle of the course.")
+                    : (isAr ? "ابدأ أو أكمل الدرس التالي للحفاظ على الزخم." : "Start or resume the next lesson to keep your momentum up.")}
+              </p>
+            </div>
+          </div>
+        ) : null}
+
+        {!statusQuery.isLoading && !isEnrolled ? (
+          <div className="dashboard-panel p-6">
+            <div
+              className="rounded-[24px] border border-dashed p-6 text-center"
+              style={{ borderColor: "var(--color-border-strong)" }}
+            >
+              <p className="font-display text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+                {t("course.noAccess")}
+              </p>
+              <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                {t("course.purchaseToUnlock")}
+              </p>
+              <div className="mt-5 flex flex-wrap justify-center gap-3">
+                <Link
+                  className="inline-flex min-h-11 items-center rounded-xl px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                  style={{ background: "var(--gradient-brand)" }}
+                  to={`${prefix}/checkout`}
+                >
+                  {t("course.getAccess")}
+                </Link>
+                <Link
+                  className="rounded-xl border px-5 py-2.5 text-sm font-medium no-underline transition-colors hover:bg-surface2"
+                  style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                  to={`${prefix}/preview`}
+                >
+                  {t("course.watchFreeLesson")}
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {isEnrolled && featuredLesson ? (
+          <section className="dashboard-panel p-5">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                  {resumeLesson ? t("course.continueLearning") : (isAr ? "الدرس المقترح التالي" : "Recommended next lesson")}
+                </p>
+                <p className="mt-2 text-lg font-semibold" style={{ color: "var(--color-text-primary)" }}>
+                  {pickLocalizedText(currentLocale, featuredLesson.titleEn ?? featuredLesson.title, featuredLesson.titleAr)}
+                </p>
+                <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                  {resumeLesson
+                    ? (isAr ? `متابعة من ${featuredLesson.lastPositionSeconds} ثانية` : `Resume from ${featuredLesson.lastPositionSeconds}s`)
+                    : featuredLesson.durationSeconds
+                      ? `${formatDuration(featuredLesson.durationSeconds)}`
+                      : (isAr ? "جاهز للبدء" : "Ready to start")}
+                </p>
+              </div>
+              <Link
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                style={{ background: "var(--gradient-brand)" }}
+                to={`${prefix}/lessons/${featuredLesson.id}`}
+              >
+                {resumeLesson ? t("actions.resume") : t("actions.start")}
+                <ArrowRight className="icon-dir h-4 w-4" />
+              </Link>
+            </div>
+          </section>
+        ) : null}
+
+        {isEnrolled ? (
+          <div id="lessons" className="dashboard-panel overflow-hidden">
+            <div className="flex items-center justify-between p-5" style={{ borderBottom: "1px solid var(--color-border)" }}>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                  {isAr ? "الدروس" : "Lessons"}
+                </p>
+                <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                  {isAr ? "كل درس يوضح لك حالته بوضوح: مكتمل، متابعة، أو لم يبدأ بعد." : "Each lesson makes its state clear: completed, resume, or not started yet."}
+                </p>
+              </div>
+              {lessonsQuery.isLoading ? (
+                <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>{t("common.loading")}</span>
+              ) : null}
+            </div>
+
+            {lessonsQuery.isError ? (
+              <p className="p-5 text-sm text-red-500">
+                {isAr ? "تعذّر تحميل الدروس." : "Unable to load lessons."}
+              </p>
             ) : null}
+
+            <div className="divide-y" style={{ borderColor: "var(--color-border)" }}>
+              {lessonsQuery.data?.map((lesson, idx) => {
+                const isResume = lesson.lastPositionSeconds > 0 && !lesson.completedAt;
+                return (
+                  <div
+                    key={lesson.id}
+                    className={cn(
+                      "flex flex-wrap items-center justify-between gap-4 px-5 py-4 transition-colors",
+                      lesson.isUnlocked ? "hover:bg-surface2" : "opacity-60"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                        style={{
+                          backgroundColor: lesson.completedAt
+                            ? "rgba(34,197,94,0.12)"
+                            : lesson.isUnlocked
+                              ? "var(--color-brand-muted)"
+                              : "var(--color-surface-2)",
+                          color: lesson.completedAt
+                            ? "rgb(21,128,61)"
+                            : lesson.isUnlocked
+                              ? "var(--color-brand)"
+                              : "var(--color-text-muted)"
+                        }}
+                      >
+                        {lesson.completedAt ? <Check className="h-4 w-4" /> : lesson.isUnlocked ? idx + 1 : <LockKeyhole className="h-4 w-4" />}
+                      </span>
+                      <div>
+                        <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
+                          {pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
+                        </p>
+                        <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
+                          {lesson.completedAt
+                            ? t("common.completed")
+                            : isResume
+                              ? (isAr ? `متابعة من ${lesson.lastPositionSeconds}ث` : `Resume from ${lesson.lastPositionSeconds}s`)
+                              : !lesson.isUnlocked
+                                ? (isAr
+                                    ? `يُفتح ${lesson.unlocksAt ? formatDate(lesson.unlocksAt, currentLocale) : "قريبًا"}`
+                                    : `Unlocks ${lesson.unlocksAt ? formatDate(lesson.unlocksAt, currentLocale) : "soon"}`)
+                                : t("course.notStarted")}
+                          {lesson.durationSeconds ? ` - ${formatDuration(lesson.durationSeconds)}` : ""}
+                        </p>
+                      </div>
+                    </div>
+
+                    {lesson.isUnlocked ? (
+                      <Link
+                        className="rounded-lg px-3.5 py-2 text-xs font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                        style={{ background: "var(--gradient-brand)" }}
+                        to={`${prefix}/lessons/${lesson.id}`}
+                      >
+                        {lesson.completedAt
+                          ? t("actions.rewatch")
+                          : isResume
+                            ? t("actions.resume")
+                            : t("actions.start")}
+                      </Link>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
       </>
     </StudentShell>
   );
 };
-
-
-

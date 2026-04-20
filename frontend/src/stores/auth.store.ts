@@ -41,7 +41,7 @@ const getStoredRefreshFlag = () => {
     return false;
   }
 
-  return window.localStorage.getItem(REFRESH_FLAG_KEY) === "1" && hasRefreshMarkerCookie();
+  return window.localStorage.getItem(REFRESH_FLAG_KEY) === "1" || hasRefreshMarkerCookie();
 };
 
 export const hasStoredRefreshFlag = () => getStoredRefreshFlag();

@@ -1,7 +1,9 @@
 import fs from "node:fs/promises";
+import crypto from "node:crypto";
 import path from "node:path";
 import { spawn } from "node:child_process";
 
+import { env } from "../config/env.js";
 import { prisma } from "../config/database.js";
 import { redis } from "../config/redis.js";
 import { lessonRepository } from "../repositories/lesson.repository.js";
@@ -22,10 +24,11 @@ type UploadState = {
 };
 
 const uploadStateKey = (uploadId: string) => `tus-upload:${uploadId}`;
-const storageRoot = () => path.resolve(process.cwd(), "storage");
+const storageRoot = () => path.resolve(process.cwd(), env.STORAGE_PATH);
 const rawUploadDir = () => path.join(storageRoot(), "uploads");
 const rawUploadPath = (uploadId: string, filename: string) => path.join(rawUploadDir(), `${uploadId}-${filename}`);
 const hlsDir = (lessonId: string) => path.join(storageRoot(), "hls", lessonId);
+const hlsEncKeyPath = (lessonId: string) => path.join(hlsDir(lessonId), "enc.key");
 
 const parseUploadMetadata = (value: string | undefined) => {
   const entries = Object.fromEntries(
@@ -69,9 +72,19 @@ const runFfmpeg = async (lessonId: string, inputPath: string) => {
   await fs.mkdir(outputDir, { recursive: true });
   const outputPlaylist = path.join(outputDir, "playlist.m3u8");
   const segmentPattern = path.join(outputDir, "segment-%03d.ts");
+  const keyPath = hlsEncKeyPath(lessonId);
+  await fs.writeFile(keyPath, crypto.randomBytes(16));
+  const keyInfoPath = path.join(outputDir, "hls-key-info.txt");
+  // The URI is rewritten by lesson.controller.ts to an authenticated /key endpoint.
+  await fs.writeFile(keyInfoPath, ["enc.key", keyPath, ""].join("\n"));
 
   if (process.env.NODE_ENV === "test") {
-    await fs.writeFile(outputPlaylist, ["#EXTM3U", "#EXTINF:10.0,", "segment-000.ts", "#EXT-X-ENDLIST"].join("\n"));
+    await fs.writeFile(
+      outputPlaylist,
+      ['#EXTM3U', '#EXT-X-KEY:METHOD=AES-128,URI="enc.key"', "#EXTINF:10.0,", "segment-000.ts", "#EXT-X-ENDLIST"].join(
+        "\n"
+      )
+    );
     await fs.writeFile(path.join(outputDir, "segment-000.ts"), await fs.readFile(inputPath));
 
     return {
@@ -105,6 +118,8 @@ const runFfmpeg = async (lessonId: string, inputPath: string) => {
       "vod",
       "-hls_flags",
       "independent_segments",
+      "-hls_key_info_file",
+      keyInfoPath,
       "-hls_segment_filename",
       segmentPattern,
       "-f",

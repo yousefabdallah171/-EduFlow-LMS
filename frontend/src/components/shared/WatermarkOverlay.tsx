@@ -7,19 +7,16 @@ type WatermarkOverlayProps = {
   maskedEmail: string;
 };
 
-const positions = [
-  "start-4 top-4",
-  "end-4 top-12",
-  "start-8 bottom-16",
-  "end-8 bottom-6"
-] as const;
+const positions = ["start-4 top-4", "end-4 top-12", "start-8 bottom-16", "end-8 bottom-6"] as const;
 
 export const WatermarkOverlay = ({ name, maskedEmail }: WatermarkOverlayProps) => {
   const [positionIndex, setPositionIndex] = useState(0);
+  const [timeBucket, setTimeBucket] = useState(() => new Date().toISOString().slice(11, 16));
 
   useEffect(() => {
     const interval = window.setInterval(() => {
       setPositionIndex((current) => (current + 1) % positions.length);
+      setTimeBucket(new Date().toISOString().slice(11, 16));
     }, 45000);
 
     return () => window.clearInterval(interval);
@@ -33,7 +30,7 @@ export const WatermarkOverlay = ({ name, maskedEmail }: WatermarkOverlayProps) =
       )}
       data-testid="watermark-overlay"
     >
-      {name} • {maskedEmail}
+      {name} | {maskedEmail} | {timeBucket}
     </div>
   );
 };

@@ -149,10 +149,10 @@ test("admin enrolls and revokes a student from student management", async ({ pag
   await page.getByRole("dialog").getByRole("button", { name: "Enroll" }).click();
 
   await expect(page.getByText("ADMIN_ENROLLED")).toBeVisible();
-  await expect(page.getByText("ACTIVE")).toBeVisible();
+  await expect(page.getByText("Active", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Revoke access" }).first().click();
   await page.getByRole("dialog").getByRole("button", { name: "Revoke access" }).click();
 
-  await expect(page.getByText("REVOKED")).toBeVisible();
+  await expect(page.getByText("Revoked", { exact: true })).toBeVisible();
 });

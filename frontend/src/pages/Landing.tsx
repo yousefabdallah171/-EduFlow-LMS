@@ -201,6 +201,22 @@ export const Landing = () => {
               ))}
             </div>
 
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              {[
+                isAr ? "ابدأ من أول خطوة بدون تشتت" : "Start with structure, not guesswork",
+                isAr ? "اعرف ما الذي ستبنيه قبل ما تبدأ" : "See what you will build before writing code",
+                isAr ? "حوّل التعلم إلى مشروع فعلي قابل للنشر" : "Turn the workflow into a real shippable project"
+              ].map((point) => (
+                <div
+                  key={point}
+                  className="rounded-[22px] border px-4 py-4"
+                  style={{ borderColor: "var(--color-border)", backgroundColor: "color-mix(in oklab, var(--color-surface) 84%, transparent)" }}
+                >
+                  <p className="text-sm leading-7" style={{ color: "var(--color-text-primary)" }}>{point}</p>
+                </div>
+              ))}
+            </div>
+
             <div className="mt-10 grid gap-3 sm:grid-cols-3">
               {data.stats.map(([value, label, desc]) => (
                 <div
@@ -265,6 +281,26 @@ export const Landing = () => {
                     </div>
                   );
                 })}
+              </div>
+
+              <div className="mt-5 rounded-[24px] border p-4" style={{ borderColor: "var(--color-border)", backgroundColor: "color-mix(in oklab, var(--color-surface-2) 70%, transparent)" }}>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-text-muted)" }}>
+                      {isAr ? "قرار سريع" : "Fast decision"}
+                    </p>
+                    <p className="mt-1 text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>
+                      {isAr ? "شاهد المعاينة المجانية أولاً ثم احجز المسار المناسب" : "Watch the free preview first, then reserve the right track"}
+                    </p>
+                  </div>
+                  <Link
+                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold no-underline"
+                    style={{ background: "var(--gradient-brand)", color: "var(--color-text-invert)" }}
+                    to={`${prefix}/preview`}
+                  >
+                    {isAr ? "شاهد الآن" : "Watch now"}
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -405,6 +441,9 @@ export const Landing = () => {
                 <p className="text-lg font-black" style={{ color: "var(--color-text-primary)" }}>{title}</p>
                 <p className="mt-3 min-h-16 text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>{body}</p>
                 <p className="mt-5 font-display text-3xl font-black text-brand-600">{price}</p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--color-text-muted)" }}>
+                  {isAr ? "دفعة واحدة - وصول دائم - تحديثات مستقبلية" : "One payment - lifetime access - future updates"}
+                </p>
                 <Link className="mt-6 inline-flex w-full justify-center rounded-2xl px-5 py-3 text-sm font-black no-underline" style={{ background: index === 0 ? "var(--gradient-brand)" : "var(--color-surface-2)", color: index === 0 ? "var(--color-text-invert)" : "var(--color-text-primary)" }} to={`${prefix}/checkout?package=${packageId}`}>
                   {cta}
                 </Link>
@@ -463,6 +502,9 @@ export const Landing = () => {
           >
             <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(circle at 50% 120%, rgba(163,230,53,0.2), transparent 42%)" }} />
             <div className="relative">
+              <p className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-brand-600">
+                {isAr ? "آخر خطوة قبل البدء" : "Final step before you start"}
+              </p>
               <h2 className="mt-4 font-display text-3xl font-black tracking-tight sm:text-5xl" style={{ color: "var(--color-text-primary)" }}>
                 {data.finalTitle}
               </h2>

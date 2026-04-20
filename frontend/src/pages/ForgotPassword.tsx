@@ -1,23 +1,18 @@
 import { type FormEvent, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { AxiosError } from "axios";
 import { useTranslation } from "react-i18next";
 
+import { AuthShell } from "@/components/shared/AuthShell";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
-
-const fieldClass = "mt-1.5 block w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition-all placeholder:opacity-40 focus:ring-2 focus:ring-brand-600/30";
-const fieldStyle = {
-  backgroundColor: "var(--color-surface-2)",
-  borderColor: "var(--color-border-strong)",
-  color: "var(--color-text-primary)"
-};
 
 export const ForgotPassword = () => {
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
@@ -33,198 +28,106 @@ export const ForgotPassword = () => {
       setIsSuccess(true);
     } catch (error: unknown) {
       const apiError = error as AxiosError<{ message?: string }>;
-      setMessage(apiError.response?.data?.message ?? "Failed to send reset link.");
+      setMessage(apiError.response?.data?.message ?? (isAr ? "تعذر إرسال رابط الاستعادة الآن." : "Failed to send reset link."));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex min-h-dvh items-center justify-center px-6 py-12" style={{ backgroundColor: "var(--color-page)" }}>
-      <div className="w-full max-w-sm">
-        {/* Header */}
-        <div className="mb-7 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl shadow-elevated" style={{ background: "var(--gradient-brand)" }}>
-            <span className="text-xl font-bold text-white">E</span>
+    <AuthShell
+      badge={isAr ? "استعادة الوصول" : "Recover access"}
+      title={t("auth.forgotPassword.title")}
+      subtitle={t("auth.forgotPassword.subtitle")}
+      highlights={[
+        {
+          title: isAr ? "خطوة سريعة" : "A quick step",
+          description: isAr
+            ? "اكتب بريدك فقط وسنرسل رابطا جديدا لإعادة الدخول إلى حسابك."
+            : "Enter your email and we will send a fresh link so you can securely get back into your account."
+        },
+        {
+          title: isAr ? "بدون فقدان التقدم" : "No lost progress",
+          description: isAr
+            ? "إعادة تعيين كلمة المرور لا تؤثر على اشتراكك أو ترتيبك داخل الدورة."
+            : "Resetting your password does not interrupt your enrollment or lesson progress."
+        },
+        {
+          title: isAr ? "رسالة واضحة لما بعد ذلك" : "Clear next steps",
+          description: isAr
+            ? "بعد إرسال الطلب ستعرف بالضبط أين تذهب وماذا تفعل بعد فتح البريد."
+            : "Once submitted, the flow tells you exactly what to do next after opening your email."
+        }
+      ]}
+      aside={
+        <p className="text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
+          {isAr
+            ? "إذا لم تصلك الرسالة خلال دقائق، راجع مجلد الرسائل غير المرغوب فيها ثم أعد المحاولة."
+            : "If the email does not arrive within a few minutes, check your spam folder and try again from here."}
+        </p>
+      }
+      footer={
+        <p className="text-center text-sm" style={{ color: "var(--color-text-muted)" }}>
+          {t("auth.forgotPassword.rememberIt")}{" "}
+          <Link className="font-semibold text-brand-600 no-underline hover:underline" to={`${prefix}/login`}>
+            {t("auth.login.signIn")}
+          </Link>
+        </p>
+      }
+    >
+      {isSuccess ? (
+        <div className="content-stack gap-5 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+            <CheckCircle2 className="h-7 w-7" />
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-            {t("auth.forgotPassword.title")}
-          </h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
-            {t("auth.forgotPassword.subtitle")}
-          </p>
-        </div>
-
-        {isSuccess ? (
-          <div
-            className="rounded-[28px] border p-6 text-center shadow-card"
-            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-          >
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
-              <CheckCircle2 className="h-6 w-6" />
-            </div>
-            <h2 className="text-base font-bold" style={{ color: "var(--color-text-primary)" }}>{t("auth.forgotPassword.checkEmail")}</h2>
-            <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>{message}</p>
-            <Link
-              className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white no-underline shadow-sm transition-all hover:opacity-95"
-              style={{ background: "var(--gradient-brand)" }}
-              to={`${prefix}/login`}
-            >
-              {t("auth.login.signIn")}
-            </Link>
-          </div>
-        ) : (
-          <form
-            className="rounded-[28px] border p-6 shadow-card"
-            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-            onSubmit={submit}
-          >
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }} htmlFor="email">
-                {t("common.email")}
-              </label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                className={fieldClass}
-                style={fieldStyle}
-                value={email}
-                placeholder="you@example.com"
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            <button
-              className="mt-5 w-full rounded-xl py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:opacity-95 hover:shadow disabled:opacity-50"
-              style={{ background: "var(--gradient-brand)" }}
-              disabled={isSubmitting}
-              type="submit"
-            >
-              {isSubmitting ? t("auth.forgotPassword.sending") : t("auth.forgotPassword.sendLink")}
-            </button>
-
-            {message && !isSuccess ? (
-              <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400">
-                {message}
-              </p>
-            ) : null}
-
-            <p className="mt-4 text-center text-xs" style={{ color: "var(--color-text-muted)" }}>
-              {t("auth.forgotPassword.rememberIt")}{" "}
-              <Link className="font-semibold text-brand-600 no-underline hover:underline" to={`${prefix}/login`}>
-                {t("auth.login.signIn")}
-              </Link>
+          <div className="content-stack gap-2">
+            <h2 className="text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+              {t("auth.forgotPassword.checkEmail")}
+            </h2>
+            <p className="text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>
+              {message}
             </p>
-          </form>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export const ResetPassword = () => {
-  const { locale } = useParams();
-  const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-    setMessage("");
-    try {
-      const response = await api.post<{ message: string }>("/auth/reset-password", {
-        token: searchParams.get("token"),
-        password
-      });
-      setMessage(response.data.message);
-      setIsSuccess(true);
-    } catch (error: unknown) {
-      const apiError = error as AxiosError<{ message?: string }>;
-      setMessage(apiError.response?.data?.message ?? "Failed to update password.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="flex min-h-dvh items-center justify-center px-6 py-12" style={{ backgroundColor: "var(--color-page)" }}>
-      <div className="w-full max-w-sm">
-        {/* Header */}
-        <div className="mb-7 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl shadow-elevated" style={{ background: "var(--gradient-brand)" }}>
-            <span className="text-xl font-bold text-white">E</span>
           </div>
-          <h1 className="font-display text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-            {t("auth.resetPassword.title")}
-          </h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
-            {t("auth.resetPassword.subtitle")}
-          </p>
+          <Link
+            className="inline-flex min-h-11 items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold text-white no-underline transition-all hover:opacity-95"
+            style={{ background: "var(--gradient-brand)" }}
+            to={`${prefix}/login`}
+          >
+            {t("auth.login.signIn")}
+          </Link>
         </div>
-
-        {isSuccess ? (
-          <div
-            className="rounded-[28px] border p-6 text-center shadow-card"
-            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-          >
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
-              <CheckCircle2 className="h-6 w-6" />
-            </div>
-            <h2 className="text-base font-bold" style={{ color: "var(--color-text-primary)" }}>{t("auth.resetPassword.updated")}</h2>
-            <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>{message}</p>
-            <Link
-              className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white no-underline shadow-sm transition-all hover:opacity-95"
-              style={{ background: "var(--gradient-brand)" }}
-              to={`${prefix}/login`}
-            >
-              {t("auth.login.signIn")}
-            </Link>
+      ) : (
+        <form className="content-stack gap-5" onSubmit={submit}>
+          <div>
+            <label className="ui-field-label" htmlFor="email">
+              {t("common.email")}
+            </label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              placeholder="you@example.com"
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
-        ) : (
-          <form
-            className="rounded-[28px] border p-6 shadow-card"
-            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
-            onSubmit={submit}
-          >
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }} htmlFor="password">
-                {t("common.newPassword")}
-              </label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                className={fieldClass}
-                style={fieldStyle}
-                value={password}
-                placeholder="Min. 8 chars, 1 uppercase, 1 number"
-                onChange={(e) => setPassword(e.target.value)}
-              />
+
+          {message && !isSuccess ? (
+            <div className="ui-feedback ui-feedback--danger">
+              <p>{message}</p>
             </div>
+          ) : null}
 
-            <button
-              className="mt-5 w-full rounded-xl py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:opacity-95 hover:shadow disabled:opacity-50"
-              style={{ background: "var(--gradient-brand)" }}
-              disabled={isSubmitting}
-              type="submit"
-            >
-              {isSubmitting ? t("auth.resetPassword.updating") : t("auth.resetPassword.update")}
-            </button>
-
-            {message && !isSuccess ? (
-              <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400">
-                {message}
-              </p>
-            ) : null}
-          </form>
-        )}
-      </div>
-    </div>
+          <button
+            className="w-full rounded-xl py-3 text-sm font-bold text-white shadow-sm transition-all hover:opacity-95 disabled:opacity-50"
+            style={{ background: "var(--gradient-brand)" }}
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? t("auth.forgotPassword.sending") : t("auth.forgotPassword.sendLink")}
+          </button>
+        </form>
+      )}
+    </AuthShell>
   );
 };

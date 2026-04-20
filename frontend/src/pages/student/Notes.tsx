@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, FileText, Save, Trash2 } from "lucide-react";
+import { Download, FileText, Save, Sparkles, Trash2 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { EmptyState } from "@/components/shared/EmptyState";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { api } from "@/lib/api";
@@ -24,6 +25,7 @@ export const StudentNotes = () => {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Record<string, string>>({});
+  const isAr = currentLocale === "ar";
 
   const { data, isLoading } = useQuery({
     queryKey: ["student-notes"],
@@ -63,38 +65,46 @@ export const StudentNotes = () => {
   return (
     <StudentShell>
       <>
-        <header className="dashboard-panel dashboard-hero dashboard-panel--strong flex flex-wrap items-center justify-between gap-4 p-6">
-          <div>
-            <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-              <FileText className="h-3.5 w-3.5" />
-              {t("student.shell.section")}
-            </p>
-            <h1 className="mt-2 font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-              {t("student.notes.title")}
-            </h1>
-          </div>
-          {notes.length > 0 ? (
-            <button
-              onClick={handleExport}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface2"
-              style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-secondary)" }}
-              type="button"
-            >
-              <Download className="h-4 w-4 text-brand-600" />
-              {t("student.notes.export")}
-            </button>
-          ) : null}
-        </header>
+        <PageHeader
+          hero
+          eyebrow={t("student.shell.section")}
+          title={t("student.notes.title")}
+          description={
+            isAr
+              ? "اجمع أفكارك وملاحظاتك في مكان واحد حتى يسهل الرجوع إليها أثناء التقدم عبر الدروس."
+              : "Keep your ideas and lesson takeaways in one place so they are easy to revisit while you move through the course."
+          }
+          actions={
+            notes.length > 0 ? (
+              <button
+                onClick={handleExport}
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-surface2"
+                style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-secondary)" }}
+                type="button"
+              >
+                <Download className="h-4 w-4 text-brand-600" />
+                {t("student.notes.export")}
+              </button>
+            ) : null
+          }
+        />
 
         {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-[24px]" />)}
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-44 rounded-[24px]" />)}
           </div>
         ) : notes.length === 0 ? (
           <EmptyState
             illustration={<FileText className="mx-auto h-10 w-10 text-brand-600" />}
+            eyebrow={isAr ? "مساحة الملاحظات" : "Your note space"}
             title={t("student.notes.empty")}
             description={t("student.notes.emptyDesc")}
+            action={
+              <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand)" }}>
+                <Sparkles className="h-3.5 w-3.5" />
+                {isAr ? "افتح أي درس وابدأ التدوين أثناء المشاهدة." : "Open any lesson and start writing while you watch."}
+              </div>
+            }
           />
         ) : (
           <div className="space-y-4">
@@ -103,16 +113,25 @@ export const StudentNotes = () => {
 
               return (
                 <div key={note.id} className="dashboard-panel p-5">
-                  <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                    {pickLocalizedText(currentLocale, note.lesson.titleEn, note.lesson.titleAr)}
-                  </p>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                        {pickLocalizedText(currentLocale, note.lesson.titleEn, note.lesson.titleAr)}
+                      </p>
+                      <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                        {isAr ? "حرر الملاحظة ثم احفظها لتظل مرتبطة بالدرس." : "Edit your note here and save it to keep it attached to this lesson."}
+                      </p>
+                    </div>
+                  </div>
+
                   <textarea
-                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-colors focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
-                    style={{ backgroundColor: "var(--color-page)", borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", resize: "vertical", minHeight: "96px" }}
+                    className="mt-4 w-full rounded-[20px] border px-4 py-4 text-sm leading-7 outline-none transition-colors focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+                    style={{ backgroundColor: "var(--color-page)", borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", resize: "vertical", minHeight: "160px" }}
                     value={draft}
                     onChange={(e) => setEditing({ ...editing, [note.id]: e.target.value })}
                   />
-                  <div className="mt-3 flex flex-wrap gap-2">
+
+                  <div className="mt-4 flex flex-wrap gap-2">
                     <button
                       onClick={() => {
                         void updateMut.mutateAsync({ id: note.id, content: draft });

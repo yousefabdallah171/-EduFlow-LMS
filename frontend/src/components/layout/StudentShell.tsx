@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 import { MobileDrawer } from "@/components/layout/MobileDrawer";
 import { useAuth } from "@/hooks/useAuth";
 import { useEnrollment } from "@/hooks/useEnrollment";
+import { resolveLocale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
 const studentItems = [
@@ -37,8 +38,9 @@ type StudentShellProps = {
 export const StudentShell = ({ children }: StudentShellProps) => {
   const location = useLocation();
   const { locale } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
+  const isAr = resolveLocale(i18n.language) === "ar";
   const { user } = useAuth();
   const { statusQuery } = useEnrollment();
   const isEnrolled = statusQuery.data?.enrolled && statusQuery.data?.status === "ACTIVE";
@@ -143,10 +145,13 @@ export const StudentShell = ({ children }: StudentShellProps) => {
             href="https://api.whatsapp.com/send/?phone=201023516495&text&type=phone_number&app_absent=0"
             target="_blank"
             rel="noopener noreferrer"
-            className="fixed bottom-6 left-6 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+            className={cn(
+              "fixed bottom-6 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105 hover:shadow-xl",
+              isAr ? "right-6" : "left-6"
+            )}
             style={{ backgroundColor: "#25D366", color: "white" }}
-            aria-label="Contact via WhatsApp"
-            title="Contact via WhatsApp"
+            aria-label={isAr ? "تواصل عبر واتساب" : "Contact via WhatsApp"}
+            title={isAr ? "تواصل عبر واتساب" : "Contact via WhatsApp"}
           >
             <MessageCircle className="h-7 w-7" />
           </a>

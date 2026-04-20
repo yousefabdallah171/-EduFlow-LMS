@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import {
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { api, queryClient } from "@/lib/api";
+import { resolveLocale } from "@/lib/locale";
 
 type Section = {
   id: string;
@@ -29,8 +31,11 @@ type SectionManagerProps = {
 };
 
 export const SectionManager = ({ selectedSectionId, onSelectSection }: SectionManagerProps) => {
+  const { i18n } = useTranslation();
+  const isAr = resolveLocale(i18n.language) === "ar";
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Omit<Section, "id">>({
     titleEn: "",
     titleAr: "",
@@ -76,13 +81,19 @@ export const SectionManager = ({ selectedSectionId, onSelectSection }: SectionMa
   const deleteMutation = useMutation({
     mutationFn: async (sectionId: string) =>
       api.delete(`/admin/sections/${sectionId}`),
-    onSuccess: async () => {
+    onSuccess: async (_, sectionId) => {
       await queryClient.invalidateQueries({ queryKey: ["admin-sections"] });
-      if (selectedSectionId === deleteMutation.variables) {
+      if (selectedSectionId === sectionId) {
         onSelectSection("");
       }
+      setPendingDeleteId(null);
     }
   });
+
+  const pendingDeleteSection = useMemo(
+    () => sectionsQuery.data?.find((section) => section.id === pendingDeleteId) ?? null,
+    [pendingDeleteId, sectionsQuery.data]
+  );
 
   const resetForm = () => {
     setFormData({
@@ -120,19 +131,22 @@ export const SectionManager = ({ selectedSectionId, onSelectSection }: SectionMa
       }
     } catch (error) {
       const apiError = error as AxiosError<{ message?: string }>;
-      toast.error(apiError.response?.data?.message ?? "Failed to save section.");
+      toast.error(
+        apiError.response?.data?.message ??
+          (isAr ? "تعذر حفظ القسم." : "Failed to save section.")
+      );
     }
   };
 
   const handleDelete = async (sectionId: string) => {
-    if (!window.confirm("Are you sure you want to delete this section?")) {
-      return;
-    }
     try {
       await deleteMutation.mutateAsync(sectionId);
     } catch (error) {
       const apiError = error as AxiosError<{ message?: string }>;
-      toast.error(apiError.response?.data?.message ?? "Failed to delete section.");
+      toast.error(
+        apiError.response?.data?.message ??
+          (isAr ? "تعذر حذف القسم." : "Failed to delete section.")
+      );
     }
   };
 
@@ -144,7 +158,7 @@ export const SectionManager = ({ selectedSectionId, onSelectSection }: SectionMa
       >
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-sm font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-            Sections
+            {isAr ? "الأقسام" : "Sections"}
           </h3>
           <button
             className="rounded-xl px-3 py-1.5 text-xs font-bold text-white transition-all hover:opacity-95"
@@ -152,15 +166,15 @@ export const SectionManager = ({ selectedSectionId, onSelectSection }: SectionMa
             onClick={() => handleOpen()}
             type="button"
           >
-            + New
+            {isAr ? "+ قسم جديد" : "+ New section"}
           </button>
         </div>
 
         <div className="space-y-2">
           {sectionsQuery.data?.map((section) => (
-            <div
+            <article
               key={section.id}
-              className="rounded-lg border p-3 transition-colors cursor-pointer hover:bg-surface2"
+              className="rounded-lg border p-3"
               style={{
                 borderColor:
                   selectedSectionId === section.id
@@ -171,49 +185,46 @@ export const SectionManager = ({ selectedSectionId, onSelectSection }: SectionMa
                     ? "var(--color-surface-2)"
                     : "transparent"
               }}
-              onClick={() => onSelectSection(section.id)}
             >
               <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: "var(--color-text-primary)" }}>
+                <button
+                  className="min-w-0 flex-1 text-left"
+                  onClick={() => onSelectSection(section.id)}
+                  type="button"
+                >
+                  <p className="truncate text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
                     {section.titleEn}
                   </p>
-                  <p className="text-xs truncate" style={{ color: "var(--color-text-muted)" }}>
+                  <p className="truncate text-xs" style={{ color: "var(--color-text-muted)" }}>
                     {section.titleAr}
                   </p>
-                </div>
-                <div className="flex gap-1 shrink-0">
+                </button>
+                <div className="flex shrink-0 gap-1">
                   <button
                     className="rounded-md border px-2 py-1 text-[10px] font-medium transition-colors hover:bg-surface2"
                     style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpen(section);
-                    }}
+                    onClick={() => handleOpen(section)}
                     type="button"
                   >
-                    Edit
+                    {isAr ? "تعديل" : "Edit"}
                   </button>
                   <button
                     className="rounded-md border px-2 py-1 text-[10px] font-medium transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
                     style={{ borderColor: "rgba(239,68,68,0.4)", color: "rgb(185,28,28)" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      void handleDelete(section.id);
-                    }}
+                    onClick={() => setPendingDeleteId(section.id)}
                     type="button"
                   >
-                    Delete
+                    {isAr ? "حذف" : "Delete"}
                   </button>
                 </div>
               </div>
-            </div>
+            </article>
           ))}
         </div>
 
         {!sectionsQuery.data || sectionsQuery.data.length === 0 ? (
           <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-            No sections yet. Create one to get started.
+            {isAr ? "لا توجد أقسام بعد. أنشئ أول قسم لتنظيم الدروس." : "No sections yet. Create the first section to organize lessons."}
           </p>
         ) : null}
       </div>
@@ -221,65 +232,71 @@ export const SectionManager = ({ selectedSectionId, onSelectSection }: SectionMa
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingId ? "Edit section" : "Create section"}</DialogTitle>
+            <DialogTitle>{editingId ? (isAr ? "تعديل القسم" : "Edit section") : (isAr ? "إنشاء قسم" : "Create section")}</DialogTitle>
             <DialogDescription>
-              {editingId ? "Update the section details." : "Add a new section to organize lessons."}
+              {editingId
+                ? isAr
+                  ? "حدّث بيانات القسم وتنظيمه داخل المسار."
+                  : "Update the section details and placement in the course flow."
+                : isAr
+                  ? "أضف قسمًا جديدًا لتنظيم الدروس داخل المسار."
+                  : "Add a new section to organize the lesson flow."}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
               <label className="mb-2 block text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
-                Title (English)
+                {isAr ? "العنوان بالإنجليزية" : "Title (English)"}
               </label>
               <Input
-                placeholder="e.g., Getting Started"
+                placeholder={isAr ? "مثال: Getting Started" : "e.g., Getting Started"}
                 value={formData.titleEn}
-                onChange={(e) => setFormData({ ...formData, titleEn: e.target.value })}
+                onChange={(event) => setFormData({ ...formData, titleEn: event.target.value })}
               />
             </div>
 
             <div>
               <label className="mb-2 block text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
-                Title (Arabic)
+                {isAr ? "العنوان بالعربية" : "Title (Arabic)"}
               </label>
               <Input
-                placeholder="مثال: البداية"
+                placeholder={isAr ? "مثال: البداية" : "e.g., البداية"}
                 value={formData.titleAr}
-                onChange={(e) => setFormData({ ...formData, titleAr: e.target.value })}
+                onChange={(event) => setFormData({ ...formData, titleAr: event.target.value })}
               />
             </div>
 
             <div>
               <label className="mb-2 block text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
-                Description (English)
+                {isAr ? "الوصف بالإنجليزية" : "Description (English)"}
               </label>
               <Input
-                placeholder="Optional description"
+                placeholder={isAr ? "وصف اختياري" : "Optional description"}
                 value={formData.descriptionEn || ""}
-                onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
+                onChange={(event) => setFormData({ ...formData, descriptionEn: event.target.value })}
               />
             </div>
 
             <div>
               <label className="mb-2 block text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
-                Description (Arabic)
+                {isAr ? "الوصف بالعربية" : "Description (Arabic)"}
               </label>
               <Input
-                placeholder="وصف اختياري"
+                placeholder={isAr ? "وصف اختياري" : "Optional description"}
                 value={formData.descriptionAr || ""}
-                onChange={(e) => setFormData({ ...formData, descriptionAr: e.target.value })}
+                onChange={(event) => setFormData({ ...formData, descriptionAr: event.target.value })}
               />
             </div>
 
             <div>
               <label className="mb-2 block text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
-                Sort order
+                {isAr ? "ترتيب الظهور" : "Sort order"}
               </label>
               <Input
                 type="number"
                 value={formData.sortOrder}
-                onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+                onChange={(event) => setFormData({ ...formData, sortOrder: parseInt(event.target.value, 10) || 0 })}
               />
             </div>
           </div>
@@ -291,7 +308,7 @@ export const SectionManager = ({ selectedSectionId, onSelectSection }: SectionMa
               onClick={() => setDialogOpen(false)}
               type="button"
             >
-              Cancel
+              {isAr ? "إلغاء" : "Cancel"}
             </button>
             <button
               className="rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95"
@@ -299,7 +316,49 @@ export const SectionManager = ({ selectedSectionId, onSelectSection }: SectionMa
               onClick={() => void handleSubmit()}
               type="button"
             >
-              {editingId ? "Update" : "Create"}
+              {editingId ? (isAr ? "تحديث" : "Update") : (isAr ? "إنشاء" : "Create")}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!pendingDeleteId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingDeleteId(null);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{isAr ? "حذف القسم؟" : "Delete section?"}</DialogTitle>
+            <DialogDescription>
+              {isAr
+                ? `سيتم حذف "${pendingDeleteSection?.titleAr || pendingDeleteSection?.titleEn || "هذا القسم"}" من لوحة الإدارة.`
+                : `This will remove "${pendingDeleteSection?.titleEn || pendingDeleteSection?.titleAr || "this section"}" from the admin workspace.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              className="rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-surface2"
+              style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+              onClick={() => setPendingDeleteId(null)}
+              type="button"
+            >
+              {isAr ? "إلغاء" : "Cancel"}
+            </button>
+            <button
+              className="rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95"
+              style={{ backgroundColor: "rgb(185,28,28)" }}
+              onClick={() => {
+                if (pendingDeleteId) {
+                  void handleDelete(pendingDeleteId);
+                }
+              }}
+              type="button"
+            >
+              {isAr ? "حذف" : "Delete"}
             </button>
           </DialogFooter>
         </DialogContent>

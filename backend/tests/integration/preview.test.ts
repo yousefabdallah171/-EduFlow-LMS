@@ -72,7 +72,8 @@ beforeEach(async () => {
 
 describe("Preview lesson flow", () => {
   it("returns the published preview lesson with a playable guest video token", async () => {
-    const preview = await request(app).get("/api/v1/lessons/preview").expect(200);
+    const agent = request.agent(app);
+    const preview = await agent.get("/api/v1/lessons/preview").expect(200);
 
     expect(preview.body).toMatchObject({
       id: previewLessonId,
@@ -82,7 +83,7 @@ describe("Preview lesson flow", () => {
     expect(preview.body.videoToken).toEqual(expect.any(String));
     expect(preview.body.hlsUrl).toContain(`/api/v1/video/${previewLessonId}/playlist.m3u8`);
 
-    const playlist = await request(app)
+    const playlist = await agent
       .get(`/api/v1/video/${previewLessonId}/playlist.m3u8`)
       .query({ token: preview.body.videoToken })
       .expect(200);
@@ -92,9 +93,10 @@ describe("Preview lesson flow", () => {
   });
 
   it("rejects a preview token when it is reused against a different lesson", async () => {
-    const preview = await request(app).get("/api/v1/lessons/preview").expect(200);
+    const agent = request.agent(app);
+    const preview = await agent.get("/api/v1/lessons/preview").expect(200);
 
-    await request(app)
+    await agent
       .get(`/api/v1/video/${lockedLessonId}/playlist.m3u8`)
       .query({ token: preview.body.videoToken })
       .expect(401);

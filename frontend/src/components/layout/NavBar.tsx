@@ -98,9 +98,9 @@ export const NavBar = () => {
         backdropFilter: "blur(16px)"
       }}
     >
-      <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
+      <div className="app-shell px-0 py-3">
         <div
-          className="flex items-center justify-between gap-3 rounded-[28px] border px-3 py-2.5 shadow-card sm:px-4"
+          className="surface-card flex items-center justify-between gap-3 rounded-[28px] px-3 py-2.5 sm:px-4"
           style={{
             backgroundColor: "color-mix(in srgb, var(--color-surface) 92%, transparent)",
             borderColor: "var(--color-border)"
@@ -108,7 +108,7 @@ export const NavBar = () => {
         >
           <div className="flex min-w-0 items-center gap-3">
             <DisclosureButton
-              aria-label="Open navigation"
+              aria-label={segment === "ar" ? "فتح القائمة" : "Open navigation"}
               className="flex h-11 w-11 items-center justify-center rounded-2xl border md:hidden"
               style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
             >
@@ -116,8 +116,8 @@ export const NavBar = () => {
             </DisclosureButton>
 
             <Link className="flex min-w-0 items-center gap-3 no-underline" to={`${prefix}/`}>
-              <span
-                className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl font-mono text-sm font-black text-black"
+                <span
+                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl font-mono text-sm font-black text-black"
                 style={{
                   background: "var(--gradient-brand)",
                   boxShadow: "0 10px 24px rgba(163,230,53,0.22)"
@@ -202,7 +202,7 @@ export const NavBar = () => {
                 {open ? (
                   <div
                     ref={refs.setFloating}
-                    className="z-50 w-72 rounded-3xl border p-2 shadow-elevated"
+                    className="surface-card surface-card--strong z-50 w-72 rounded-3xl p-2"
                     style={{
                       ...floatingStyles,
                       backgroundColor: "var(--color-surface)",

@@ -1,19 +1,26 @@
-import { PolicyPage } from "@/components/shared/PolicyPage";
-import { refundPolicyAr } from "@/lib/public-page-content";
+import { useParams } from "react-router-dom";
 
-export const RefundPolicy = () => (
-  <PolicyPage
-    title="سياسة"
-    accent="الاسترجاع"
-    intro="بنؤمن إن اللي بيشتغل بجد يستاهل ضمان حقيقي. الضمان هنا واضح، عملي، ومن غير لف ودوران."
-    sections={refundPolicyAr}
-  >
-    <div className="policy-callout reference-card reference-card--lime mb-8">
-      <h3>ضمان استرجاع كامل — بدون تعقيد</h3>
-      <p style={{ color: "var(--color-text-secondary)", lineHeight: 1.9 }}>
-        لو مشيت ورا الخطوات وطبقت الـ workflow بجد، ومع ذلك ماقدرتش تطلع فكرة الأبلكيشن اللي في دماغك،
-        تقدر تطلب مراجعة استرجاع كاملة حسب الشروط الموجودة هنا.
-      </p>
-    </div>
-  </PolicyPage>
-);
+import { PolicyPage } from "@/components/shared/PolicyPage";
+import { resolveLocale } from "@/lib/locale";
+import { getPublicTrustCopy } from "@/lib/public-trust-copy";
+
+export const RefundPolicy = () => {
+  const { locale } = useParams();
+  const copy = getPublicTrustCopy(resolveLocale(locale)).policies.refund;
+
+  return (
+    <PolicyPage
+      title={copy.title}
+      accent={copy.accent}
+      intro={copy.intro}
+      sections={copy.sections}
+    >
+      <div className="policy-callout reference-card reference-card--lime mb-8">
+        <h3>{copy.calloutTitle}</h3>
+        <p style={{ color: "var(--color-text-secondary)", lineHeight: 1.9 }}>
+          {copy.calloutBody}
+        </p>
+      </div>
+    </PolicyPage>
+  );
+};

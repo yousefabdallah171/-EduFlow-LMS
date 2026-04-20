@@ -1,8 +1,10 @@
+import type { ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import type { ReactNode } from "react";
 
+import { resolveLocale } from "@/lib/locale";
 import type { PolicySection } from "@/lib/public-page-content";
+import { getPublicTrustCopy } from "@/lib/public-trust-copy";
 
 type PolicyPageProps = {
   title: string;
@@ -16,6 +18,7 @@ export const PolicyPage = ({ title, accent, intro, sections, children }: PolicyP
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const { t } = useTranslation();
+  const copy = getPublicTrustCopy(resolveLocale(locale));
 
   return (
     <main className="reference-page">
@@ -31,7 +34,7 @@ export const PolicyPage = ({ title, accent, intro, sections, children }: PolicyP
         <header className="reference-hero">
           <span className="reference-badge">
             <span className="reference-dot" aria-hidden="true" />
-            آخر تحديث: أبريل ٢٠٢٥
+            {copy.policies.updated}
           </span>
           <h1 className="reference-title">
             {title} <span className="accent-word">{accent}</span>
@@ -61,10 +64,10 @@ export const PolicyPage = ({ title, accent, intro, sections, children }: PolicyP
 
         <div className="mt-12 flex flex-wrap justify-center gap-3">
           <Link className="reference-button" to={`${prefix}/pricing`}>
-            احجز مكانك
+            {copy.policies.primary}
           </Link>
           <Link className="reference-button-secondary" to={`${prefix}/contact`}>
-            تواصل معنا
+            {copy.policies.secondary}
           </Link>
         </div>
       </div>

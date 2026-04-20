@@ -56,6 +56,9 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  await prisma.ticketMessage.deleteMany();
+  await prisma.supportTicket.deleteMany();
+  await prisma.videoSecurityEvent.deleteMany();
   await prisma.videoToken.deleteMany();
   await prisma.lessonProgress.deleteMany();
   await prisma.enrollment.deleteMany();

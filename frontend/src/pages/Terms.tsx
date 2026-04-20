@@ -1,11 +1,19 @@
-import { PolicyPage } from "@/components/shared/PolicyPage";
-import { termsAr } from "@/lib/public-page-content";
+import { useParams } from "react-router-dom";
 
-export const Terms = () => (
-  <PolicyPage
-    title="الشروط"
-    accent="والأحكام"
-    intro="اقرأ الشروط دي قبل الاشتراك. هي بتحدد العلاقة بينك وبين AI Workflow بشكل واضح وبسيط."
-    sections={termsAr}
-  />
-);
+import { PolicyPage } from "@/components/shared/PolicyPage";
+import { resolveLocale } from "@/lib/locale";
+import { getPublicTrustCopy } from "@/lib/public-trust-copy";
+
+export const Terms = () => {
+  const { locale } = useParams();
+  const copy = getPublicTrustCopy(resolveLocale(locale)).policies.terms;
+
+  return (
+    <PolicyPage
+      title={copy.title}
+      accent={copy.accent}
+      intro={copy.intro}
+      sections={copy.sections}
+    />
+  );
+};

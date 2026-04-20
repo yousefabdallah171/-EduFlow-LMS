@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Clock3, Gauge, ListChecks } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { ArrowRight, CheckCircle2, Clock3, Gauge, ListChecks, PlayCircle, Trophy } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
 import { Progress as ProgressBar } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StudentShell } from "@/components/layout/StudentShell";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { api } from "@/lib/api";
 import { formatMinutesShort, formatNumber, resolveLocale } from "@/lib/locale";
 
@@ -23,6 +24,8 @@ export const StudentProgress = () => {
   const { locale } = useParams();
   const { t } = useTranslation();
   const currentLocale = resolveLocale(locale);
+  const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
+  const isAr = currentLocale === "ar";
 
   const { data, isLoading } = useQuery({
     queryKey: ["student-lessons"],
@@ -31,36 +34,66 @@ export const StudentProgress = () => {
 
   const lessons = data?.lessons ?? [];
   const completed = lessons.filter((l) => l.completedAt).length;
+  const inProgress = lessons.filter((l) => !l.completedAt && l.lastPositionSeconds > 0).length;
   const percent = lessons.length > 0 ? Math.round((completed / lessons.length) * 100) : 0;
+  const nextLesson = lessons.find((lesson) => lesson.isUnlocked && !lesson.completedAt);
 
   return (
     <StudentShell>
       <>
-        <header className="dashboard-panel dashboard-hero dashboard-panel--strong p-6">
-          <div className="relative">
-            <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-              <Gauge className="h-3.5 w-3.5" />
-              {t("student.dashboard.yourJourney")}
-            </p>
-            <h1 className="mt-2 font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-              {t("student.progress.title")}
-            </h1>
-            {!isLoading ? (
-              <div className="mt-5">
-                <div className="mb-2 flex items-center justify-between gap-4 text-sm">
-                  <span style={{ color: "var(--color-text-secondary)" }}>
-                    {t("student.progress.summary", {
-                      completed: formatNumber(completed, currentLocale),
-                      total: formatNumber(lessons.length, currentLocale)
-                    })}
-                  </span>
-                  <span className="font-display text-lg font-bold text-brand-600">{percent}%</span>
-                </div>
-                <ProgressBar value={percent} />
-              </div>
-            ) : null}
+        <PageHeader
+          hero
+          eyebrow={t("student.dashboard.yourJourney")}
+          title={t("student.progress.title")}
+          description={
+            isAr
+              ? "راجع تقدمك بوضوح: ما الذي أنهيته، أين توقفت، وما هو أفضل درس تفتحه الآن."
+              : "See your learning clearly: what is finished, where you paused, and which lesson is best to open next."
+          }
+          actions={
+            nextLesson ? (
+              <Link
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                style={{ background: "var(--gradient-brand)" }}
+                to={`${prefix}/lessons/${nextLesson.id}`}
+              >
+                {t("course.continueLearning")}
+                <ArrowRight className="icon-dir h-4 w-4" />
+              </Link>
+            ) : null
+          }
+        />
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="dashboard-panel dashboard-panel--accent p-5">
+            <div className="flex items-center gap-2 text-brand-600">
+              <Trophy className="h-4 w-4" />
+              <span className="text-xs font-bold uppercase tracking-[0.16em]">{t("course.completion")}</span>
+            </div>
+            <p className="mt-2 font-display text-3xl font-bold">{percent}%</p>
+            {!isLoading ? <ProgressBar className="mt-3 h-2" value={percent} /> : null}
           </div>
-        </header>
+          <div className="dashboard-panel p-5">
+            <div className="flex items-center gap-2 text-brand-600">
+              <CheckCircle2 className="h-4 w-4" />
+              <span className="text-xs font-bold uppercase tracking-[0.16em]">{t("student.progress.completed")}</span>
+            </div>
+            <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{formatNumber(completed, currentLocale)}</p>
+            <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
+              {t("student.progress.summary", { completed: formatNumber(completed, currentLocale), total: formatNumber(lessons.length, currentLocale) })}
+            </p>
+          </div>
+          <div className="dashboard-panel p-5">
+            <div className="flex items-center gap-2 text-brand-600">
+              <Gauge className="h-4 w-4" />
+              <span className="text-xs font-bold uppercase tracking-[0.16em]">{t("student.progress.inProgress")}</span>
+            </div>
+            <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{formatNumber(inProgress, currentLocale)}</p>
+            <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
+              {isAr ? "دروس بدأت فيها ولم تنهِها بعد" : "Lessons you started but have not finished yet"}
+            </p>
+          </div>
+        </div>
 
         <div className="dashboard-panel overflow-hidden">
           {isLoading ? (
@@ -73,52 +106,49 @@ export const StudentProgress = () => {
               <p className="mt-3 text-sm" style={{ color: "var(--color-text-muted)" }}>{t("student.progress.noLessons")}</p>
             </div>
           ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b" style={{ borderColor: "var(--color-border)" }}>
-                  <th className="px-5 py-3 text-start text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                    {t("student.progress.lessonTitle")}
-                  </th>
-                  <th className="hidden px-5 py-3 text-start text-xs font-bold uppercase tracking-[0.16em] sm:table-cell" style={{ color: "var(--color-text-muted)" }}>
-                    {t("student.progress.watchTime")}
-                  </th>
-                  <th className="px-5 py-3 text-start text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                    {t("student.progress.status")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {lessons.map((lesson, i) => (
-                  <tr
-                    key={lesson.id}
-                    className={i < lessons.length - 1 ? "border-b" : ""}
-                    style={{ borderColor: "var(--color-border)" }}
-                  >
-                    <td className="px-5 py-3.5 font-medium" style={{ color: "var(--color-text-primary)" }}>
+            <div className="space-y-1 p-3">
+              {lessons.map((lesson) => (
+                <Link
+                  key={lesson.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] border px-4 py-4 no-underline transition-colors hover:bg-surface2"
+                  style={{ borderColor: "var(--color-border)", color: "inherit" }}
+                  to={lesson.isUnlocked ? `${prefix}/lessons/${lesson.id}` : `${prefix}/course`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
                       {lesson.title}
-                    </td>
-                    <td className="hidden px-5 py-3.5 sm:table-cell" style={{ color: "var(--color-text-secondary)" }}>
+                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
                       <span className="inline-flex items-center gap-1.5">
                         <Clock3 className="h-3.5 w-3.5 text-brand-600" />
                         {formatMinutesShort(lesson.lastPositionSeconds, currentLocale)}
                       </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      {lesson.completedAt ? (
-                        <Badge variant="default" className="gap-1 border-green-500/20 bg-green-500/10 text-green-600">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          {t("student.progress.completed")}
-                        </Badge>
-                      ) : lesson.lastPositionSeconds > 0 ? (
-                        <Badge variant="outline">{t("student.progress.inProgress")}</Badge>
-                      ) : (
-                        <Badge variant="outline" className="opacity-60">{t("student.progress.notStarted")}</Badge>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      {lesson.durationSeconds ? (
+                        <span>{isAr ? `مدة الدرس ${formatMinutesShort(lesson.durationSeconds, currentLocale)}` : `Lesson length ${formatMinutesShort(lesson.durationSeconds, currentLocale)}`}</span>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {lesson.completedAt ? (
+                      <Badge variant="default" className="gap-1 border-green-500/20 bg-green-500/10 text-green-600">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        {t("student.progress.completed")}
+                      </Badge>
+                    ) : lesson.lastPositionSeconds > 0 ? (
+                      <Badge variant="outline">{t("student.progress.inProgress")}</Badge>
+                    ) : (
+                      <Badge variant="outline" className="opacity-60">{t("student.progress.notStarted")}</Badge>
+                    )}
+
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600">
+                      <PlayCircle className="h-3.5 w-3.5" />
+                      {lesson.completedAt ? t("actions.rewatch") : lesson.lastPositionSeconds > 0 ? t("actions.resume") : t("actions.start")}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           )}
         </div>
       </>

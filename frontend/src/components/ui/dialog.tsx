@@ -14,7 +14,7 @@ export const DialogOverlay = forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
-    className={cn("fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm", className)}
+    className={cn("fixed inset-0 z-50 bg-[color:color-mix(in_oklab,var(--color-invert)_52%,transparent)] backdrop-blur-sm", className)}
     {...props}
   />
 ));
@@ -29,9 +29,10 @@ export const DialogContent = forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed start-1/2 top-1/2 z-50 grid w-[min(100%-2rem,32rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-md border border-slate-200 bg-white p-6 shadow-lg",
+        "fixed start-1/2 top-1/2 z-50 grid w-[min(100%-2rem,34rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-[28px] border bg-surface p-6 shadow-elevated",
         className
       )}
+      style={{ borderColor: "var(--color-border-strong)" }}
       {...props}
     />
   </DialogPortal>
@@ -58,6 +59,6 @@ export const DialogDescription = forwardRef<
   HTMLParagraphElement,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
 >(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description ref={ref} className={cn("text-sm text-slate-500", className)} {...props} />
+  <DialogPrimitive.Description ref={ref} className={cn("text-sm leading-6 text-secondary", className)} {...props} />
 ));
 DialogDescription.displayName = "DialogDescription";

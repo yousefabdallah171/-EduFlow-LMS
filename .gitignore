@@ -9,6 +9,7 @@ build/
 coverage/
 playwright-report/
 test-results/
+.vitest-storage/
 backend/generated/
 backend/prisma/dev.db*
 frontend/.vite/
@@ -16,7 +17,9 @@ docker-data/
 storage/
 backend/storage/
 *.log
+*.err
 *.tmp
+*.tsbuildinfo
 .DS_Store
 Thumbs.db
 .idea/

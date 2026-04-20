@@ -8,5 +8,10 @@
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "format": "pnpm -r format"
+  },
+  "pnpm": {
+    "overrides": {
+      "follow-redirects": "^1.16.0"
+    }
   }
 }

@@ -12,6 +12,7 @@ export type VideoTokenPayload = {
 
 export type PreviewTokenPayload = {
   lessonId: string;
+  previewSessionId: string;
   isPreview: true;
 };
 
@@ -20,14 +21,15 @@ export const hashVideoToken = (token: string): string => crypto.createHash("sha2
 export const signVideoToken = (payload: VideoTokenPayload): string =>
   jwt.sign(payload, env.VIDEO_TOKEN_SECRET, {
     algorithm: "HS256",
-    expiresIn: "30m",
+    expiresIn: "5m",
     jwtid: crypto.randomUUID()
   });
 
 export const signPreviewToken = (payload: PreviewTokenPayload): string =>
   jwt.sign(payload, env.VIDEO_TOKEN_SECRET, {
     algorithm: "HS256",
-    expiresIn: "15m"
+    expiresIn: "15m",
+    jwtid: crypto.randomUUID()
   });
 
 export const verifyVideoToken = (token: string): VideoTokenPayload | PreviewTokenPayload =>

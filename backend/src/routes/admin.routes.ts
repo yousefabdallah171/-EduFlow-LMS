@@ -10,6 +10,7 @@ import { adminPricingController } from "../controllers/admin/pricing.controller.
 import { adminSettingsController } from "../controllers/admin/settings.controller.js";
 import { adminStudentsController } from "../controllers/admin/students.controller.js";
 import { adminUploadsController } from "../controllers/admin/uploads.controller.js";
+import { adminVideoSecurityController } from "../controllers/admin/video-security.controller.js";
 import * as sectionsController from "../controllers/admin/sections.controller.js";
 import { resourcesController as adminResourcesController } from "../controllers/resources.controller.js";
 import { ticketsController } from "../controllers/tickets.controller.js";
@@ -52,6 +53,7 @@ router.patch("/lessons/:lessonId", adminLessonsController.update);
 router.delete("/lessons/:lessonId", adminLessonsController.remove);
 router.post("/lessons/reorder", adminLessonsController.reorder);
 router.patch("/lessons/:lessonId/preview", adminLessonsController.togglePreview);
+router.get("/lessons/:id/resources", adminResourcesController.list);
 router.post("/lessons/:id/resources", adminResourcesController.create);
 router.delete("/lessons/:id/resources/:resourceId", adminResourcesController.remove);
 router.get("/uploads", adminUploadsController.list);
@@ -71,6 +73,9 @@ router.patch("/orders/:id/mark-paid", adminOrdersController.markPaid);
 
 // Audit logs
 router.get("/audit", adminAuditController.list);
+
+// Video security
+router.get("/video-security/events", adminVideoSecurityController.list);
 
 // Support tickets
 router.get("/tickets", ticketsController.listAll);

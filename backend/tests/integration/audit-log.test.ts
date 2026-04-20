@@ -37,6 +37,9 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  await prisma.ticketMessage.deleteMany();
+  await prisma.supportTicket.deleteMany();
+  await prisma.videoSecurityEvent.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.courseSettings.updateMany({
     where: { updatedBy: { email: adminEmail } },

@@ -158,7 +158,8 @@ export const VideoPlayer = ({
     hls.loadSource(sourceUrl);
     hls.attachMedia(video);
     hls.on(Hls.Events.ERROR, (_event, data) => {
-      if (data?.response?.code === 401) {
+      if (data?.response?.code === 401 || data?.response?.code === 403) {
+        setStatus(t("video.preparing"));
         onTokenExpired?.();
       }
     });
@@ -166,7 +167,7 @@ export const VideoPlayer = ({
     hasAttachedRef.current = true;
     setIsAttached(true);
     setIsAttaching(false);
-  }, [onTokenExpired, sourceUrl]);
+  }, [onTokenExpired, sourceUrl, t]);
 
   useEffect(() => {
     return () => {
@@ -326,7 +327,13 @@ export const VideoPlayer = ({
           className={cn("aspect-video w-full")}
           style={{ backgroundColor: "var(--color-invert)" }}
           controls
+          controlsList="nodownload noremoteplayback"
+          disablePictureInPicture
+          crossOrigin="use-credentials"
           playsInline
+          onContextMenu={(event) => {
+            event.preventDefault();
+          }}
           onPlay={() => {
             void attachStream();
             setStatus(t("video.streaming"));

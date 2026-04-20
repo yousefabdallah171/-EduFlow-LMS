@@ -20,11 +20,11 @@ export const TableBody = ({ className, ...props }: HTMLAttributes<HTMLTableSecti
 );
 
 export const TableRow = ({ className, ...props }: HTMLAttributes<HTMLTableRowElement>) => (
-  <tr className={cn("border-b transition-colors hover:bg-slate-50", className)} {...props} />
+  <tr className={cn("border-b transition-colors hover:bg-surface2/70", className)} style={{ borderColor: "var(--color-border)" }} {...props} />
 );
 
 export const TableHead = ({ className, ...props }: HTMLAttributes<HTMLTableCellElement>) => (
-  <th className={cn("h-12 px-4 text-left align-middle font-medium text-slate-500", className)} {...props} />
+  <th className={cn("h-12 px-4 text-start align-middle text-xs font-semibold uppercase tracking-[0.12em] text-muted", className)} {...props} />
 );
 
 export const TableCell = ({ className, ...props }: HTMLAttributes<HTMLTableCellElement>) => (
@@ -32,5 +32,5 @@ export const TableCell = ({ className, ...props }: HTMLAttributes<HTMLTableCellE
 );
 
 export const TableCaption = ({ className, ...props }: HTMLAttributes<HTMLTableCaptionElement>) => (
-  <caption className={cn("mt-4 text-sm text-slate-500", className)} {...props} />
+  <caption className={cn("mt-4 text-sm text-secondary", className)} {...props} />
 );

@@ -32,7 +32,8 @@ let prisma: PrismaClient;
 const password = "Securepass123";
 const studentEmail = "video-student@example.com";
 const lessonId = "video-lesson";
-const playlistPath = path.resolve(process.cwd(), "storage", "hls", lessonId, "playlist.m3u8");
+const storagePath = process.env.STORAGE_PATH || "storage";
+const playlistPath = path.resolve(process.cwd(), storagePath, "hls", lessonId, "playlist.m3u8");
 
 const cookieHeader = (cookie: string[] | string | undefined) => (Array.isArray(cookie) ? cookie : cookie ? [cookie] : []);
 
@@ -44,6 +45,9 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  await prisma.ticketMessage.deleteMany();
+  await prisma.supportTicket.deleteMany();
+  await prisma.videoSecurityEvent.deleteMany();
   await prisma.videoToken.deleteMany();
   await prisma.lessonProgress.deleteMany();
   await prisma.enrollment.deleteMany();
@@ -91,7 +95,7 @@ beforeEach(async () => {
   await prisma.lesson.update({
     where: { id: lessonId },
     data: {
-      videoHlsPath: path.relative(path.resolve(process.cwd(), "storage"), playlistPath)
+      videoHlsPath: path.relative(path.resolve(process.cwd(), storagePath), playlistPath)
     }
   });
 });

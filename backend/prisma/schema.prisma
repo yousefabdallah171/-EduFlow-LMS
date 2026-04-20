@@ -94,6 +94,7 @@ model User {
   updatedCourse        CourseSettings[] @relation("CourseUpdatedBy")
   notes                Note[]
   auditLogs            AuditLog[]       @relation("AdminAuditLogs")
+  videoSecurityEvents  VideoSecurityEvent[]
   tickets              SupportTicket[]  @relation("TicketUser")
   ticketMessages       TicketMessage[]  @relation("MessageSender")
 }
@@ -207,6 +208,7 @@ model Lesson {
   uploads         VideoUpload[]
   notes           Note[]
   resources       LessonResource[]
+  videoSecurityEvents VideoSecurityEvent[]
 }
 
 model LessonProgress {
@@ -298,6 +300,30 @@ model AuditLog {
   targetId   String   @default("")
   metadata   Json     @default("{}")
   createdAt  DateTime @default(now())
+}
+
+model VideoSecurityEvent {
+  id               String   @id @default(uuid())
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId        String?
+  lessonId         String?
+  lesson           Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  previewSessionId String?
+  eventType        String
+  severity         String   @default("INFO")
+  ip               String?
+  userAgent        String?
+  fingerprint      String?
+  metadata         Json     @default("{}")
+  createdAt        DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([eventType])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([lessonId])
+  @@index([previewSessionId])
 }
 
 enum TicketStatus {

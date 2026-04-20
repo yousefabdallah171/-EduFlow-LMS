@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import {
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { api, queryClient } from "@/lib/api";
+import { resolveLocale } from "@/lib/locale";
 
 type Lesson = {
   id: string;
@@ -76,6 +78,8 @@ export const LessonForm = ({
   onOpenChange,
   onSubmit
 }: LessonFormProps) => {
+  const { i18n } = useTranslation();
+  const isAr = resolveLocale(i18n.language) === "ar";
   const emptyFormData = useMemo(() => buildInitialFormData(sectionId), [sectionId]);
   const [formData, setFormData] = useState<Omit<Lesson, "id">>(emptyFormData);
 
@@ -135,7 +139,12 @@ export const LessonForm = ({
       const apiError = error as AxiosError<{ message?: string; error?: string; fields?: Record<string, string> }>;
       const fields = apiError.response?.data?.fields;
       const fieldMessage = fields ? Object.entries(fields).map(([field, message]) => `${field}: ${message}`).join("\n") : null;
-      toast.error(fieldMessage ?? apiError.response?.data?.message ?? apiError.response?.data?.error ?? "Failed to save lesson.");
+      toast.error(
+        fieldMessage ??
+          apiError.response?.data?.message ??
+          apiError.response?.data?.error ??
+          (isAr ? "تعذر حفظ الدرس." : "Failed to save lesson.")
+      );
     }
   };
 
@@ -168,28 +177,34 @@ export const LessonForm = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{lessonId ? "Edit lesson" : "Create lesson"}</DialogTitle>
+          <DialogTitle>{lessonId ? (isAr ? "تعديل الدرس" : "Edit lesson") : (isAr ? "إنشاء درس" : "Create lesson")}</DialogTitle>
           <DialogDescription>
-            {lessonId ? "Update the lesson details." : "Add a new lesson to a section."}
+            {lessonId
+              ? isAr
+                ? "حدّث تفاصيل الدرس ومكانه داخل المسار."
+                : "Update the lesson details and its place in the course flow."
+              : isAr
+                ? "أضف درسًا جديدًا داخل قسم مناسب."
+                : "Add a new lesson to the right section."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
             <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-section-id" style={{ color: "var(--color-text-muted)" }}>
-              Section
+              {isAr ? "القسم" : "Section"}
             </label>
             <select
               className="w-full rounded-lg border px-3 py-2 text-sm transition-colors"
               id="lesson-section-id"
               style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", backgroundColor: "var(--color-surface-2)" }}
               value={formData.sectionId || ""}
-              onChange={(e) => setFormData({ ...formData, sectionId: e.target.value || undefined })}
+              onChange={(event) => setFormData({ ...formData, sectionId: event.target.value || undefined })}
             >
-              <option value="">Select a section</option>
+              <option value="">{isAr ? "اختر قسمًا" : "Select a section"}</option>
               {sectionsQuery.data?.map((section) => (
                 <option key={section.id} value={section.id}>
-                  {section.titleEn}
+                  {isAr ? `${section.titleAr} - ${section.titleEn}` : `${section.titleEn} - ${section.titleAr}`}
                 </option>
               ))}
             </select>
@@ -197,81 +212,81 @@ export const LessonForm = ({
 
           <div>
             <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-title-en" style={{ color: "var(--color-text-muted)" }}>
-              Title (English)
+              {isAr ? "العنوان بالإنجليزية" : "Title (English)"}
             </label>
             <Input
               id="lesson-title-en"
-              placeholder="e.g., Introduction to React"
+              placeholder={isAr ? "مثال: Introduction to React" : "e.g., Introduction to React"}
               value={formData.titleEn}
-              onChange={(e) => setFormData({ ...formData, titleEn: e.target.value })}
+              onChange={(event) => setFormData({ ...formData, titleEn: event.target.value })}
             />
           </div>
 
           <div>
             <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-title-ar" style={{ color: "var(--color-text-muted)" }}>
-              Title (Arabic)
+              {isAr ? "العنوان بالعربية" : "Title (Arabic)"}
             </label>
             <Input
               id="lesson-title-ar"
-              placeholder="مثال: مقدمة إلى React"
+              placeholder={isAr ? "مثال: مقدمة إلى React" : "e.g., مقدمة إلى React"}
               value={formData.titleAr}
-              onChange={(e) => setFormData({ ...formData, titleAr: e.target.value })}
+              onChange={(event) => setFormData({ ...formData, titleAr: event.target.value })}
             />
           </div>
 
           <div>
             <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-description-en" style={{ color: "var(--color-text-muted)" }}>
-              Description (English)
+              {isAr ? "الوصف بالإنجليزية" : "Description (English)"}
             </label>
             <textarea
               className="w-full rounded-lg border px-3 py-2 text-sm transition-colors"
               id="lesson-description-en"
-              style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", backgroundColor: "var(--color-surface-2)" }}
+              placeholder={isAr ? "وصف اختياري" : "Optional description"}
               rows={3}
-              placeholder="Optional description"
+              style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", backgroundColor: "var(--color-surface-2)" }}
               value={formData.descriptionEn || ""}
-              onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
+              onChange={(event) => setFormData({ ...formData, descriptionEn: event.target.value })}
             />
           </div>
 
           <div>
             <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-description-ar" style={{ color: "var(--color-text-muted)" }}>
-              Description (Arabic)
+              {isAr ? "الوصف بالعربية" : "Description (Arabic)"}
             </label>
             <textarea
               className="w-full rounded-lg border px-3 py-2 text-sm transition-colors"
               id="lesson-description-ar"
-              style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", backgroundColor: "var(--color-surface-2)" }}
+              placeholder={isAr ? "وصف اختياري" : "Optional description"}
               rows={3}
-              placeholder="وصف اختياري"
+              style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", backgroundColor: "var(--color-surface-2)" }}
               value={formData.descriptionAr || ""}
-              onChange={(e) => setFormData({ ...formData, descriptionAr: e.target.value })}
+              onChange={(event) => setFormData({ ...formData, descriptionAr: event.target.value })}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-sort-order" style={{ color: "var(--color-text-muted)" }}>
-                Sort order
+                {isAr ? "ترتيب الظهور" : "Sort order"}
               </label>
               <Input
                 id="lesson-sort-order"
                 type="number"
                 value={formData.sortOrder}
-                onChange={(e) => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })}
+                onChange={(event) => setFormData({ ...formData, sortOrder: parseInt(event.target.value, 10) || 0 })}
               />
             </div>
 
             <div>
               <label className="mb-2 block text-xs font-semibold" htmlFor="lesson-drip-days" style={{ color: "var(--color-text-muted)" }}>
-                Drip days
+                {isAr ? "أيام التأخير" : "Drip days"}
               </label>
               <Input
                 id="lesson-drip-days"
+                placeholder={isAr ? "اتركه فارغًا إذا كان فوريًا" : "Leave empty for immediate access"}
                 type="number"
-                placeholder="Leave empty for no drip"
                 value={formData.dripDays ?? ""}
-                onChange={(e) => setFormData({ ...formData, dripDays: e.target.value ? parseInt(e.target.value) : undefined })}
+                onChange={(event) => setFormData({ ...formData, dripDays: event.target.value ? parseInt(event.target.value, 10) : undefined })}
               />
             </div>
           </div>
@@ -279,20 +294,24 @@ export const LessonForm = ({
           <div className="space-y-2">
             <label className="flex items-center gap-2">
               <input
-                type="checkbox"
                 checked={formData.isPublished}
-                onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
+                type="checkbox"
+                onChange={(event) => setFormData({ ...formData, isPublished: event.target.checked })}
               />
-              <span className="text-sm" style={{ color: "var(--color-text-primary)" }}>Published</span>
+              <span className="text-sm" style={{ color: "var(--color-text-primary)" }}>
+                {isAr ? "الدرس منشور" : "Lesson is published"}
+              </span>
             </label>
 
             <label className="flex items-center gap-2">
               <input
-                type="checkbox"
                 checked={formData.isPreview}
-                onChange={(e) => setFormData({ ...formData, isPreview: e.target.checked })}
+                type="checkbox"
+                onChange={(event) => setFormData({ ...formData, isPreview: event.target.checked })}
               />
-              <span className="text-sm" style={{ color: "var(--color-text-primary)" }}>Preview (free)</span>
+              <span className="text-sm" style={{ color: "var(--color-text-primary)" }}>
+                {isAr ? "متاح كمعاينة مجانية" : "Available as free preview"}
+              </span>
             </label>
           </div>
         </div>
@@ -304,7 +323,7 @@ export const LessonForm = ({
             onClick={() => onOpenChange(false)}
             type="button"
           >
-            Cancel
+            {isAr ? "إلغاء" : "Cancel"}
           </button>
           <button
             className="rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95"
@@ -312,7 +331,7 @@ export const LessonForm = ({
             onClick={() => void handleSubmit()}
             type="button"
           >
-            {lessonId ? "Update" : "Create"}
+            {lessonId ? (isAr ? "تحديث" : "Update") : (isAr ? "إنشاء" : "Create")}
           </button>
         </DialogFooter>
       </DialogContent>

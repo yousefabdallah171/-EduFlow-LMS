@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useLocation, useParams } from "react-router-dom";
 
 import { MobileDrawer } from "@/components/layout/MobileDrawer";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { cn } from "@/lib/utils";
 
 const adminItems = [
@@ -47,7 +48,7 @@ export const AdminShell = ({ title, description, children }: AdminShellProps) =>
 
   return (
     <main className="dashboard-page min-h-dvh px-4 py-6 sm:px-6 sm:py-8" style={{ backgroundColor: "var(--color-page)" }}>
-      <section className="mx-auto max-w-7xl">
+      <section className="app-shell">
         <MobileDrawer items={localizedItems} />
         <div className="mt-4 grid gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:items-start">
           <aside className="dashboard-panel dashboard-sidebar hidden p-3 md:block">
@@ -79,17 +80,12 @@ export const AdminShell = ({ title, description, children }: AdminShellProps) =>
           </aside>
 
           <div className="space-y-5">
-            <header className="dashboard-panel dashboard-hero dashboard-panel--strong p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600 dark:text-brand-400">
-                {t("admin.shell.workspace")}
-              </p>
-              <h1 className="mt-2 font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-                {title}
-              </h1>
-              <p className="mt-1.5 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                {description}
-              </p>
-            </header>
+            <PageHeader
+              hero
+              eyebrow={t("admin.shell.workspace")}
+              title={title}
+              description={description}
+            />
             {children}
           </div>
         </div>

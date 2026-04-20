@@ -14,9 +14,15 @@ import { cn } from "@/lib/utils";
 
 const Form = FormProvider;
 
+const FormFieldContext = createContext<{ name: string }>({ name: "" });
+
 const FormField = <TFieldValues extends FieldValues, TName extends FieldPath<TFieldValues>>(
   props: ControllerProps<TFieldValues, TName>
-) => <Controller {...props} />;
+) => (
+  <FormFieldContext.Provider value={{ name: String(props.name) }}>
+    <Controller {...props} />
+  </FormFieldContext.Provider>
+);
 
 const FormItemContext = createContext<{ id: string }>({ id: "" });
 
@@ -30,21 +36,22 @@ const FormItem = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>)
 };
 
 const useFormField = () => {
-  const fieldContext = useContext(FormItemContext);
+  const fieldContext = useContext(FormFieldContext);
+  const itemContext = useContext(FormItemContext);
   const { getFieldState, formState } = useFormContext();
-  const fieldState = getFieldState(fieldContext.id as never, formState);
+  const fieldState = getFieldState(fieldContext.name as never, formState);
 
   return {
-    id: fieldContext.id,
-    formMessageId: `${fieldContext.id}-form-item-message`,
-    formDescriptionId: `${fieldContext.id}-form-item-description`,
+    id: itemContext.id,
+    formMessageId: `${itemContext.id}-form-item-message`,
+    formDescriptionId: `${itemContext.id}-form-item-description`,
     ...fieldState
   };
 };
 
 const FormLabel = ({ className, ...props }: React.ComponentPropsWithoutRef<typeof Label>) => {
   const { error } = useFormField();
-  return <Label className={cn(error && "text-red-600", className)} {...props} />;
+  return <Label className={cn("ui-field-label", error && "text-[color:var(--color-danger)]", className)} {...props} />;
 };
 
 const FormControl = ({ ...props }: React.ComponentPropsWithoutRef<typeof Slot>) => {
@@ -60,7 +67,7 @@ const FormControl = ({ ...props }: React.ComponentPropsWithoutRef<typeof Slot>) 
 
 const FormDescription = ({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => {
   const { formDescriptionId } = useFormField();
-  return <p id={formDescriptionId} className={cn("text-sm text-slate-500", className)} {...props} />;
+  return <p id={formDescriptionId} className={cn("text-sm leading-6 text-secondary", className)} {...props} />;
 };
 
 const FormMessage = ({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => {
@@ -70,7 +77,7 @@ const FormMessage = ({ className, ...props }: React.HTMLAttributes<HTMLParagraph
   if (!body) return null;
 
   return (
-    <p id={formMessageId} className={cn("text-sm font-medium text-red-600", className)} {...props}>
+    <p id={formMessageId} className={cn("text-sm font-medium text-[color:var(--color-danger)]", className)} {...props}>
       {body}
     </p>
   );

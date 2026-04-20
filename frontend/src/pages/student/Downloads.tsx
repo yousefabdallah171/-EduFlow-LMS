@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { Download, FileDown } from "lucide-react";
+import { Download, FileDown, FileText } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { api } from "@/lib/api";
@@ -22,6 +23,7 @@ export const StudentDownloads = () => {
   const { locale } = useParams();
   const currentLocale = resolveLocale(locale);
   const { t } = useTranslation();
+  const isAr = currentLocale === "ar";
 
   const { data: lessonsData, isLoading } = useQuery({
     queryKey: ["student-lessons-downloads"],
@@ -49,27 +51,47 @@ export const StudentDownloads = () => {
   });
 
   const grouped = resourceQueries.data ?? [];
+  const resourceCount = grouped.reduce((total, item) => total + item.resources.length, 0);
 
   return (
     <StudentShell>
       <>
-        <header className="dashboard-panel dashboard-hero dashboard-panel--strong p-6">
-          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-            <Download className="h-3.5 w-3.5" />
-            {t("student.shell.section")}
-          </p>
-          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-            {t("student.downloads.title")}
-          </h1>
-        </header>
+        <PageHeader
+          hero
+          eyebrow={t("student.shell.section")}
+          title={t("student.downloads.title")}
+          description={
+            isAr
+              ? "كل الملفات المساعدة المرفقة بالدروس تظهر هنا حتى يسهل الوصول إليها من مكان واحد."
+              : "All lesson attachments and supporting files live here so you can grab them from one place."
+          }
+        />
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="dashboard-panel dashboard-panel--accent p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{isAr ? "الموارد المتاحة" : "Available resources"}</p>
+            <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{resourceCount}</p>
+          </div>
+          <div className="dashboard-panel p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{isAr ? "الدروس المرتبطة" : "Linked lessons"}</p>
+            <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{grouped.length}</p>
+          </div>
+          <div className="dashboard-panel p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{isAr ? "طريقة الاستخدام" : "Best use"}</p>
+            <p className="mt-2 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
+              {isAr ? "افتح الدرس أولًا إذا كنت تريد فهم السياق، ثم نزّل الملف المرتبط به." : "Open the lesson first if you need context, then download the matching file."}
+            </p>
+          </div>
+        </div>
 
         {isLoading || resourceQueries.isLoading ? (
           <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-[24px]" />)}
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-[24px]" />)}
           </div>
         ) : grouped.length === 0 ? (
           <EmptyState
             illustration={<FileDown className="mx-auto h-10 w-10 text-brand-600" />}
+            eyebrow={isAr ? "مركز التنزيلات" : "Download center"}
             title={t("student.downloads.empty")}
             description={t("student.downloads.emptyDesc")}
           />
@@ -77,23 +99,47 @@ export const StudentDownloads = () => {
           <div className="space-y-4">
             {grouped.map(({ lesson, resources }) => (
               <div key={lesson.id} className="dashboard-panel p-5">
-                <p className="mb-3 font-display text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
-                  {pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
-                </p>
-                <div className="space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-display text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
+                      {pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
+                    </p>
+                    <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                      {isAr ? `${resources.length} ملف مرتبط بهذا الدرس` : `${resources.length} files attached to this lesson`}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-2">
                   {resources.map((resource) => (
-                    <div key={resource.id} className="dashboard-panel flex flex-wrap items-center justify-between gap-3 rounded-[24px] px-4 py-3">
-                      <a
-                        href={resource.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-brand-600 no-underline hover:underline"
-                      >
-                        <FileDown className="h-4 w-4" />
-                        {resource.title}
-                      </a>
-                      <Badge variant="outline">{formatSize(resource.fileSizeBytes, currentLocale)}</Badge>
-                    </div>
+                    <a
+                      key={resource.id}
+                      href={resource.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="dashboard-panel flex flex-wrap items-center justify-between gap-3 rounded-[24px] px-4 py-4 no-underline transition-colors hover:bg-surface2"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand)" }}>
+                          <FileText className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
+                            {resource.title}
+                          </p>
+                          <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
+                            {isAr ? "جاهز للتنزيل" : "Ready to download"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{formatSize(resource.fileSizeBytes, currentLocale)}</Badge>
+                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600">
+                          <Download className="h-3.5 w-3.5" />
+                          {isAr ? "تنزيل" : "Download"}
+                        </span>
+                      </div>
+                    </a>
                   ))}
                 </div>
               </div>

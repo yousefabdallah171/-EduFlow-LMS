@@ -43,6 +43,7 @@ export const Lesson = () => {
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const currentLocale = resolveLocale(locale);
   const { t } = useTranslation();
+  const isAr = currentLocale === "ar";
   const demo = isDemoMode();
   const { statusQuery } = useEnrollment();
   const isEnrolled = statusQuery.data?.enrolled && statusQuery.data?.status === "ACTIVE";
@@ -99,6 +100,8 @@ export const Lesson = () => {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["course-lessons"] });
+      void queryClient.invalidateQueries({ queryKey: ["student-dashboard"] });
+      void queryClient.invalidateQueries({ queryKey: ["student-lessons"] });
     }
   });
 
@@ -235,201 +238,257 @@ export const Lesson = () => {
       }}
     >
       <section className="mx-auto max-w-6xl space-y-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div
-            className="min-w-0 flex-1 rounded-[28px] border p-5 shadow-card sm:p-6"
-            style={{
-              background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 88%, transparent))",
-              borderColor: "color-mix(in oklab, var(--color-brand) 18%, var(--color-border))"
-            }}
-          >
-            <Link
-              className="inline-flex items-center gap-1.5 text-xs font-semibold no-underline transition-colors hover:text-brand-600"
-              style={{ color: "var(--color-text-muted)" }}
-              to={`${prefix}/course`}
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(19rem,0.7fr)]">
+          <div className="space-y-5">
+            <div
+              className="rounded-[28px] border p-5 shadow-card sm:p-6"
+              style={{
+                background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 88%, transparent))",
+                borderColor: "color-mix(in oklab, var(--color-brand) 18%, var(--color-border))"
+              }}
             >
-              <ArrowLeft className="icon-dir h-4 w-4" />
-              {t("lesson.backToCourse")}
-            </Link>
-            <h1 className="mt-2 text-xl font-bold tracking-tight sm:text-2xl" style={{ color: "var(--color-text-primary)" }}>
-              {currentLessonTitle}
-            </h1>
-            {currentSectionTitle ? (
-              <div className="mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold"
-                style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-secondary)", backgroundColor: "var(--color-surface)" }}>
-                <span style={{ color: "var(--color-text-muted)" }}>{t("lesson.sectionLabel")}</span>
-                <span style={{ color: "var(--color-text-primary)" }}>{currentSectionTitle}</span>
+              <Link
+                className="inline-flex items-center gap-1.5 text-xs font-semibold no-underline transition-colors hover:text-brand-600"
+                style={{ color: "var(--color-text-muted)" }}
+                to={`${prefix}/course`}
+              >
+                <ArrowLeft className="icon-dir h-4 w-4" />
+                {t("lesson.backToCourse")}
+              </Link>
+              <h1 className="mt-3 text-xl font-bold tracking-tight sm:text-2xl" style={{ color: "var(--color-text-primary)" }}>
+                {currentLessonTitle}
+              </h1>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {currentSectionTitle ? (
+                  <div
+                    className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold"
+                    style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-secondary)", backgroundColor: "var(--color-surface)" }}
+                  >
+                    <span style={{ color: "var(--color-text-muted)" }}>{t("lesson.sectionLabel")}</span>
+                    <span style={{ color: "var(--color-text-primary)" }}>{currentSectionTitle}</span>
+                  </div>
+                ) : null}
+                {lessonProgress.completedAt ? (
+                  <div className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-600">
+                    <Check className="h-3.5 w-3.5" />
+                    {t("common.completed")}
+                  </div>
+                ) : null}
               </div>
-            ) : null}
-          </div>
-
-          <div
-            className="min-w-48 rounded-[24px] border p-4 shadow-card"
-            style={{
-              background:
-                "linear-gradient(180deg, color-mix(in oklab, var(--color-brand) 8%, var(--color-surface)), color-mix(in oklab, var(--color-surface-2) 92%, transparent))",
-              borderColor: "color-mix(in oklab, var(--color-brand) 22%, var(--color-border))"
-            }}
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-              {t("lesson.courseProgress")}
-            </p>
-            <p className="mt-1.5 font-display text-2xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>
-              {completionPercentage}%
-            </p>
-            <Progress className="mt-2 h-1.5" value={completionPercentage} />
-          </div>
-        </div>
-
-        <VideoPlayer
-          lessonTitle={currentLessonTitle}
-          sourceUrl={lessonQuery.data.hlsUrl}
-          watermark={lessonQuery.data.watermark}
-          initialPositionSeconds={lessonProgress.lastPositionSeconds}
-          playbackExpiresAt={lessonQuery.data.expiresAt ?? null}
-          onProgress={(payload) => {
-            void progressMutation.mutateAsync(payload);
-          }}
-          onTokenExpired={() => {
-            void renewToken();
-          }}
-        />
-
-        <div
-          className="rounded-[28px] border p-5 shadow-card"
-          style={{
-            background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 88%, transparent))",
-            borderColor: "var(--color-border)"
-          }}
-        >
-          <div className="flex flex-wrap items-start justify-between gap-5">
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                {t("lesson.notes")}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
+              <p className="mt-4 max-w-3xl text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>
                 {currentLessonDescription || t("lesson.titleFallback")}
               </p>
             </div>
 
-            <div className="flex flex-shrink-0 flex-wrap items-center gap-2.5">
-              {previousLesson ? (
-                <Link
-                  className="inline-flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-medium no-underline transition-colors hover:bg-surface2"
-                  style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
-                  to={`${prefix}/lessons/${previousLesson.id}`}
-                >
-                  <ArrowLeft className="icon-dir h-4 w-4" />
-                  {t("lesson.previous")}
-                </Link>
-              ) : null}
-              {nextLesson?.isUnlocked ? (
-                <Link
-                  className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
-                  style={{ background: "var(--gradient-brand)" }}
-                  to={`${prefix}/lessons/${nextLesson.id}`}
-                >
-                  {t("lesson.nextLesson")}
-                  <ArrowRight className="icon-dir h-4 w-4" />
-                </Link>
-              ) : null}
+            <VideoPlayer
+              lessonTitle={currentLessonTitle}
+              sourceUrl={lessonQuery.data.hlsUrl}
+              watermark={lessonQuery.data.watermark}
+              initialPositionSeconds={lessonProgress.lastPositionSeconds}
+              playbackExpiresAt={lessonQuery.data.expiresAt ?? null}
+              onProgress={(payload) => {
+                void progressMutation.mutateAsync(payload);
+              }}
+              onTokenExpired={() => {
+                void renewToken();
+              }}
+            />
+
+            <div
+              className="rounded-[28px] border p-5 shadow-card"
+              style={{
+                background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 88%, transparent))",
+                borderColor: "var(--color-border)"
+              }}
+            >
+              <div className="flex flex-wrap items-start justify-between gap-5">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                    {t("lesson.notes")}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
+                    {currentLessonDescription || t("lesson.titleFallback")}
+                  </p>
+                </div>
+
+                <div className="flex flex-shrink-0 flex-wrap items-center gap-2.5">
+                  {previousLesson ? (
+                    <Link
+                      className="inline-flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-medium no-underline transition-colors hover:bg-surface2"
+                      style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                      to={`${prefix}/lessons/${previousLesson.id}`}
+                    >
+                      <ArrowLeft className="icon-dir h-4 w-4" />
+                      {t("lesson.previous")}
+                    </Link>
+                  ) : null}
+                  {nextLesson?.isUnlocked ? (
+                    <Link
+                      className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                      style={{ background: "var(--gradient-brand)" }}
+                      to={`${prefix}/lessons/${nextLesson.id}`}
+                    >
+                      {t("lesson.nextLesson")}
+                      <ArrowRight className="icon-dir h-4 w-4" />
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
             </div>
+
+            {lessonQuery.data?.resources && lessonQuery.data.resources.length > 0 ? (
+              <ResourcesList resources={lessonQuery.data.resources} />
+            ) : null}
           </div>
-        </div>
 
-        {lessonQuery.data?.resources && lessonQuery.data.resources.length > 0 && (
-          <ResourcesList resources={lessonQuery.data.resources} />
-        )}
+          <aside className="space-y-5 xl:sticky xl:top-24 xl:self-start">
+            <div
+              className="rounded-[28px] border p-5 shadow-card"
+              style={{
+                background: "linear-gradient(180deg, color-mix(in oklab, var(--color-brand) 8%, var(--color-surface)), color-mix(in oklab, var(--color-surface-2) 92%, transparent))",
+                borderColor: "color-mix(in oklab, var(--color-brand) 22%, var(--color-border))"
+              }}
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                {t("lesson.courseProgress")}
+              </p>
+              <p className="mt-1.5 font-display text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>
+                {completionPercentage}%
+              </p>
+              <Progress className="mt-3 h-2" value={completionPercentage} />
+              <p className="mt-3 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
+                {isAr
+                  ? "حافظ على الإيقاع: إنهاء هذا الدرس يقربك من القسم التالي."
+                  : "Keep the rhythm going: finishing this lesson moves you closer to the next section."}
+              </p>
+            </div>
 
-        {groupedLessonsQuery.data && groupedLessonsQuery.data.length > 0 ? (
-          <div
-            className="rounded-[28px] border p-4 shadow-card"
-            style={{
-              background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 88%, transparent))",
-              borderColor: "var(--color-border)"
-            }}
-          >
-            <p className="mb-3 px-1 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-              {t("lesson.allLessons")}
-            </p>
-            <div className="space-y-4">
-              {groupedLessonsQuery.data.map((section) => {
-                const sectionTitle = pickLocalizedText(currentLocale, section.titleEn, section.titleAr);
+            <div
+              className="rounded-[28px] border p-4 shadow-card"
+              style={{
+                background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 88%, transparent))",
+                borderColor: "var(--color-border)"
+              }}
+            >
+              <p className="mb-3 px-1 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                {t("lesson.allLessons")}
+              </p>
+              <div className="space-y-4">
+                {groupedLessonsQuery.data && groupedLessonsQuery.data.length > 0 ? (
+                  groupedLessonsQuery.data.map((section) => {
+                    const sectionTitle = pickLocalizedText(currentLocale, section.titleEn, section.titleAr);
 
-                return (
-                  <div key={section.id} className="space-y-2">
-                    <div className="px-1 text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                      {sectionTitle}
-                    </div>
-                    <div className="space-y-1">
-                      {section.lessons.map((lesson, index) => {
-                        const isCurrent = lesson.id === lessonId;
-                        const lessonTitle = pickLocalizedText(currentLocale, lesson.titleEn, lesson.titleAr);
+                    return (
+                      <div key={section.id} className="space-y-2">
+                        <div className="px-1 text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                          {sectionTitle}
+                        </div>
+                        <div className="space-y-1">
+                          {section.lessons.map((lesson, index) => {
+                            const isCurrent = lesson.id === lessonId;
+                            const lessonTitle = pickLocalizedText(currentLocale, lesson.titleEn, lesson.titleAr);
 
-                        return (
-                          <Link
-                            key={lesson.id}
-                            className="flex items-center gap-3 rounded-2xl border px-3 py-3 no-underline transition-colors"
+                            return (
+                              <Link
+                                key={lesson.id}
+                                className="flex items-center gap-3 rounded-2xl border px-3 py-3 no-underline transition-colors"
+                                style={{
+                                  background:
+                                    isCurrent
+                                      ? "linear-gradient(135deg, color-mix(in oklab, var(--color-brand) 12%, var(--color-surface)), color-mix(in oklab, var(--color-surface-2) 92%, transparent))"
+                                      : "color-mix(in oklab, var(--color-surface-2) 58%, transparent)",
+                                  borderColor: isCurrent ? "color-mix(in oklab, var(--color-brand) 28%, transparent)" : "var(--color-border)",
+                                  color: isCurrent ? "var(--color-brand-text)" : "var(--color-text-secondary)"
+                                }}
+                                to={lesson.isUnlocked ? `${prefix}/lessons/${lesson.id}` : "#"}
+                                onClick={(event) => {
+                                  if (!lesson.isUnlocked) {
+                                    event.preventDefault();
+                                  }
+                                }}
+                              >
+                                <span
+                                  className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                                  style={{
+                                    backgroundColor: lesson.completedAt
+                                      ? "rgb(34 197 94 / 0.15)"
+                                      : isCurrent
+                                        ? "var(--color-brand-muted)"
+                                        : "var(--color-surface-2)",
+                                    color: lesson.completedAt
+                                      ? "rgb(34 197 94)"
+                                      : isCurrent
+                                        ? "var(--color-brand)"
+                                        : "var(--color-text-muted)"
+                                  }}
+                                >
+                                  {lesson.completedAt ? <Check className="h-3.5 w-3.5" /> : index + 1}
+                                </span>
+                                <span className="flex-1 truncate text-sm font-medium">{lessonTitle}</span>
+                                {!lesson.isUnlocked ? (
+                                  <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                                    {t("lesson.locked")}
+                                  </span>
+                                ) : null}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : orderedLessons.length > 0 ? (
+                  <div className="space-y-1">
+                    {orderedLessons.map((lesson, index) => {
+                      const isCurrent = lesson.id === lessonId;
+                      const lessonTitle = pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr);
+
+                      return (
+                        <Link
+                          key={lesson.id}
+                          className="flex items-center gap-3 rounded-2xl border px-3 py-3 no-underline transition-colors"
+                          style={{
+                            background:
+                              isCurrent
+                                ? "linear-gradient(135deg, color-mix(in oklab, var(--color-brand) 12%, var(--color-surface)), color-mix(in oklab, var(--color-surface-2) 92%, transparent))"
+                                : "color-mix(in oklab, var(--color-surface-2) 58%, transparent)",
+                            borderColor: isCurrent ? "color-mix(in oklab, var(--color-brand) 28%, transparent)" : "var(--color-border)",
+                            color: isCurrent ? "var(--color-brand-text)" : "var(--color-text-secondary)"
+                          }}
+                          to={lesson.isUnlocked ? `${prefix}/lessons/${lesson.id}` : "#"}
+                          onClick={(event) => {
+                            if (!lesson.isUnlocked) {
+                              event.preventDefault();
+                            }
+                          }}
+                        >
+                          <span
+                            className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
                             style={{
-                              background:
-                                isCurrent
-                                  ? "linear-gradient(135deg, color-mix(in oklab, var(--color-brand) 12%, var(--color-surface)), color-mix(in oklab, var(--color-surface-2) 92%, transparent))"
-                                  : "color-mix(in oklab, var(--color-surface-2) 58%, transparent)",
-                              borderColor: isCurrent ? "color-mix(in oklab, var(--color-brand) 28%, transparent)" : "var(--color-border)",
-                              color: isCurrent ? "var(--color-brand-text)" : "var(--color-text-secondary)"
-                            }}
-                            to={lesson.isUnlocked ? `${prefix}/lessons/${lesson.id}` : "#"}
-                            onClick={(event) => {
-                              if (!lesson.isUnlocked) {
-                                event.preventDefault();
-                              }
+                              backgroundColor: lesson.completedAt
+                                ? "rgb(34 197 94 / 0.15)"
+                                : isCurrent
+                                  ? "var(--color-brand-muted)"
+                                  : "var(--color-surface-2)",
+                              color: lesson.completedAt
+                                ? "rgb(34 197 94)"
+                                : isCurrent
+                                  ? "var(--color-brand)"
+                                  : "var(--color-text-muted)"
                             }}
                           >
-                            <span
-                              className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                              style={{
-                                backgroundColor: lesson.completedAt
-                                  ? "rgb(34 197 94 / 0.15)"
-                                  : isCurrent
-                                    ? "var(--color-brand-muted)"
-                                    : "var(--color-surface-2)",
-                                color: lesson.completedAt
-                                  ? "rgb(34 197 94)"
-                                  : isCurrent
-                                    ? "var(--color-brand)"
-                                    : "var(--color-text-muted)"
-                              }}
-                            >
-                              {lesson.completedAt ? <Check className="h-3.5 w-3.5" /> : index + 1}
-                            </span>
-                            <span className="flex-1 truncate text-sm font-medium">{lessonTitle}</span>
-                            {!lesson.isUnlocked ? (
-                              <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-                                {t("lesson.locked")}
-                              </span>
-                            ) : null}
-                          </Link>
-                        );
-                      })}
-                    </div>
+                            {lesson.completedAt ? <Check className="h-3.5 w-3.5" /> : index + 1}
+                          </span>
+                          <span className="flex-1 truncate text-sm font-medium">{lessonTitle}</span>
+                        </Link>
+                      );
+                    })}
                   </div>
-                );
-              })}
+                ) : null}
+              </div>
             </div>
-          </div>
-        ) : orderedLessons.length > 0 ? (
-          <div
-            className="rounded-[28px] border p-4 shadow-card"
-            style={{
-              background: "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 96%, white), color-mix(in oklab, var(--color-surface-2) 88%, transparent))",
-              borderColor: "var(--color-border)"
-            }}
-          >
-            <p className="mb-3 px-1 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-              {t("lesson.allLessons")}
-            </p>
-          </div>
-        ) : null}
+          </aside>
+        </div>
       </section>
     </main>
   );

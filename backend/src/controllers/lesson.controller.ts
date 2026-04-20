@@ -1,17 +1,19 @@
 import fs from "node:fs/promises";
+import { createReadStream } from "node:fs";
 import path from "node:path";
 
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
+import { env } from "../config/env.js";
 import { prisma } from "../config/database.js";
 import { enrollmentRepository } from "../repositories/enrollment.repository.js";
 import { lessonRepository } from "../repositories/lesson.repository.js";
 import { userRepository } from "../repositories/user.repository.js";
 import { progressService, ProgressError } from "../services/progress.service.js";
 import { VideoTokenError, videoTokenService } from "../services/video-token.service.js";
+import { VideoAbuseError, getClientContext, videoAbuseService } from "../services/video-abuse.service.js";
 import { maskEmail } from "../utils/mask-email.js";
-import type { PreviewTokenPayload } from "../utils/video-token.js";
 
 const progressSchema = z.object({
   lastPositionSeconds: z.number().int().min(0),
@@ -19,10 +21,43 @@ const progressSchema = z.object({
   completed: z.boolean().optional()
 });
 
-const getStorageRoot = () => path.resolve(process.cwd(), "storage");
+const getStorageRoot = () => path.resolve(process.cwd(), env.STORAGE_PATH);
 const getFirstValue = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+const isHttpsRequest = (req: Request) =>
+  req.secure || req.get("x-forwarded-proto")?.split(",")[0]?.trim() === "https";
+
+const isWithinDir = (parent: string, child: string) => {
+  const parentResolved = path.resolve(parent);
+  const childResolved = path.resolve(child);
+  const relative = path.relative(parentResolved, childResolved);
+  if (!relative) return true;
+  return !relative.startsWith("..") && !path.isAbsolute(relative);
+};
+
+const setVideoNoStoreHeaders = (res: Response) => {
+  res.setHeader("Cache-Control", "private, no-store, max-age=0");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+};
+
+const rewriteKeyLine = (line: string, uri: string) => {
+  if (!line.startsWith("#EXT-X-KEY")) return line;
+  if (!line.includes("URI=")) {
+    return `${line},URI="${uri}"`;
+  }
+
+  return line.replace(/URI=([^,]*)/i, (_match, value) => {
+    const cleaned = String(value).trim();
+    const hasQuotes = cleaned.startsWith("\"") && cleaned.endsWith("\"");
+    return `URI=${hasQuotes ? `"${uri}"` : uri}`;
+  });
+};
+
 const rewritePlaylist = (playlist: string, lessonId: string, token: string) => {
   const encodedToken = encodeURIComponent(token);
+  const keyUri = `/api/v1/video/${lessonId}/key?token=${encodedToken}`;
 
   return playlist
     .split(/\r?\n/)
@@ -31,9 +66,7 @@ const rewritePlaylist = (playlist: string, lessonId: string, token: string) => {
         return line;
       }
 
-      if (line.startsWith("#EXT-X-KEY")) {
-        return `#EXT-X-KEY:METHOD=AES-128,URI="/api/v1/video/${lessonId}/key?token=${encodedToken}"`;
-      }
+      if (line.startsWith("#EXT-X-KEY")) return rewriteKeyLine(line, keyUri);
 
       if (line.startsWith("#")) {
         return line;
@@ -80,7 +113,7 @@ const handleLessonError = (error: unknown, res: Response, next: NextFunction) =>
     return;
   }
 
-  if (error instanceof VideoTokenError || error instanceof ProgressError) {
+  if (error instanceof VideoTokenError || error instanceof ProgressError || error instanceof VideoAbuseError) {
     const body: Record<string, unknown> = {
       error: error.code,
       message: error.message
@@ -106,7 +139,7 @@ const buildPlaylist = (lessonId: string, token: string) => {
     "#EXT-X-MEDIA-SEQUENCE:0",
     `#EXT-X-KEY:METHOD=AES-128,URI="/api/v1/video/${lessonId}/key?token=${encodedToken}"`,
     "#EXTINF:10.0,",
-    `/api/v1/video/${lessonId}/segment-0.ts?token=${encodedToken}`,
+    `/api/v1/video/${lessonId}/segment-000.ts?token=${encodedToken}`,
     "#EXT-X-ENDLIST"
   ].join("\n");
 };
@@ -356,6 +389,7 @@ export const lessonController = {
 
   async playlist(req: Request, res: Response, next: NextFunction) {
     try {
+      setVideoNoStoreHeaders(res);
       const lessonId = getFirstValue(req.params.id);
       const token = getFirstValue(req.query.token as string | string[] | undefined);
       if (!lessonId) {
@@ -363,7 +397,41 @@ export const lessonController = {
         return;
       }
 
-      await videoTokenService.validateToken(token, lessonId, req.cookies.refresh_token as string | undefined);
+      const client = getClientContext({ ip: req.ip, userAgent: req.get("user-agent") });
+      const payload = await videoTokenService.validateToken({
+        token,
+        lessonId,
+        rawRefreshToken: req.cookies.refresh_token as string | undefined,
+        previewSessionIdCookie: req.cookies.preview_session as string | undefined,
+        ip: req.ip,
+        userAgent: req.get("user-agent") ?? undefined
+      });
+
+      const isPreview = "isPreview" in payload && (payload as { isPreview?: boolean }).isPreview;
+      const sessionId = isPreview
+        ? (payload as { previewSessionId: string }).previewSessionId
+        : (payload as { sessionId: string }).sessionId;
+
+      await videoAbuseService.enforceConcurrency({
+        userId: isPreview ? null : (payload as { userId: string }).userId,
+        sessionId: isPreview ? null : (payload as { sessionId: string }).sessionId,
+        previewSessionId: isPreview ? sessionId : null,
+        lessonId,
+        client
+      });
+
+      await videoAbuseService.enforceRateLimit({
+        scope: "playlist",
+        subject: sessionId,
+        maxPerWindow: isPreview ? 10 : 30,
+        event: {
+          userId: isPreview ? null : (payload as { userId: string }).userId,
+          sessionId: isPreview ? null : (payload as { sessionId: string }).sessionId,
+          lessonId,
+          previewSessionId: isPreview ? sessionId : null,
+          client
+        }
+      });
 
       const lesson = await lessonRepository.findById(lessonId);
       if (!lesson) {
@@ -373,9 +441,10 @@ export const lessonController = {
 
       if (lesson.videoHlsPath) {
         const candidatePath = path.resolve(getStorageRoot(), lesson.videoHlsPath);
-        if (candidatePath.startsWith(getStorageRoot())) {
+        if (isWithinDir(getStorageRoot(), candidatePath)) {
           try {
             const playlist = await fs.readFile(candidatePath, "utf8");
+            setVideoNoStoreHeaders(res);
             res.type("application/vnd.apple.mpegurl").send(rewritePlaylist(playlist, lessonId, token ?? ""));
             return;
           } catch {
@@ -384,6 +453,7 @@ export const lessonController = {
         }
       }
 
+      setVideoNoStoreHeaders(res);
       res.type("application/vnd.apple.mpegurl").send(buildPlaylist(lessonId, token ?? ""));
     } catch (error) {
       handleLessonError(error, res, next);
@@ -392,6 +462,7 @@ export const lessonController = {
 
   async key(req: Request, res: Response, next: NextFunction) {
     try {
+      setVideoNoStoreHeaders(res);
       const lessonId = getFirstValue(req.params.id);
       const token = getFirstValue(req.query.token as string | string[] | undefined);
       if (!lessonId) {
@@ -399,16 +470,62 @@ export const lessonController = {
         return;
       }
 
-      const payload = await videoTokenService.validateToken(
+      const client = getClientContext({ ip: req.ip, userAgent: req.get("user-agent") });
+      const payload = await videoTokenService.validateToken({
         token,
         lessonId,
-        req.cookies.refresh_token as string | undefined
-      );
+        rawRefreshToken: req.cookies.refresh_token as string | undefined,
+        previewSessionIdCookie: req.cookies.preview_session as string | undefined,
+        ip: req.ip,
+        userAgent: req.get("user-agent") ?? undefined
+      });
 
-      // Preview tokens use a predictable session ID so the AES key is stable for the token's TTL.
-      const isPreview = "isPreview" in payload && (payload as PreviewTokenPayload).isPreview;
-      const sessionId = isPreview ? `preview:${lessonId}` : (payload as { sessionId: string }).sessionId;
-      const key = await videoTokenService.getSessionKey(sessionId, payload.lessonId);
+      const isPreview = "isPreview" in payload && (payload as { isPreview?: boolean }).isPreview;
+      const sessionId = isPreview
+        ? (payload as { previewSessionId: string }).previewSessionId
+        : (payload as { sessionId: string }).sessionId;
+
+      await videoAbuseService.enforceConcurrency({
+        userId: isPreview ? null : (payload as { userId: string }).userId,
+        sessionId: isPreview ? null : (payload as { sessionId: string }).sessionId,
+        previewSessionId: isPreview ? sessionId : null,
+        lessonId,
+        client
+      });
+
+      await videoAbuseService.enforceRateLimit({
+        scope: "key",
+        subject: sessionId,
+        maxPerWindow: isPreview ? 10 : 30,
+        event: {
+          userId: isPreview ? null : (payload as { userId: string }).userId,
+          sessionId: isPreview ? null : (payload as { sessionId: string }).sessionId,
+          lessonId,
+          previewSessionId: isPreview ? sessionId : null,
+          client
+        }
+      });
+
+      const lesson = await lessonRepository.findById(lessonId);
+      if (!lesson?.videoHlsPath) {
+        res.status(404).json({ error: "KEY_NOT_FOUND" });
+        return;
+      }
+
+      const baseDir = path.dirname(path.resolve(getStorageRoot(), lesson.videoHlsPath));
+      if (!isWithinDir(getStorageRoot(), baseDir)) {
+        res.status(404).json({ error: "KEY_NOT_FOUND" });
+        return;
+      }
+
+      let key: Buffer;
+      try {
+        key = await fs.readFile(path.join(baseDir, "enc.key"));
+      } catch {
+        res.status(404).json({ error: "KEY_NOT_FOUND" });
+        return;
+      }
+
       res.type("application/octet-stream").send(key);
     } catch (error) {
       handleLessonError(error, res, next);
@@ -423,7 +540,19 @@ export const lessonController = {
         return;
       }
 
-      const { videoToken, hlsUrl, expiresAt } = await videoTokenService.issuePreviewToken(firstLesson.id);
+      const { videoToken, hlsUrl, expiresAt, previewSessionId } = await videoTokenService.issuePreviewToken({
+        lessonId: firstLesson.id,
+        ip: req.ip,
+        userAgent: req.get("user-agent") ?? undefined
+      });
+
+      res.cookie("preview_session", previewSessionId, {
+        httpOnly: true,
+        secure: isHttpsRequest(req),
+        sameSite: "strict",
+        path: "/api/v1/video",
+        maxAge: 15 * 60 * 1000
+      });
 
       res.json({
         id: firstLesson.id,
@@ -446,6 +575,7 @@ export const lessonController = {
 
   async segment(req: Request, res: Response, next: NextFunction) {
     try {
+      setVideoNoStoreHeaders(res);
       const lessonId = getFirstValue(req.params.id);
       const token = getFirstValue(req.query.token as string | string[] | undefined);
       const segment = getFirstValue(req.query.file as string | string[] | undefined) ?? getFirstValue(req.params.segment);
@@ -454,7 +584,41 @@ export const lessonController = {
         return;
       }
 
-      await videoTokenService.validateToken(token, lessonId, req.cookies.refresh_token as string | undefined);
+      const client = getClientContext({ ip: req.ip, userAgent: req.get("user-agent") });
+      const payload = await videoTokenService.validateToken({
+        token,
+        lessonId,
+        rawRefreshToken: req.cookies.refresh_token as string | undefined,
+        previewSessionIdCookie: req.cookies.preview_session as string | undefined,
+        ip: req.ip,
+        userAgent: req.get("user-agent") ?? undefined
+      });
+
+      const isPreview = "isPreview" in payload && (payload as { isPreview?: boolean }).isPreview;
+      const sessionId = isPreview
+        ? (payload as { previewSessionId: string }).previewSessionId
+        : (payload as { sessionId: string }).sessionId;
+
+      await videoAbuseService.enforceConcurrency({
+        userId: isPreview ? null : (payload as { userId: string }).userId,
+        sessionId: isPreview ? null : (payload as { sessionId: string }).sessionId,
+        previewSessionId: isPreview ? sessionId : null,
+        lessonId,
+        client
+      });
+
+      await videoAbuseService.enforceRateLimit({
+        scope: "segment",
+        subject: sessionId,
+        maxPerWindow: isPreview ? 200 : 600,
+        event: {
+          userId: isPreview ? null : (payload as { userId: string }).userId,
+          sessionId: isPreview ? null : (payload as { sessionId: string }).sessionId,
+          lessonId,
+          previewSessionId: isPreview ? sessionId : null,
+          client
+        }
+      });
 
       const lesson = await lessonRepository.findById(lessonId);
       if (!lesson?.videoHlsPath) {
@@ -462,13 +626,78 @@ export const lessonController = {
         return;
       }
 
-      const segmentPath = path.resolve(path.dirname(path.resolve(getStorageRoot(), lesson.videoHlsPath)), segment);
-      if (!segmentPath.startsWith(getStorageRoot())) {
+      const trimmed = segment.trim();
+      const lower = trimmed.toLowerCase();
+      if (
+        !trimmed ||
+        trimmed.includes("..") ||
+        trimmed.includes("/") ||
+        trimmed.includes("\\") ||
+        trimmed.includes(":") ||
+        lower.includes("%2f") ||
+        lower.includes("%5c")
+      ) {
         res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
         return;
       }
 
-      res.type("video/mp2t").send(await fs.readFile(segmentPath));
+      const allowedExts = new Set([".ts", ".m4s", ".aac"]);
+      if (!allowedExts.has(path.extname(trimmed).toLowerCase())) {
+        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
+        return;
+      }
+
+      const baseDir = path.dirname(path.resolve(getStorageRoot(), lesson.videoHlsPath));
+      const candidate = path.resolve(baseDir, trimmed);
+      if (!isWithinDir(getStorageRoot(), candidate)) {
+        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
+        return;
+      }
+
+      const [baseReal, fileReal] = await Promise.all([
+        fs.realpath(baseDir).catch(() => null),
+        fs.realpath(candidate).catch(() => null)
+      ]);
+      if (!baseReal || !fileReal || (!fileReal.startsWith(`${baseReal}${path.sep}`) && fileReal !== baseReal)) {
+        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
+        return;
+      }
+
+      const stat = await fs.stat(fileReal).catch(() => null);
+      if (!stat || !stat.isFile()) {
+        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
+        return;
+      }
+
+      const ext = path.extname(trimmed).toLowerCase();
+      const contentType = ext === ".aac" ? "audio/aac" : ext === ".m4s" ? "video/iso.segment" : "video/mp2t";
+      res.type(contentType);
+
+      const range = req.headers.range;
+      if (!range) {
+        createReadStream(fileReal).pipe(res);
+        return;
+      }
+
+      const match = /^bytes=(\d+)-(\d+)?$/i.exec(range);
+      if (!match) {
+        res.status(416).end();
+        return;
+      }
+
+      const start = Number(match[1]);
+      const end = match[2] ? Number(match[2]) : stat.size - 1;
+      if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end < start || end >= stat.size) {
+        res.status(416).end();
+        return;
+      }
+
+      res.status(206);
+      res.setHeader("Accept-Ranges", "bytes");
+      res.setHeader("Content-Range", `bytes ${start}-${end}/${stat.size}`);
+      res.setHeader("Content-Length", String(end - start + 1));
+
+      createReadStream(fileReal, { start, end }).pipe(res);
     } catch (error) {
       handleLessonError(error, res, next);
     }

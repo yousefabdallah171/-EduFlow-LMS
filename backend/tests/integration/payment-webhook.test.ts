@@ -57,6 +57,9 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   vi.restoreAllMocks();
+  await prisma.ticketMessage.deleteMany();
+  await prisma.supportTicket.deleteMany();
+  await prisma.videoSecurityEvent.deleteMany();
   await prisma.enrollment.deleteMany({
     where: {
       user: { email: "paying-student@example.com" }

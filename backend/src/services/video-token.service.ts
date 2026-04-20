@@ -11,10 +11,28 @@ import { hashVideoToken, signPreviewToken, signVideoToken, verifyVideoToken } fr
 import { verifyRefreshToken } from "../utils/jwt.js";
 
 const TOKEN_TTL_SECONDS = 5 * 60;
+const PREVIEW_TTL_SECONDS = 15 * 60;
 
-const sessionKeyCacheKey = (sessionId: string, lessonId: string) => `video-key:${sessionId}:${lessonId}`;
 const authSessionCacheKey = (userId: string, sessionId: string) => `session:${userId}:${sessionId}`;
+const refreshCurrentCacheKey = (userId: string, sessionId: string) => `refresh-current:${userId}:${sessionId}`;
+const previewSessionCacheKey = (previewSessionId: string) => `video-preview:${previewSessionId}`;
+const videoTokenCacheKey = (tokenHash: string) => `video-token:${tokenHash}`;
 const hashToken = (token: string): string => crypto.createHash("sha256").update(token).digest("hex");
+const sha256 = (value: string): string => crypto.createHash("sha256").update(value).digest("hex");
+
+const ipPrefix = (ip: string | undefined): string | null => {
+  const value = (ip ?? "").trim();
+  if (!value) return null;
+  if (value.includes(".")) {
+    const parts = value.split(".").filter(Boolean);
+    return parts.length >= 3 ? `${parts[0]}.${parts[1]}.${parts[2]}` : value;
+  }
+  if (value.includes(":")) {
+    const parts = value.split(":").filter(Boolean);
+    return parts.length >= 4 ? parts.slice(0, 4).join(":") : value;
+  }
+  return value;
+};
 
 export class VideoTokenError extends Error {
   constructor(
@@ -26,6 +44,15 @@ export class VideoTokenError extends Error {
   }
 }
 
+export type VideoTokenValidationInput = {
+  token: string | undefined;
+  lessonId: string;
+  rawRefreshToken?: string;
+  previewSessionIdCookie?: string;
+  ip?: string;
+  userAgent?: string;
+};
+
 export const videoTokenService = {
   async issueToken(user: User, lessonId: string, sessionId: string) {
     const lesson = await lessonRepository.findById(lessonId);
@@ -33,7 +60,6 @@ export const videoTokenService = {
       throw new VideoTokenError("LESSON_NOT_FOUND", 404, "Lesson not found.");
     }
 
-    // Revoke any existing tokens for this session+lesson to prevent orphan accumulation.
     await videoTokenRepository.revokeBySessionAndLesson(sessionId, lessonId);
 
     const rawToken = signVideoToken({
@@ -44,15 +70,17 @@ export const videoTokenService = {
 
     const expiresAt = new Date(Date.now() + TOKEN_TTL_SECONDS * 1000);
 
+    const tokenHash = hashVideoToken(rawToken);
+
     await videoTokenRepository.create({
       user: { connect: { id: user.id } },
       lesson: { connect: { id: lessonId } },
-      tokenHash: hashVideoToken(rawToken),
+      tokenHash,
       sessionId,
       expiresAt
     });
 
-    await videoTokenService.getSessionKey(sessionId, lessonId);
+    await redis.set(videoTokenCacheKey(tokenHash), "1", "EX", TOKEN_TTL_SECONDS + 30);
 
     return {
       videoToken: rawToken,
@@ -61,39 +89,76 @@ export const videoTokenService = {
     };
   },
 
-  async validateToken(token: string | undefined, lessonId: string, rawRefreshToken?: string) {
-    if (!token) {
+  async validateToken(input: VideoTokenValidationInput) {
+    if (!input.token) {
       throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Missing video token.");
     }
 
     let payload: ReturnType<typeof verifyVideoToken>;
     try {
-      payload = verifyVideoToken(token);
+      payload = verifyVideoToken(input.token);
     } catch {
       throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
     }
 
-    if (payload.lessonId !== lessonId) {
+    if (payload.lessonId !== input.lessonId) {
       throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
     }
 
-    // Preview tokens are stateless — skip DB and session checks.
     if ("isPreview" in payload && payload.isPreview) {
+      const previewPayload = payload as { lessonId: string; previewSessionId: string; isPreview: true };
+      const cookieValue = input.previewSessionIdCookie?.trim();
+      if (!cookieValue || cookieValue !== previewPayload.previewSessionId) {
+        throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
+      }
+
+      const raw = await redis.get(previewSessionCacheKey(previewPayload.previewSessionId));
+      if (!raw) {
+        throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
+      }
+
+      let session: { lessonId: string; ipPrefix: string | null; uaHash: string | null } | null = null;
+      try {
+        session = JSON.parse(raw) as { lessonId: string; ipPrefix: string | null; uaHash: string | null };
+      } catch {
+        session = null;
+      }
+
+      if (!session || session.lessonId !== previewPayload.lessonId) {
+        throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
+      }
+
+      const currentIpPrefix = ipPrefix(input.ip);
+      const currentUaHash = input.userAgent ? sha256(input.userAgent) : null;
+      if (session.ipPrefix && currentIpPrefix && session.ipPrefix !== currentIpPrefix) {
+        throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
+      }
+      if (session.uaHash && currentUaHash && session.uaHash !== currentUaHash) {
+        throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
+      }
+
       return payload;
     }
 
-    const stored = await videoTokenRepository.findByHash(hashVideoToken(token));
-    if (!stored || stored.revokedAt || stored.expiresAt <= new Date()) {
-      throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
+    const incomingHash = hashVideoToken(input.token);
+    const cached = await redis.get(videoTokenCacheKey(incomingHash));
+    if (!cached) {
+      const stored = await videoTokenRepository.findByHash(incomingHash);
+      if (!stored || stored.revokedAt || stored.expiresAt <= new Date()) {
+        throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
+      }
+
+      const ttlSeconds = Math.max(5, Math.floor((stored.expiresAt.getTime() - Date.now()) / 1000));
+      await redis.set(videoTokenCacheKey(incomingHash), "1", "EX", Math.min(ttlSeconds + 30, TOKEN_TTL_SECONDS + 30));
     }
 
-    if (!rawRefreshToken) {
+    if (!input.rawRefreshToken) {
       throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Missing session.");
     }
 
     let refreshPayload: ReturnType<typeof verifyRefreshToken>;
     try {
-      refreshPayload = verifyRefreshToken(rawRefreshToken);
+      refreshPayload = verifyRefreshToken(input.rawRefreshToken);
     } catch {
       throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid session.");
     }
@@ -103,17 +168,24 @@ export const videoTokenService = {
       throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid session.");
     }
 
+    const refreshHash = hashToken(input.rawRefreshToken);
+    const currentHash = await redis.get(refreshCurrentCacheKey(fullPayload.userId, fullPayload.sessionId));
+    if (currentHash) {
+      if (currentHash !== refreshHash) {
+        throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid session.");
+      }
+    } else {
+      const refreshToken = await refreshTokenRepository.findByHash(refreshHash);
+      if (!refreshToken || refreshToken.revokedAt || refreshToken.expiresAt <= new Date()) {
+        throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid session.");
+      }
+    }
+
     const authSession = await redis.get(authSessionCacheKey(fullPayload.userId, fullPayload.sessionId));
     if (!authSession) {
       throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Inactive session.");
     }
 
-    const refreshToken = await refreshTokenRepository.findByHash(hashToken(rawRefreshToken));
-    if (!refreshToken || refreshToken.revokedAt || refreshToken.expiresAt <= new Date()) {
-      throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid session.");
-    }
-
-    // Use cached enrollment check (Redis-backed) instead of a raw DB query.
     const enrollmentStatus = await enrollmentService.getStatus(fullPayload.userId);
     if (!enrollmentStatus.enrolled || enrollmentStatus.status !== "ACTIVE") {
       throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
@@ -122,30 +194,24 @@ export const videoTokenService = {
     return payload;
   },
 
-  async issuePreviewToken(lessonId: string) {
-    const previewToken = signPreviewToken({ lessonId, isPreview: true });
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-    // Store AES key in Redis with the special preview session ID.
-    await videoTokenService.getSessionKey(`preview:${lessonId}`, lessonId);
+  async issuePreviewToken(input: { lessonId: string; ip?: string; userAgent?: string }) {
+    const previewSessionId = crypto.randomUUID();
+    const previewToken = signPreviewToken({ lessonId: input.lessonId, previewSessionId, isPreview: true });
+    const expiresAt = new Date(Date.now() + PREVIEW_TTL_SECONDS * 1000);
+
+    const record = {
+      lessonId: input.lessonId,
+      ipPrefix: ipPrefix(input.ip),
+      uaHash: input.userAgent ? sha256(input.userAgent) : null
+    };
+    await redis.set(previewSessionCacheKey(previewSessionId), JSON.stringify(record), "EX", PREVIEW_TTL_SECONDS);
+
     return {
       videoToken: previewToken,
-      hlsUrl: `/api/v1/video/${lessonId}/playlist.m3u8?token=${encodeURIComponent(previewToken)}`,
-      expiresAt
+      hlsUrl: `/api/v1/video/${input.lessonId}/playlist.m3u8?token=${encodeURIComponent(previewToken)}`,
+      expiresAt,
+      previewSessionId
     };
-  },
-
-  async getSessionKey(sessionId: string, lessonId: string) {
-    const keyName = sessionKeyCacheKey(sessionId, lessonId);
-    const cached = await redis.get(keyName);
-    if (cached) {
-      return Buffer.from(cached, "base64");
-    }
-
-    const nextKey = crypto.randomBytes(16);
-    // Preview keys get a slightly longer TTL (15 min) than normal tokens.
-    const ttl = sessionId.startsWith("preview:") ? 15 * 60 : TOKEN_TTL_SECONDS;
-    await redis.set(keyName, nextKey.toString("base64"), "EX", ttl);
-    return nextKey;
   },
 
   async revokeSession(_userId: string, sessionId: string) {

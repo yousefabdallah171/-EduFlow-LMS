@@ -1,11 +1,19 @@
-import { PolicyPage } from "@/components/shared/PolicyPage";
-import { privacyPolicyAr } from "@/lib/public-page-content";
+import { useParams } from "react-router-dom";
 
-export const PrivacyPolicy = () => (
-  <PolicyPage
-    title="سياسة"
-    accent="الخصوصية"
-    intro="هنا بنوضحلك إزاي بنتعامل مع بياناتك الشخصية بكل شفافية، ومن غير تتبع إعلاني أو بيع بيانات."
-    sections={privacyPolicyAr}
-  />
-);
+import { PolicyPage } from "@/components/shared/PolicyPage";
+import { resolveLocale } from "@/lib/locale";
+import { getPublicTrustCopy } from "@/lib/public-trust-copy";
+
+export const PrivacyPolicy = () => {
+  const { locale } = useParams();
+  const copy = getPublicTrustCopy(resolveLocale(locale)).policies.privacy;
+
+  return (
+    <PolicyPage
+      title={copy.title}
+      accent={copy.accent}
+      intro={copy.intro}
+      sections={copy.sections}
+    />
+  );
+};

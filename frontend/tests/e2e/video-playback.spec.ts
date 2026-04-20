@@ -1,8 +1,6 @@
 import { expect, test } from "@playwright/test";
 
 test("video playback shows watermark for the enrolled student", async ({ page }) => {
-  const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5173";
-
   await page.route("**/api/v1/auth/refresh", async (route) => {
     await route.fulfill({
       status: 200,
@@ -151,11 +149,11 @@ test("video playback shows watermark for the enrolled student", async ({ page })
     });
   });
 
-  await page.goto(`${baseUrl}/login`);
+  await page.goto("/en/login");
   await page.getByLabel("Email").fill("student@example.com");
   await page.getByLabel("Password").fill("Securepass123");
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(`${baseUrl}/dashboard`);
+  await expect(page).toHaveURL(/\/en\/dashboard$/);
 
   await page.evaluate(() => {
     window.history.pushState({}, "", "/en/lessons/lesson-1");
@@ -165,4 +163,18 @@ test("video playback shows watermark for the enrolled student", async ({ page })
   await expect(page.getByRole("heading", { name: "Protected Lesson", level: 1 })).toBeVisible();
   await expect(page.getByTestId("watermark-overlay")).toContainText("Student One");
   await expect(page.getByTestId("watermark-overlay")).toContainText("s***@example.com");
+
+  const video = page.locator("video");
+  await expect(video).toBeVisible();
+  await expect(video).toHaveAttribute("controlslist", /nodownload/);
+
+  const hardening = await page.evaluate(() => {
+    const node = document.querySelector("video") as HTMLVideoElement | null;
+    return {
+      crossOrigin: node?.crossOrigin ?? null,
+      disablePictureInPicture: (node as unknown as { disablePictureInPicture?: boolean } | null)?.disablePictureInPicture ?? null
+    };
+  });
+  expect(hardening.crossOrigin).toBe("use-credentials");
+  expect(hardening.disablePictureInPicture).toBe(true);
 });

@@ -19,6 +19,20 @@ export const createApp = () => {
 
   app.set("trust proxy", 1);
 
+  if (env.NODE_ENV !== "production") {
+    app.use((req, res, next) => {
+      const start = process.hrtime.bigint();
+      res.on("finish", () => {
+        const elapsedMs = Number(process.hrtime.bigint() - start) / 1_000_000;
+        if (elapsedMs >= 500) {
+          // eslint-disable-next-line no-console
+          console.warn(`[slow] ${req.method} ${req.originalUrl} ${res.statusCode} ${Math.round(elapsedMs)}ms`);
+        }
+      });
+      next();
+    });
+  }
+
   app.use(
     cors({
       origin: env.FRONTEND_URL,
@@ -26,7 +40,17 @@ export const createApp = () => {
     })
   );
   app.use(helmet());
-  app.use(compression());
+  app.use(
+    compression({
+      filter: (req, res) => {
+        if (req.path.startsWith("/api/v1/video/")) {
+          return false;
+        }
+
+        return compression.filter(req, res);
+      }
+    })
+  );
   app.use(cookieParser());
   app.use(express.json());
   app.use(passport.initialize());

@@ -58,6 +58,7 @@ const verificationUrl = (token: string) => `${env.FRONTEND_URL}/verify-email?tok
 
 const resetUrl = (token: string) => `${env.FRONTEND_URL}/reset-password?token=${token}`;
 const sessionCacheKey = (userId: string, sessionId: string) => `session:${userId}:${sessionId}`;
+const refreshCurrentCacheKey = (userId: string, sessionId: string) => `refresh-current:${userId}:${sessionId}`;
 
 const issueAccessToken = (user: User, sessionId: string) =>
   signAccessToken({
@@ -76,16 +77,18 @@ const issueSession = async (user: User, sessionId: string = crypto.randomUUID(),
     familyId,
     tokenId
   });
+  const refreshTokenHash = hashToken(refreshToken);
 
   await refreshTokenRepository.create({
     user: { connect: { id: user.id } },
-    tokenHash: hashToken(refreshToken),
+    tokenHash: refreshTokenHash,
     familyId,
     sessionId,
     expiresAt: getRefreshExpiry()
   });
 
   await redis.set(sessionCacheKey(user.id, sessionId), "active", "EX", REFRESH_SESSION_WINDOW_SECONDS);
+  await redis.set(refreshCurrentCacheKey(user.id, sessionId), refreshTokenHash, "EX", REFRESH_SESSION_WINDOW_SECONDS);
 
   return {
     accessToken,
@@ -170,6 +173,7 @@ export const authService = {
     if (storedToken.revokedAt) {
       await refreshTokenRepository.revokeByFamily(storedToken.familyId);
       await redis.del(sessionCacheKey(payload.userId, payload.sessionId));
+      await redis.del(refreshCurrentCacheKey(payload.userId, payload.sessionId));
       throw new AuthError("TOKEN_REUSE_DETECTED", 403, "Security alert: please log in again.");
     }
 
@@ -204,6 +208,7 @@ export const authService = {
 
     if (payload) {
       await redis.del(sessionCacheKey(payload.userId, payload.sessionId));
+      await redis.del(refreshCurrentCacheKey(payload.userId, payload.sessionId));
       await videoTokenService.revokeSession(payload.userId, payload.sessionId);
     }
   },

@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -7,12 +8,21 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const storageRoot = () => path.resolve(process.cwd(), "storage");
+const storageRoot = () => path.resolve(process.cwd(), process.env.STORAGE_PATH || "storage");
 
 const fileExists = async (filePath: string) => {
   try {
     const stat = await fs.stat(filePath);
     return stat.isFile() && stat.size > 1024;
+  } catch {
+    return false;
+  }
+};
+
+const smallFileExists = async (filePath: string, minBytes: number) => {
+  try {
+    const stat = await fs.stat(filePath);
+    return stat.isFile() && stat.size >= minBytes;
   } catch {
     return false;
   }
@@ -24,7 +34,7 @@ const runFfmpeg = (args: string[]) =>
     const timeout = setTimeout(() => {
       child.kill("SIGKILL");
       reject(new Error("ffmpeg timed out while generating seed media."));
-    }, 60_000);
+    }, 180_000);
 
     child.on("error", (error) => {
       clearTimeout(timeout);
@@ -46,40 +56,51 @@ const ensureSeedHls = async (lessonId: string, toneHz: number) => {
   const outputDir = path.join(storageRoot(), "hls", lessonId);
   const playlistPath = path.join(outputDir, "playlist.m3u8");
   const segmentPath = path.join(outputDir, "segment-000.ts");
+  const keyPath = path.join(outputDir, "enc.key");
 
-  if ((await fileExists(playlistPath)) && (await fileExists(segmentPath))) {
+  if ((await fileExists(playlistPath)) && (await fileExists(segmentPath)) && (await smallFileExists(keyPath, 16))) {
     return path.relative(storageRoot(), playlistPath).replace(/\\/g, "/");
   }
 
   await fs.rm(outputDir, { recursive: true, force: true });
   await fs.mkdir(outputDir, { recursive: true });
 
+  await fs.writeFile(keyPath, crypto.randomBytes(16));
+  const keyInfoPath = path.join(outputDir, "hls-key-info.txt");
+  await fs.writeFile(keyInfoPath, ["enc.key", keyPath, ""].join("\n"));
+
   await runFfmpeg([
     "-y",
     "-f",
     "lavfi",
     "-i",
-    "testsrc=size=1280x720:rate=30",
+    "testsrc=size=640x360:rate=24",
     "-f",
     "lavfi",
     "-i",
     `sine=frequency=${toneHz}:sample_rate=44100`,
     "-t",
-    "12",
+    "4",
     "-c:v",
     "libx264",
     "-pix_fmt",
     "yuv420p",
     "-c:a",
     "aac",
+    "-preset",
+    "veryfast",
+    "-crf",
+    "31",
     "-b:a",
-    "96k",
+    "64k",
     "-hls_time",
-    "12",
+    "4",
     "-hls_playlist_type",
     "vod",
     "-hls_flags",
     "independent_segments",
+    "-hls_key_info_file",
+    keyInfoPath,
     "-hls_segment_filename",
     path.join(outputDir, "segment-%03d.ts"),
     playlistPath
@@ -99,15 +120,29 @@ async function main() {
     seedFiveHlsPath,
     seedSixHlsPath,
     seedSevenHlsPath
-  ] = await Promise.all([
-    ensureSeedHls("seed-1", 440),
-    ensureSeedHls("seed-2", 554),
-    ensureSeedHls("seed-3", 659),
-    ensureSeedHls("seed-4", 740),
-    ensureSeedHls("seed-5", 831),
-    ensureSeedHls("seed-6", 932),
-    ensureSeedHls("seed-7", 1047)
-  ]);
+  ] = await (async () => {
+    const entries: string[] = [];
+    for (const [lessonId, toneHz] of [
+      ["seed-1", 440],
+      ["seed-2", 554],
+      ["seed-3", 659],
+      ["seed-4", 740],
+      ["seed-5", 831],
+      ["seed-6", 932],
+      ["seed-7", 1047]
+    ] as const) {
+      entries.push(await ensureSeedHls(lessonId, toneHz));
+    }
+    return entries as [
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string
+    ];
+  })();
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@eduflow.com" },

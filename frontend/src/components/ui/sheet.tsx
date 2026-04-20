@@ -14,12 +14,16 @@ export const SheetOverlay = forwardRef<
   HTMLDivElement,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-slate-950/40", className)} {...props} />
+  <DialogPrimitive.Overlay
+    ref={ref}
+    className={cn("fixed inset-0 z-50 bg-[color:color-mix(in_oklab,var(--color-invert)_46%,transparent)] backdrop-blur-sm", className)}
+    {...props}
+  />
 ));
 SheetOverlay.displayName = "SheetOverlay";
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-white p-6 shadow-lg transition ease-in-out border border-slate-200",
+  "fixed z-50 gap-4 border bg-surface p-6 shadow-elevated transition ease-in-out",
   {
     variants: {
       side: {
@@ -43,7 +47,12 @@ export const SheetContent = forwardRef<HTMLDivElement, SheetContentProps>(
   ({ side = "right", className, children, ...props }, ref) => (
     <SheetPortal>
       <SheetOverlay />
-      <DialogPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
+      <DialogPrimitive.Content
+        ref={ref}
+        className={cn(sheetVariants({ side }), className)}
+        style={{ borderColor: "var(--color-border-strong)" }}
+        {...props}
+      >
         {children}
       </DialogPrimitive.Content>
     </SheetPortal>
@@ -67,6 +76,6 @@ export const SheetDescription = forwardRef<
   HTMLParagraphElement,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
 >(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description ref={ref} className={cn("text-sm text-slate-500", className)} {...props} />
+  <DialogPrimitive.Description ref={ref} className={cn("text-sm leading-6 text-secondary", className)} {...props} />
 ));
 SheetDescription.displayName = "SheetDescription";

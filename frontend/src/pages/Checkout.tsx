@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 export const Checkout = () => {
   const { locale } = useParams();
@@ -103,6 +104,18 @@ export const Checkout = () => {
     { icon: Check, label: t("checkout.instantActivation"), sub: isAr ? "وصول خلال ثوانٍ" : "Access within seconds" }
   ];
 
+  const decisionBullets = isAr
+    ? [
+        "كل شيء واضح قبل الدفع: الباقة، السعر، وأي خصم مطبق",
+        "الدفع يتم عبر Paymob ثم يتم تفعيل الوصول مباشرة",
+        "لو لديك سؤال قبل الحجز يمكنك الرجوع للتسعير أو التواصل معنا"
+      ]
+    : [
+        "Everything is clear before payment: package, price, and any applied discount",
+        "Payment is processed through Paymob and access is activated right after",
+        "If you still have questions, you can return to pricing or contact us first"
+      ];
+
   if (isAlreadyEnrolled) {
     return (
       <div className="dashboard-page flex min-h-dvh items-center justify-center px-6 py-12" style={{ backgroundColor: "var(--color-page)" }}>
@@ -133,18 +146,13 @@ export const Checkout = () => {
 
   return (
     <div className="dashboard-page min-h-dvh px-4 py-10 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-8 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-            {isAr ? "دفع آمن" : "Secure checkout"}
-          </p>
-          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: "var(--color-text-primary)" }}>
-            {t("checkout.title")}
-          </h1>
-          <p className="mt-2 text-sm" style={{ color: "var(--color-text-muted)" }}>
-            {t("preview.onePayment")}
-          </p>
-        </div>
+      <div className="app-shell app-shell--compact">
+        <PageHeader
+          hero
+          eyebrow={isAr ? "دفع آمن" : "Secure checkout"}
+          title={t("checkout.title")}
+          description={t("preview.onePayment")}
+        />
 
         <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
           <div className="space-y-5">
@@ -218,9 +226,31 @@ export const Checkout = () => {
                 })}
               </div>
             </div>
+
+            <div className="dashboard-panel p-6">
+              <div className="section-heading">
+                <p className="section-heading__eyebrow">{isAr ? "قبل ما تدفع" : "Before you pay"}</p>
+                <h2 className="section-heading__title">{isAr ? "كل شيء واضح ومباشر" : "A clear, low-friction decision"}</h2>
+                <p className="section-heading__description">
+                  {isAr
+                    ? "صفحة الدفع هذه مصممة لتوضح لك ما الذي ستحصل عليه وما الذي سيحدث بعد الدفع بدون مفاجآت."
+                    : "This checkout keeps the commitment simple: what you get, what you pay, and what happens next."}
+                </p>
+              </div>
+              <ul className="mt-5 space-y-3">
+                {decisionBullets.map((bullet) => (
+                  <li key={bullet} className="flex items-start gap-3">
+                    <span className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-brand-600" style={{ backgroundColor: "var(--color-brand-muted)" }}>
+                      <Check className="h-3.5 w-3.5" />
+                    </span>
+                    <span className="text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
-          <div className="dashboard-panel dashboard-panel--strong p-6">
+          <div className="dashboard-panel dashboard-panel--strong p-6 lg:sticky lg:top-28 lg:h-fit">
             <div
               className="rounded-xl p-4"
               style={{ backgroundColor: "var(--color-surface-2)", borderColor: "var(--color-border-strong)" }}
@@ -317,9 +347,13 @@ export const Checkout = () => {
               {t("checkout.securedByPaymob")}
             </p>
 
-            <div className="mt-3 text-center">
+            <div className="mt-5 grid gap-2 text-center">
+              <Link className="text-xs font-medium text-brand-600 no-underline hover:underline" to={`${prefix}/pricing`}>
+                {isAr ? "راجع الباقات مرة ثانية" : "Compare packages again"}
+              </Link>
               <Link
-                className="text-xs font-medium text-brand-600 no-underline hover:underline"
+                className="text-xs font-medium no-underline hover:underline"
+                style={{ color: "var(--color-text-muted)" }}
                 to={`${prefix}/`}
               >
                 {t("checkout.backToOverview")}

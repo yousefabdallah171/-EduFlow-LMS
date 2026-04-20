@@ -11,7 +11,7 @@ import { ticketsController } from "../controllers/tickets.controller.js";
 import { webhookController } from "../controllers/webhook.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 import { validatePaymobHmac } from "../middleware/hmac.middleware.js";
-import { paymentRateLimit } from "../middleware/rate-limit.middleware.js";
+import { paymentRateLimit, videoIpRateLimit } from "../middleware/rate-limit.middleware.js";
 import { requireRole } from "../middleware/rbac.middleware.js";
 
 const router = Router();
@@ -79,10 +79,10 @@ router.get("/lessons/grouped", authenticate, requireRole("STUDENT"), lessonContr
 router.get("/lessons", authenticate, requireRole("STUDENT"), lessonController.list);
 router.get("/lessons/:id", authenticate, requireRole("STUDENT"), lessonController.detail);
 router.post("/lessons/:id/progress", authenticate, requireRole("STUDENT"), lessonController.updateProgress);
-router.get("/video/:id/playlist.m3u8", lessonController.playlist);
-router.get("/video/:id/key", lessonController.key);
-router.get("/video/:id/segment", lessonController.segment);
-router.get("/video/:id/:segment", lessonController.segment);
+router.get("/video/:id/playlist.m3u8", videoIpRateLimit, lessonController.playlist);
+router.get("/video/:id/key", videoIpRateLimit, lessonController.key);
+router.get("/video/:id/segment", videoIpRateLimit, lessonController.segment);
+router.get("/video/:id/:segment", videoIpRateLimit, lessonController.segment);
 router.post(
   "/checkout/validate-coupon",
   authenticate,

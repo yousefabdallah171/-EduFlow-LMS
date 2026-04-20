@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { VideoPlayer } from "@/components/shared/VideoPlayer";
 import { PreviewCTABanner } from "@/components/shared/PreviewCTABanner";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
@@ -132,35 +133,72 @@ export const Preview = () => {
     : title;
   const lockedActionLabel = isLoggedIn ? t("preview.getAccessCta") : t("actions.logIn");
   const lockedActionHref = isLoggedIn ? `${prefix}/checkout` : `${prefix}/login`;
+  const previewBenefits = isAr
+    ? [
+        "شاهد أول درس كاملاً قبل أن تدفع",
+        "افهم مستوى الشرح والإيقاع العملي للكورس",
+        "ثم افتح بقية الدروس كلها بدفعة واحدة"
+      ]
+    : [
+        "Watch the first lesson in full before paying",
+        "See the teaching style and practical rhythm of the course",
+        "Then unlock the full lesson library with one payment"
+      ];
 
   return (
     <main className="marketing-dark min-h-dvh px-4 py-6 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
-      <section className="mx-auto max-w-6xl space-y-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-              {t("preview.freePreview")}
-            </p>
-            <h1 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: "var(--color-text-primary)" }}>
-              {title}
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-              {t("preview.forEveryone")}
-            </p>
+      <section className="app-shell space-y-5">
+        <PageHeader
+          hero
+          eyebrow={t("preview.freePreview")}
+          title={title}
+          description={t("preview.forEveryone")}
+          actions={
+            <>
+              {!isLoggedIn ? (
+                <Link
+                  className="rounded-xl border px-4 py-2 text-sm font-medium no-underline transition-colors hover:bg-surface2"
+                  style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                  to={`${prefix}/login`}
+                >
+                  {t("actions.logIn")}
+                </Link>
+              ) : null}
+              <Link
+                className="rounded-xl px-4 py-2 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                style={{ background: "var(--gradient-brand)" }}
+                to={`${prefix}/checkout`}
+              >
+                {t("preview.getAccessCta")}
+              </Link>
+            </>
+          }
+        />
+
+        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_260px]">
+          <div className="dashboard-panel dashboard-panel--accent p-5">
+            <div className="section-heading">
+              <p className="section-heading__eyebrow">{isAr ? "لماذا المعاينة مهمة؟" : "Why this preview matters"}</p>
+              <h2 className="section-heading__title">{isAr ? "اختبر قيمة الكورس قبل الالتزام" : "Validate the course before you commit"}</h2>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              {previewBenefits.map((benefit) => (
+                <div key={benefit} className="rounded-[22px] border p-4" style={{ borderColor: "var(--color-border)", backgroundColor: "color-mix(in oklab, var(--color-surface) 82%, transparent)" }}>
+                  <p className="text-sm leading-7" style={{ color: "var(--color-text-primary)" }}>{benefit}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div
-            className="min-w-52 rounded-[24px] border p-4 shadow-card"
-            style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+            className="dashboard-panel p-5"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-              {courseTitle}
-            </p>
-            <p className="mt-1.5 font-display text-2xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>
+            <p className="section-heading__eyebrow">{courseTitle}</p>
+            <p className="mt-2 font-display text-4xl font-black" style={{ color: "var(--color-text-primary)" }}>
               {course?.lessonCount ?? 1}
             </p>
-            <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
-              {isAr ? "دروس متاحة داخل الدورة الكاملة" : "Lessons inside the full course"}
+            <p className="mt-1 text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>
+              {isAr ? "درس داخل الرحلة الكاملة التي تفتحها بعد الدفع" : "Lessons inside the full learning path you unlock after checkout"}
             </p>
           </div>
         </div>
@@ -278,6 +316,15 @@ export const Preview = () => {
               <p className="relative mt-2 text-sm opacity-70" style={{ color: "var(--color-text-invert)" }}>
                 {t("preview.onePayment")}
               </p>
+              <div className="relative mx-auto mt-5 max-w-2xl rounded-[24px] border px-4 py-4 text-start" style={{ borderColor: "rgba(255,255,255,0.12)", backgroundColor: "rgba(255,255,255,0.04)" }}>
+                <ul className="grid gap-3 sm:grid-cols-3">
+                  {previewBenefits.map((benefit) => (
+                    <li key={benefit} className="text-sm leading-6" style={{ color: "var(--color-text-invert)" }}>
+                      {benefit}
+                    </li>
+                  ))}
+                </ul>
+              </div>
               <div className="relative mt-6 flex flex-wrap justify-center gap-3">
                 <Link
                   className="rounded-xl px-6 py-3 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
@@ -379,7 +426,7 @@ export const Preview = () => {
         </div>
       </section>
 
-      <PreviewCTABanner />
+      <PreviewCTABanner lessonCount={course?.lessonCount ?? 0} />
     </main>
   );
 };

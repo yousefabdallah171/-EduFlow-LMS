@@ -1,8 +1,6 @@
 import { expect, test } from "@playwright/test";
 
 test("student applies a coupon and starts Paymob checkout", async ({ page }) => {
-  const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5173";
-
   await page.route("**/api/v1/auth/login", async (route) => {
     await route.fulfill({
       status: 200,
@@ -81,12 +79,13 @@ test("student applies a coupon and starts Paymob checkout", async ({ page }) => 
     });
   });
 
-  await page.goto(`${baseUrl}/login`);
+  const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5173";
+  await page.goto("/en/login");
   await page.getByLabel("Email").fill("student@example.com");
   await page.getByLabel("Password").fill("Securepass123");
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.context().addCookies([{ name: "eduflow_refresh_present", value: "1", url: baseUrl, sameSite: "Strict" }]);
-  await expect(page).toHaveURL(`${baseUrl}/dashboard`);
+  await expect(page).toHaveURL(/\/en\/dashboard$/);
   await page.evaluate(() => {
     window.history.pushState({}, "", "/checkout");
     window.dispatchEvent(new PopStateEvent("popstate"));

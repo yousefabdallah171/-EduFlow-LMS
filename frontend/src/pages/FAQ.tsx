@@ -3,18 +3,21 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react
 import { Link, useParams } from "react-router-dom";
 import { MessageCircle } from "lucide-react";
 
-import { contactInfo, faqItemsAr } from "@/lib/public-page-content";
+import { contactInfo } from "@/lib/public-page-content";
+import { resolveLocale } from "@/lib/locale";
+import { getPublicTrustCopy } from "@/lib/public-trust-copy";
 
 export const FAQ = () => {
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
+  const copy = getPublicTrustCopy(resolveLocale(locale)).faq;
   const [search, setSearch] = useState("");
 
   const filtered = search.trim()
-    ? faqItemsAr.filter((item) =>
+    ? copy.items.filter((item) =>
         `${item.q} ${item.a} ${item.pills.join(" ")}`.toLowerCase().includes(search.trim().toLowerCase())
       )
-    : faqItemsAr;
+    : copy.items;
 
   return (
     <main className="reference-page">
@@ -22,21 +25,19 @@ export const FAQ = () => {
         <header className="reference-hero">
           <span className="reference-badge">
             <span className="reference-dot" aria-hidden="true" />
-            أسئلة شايفها كتير
+            {copy.badge}
           </span>
           <h1 className="reference-title">
-            عندك سؤال؟ <span className="accent-word">الإجابة هنا</span>
+            {copy.title} <span className="accent-word">{copy.accent}</span>
           </h1>
-          <p className="reference-subtitle">
-            ولو مش لاقي إجابتك، كلمني على الواتساب مباشرة قبل ما تحجز.
-          </p>
+          <p className="reference-subtitle">{copy.subtitle}</p>
         </header>
 
         <input
           className="reference-field mb-5"
-          placeholder="ابحث في الأسئلة..."
+          placeholder={copy.search}
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(event) => setSearch(event.target.value)}
         />
 
         <div className="faq-stack">
@@ -46,7 +47,7 @@ export const FAQ = () => {
                 <article className="reference-card faq-item-reference">
                   <DisclosureButton className="faq-question-reference">
                     <span>{item.q}</span>
-                    <span className="faq-toggle-reference">{open ? "×" : "+"}</span>
+                    <span className="faq-toggle-reference">{open ? "x" : "+"}</span>
                   </DisclosureButton>
                   <DisclosurePanel className="faq-answer-reference">
                     <p className="m-0">{item.a}</p>
@@ -60,24 +61,27 @@ export const FAQ = () => {
               )}
             </Disclosure>
           ))}
+          {filtered.length === 0 ? (
+            <p className="reference-card p-6 text-center" style={{ color: "var(--color-text-secondary)" }}>
+              {copy.empty}
+            </p>
+          ) : null}
         </div>
 
         <section className="reference-card reference-card--lime mt-14 p-8 text-center">
           <span className="reference-badge">
             <span className="reference-dot" aria-hidden="true" />
-            Early Access بيقفل قريب
+            {copy.ctaBadge}
           </span>
-          <h2 className="mt-5 font-display text-3xl font-black">
-            في developer تاني بيبني دلوقتي بنفس الـ workflow
-          </h2>
+          <h2 className="mt-5 font-display text-3xl font-black">{copy.ctaTitle}</h2>
           <p className="mx-auto mt-3 max-w-lg leading-8" style={{ color: "var(--color-text-secondary)" }}>
-            سعر الـ Early Access مش هيفضل. احجز مقعدك أو ابعتلنا الأول لو محتاج تتأكد.
+            {copy.ctaBody}
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <Link className="reference-button" to={`${prefix}/pricing`}>احجز مكانك دلوقتي</Link>
+            <Link className="reference-button" to={`${prefix}/pricing`}>{copy.primary}</Link>
             <a className="reference-button-secondary" href={contactInfo.whatsappUrl} target="_blank" rel="noreferrer">
               <MessageCircle className="h-4 w-4" />
-              واتساب الأول
+              {copy.secondary}
             </a>
           </div>
         </section>

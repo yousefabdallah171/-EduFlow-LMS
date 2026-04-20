@@ -4,6 +4,7 @@ import { Check, ImagePlus, KeyRound, Save, ShieldCheck, UserCircle2 } from "luci
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { PageHeader } from "@/components/shared/PageHeader";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
@@ -68,14 +69,16 @@ export const StudentProfile = () => {
   return (
     <StudentShell>
       <div className="space-y-6">
-        <header className="dashboard-panel dashboard-hero dashboard-panel--strong p-6">
-          <div className="relative">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("student.shell.section")}</p>
-            <h1 className="mt-2 font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-              {t("student.profile.title")}
-            </h1>
-          </div>
-        </header>
+        <PageHeader
+          hero
+          eyebrow={t("student.shell.section")}
+          title={t("student.profile.title")}
+          description={
+            isAr
+              ? "حدّث بياناتك الأساسية وراجع إعدادات الأمان من مكان واحد واضح."
+              : "Update your core account details and review your security settings from one clear place."
+          }
+        />
 
         <section className="dashboard-panel p-6">
           <div className="mb-5 flex items-center gap-2 text-brand-600">
@@ -127,7 +130,7 @@ export const StudentProfile = () => {
 
               <div className="grid gap-4 border-t pt-5 sm:grid-cols-2" style={{ borderColor: "var(--color-border)" }}>
                 <label className="block">
-                  <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--color-text-muted)" }}>
+                  <span className="ui-field-label">
                     {t("common.fullName")}
                   </span>
                   <input
@@ -140,7 +143,7 @@ export const StudentProfile = () => {
                 </label>
 
                 <label className="block">
-                  <span className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--color-text-muted)" }}>
+                  <span className="ui-field-label flex items-center gap-1.5">
                     <ImagePlus className="h-3.5 w-3.5" />
                     {t("student.profile.avatarUrl")}
                   </span>
@@ -180,7 +183,7 @@ export const StudentProfile = () => {
 
           <div className="grid gap-4 sm:grid-cols-3">
             <label className="block">
-              <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--color-text-muted)" }}>
+              <span className="ui-field-label">
                 {t("student.profile.currentPassword")}
               </span>
               <input
@@ -193,7 +196,7 @@ export const StudentProfile = () => {
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--color-text-muted)" }}>
+              <span className="ui-field-label">
                 {t("common.newPassword")}
               </span>
               <input
@@ -206,7 +209,7 @@ export const StudentProfile = () => {
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em]" style={{ color: "var(--color-text-muted)" }}>
+              <span className="ui-field-label">
                 {t("student.profile.confirmPassword")}
               </span>
               <input
@@ -217,6 +220,10 @@ export const StudentProfile = () => {
                 onChange={(e) => setPasswords({ ...passwords, confirmNewPassword: e.target.value })}
               />
             </label>
+          </div>
+
+          <div className="mt-4 ui-feedback">
+            <p>{t("auth.resetPassword.subtitle")}</p>
           </div>
 
           <button

@@ -1,24 +1,31 @@
-import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { AxiosError } from "axios";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { AdminShell } from "@/components/layout/AdminShell";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from "@/components/ui/dialog";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getAdminUiCopy } from "@/lib/admin-ui-copy";
 import { api, queryClient } from "@/lib/api";
+import { formatDate, formatNumber, resolveLocale } from "@/lib/locale";
 
 type AnalyticsPayload = {
-  topLessons: Array<{ lessonId: string; titleEn: string; titleAr: string; completionRate: number; averageWatchTimeSeconds: number }>;
-  dropOffLessons: Array<{ lessonId: string; titleEn: string; titleAr: string; dropOffRate: number; averageExitPositionSeconds: number }>;
+  topLessons: Array<{
+    lessonId: string;
+    titleEn: string;
+    titleAr: string;
+    completionRate: number;
+    averageWatchTimeSeconds: number;
+  }>;
+  dropOffLessons: Array<{
+    lessonId: string;
+    titleEn: string;
+    titleAr: string;
+    dropOffRate: number;
+    averageExitPositionSeconds: number;
+  }>;
 };
 
 type PaymentsPayload = {
@@ -35,36 +42,33 @@ type PaymentsPayload = {
   summary: { totalRevenue: number; completedCount: number; failedCount: number };
 };
 
-const PaymentStatusBadge = ({ status }: { status: string }) => {
-  const map: Record<string, { bg: string; color: string }> = {
-    COMPLETED: { bg: "rgba(34,197,94,0.12)",   color: "rgb(21,128,61)" },
-    PENDING:   { bg: "rgba(234,179,8,0.12)",   color: "rgb(161,98,7)" },
-    FAILED:    { bg: "rgba(239,68,68,0.12)",   color: "rgb(185,28,28)" },
-    REFUNDED:  { bg: "var(--color-surface-2)", color: "var(--color-text-muted)" }
+const statusTone = (status: PaymentsPayload["data"][number]["status"]) => {
+  const map: Record<PaymentsPayload["data"][number]["status"], { bg: string; color: string }> = {
+    COMPLETED: { bg: "rgba(34,197,94,0.12)", color: "rgb(21,128,61)" },
+    PENDING: { bg: "rgba(234,179,8,0.12)", color: "rgb(161,98,7)" },
+    FAILED: { bg: "rgba(239,68,68,0.12)", color: "rgb(185,28,28)" },
+    REFUNDED: { bg: "var(--color-surface-2)", color: "var(--color-text-muted)" }
   };
-  const s = map[status] ?? map["REFUNDED"];
-  return (
-    <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ backgroundColor: s.bg, color: s.color }}>
-      {status}
-    </span>
-  );
+  return map[status];
 };
 
-const selectClass = "mt-1.5 w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-brand-600/30";
-const selectStyle = {
-  backgroundColor: "var(--color-surface-2)",
-  borderColor: "var(--color-border-strong)",
-  color: "var(--color-text-primary)"
+const formatSeconds = (seconds: number, locale: "en" | "ar") => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (locale === "ar") {
+    return `${formatNumber(minutes, locale)} د ${formatNumber(remainingSeconds, locale)} ث`;
+  }
+  return `${minutes}m ${remainingSeconds}s`;
 };
 
 export const AdminAnalytics = () => {
-  const { t } = useTranslation();
-  const [pendingPaymentId, setPendingPaymentId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const { t, i18n } = useTranslation();
+  const locale = resolveLocale(i18n.language);
+  const copy = getAdminUiCopy(locale);
+  const isAr = locale === "ar";
   const [period, setPeriod] = useState<"7d" | "30d" | "90d" | "all">("30d");
   const [statusFilter, setStatusFilter] = useState<"" | "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED">("");
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
 
   const analyticsQuery = useQuery({
     queryKey: ["admin-analytics", period],
@@ -75,14 +79,12 @@ export const AdminAnalytics = () => {
   });
 
   const paymentsQuery = useQuery({
-    queryKey: ["admin-payments", statusFilter, fromDate, toDate],
+    queryKey: ["admin-payments", statusFilter],
     queryFn: async () => {
       const response = await api.get<PaymentsPayload>("/admin/payments", {
         params: {
           limit: 20,
-          ...(statusFilter ? { status: statusFilter } : {}),
-          ...(fromDate ? { from: new Date(fromDate).toISOString() } : {}),
-          ...(toDate ? { to: new Date(toDate).toISOString() } : {})
+          ...(statusFilter ? { status: statusFilter } : {})
         }
       });
       return response.data;
@@ -91,261 +93,341 @@ export const AdminAnalytics = () => {
 
   const markPaidMutation = useMutation({
     mutationFn: async (paymentId: string) =>
-      api.post(`/admin/payments/${paymentId}/mark-paid`, { reason: "Webhook delivery failed; payment confirmed via Paymob dashboard" }),
+      api.post(`/admin/payments/${paymentId}/mark-paid`, {
+        reason: "Payment verified by admin after external confirmation"
+      }),
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["admin-payments"] }),
         queryClient.invalidateQueries({ queryKey: ["admin-dashboard"] }),
         queryClient.invalidateQueries({ queryKey: ["admin-analytics"] })
       ]);
-      setActionError(null);
-      setPendingPaymentId(null);
-      toast.success("Payment marked as paid.");
+      toast.success(isAr ? "تم تأكيد الدفع بنجاح." : "Payment marked as paid.");
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       const apiError = error as AxiosError<{ message?: string }>;
-      const status = apiError.response?.status;
-      const message =
-        status === 409
-          ? "Payment already marked as paid."
-          : apiError.response?.data?.message ?? "Unable to mark payment as paid.";
-      setActionError(message);
-      toast.error(message);
+      toast.error(apiError.response?.data?.message ?? (isAr ? "تعذر تحديث حالة الدفع." : "Failed to update payment."));
     }
   });
 
+  const topLessons = analyticsQuery.data?.topLessons ?? [];
+  const dropOffLessons = analyticsQuery.data?.dropOffLessons ?? [];
+  const payments = useMemo(() => paymentsQuery.data?.data ?? [], [paymentsQuery.data?.data]);
+  const selectedPayment = useMemo(
+    () => payments.find((payment) => payment.id === selectedPaymentId) ?? null,
+    [payments, selectedPaymentId]
+  );
+
   return (
     <AdminShell title={t("admin.analytics.title")} description={t("admin.analytics.desc")}>
-
-      {/* Filters */}
-      <section className="dashboard-panel p-5">
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{t("admin.analytics.filters.title")}</p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }} htmlFor="analytics-period">
-              {t("admin.analytics.filters.kpiPeriod")}
-            </label>
-            <select id="analytics-period" className={selectClass} style={selectStyle}
-              onChange={(e) => setPeriod(e.target.value as typeof period)} value={period}>
-              <option value="7d">Last 7 days</option>
-              <option value="30d">Last 30 days</option>
-              <option value="90d">Last 90 days</option>
-              <option value="all">All time</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }} htmlFor="payment-status-filter">
-              {t("admin.analytics.filters.paymentStatus")}
-            </label>
-            <select id="payment-status-filter" className={selectClass} style={selectStyle}
-              onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)} value={statusFilter}>
-              <option value="">All statuses</option>
-              <option value="PENDING">Pending</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="FAILED">Failed</option>
-              <option value="REFUNDED">Refunded</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }} htmlFor="payment-from-filter">
-              {t("admin.analytics.filters.fromDate")}
-            </label>
-            <input id="payment-from-filter" type="date" className={selectClass} style={selectStyle}
-              onChange={(e) => setFromDate(e.target.value)} value={fromDate} />
-          </div>
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }} htmlFor="payment-to-filter">
-              {t("admin.analytics.filters.toDate")}
-            </label>
-            <input id="payment-to-filter" type="date" className={selectClass} style={selectStyle}
-              onChange={(e) => setToDate(e.target.value)} value={toDate} />
-          </div>
-        </div>
-      </section>
-
-      {/* Lesson analytics */}
-      <section className="grid gap-5 xl:grid-cols-2">
-        {/* Top lessons */}
-        <div className="dashboard-panel p-5">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("admin.analytics.topLessons")}</p>
-          <div className="space-y-3">
-            {analyticsQuery.isLoading
-              ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)
-              : analyticsQuery.data?.topLessons.map((lesson) => (
-                  <div key={lesson.lessonId} className="dashboard-panel rounded-xl p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>{lesson.titleEn}</p>
-                        {lesson.titleAr ? (
-                          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{lesson.titleAr}</p>
-                        ) : null}
-                      </div>
-                      <span
-                        className="flex-shrink-0 rounded-full px-2.5 py-1 text-xs font-bold"
-                        style={{ backgroundColor: "rgba(34,197,94,0.12)", color: "rgb(21,128,61)" }}
-                      >
-                        {lesson.completionRate}% done
-                      </span>
-                    </div>
-                    <p className="mt-2 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                      Avg. watch time: {Math.round(lesson.averageWatchTimeSeconds / 60)}m {lesson.averageWatchTimeSeconds % 60}s
-                    </p>
-                  </div>
-                ))}
-          </div>
-        </div>
-
-        {/* Drop-off */}
-        <div className="dashboard-panel p-5">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-            {t("admin.analytics.dropOffAnalysis")}
-          </p>
-          <div className="space-y-3">
-            {analyticsQuery.isLoading
-              ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)
-              : analyticsQuery.data?.dropOffLessons.map((lesson) => (
-                  <div key={lesson.lessonId} className="dashboard-panel rounded-xl p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>{lesson.titleEn}</p>
-                        {lesson.titleAr ? (
-                          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{lesson.titleAr}</p>
-                        ) : null}
-                      </div>
-                      <span
-                        className="flex-shrink-0 rounded-full px-2.5 py-1 text-xs font-bold"
-                        style={{ backgroundColor: "rgba(239,68,68,0.12)", color: "rgb(185,28,28)" }}
-                      >
-                        {lesson.dropOffRate}% drop-off
-                      </span>
-                    </div>
-                    <p className="mt-2 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                      Avg. exit: {Math.round(lesson.averageExitPositionSeconds / 60)}m {lesson.averageExitPositionSeconds % 60}s
-                    </p>
-                  </div>
-                ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Payments */}
-      <section className="dashboard-panel overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3 p-5" style={{ borderBottom: "1px solid var(--color-border)" }}>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("admin.analytics.paymentHistory")}</p>
-            <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-              Revenue {paymentsQuery.data?.summary.totalRevenue ?? 0} EGP
-              {" / "}{paymentsQuery.data?.summary.completedCount ?? 0} completed
-              {" / "}{paymentsQuery.data?.summary.failedCount ?? 0} failed
-            </p>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ borderBottom: "1px solid var(--color-border)" }}>
-                {["Student", "Amount", "Coupon", "Status", "Created", "Action"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-start text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {paymentsQuery.isLoading
-                ? Array.from({ length: 4 }).map((_, i) => (
-                    <tr key={i} style={{ borderBottom: "1px solid var(--color-border)" }}>
-                      {Array.from({ length: 6 }).map((_, j) => (
-                        <td key={j} className="px-4 py-3"><Skeleton className="h-5 w-full" /></td>
-                      ))}
-                    </tr>
-                  ))
-                : paymentsQuery.data?.data.map((payment) => (
-                    <tr key={payment.id} className="transition-colors hover:bg-surface2" style={{ borderBottom: "1px solid var(--color-border)" }}>
-                      <td className="px-4 py-3">
-                        <p className="font-semibold" style={{ color: "var(--color-text-primary)" }}>{payment.student.fullName}</p>
-                        <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{payment.student.email}</p>
-                      </td>
-                      <td className="px-4 py-3 tabular-nums text-xs font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                        {payment.amountEgp} EGP
-                      </td>
-                      <td className="px-4 py-3 font-mono text-xs" style={{ color: "var(--color-text-secondary)" }}>
-                        {payment.couponCode ?? "-"}
-                      </td>
-                      <td className="px-4 py-3"><PaymentStatusBadge status={payment.status} /></td>
-                      <td className="px-4 py-3 text-xs" style={{ color: "var(--color-text-secondary)" }}>
-                        {new Date(payment.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3">
-                        {payment.status === "PENDING" ? (
-                          <button
-                            className="rounded-lg border px-3 py-2 text-xs font-semibold transition-colors hover:bg-surface2"
-                            style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
-                            onClick={() => setPendingPaymentId(payment.id)}
-                            type="button"
-                          >
-                            Mark paid
-                          </button>
-                        ) : (
-                          <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>-</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <Dialog open={Boolean(pendingPaymentId)} onOpenChange={(open) => !open && setPendingPaymentId(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Mark payment as paid?</DialogTitle>
-            <DialogDescription>This will mark the payment complete and activate enrollment for the student.</DialogDescription>
-          </DialogHeader>
-          {actionError ? (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400">
-              {actionError}
-            </p>
-          ) : null}
-          <DialogFooter>
-            <button
-              className="rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-surface2"
-              style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
-              onClick={() => setPendingPaymentId(null)}
-              type="button"
-            >
-              Cancel
-            </button>
-            <button
-              className="rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95 disabled:opacity-50"
-              style={{ background: "var(--gradient-brand)" }}
-              disabled={markPaidMutation.isPending}
-              onClick={() => { if (pendingPaymentId) markPaidMutation.mutate(pendingPaymentId); }}
-              type="button"
-            >
-              {markPaidMutation.isPending ? "Working..." : "Confirm"}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      {/* Preview conversion funnel */}
-      <div className="dashboard-panel p-5">
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("admin.analytics.previewFunnel")}</p>
-        <div className="grid gap-4 sm:grid-cols-3">
+      <section className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
-            { label: t("admin.analytics.previewViews"), value: "-" },
-            { label: t("admin.analytics.registrationsFromPreview"), value: "-" },
-            { label: t("admin.analytics.purchasesFromPreview"), value: "-" },
-          ].map((stat) => (
-            <div key={stat.label} className="rounded-xl p-4" style={{ backgroundColor: "var(--color-surface-2)" }}>
-              <p className="text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>{stat.value}</p>
-              <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>{stat.label}</p>
+            { label: copy.analytics.revenue, value: `${paymentsQuery.data?.summary.totalRevenue ?? 0} ${copy.common.egp}`, note: copy.analytics.revenueNote },
+            { label: copy.common.completed, value: paymentsQuery.data?.summary.completedCount ?? 0, note: copy.analytics.completedNote },
+            { label: copy.common.failed, value: paymentsQuery.data?.summary.failedCount ?? 0, note: copy.analytics.failedNote },
+            { label: copy.analytics.insightWindow, value: period.toUpperCase(), note: copy.analytics.insightWindowNote }
+          ].map((item) => (
+            <div key={item.label} className="dashboard-panel p-5">
+              <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                {item.label}
+              </p>
+              <p className="mt-3 text-3xl font-black tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+                {item.value}
+              </p>
+              <p className="mt-2 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
+                {item.note}
+              </p>
             </div>
           ))}
         </div>
-      </div>
+
+        <div className="dashboard-panel p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                {copy.analytics.view}
+              </p>
+              <h2 className="text-2xl font-black tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+                {copy.analytics.title}
+              </h2>
+              <p className="max-w-3xl text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>
+                {copy.analytics.desc}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {(["7d", "30d", "90d", "all"] as const).map((value) => (
+                <button
+                  key={value}
+                  className="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors hover:bg-surface2"
+                  style={{
+                    borderColor: period === value ? "var(--color-brand)" : "var(--color-border-strong)",
+                    color: period === value ? "var(--color-brand-700)" : "var(--color-text-primary)",
+                    backgroundColor: period === value ? "var(--color-brand-muted)" : "transparent"
+                  }}
+                  onClick={() => setPeriod(value)}
+                  type="button"
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-5 xl:grid-cols-2">
+          <div className="dashboard-panel p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+              {copy.analytics.topLessons}
+            </p>
+            <div className="mt-5 space-y-3">
+              {analyticsQuery.isLoading ? (
+                Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-24 rounded-[24px]" />)
+              ) : topLessons.length === 0 ? (
+                <EmptyState
+                  description={copy.analytics.noTopDesc}
+                    eyebrow={isAr ? "رؤى التعلم" : "Learning insights"}
+                  icon="LI"
+                  title={copy.analytics.noTopTitle}
+                />
+              ) : (
+                topLessons.map((lesson) => (
+                  <div key={lesson.lessonId} className="dashboard-panel p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-base font-bold" style={{ color: "var(--color-text-primary)" }}>
+                          {lesson.titleEn}
+                        </h3>
+                        <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                          {lesson.titleAr}
+                        </p>
+                      </div>
+                      <div className={isAr ? "text-left" : "text-right"}>
+                        <p className="text-xl font-black tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+                          {Math.round(lesson.completionRate)}%
+                        </p>
+                        <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                          {copy.analytics.completion}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                      {copy.analytics.avgWatch}: {formatSeconds(lesson.averageWatchTimeSeconds, locale)}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="dashboard-panel p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+              {copy.analytics.dropOff}
+            </p>
+            <div className="mt-5 space-y-3">
+              {analyticsQuery.isLoading ? (
+                Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-24 rounded-[24px]" />)
+              ) : dropOffLessons.length === 0 ? (
+                <EmptyState
+                  description={copy.analytics.noDropDesc}
+                    eyebrow={isAr ? "مخاطر التعلم" : "Learning risks"}
+                  icon="DR"
+                  title={copy.analytics.noDropTitle}
+                />
+              ) : (
+                dropOffLessons.map((lesson) => (
+                  <div key={lesson.lessonId} className="dashboard-panel p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-base font-bold" style={{ color: "var(--color-text-primary)" }}>
+                          {lesson.titleEn}
+                        </h3>
+                        <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                          {lesson.titleAr}
+                        </p>
+                      </div>
+                      <div className={isAr ? "text-left" : "text-right"}>
+                        <p className="text-xl font-black tracking-tight" style={{ color: "rgb(185,28,28)" }}>
+                          {Math.round(lesson.dropOffRate)}%
+                        </p>
+                        <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                          {copy.analytics.dropOff}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                      {copy.analytics.avgExit}: {formatSeconds(lesson.averageExitPositionSeconds, locale)}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="dashboard-panel p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                {copy.analytics.paymentReview}
+              </p>
+              <h2 className="mt-2 text-xl font-black tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+                {copy.analytics.paymentTitle}
+              </h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(["", "PENDING", "COMPLETED", "FAILED", "REFUNDED"] as const).map((value) => (
+                <button
+                  key={value || "ALL"}
+                  className="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors hover:bg-surface2"
+                  style={{
+                    borderColor: statusFilter === value ? "var(--color-brand)" : "var(--color-border-strong)",
+                    color: statusFilter === value ? "var(--color-brand-700)" : "var(--color-text-primary)",
+                    backgroundColor: statusFilter === value ? "var(--color-brand-muted)" : "transparent"
+                  }}
+                  onClick={() => setStatusFilter(value)}
+                  type="button"
+                >
+                  {value ? (isAr ? t(`orders.status.${value.toLowerCase()}`) : value) : copy.common.all}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="space-y-3">
+              {paymentsQuery.isLoading ? (
+                Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-28 rounded-[28px]" />)
+              ) : payments.length === 0 ? (
+                <EmptyState
+                  description={copy.analytics.noPaymentsDesc}
+                  eyebrow={isAr ? "المدفوعات" : "Payments"}
+                  icon="PY"
+                  title={copy.analytics.noPaymentsTitle}
+                />
+              ) : (
+                payments.map((payment) => {
+                  const tone = statusTone(payment.status);
+
+                  return (
+                    <button
+                      key={payment.id}
+                      className="dashboard-panel w-full p-5 text-start transition-all hover:-translate-y-0.5"
+                      style={{
+                        borderColor:
+                          selectedPaymentId === payment.id ? "color-mix(in oklab, var(--color-brand) 55%, white)" : undefined,
+                        boxShadow:
+                          selectedPaymentId === payment.id ? "0 24px 70px rgba(239, 68, 68, 0.14)" : undefined
+                      }}
+                      onClick={() => setSelectedPaymentId(payment.id)}
+                      type="button"
+                    >
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span
+                              className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                              style={{ backgroundColor: tone.bg, color: tone.color }}
+                            >
+                              {isAr ? t(`orders.status.${payment.status.toLowerCase()}`) : payment.status}
+                            </span>
+                            {payment.couponCode ? (
+                              <span
+                                className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                                style={{ backgroundColor: "var(--color-surface-2)", color: "var(--color-text-muted)" }}
+                              >
+                                {copy.common.coupon} {payment.couponCode}
+                              </span>
+                            ) : null}
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
+                              {payment.student.fullName}
+                            </h3>
+                            <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                              {payment.student.email}
+                            </p>
+                          </div>
+                        </div>
+                        <div className={isAr ? "text-start lg:text-left" : "text-start lg:text-right"}>
+                          <p className="text-2xl font-black tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+                            {formatNumber(payment.amountEgp, locale)} {copy.common.egp}
+                          </p>
+                          <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
+                            {formatDate(payment.createdAt, locale)}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="space-y-4">
+              {selectedPayment ? (
+                <div className="dashboard-panel p-5">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                    {copy.analytics.selectedPayment}
+                  </p>
+                  <div className="mt-3 space-y-4">
+                    <div>
+                      <h3 className="text-xl font-black tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+                        {selectedPayment.student.fullName}
+                      </h3>
+                      <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                        {selectedPayment.student.email}
+                      </p>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {[
+                        { label: copy.common.amount, value: `${formatNumber(selectedPayment.amountEgp, locale)} ${copy.common.egp}` },
+                        { label: copy.analytics.discount, value: `${formatNumber(selectedPayment.discountEgp, locale)} ${copy.common.egp}` },
+                        { label: copy.common.coupon, value: selectedPayment.couponCode ?? copy.analytics.none },
+                        { label: copy.analytics.transaction, value: selectedPayment.paymobTransactionId ?? copy.analytics.notAvailable }
+                      ].map((item) => (
+                        <div
+                          key={item.label}
+                          className="rounded-2xl border p-3"
+                          style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-surface-2)" }}
+                        >
+                          <p className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                            {item.label}
+                          </p>
+                          <p className="mt-2 break-all text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
+                            {item.value}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {selectedPayment.status === "PENDING" ? (
+                      <button
+                        className="w-full rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95 disabled:opacity-60"
+                        style={{ background: "var(--gradient-brand)" }}
+                        disabled={markPaidMutation.isPending}
+                        onClick={() => void markPaidMutation.mutateAsync(selectedPayment.id)}
+                        type="button"
+                      >
+                        {copy.common.markPaid}
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              ) : (
+                <EmptyState
+                  description={copy.analytics.pickPaymentDesc}
+                  eyebrow={isAr ? "تفاصيل الدفع" : "Payment details"}
+                  icon="PD"
+                  title={copy.analytics.pickPaymentTitle}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
     </AdminShell>
   );
 };
