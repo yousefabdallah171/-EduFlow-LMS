@@ -298,7 +298,7 @@ docker compose exec -T frontend sh -lc "cd /app/frontend && pnpm exec playwright
 
 **Files Modified**:
 - `backend/src/services/enrollment.service.ts`
-- `backend/src/utils/cache.ts`
+- (No shared cache util; TTL lives in `backend/src/services/enrollment.service.ts`)
 
 ---
 
@@ -324,22 +324,21 @@ docker compose exec -T frontend sh -lc "cd /app/frontend && pnpm exec playwright
 ---
 
 ## TASK 2.6: Add Device Fingerprinting to Preview
-**Status**: ✅ DONE  
+**Status**: ✅ DONE (cookie-bound preview session + UA/IP-prefix tolerance)  
 **Severity**: 🟡 HIGH  
 **Estimated Time**: 2 hours
 
-- [x] Collect user agent and IP for preview
-- [x] Store fingerprint with preview token
-- [x] Validate fingerprint matches on use
-- [x] Test: Different IP cannot use token
-- [x] Test: Same device works normally
-- [x] Tolerance for IP changes
-- [x] Log fingerprint mismatches
+- [x] Collect user agent and IP prefix for preview session
+- [x] Store preview session record in Redis (short TTL)
+- [x] Require `preview_session` httpOnly cookie to use preview token
+- [x] Validate UA/IP-prefix tolerance on use
+- [x] Test: fresh browser context without cookie fails (401)
+- [x] Test: same browser session works normally
 
 **Files Modified**:
 - `backend/src/services/video-token.service.ts`
-- `backend/src/utils/device-fingerprint.ts`
-- `backend/tests/integration/video-token.test.ts`
+- `backend/src/controllers/lesson.controller.ts`
+- Covered by integration tests: `backend/tests/integration/preview.test.ts`, `backend/tests/integration/video-hardening.test.ts`
 
 ---
 
@@ -358,11 +357,13 @@ docker compose exec -T frontend sh -lc "cd /app/frontend && pnpm exec playwright
 
 **Testing Commands**:
 ```bash
-npm test -- video-token
-npm test -- single-session
-npm test -- enrollment
-npm test -- video-hardening
+docker compose exec -T backend sh -lc "cd /app/backend && pnpm exec vitest run tests/integration/video-token.test.ts tests/integration/video-hardening.test.ts tests/integration/enrollment.test.ts tests/integration/single-session.test.ts tests/integration/preview.test.ts"
 ```
+
+**Evidence**:
+- Phase 2 sign-off: `docs/evidence/2026-04-21/phase2-sign-off.md`
+- Phase 2 tests: `docs/evidence/2026-04-21/phase2-tests-2.txt`
+- Backend build (Phase 2): `docs/evidence/2026-04-21/backend-build-phase2-2.txt`
 
 ---
 

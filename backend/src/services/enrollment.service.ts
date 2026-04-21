@@ -4,6 +4,7 @@ import { redis } from "../config/redis.js";
 import { enrollmentRepository } from "../repositories/enrollment.repository.js";
 
 const enrollmentCacheKey = (userId: string) => `enrollment:${userId}`;
+const ENROLLMENT_CACHE_TTL_SECONDS = 2 * 60;
 
 export const enrollmentService = {
   async enroll(userId: string, enrollmentType: EnrollmentType, paymentId?: string | null) {
@@ -24,13 +25,23 @@ export const enrollmentService = {
           payment: paymentId ? { connect: { id: paymentId } } : undefined
         });
 
-    await redis.set(enrollmentCacheKey(userId), JSON.stringify({ enrolled: true, status: enrollment.status }), "EX", 300);
+    await redis.set(
+      enrollmentCacheKey(userId),
+      JSON.stringify({ enrolled: true, status: enrollment.status }),
+      "EX",
+      ENROLLMENT_CACHE_TTL_SECONDS
+    );
     return enrollment;
   },
 
   async revoke(userId: string, revokedById?: string) {
     const enrollment = await enrollmentRepository.revoke(userId, revokedById);
-    await redis.set(enrollmentCacheKey(userId), JSON.stringify({ enrolled: false, status: enrollment.status }), "EX", 300);
+    await redis.set(
+      enrollmentCacheKey(userId),
+      JSON.stringify({ enrolled: false, status: enrollment.status }),
+      "EX",
+      ENROLLMENT_CACHE_TTL_SECONDS
+    );
     return enrollment;
   },
 
@@ -50,7 +61,7 @@ export const enrollmentService = {
         }
       : { enrolled: false };
 
-    await redis.set(enrollmentCacheKey(userId), JSON.stringify(value), "EX", 300);
+    await redis.set(enrollmentCacheKey(userId), JSON.stringify(value), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
     return value;
   }
 };
