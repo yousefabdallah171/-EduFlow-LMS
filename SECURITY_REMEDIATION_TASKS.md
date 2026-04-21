@@ -1,7 +1,7 @@
 # EduFlow LMS - Security Remediation Task List
 
 **Document Type**: Developer Task Breakdown  
-**Status**: Ready for Implementation  
+**Status**: In Progress (see Implementation Status)  
 **Date Created**: 2026-04-21  
 **Total Tasks**: 24 (organized by phase)  
 **Estimated Effort**: 75 developer-hours  
@@ -18,6 +18,82 @@
 5. Merge when all acceptance criteria met
 
 ---
+
+## IMPLEMENTATION STATUS (Updated: 2026-04-21)
+
+This section marks each top-level task as **Completed / In Progress / Pending** and includes the **exact file paths** where the work landed.
+
+### Phase 1 (Critical Security Fixes)
+
+- **TASK 1.1 (Admin auth middleware)**: ✅ Completed  
+  - Enforced at mount point: `backend/src/app.ts`  
+  - Auth + RBAC middleware: `backend/src/middleware/auth.middleware.ts`, `backend/src/middleware/rbac.middleware.ts`  
+  - Admin routes definition: `backend/src/routes/admin.routes.ts`
+
+- **TASK 1.2 (RBAC verification for admin routes)**: ✅ Completed  
+  - RBAC middleware: `backend/src/middleware/rbac.middleware.ts`  
+  - Admin mount enforcement: `backend/src/app.ts`  
+  - Covered by integration tests: `backend/tests/integration/admin-orders.test.ts`
+
+- **TASK 1.3 (Enrollment re-check for video segments / gating)**: ✅ Completed  
+  - Token + refresh-session gating + enrollment enforcement: `backend/src/services/video-token.service.ts`  
+  - Segment endpoint uses token validation before serving: `backend/src/controllers/lesson.controller.ts`
+
+- **TASK 1.4 (Cache invalidation on enrollment revocation)**: ✅ Completed  
+  - Enrollment status cache writes (enroll/revoke): `backend/src/services/enrollment.service.ts`  
+  - Revocation clears active sessions + revokes video tokens: `backend/src/controllers/admin/students.controller.ts`
+
+- **TASK 1.5 (Integration tests for Phase 1)**: ✅ Completed  
+  - Video hardening tests: `backend/tests/integration/video-hardening.test.ts`  
+  - Enrollment revoke + token invalidation: `backend/tests/integration/enrollment.test.ts`  
+  - Token flow + logout revoke: `backend/tests/integration/video-token.test.ts`
+
+- **TASK 1.6 (Phase 1 review + testing)**: ✅ Completed  
+  - Backend test suite: `backend/package.json` (`pnpm lint`, `pnpm build`, `pnpm test`)  
+  - Frontend E2E suite: `frontend/package.json` (`pnpm lint`, `pnpm build`, `pnpm test:e2e`)
+
+### Phase 2 (Performance & Scale Hardening)
+
+- **TASK 2.1 (Fix N+1 queries in lesson listing)**: ✅ Completed  
+  - Batch progress fetch + merge in memory: `backend/src/controllers/lesson.controller.ts`
+
+- **TASK 2.2 (DB indexes for critical queries)**: ✅ Completed  
+  - Prisma indexes: `backend/prisma/schema.prisma`  
+  - Migration: `backend/prisma/migrations/20260421001410_add_perf_indexes/migration.sql`
+
+- **TASK 2.3 (Course settings caching)**: ✅ Completed  
+  - Cached public course response: `backend/src/services/course.service.ts`  
+  - Route uses cache: `backend/src/routes/student.routes.ts`  
+  - Invalidation on admin mutations: `backend/src/controllers/admin/pricing.controller.ts`, `backend/src/controllers/admin/settings.controller.ts`, `backend/src/controllers/admin/lessons.controller.ts`
+
+- **TASK 2.4 (Load testing & performance validation)**: ⏳ Pending  
+  - Not implemented yet (no load test artifacts committed in repo).
+
+- **TASK 2.5 (Phase 2 review + documentation)**: 🟡 In Progress  
+  - Code changes tested via CI-equivalent Docker runs; additional load-test documentation still pending.
+
+### Phase 3 (Defense Hardening & Monitoring)
+
+- **TASK 3.1 (Concurrent session enforcement / single active session)**: ✅ Completed  
+  - Session enforcement service: `backend/src/services/session.service.ts`  
+  - Enforced on auth + request auth: `backend/src/services/auth.service.ts`, `backend/src/middleware/auth.middleware.ts`  
+  - Integration test: `backend/tests/integration/single-session.test.ts`  
+  - Config toggle: `backend/src/config/env.ts` (`ENFORCE_SINGLE_SESSION`)
+
+- **TASK 3.2 (Strengthen preview token device binding)**: ✅ Completed (cookie-bound preview session)  
+  - Preview cookie issuance: `backend/src/controllers/lesson.controller.ts`  
+  - Preview session validation: `backend/src/services/video-token.service.ts`  
+  - Note: device-fingerprint implementation is **not** added; current binding is cookie + Redis record + UA/IP prefix tolerance.
+
+- **TASK 3.3 (Monitoring & alerting)**: ⏳ Pending  
+  - Not implemented yet (requires infra decisions: dashboards/alerts/log sinks).
+
+- **TASK 3.4 (Security checklist for QC team)**: 🟡 In Progress  
+  - Attacker-style automation exists: `frontend/scripts/playwright-manual-check.cjs`  
+  - Still needs a written QC runbook/checklist section in this doc.
+
+- **TASK 3.5 (Phase 3 code review & sign-off)**: ⏳ Pending  
+  - Awaiting completion of Tasks 3.3–3.4 and a final sign-off pass.
 
 # PHASE 1: CRITICAL SECURITY FIXES (Week 1)
 
@@ -2327,4 +2403,3 @@ SELECT * FROM pg_stat_user_indexes WHERE schemaname = 'public';
 **Total Effort**: 75 developer-hours across 4 weeks  
 **Status**: Ready for implementation  
 **Last Updated**: 2026-04-21
-
