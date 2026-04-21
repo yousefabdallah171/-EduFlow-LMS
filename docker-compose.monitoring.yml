@@ -1,0 +1,45 @@
+services:
+  # Enables /metrics on the backend when running this compose overlay.
+  backend:
+    profiles:
+      - monitoring
+    environment:
+      PROMETHEUS_METRICS_ENABLED: "true"
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    profiles:
+      - monitoring
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    volumes:
+      - ./docker/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./docker/monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheusdata:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - eduflow_net
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    profiles:
+      - monitoring
+    environment:
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafanadata:/var/lib/grafana
+      - ./docker/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3001:3000"
+    networks:
+      - eduflow_net
+
+volumes:
+  prometheusdata:
+  grafanadata:
+

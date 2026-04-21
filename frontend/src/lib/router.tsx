@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
-import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { isAccessTokenExpiringSoon, refreshAccessToken } from "@/lib/api";
 import { isDemoMode } from "@/lib/demo";
@@ -61,6 +61,8 @@ const ResetPasswordPage = lazy(async () => import("@/pages/ResetPassword").then(
 
 const OAuthCallback = () => {
   const [message, setMessage] = useState("Signing in...");
+  const navigate = useNavigate();
+  const location = useLocation();
   const hasStarted = useRef(false);
 
   useEffect(() => {
@@ -75,9 +77,22 @@ const OAuthCallback = () => {
     }
 
     void refreshAccessToken()
-      .then((token) => setMessage(token ? "Signed in." : "Sign-in failed."))
+      .then((token) => {
+        if (!token) {
+          setMessage("Sign-in failed.");
+          return;
+        }
+
+        const nextUser = useAuthStore.getState().user;
+        const segment = location.pathname.split("/")[1];
+        const prefix = segment === "en" || segment === "ar" ? `/${segment}` : "";
+        const target = nextUser?.role === "ADMIN" ? `${prefix}/admin/dashboard` : `${prefix}/dashboard`;
+
+        setMessage("Signed in.");
+        navigate(target, { replace: true });
+      })
       .catch(() => setMessage("Sign-in failed."));
-  }, []);
+  }, [location.pathname, navigate]);
 
   return (
     <div className="flex min-h-dvh items-center justify-center" style={{ backgroundColor: "var(--color-page)" }}>

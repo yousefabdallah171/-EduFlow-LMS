@@ -13,6 +13,8 @@ import { adminRoutes } from "./routes/admin.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import { publicRoutes } from "./routes/public.routes.js";
 import { studentRoutes } from "./routes/student.routes.js";
+import { prometheus } from "./observability/prometheus.js";
+import { sentry } from "./observability/sentry.js";
 import { telemetryService } from "./services/telemetry.service.js";
 
 export const createApp = () => {
@@ -29,6 +31,8 @@ export const createApp = () => {
     });
     next();
   });
+
+  app.use(prometheus.middleware);
 
   if (env.NODE_ENV !== "production") {
     app.use((req, res, next) => {
@@ -74,13 +78,18 @@ export const createApp = () => {
     res.json(telemetryService.snapshot());
   });
 
+  app.get("/metrics", (req, res) => {
+    void prometheus.handler(req, res);
+  });
+
   app.use("/api/v1/auth", authRoutes);
   app.use("/api/v1", publicRoutes);
   app.use("/api/v1", studentRoutes);
   app.use("/api/v1/admin", authenticate, requireRole("ADMIN"), adminRoutes);
 
-  app.use((err: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+  app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     void next;
+    sentry.captureException(err, req);
     res.status(500).json({
       error: "INTERNAL_SERVER_ERROR",
       message: err.message

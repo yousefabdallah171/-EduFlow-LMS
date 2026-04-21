@@ -26,3 +26,4 @@ Thumbs.db
 .vscode/
 public_html/
 public_html.zip
+client_secret*.json

@@ -349,11 +349,14 @@ test.describe("runtime coverage", () => {
   test("admin EN/AR route matrix renders after login", async ({ page, request }) => {
     const issues = startIssueTracker(page);
 
+    const firstStudentId = await getFirstAdminStudentId(request);
+    expect(firstStudentId, "seeded student is required for admin student-detail coverage").toBeTruthy();
+
+    // Fetching the seeded student id uses an API login, which would invalidate any existing UI session
+    // due to single-session enforcement. Do it first, then perform the UI login for route coverage.
     await login(page, adminUser);
 
     await expectRouteToLoad(page, "/ar/admin/students");
-    const firstStudentId = await getFirstAdminStudentId(request);
-    expect(firstStudentId, "seeded student is required for admin student-detail coverage").toBeTruthy();
 
     const dynamicAdminRoutes = firstStudentId
       ? [...adminRoutes, `/en/admin/students/${firstStudentId}`, `/ar/admin/students/${firstStudentId}`]

@@ -187,6 +187,7 @@ export const authController = {
 
   googleStart: passport.authenticate("google", {
     scope: ["profile", "email"],
+    state: true,
     session: false
   }),
 

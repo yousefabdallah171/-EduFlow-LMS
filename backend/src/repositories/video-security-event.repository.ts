@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "../config/database.js";
+import { prometheus } from "../observability/prometheus.js";
 
 export type VideoSecurityEventCreateInput = {
   userId?: string | null;
@@ -16,8 +17,8 @@ export type VideoSecurityEventCreateInput = {
 };
 
 export const videoSecurityEventRepository = {
-  create(input: VideoSecurityEventCreateInput) {
-    return prisma.videoSecurityEvent.create({
+  async create(input: VideoSecurityEventCreateInput) {
+    const created = await prisma.videoSecurityEvent.create({
       data: {
         userId: input.userId ?? null,
         sessionId: input.sessionId ?? null,
@@ -31,6 +32,10 @@ export const videoSecurityEventRepository = {
         metadata: (input.metadata ?? {}) as Prisma.InputJsonValue
       }
     });
+
+    prometheus.recordVideoSecurityEvent(input.eventType, input.severity ?? "INFO");
+
+    return created;
   },
 
   findPaginated(

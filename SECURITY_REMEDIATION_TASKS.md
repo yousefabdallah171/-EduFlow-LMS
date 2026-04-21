@@ -23,6 +23,17 @@
 
 This section marks each top-level task as **Completed / In Progress / Pending** and includes the **exact file paths** where the work landed.
 
+## EVIDENCE (How QC/Reviewers Prove PASS/FAIL)
+
+This repo keeps **sign-off evidence artifacts** under:
+
+- `docs/evidence/` (append-only by date)
+
+Use these templates:
+
+- Evidence template: `docs/evidence/EVIDENCE_TEMPLATE.md`
+- QC security report template: `docs/QC_SECURITY_REPORT_TEMPLATE.md`
+
 ### Phase 1 (Critical Security Fixes)
 
 - **TASK 1.1 (Admin auth middleware)**: [DONE]  
@@ -70,6 +81,7 @@ This section marks each top-level task as **Completed / In Progress / Pending** 
   - Dev load scripts: `backend/scripts/load/course.mjs`, `backend/scripts/load/student.mjs`  
   - Runner scripts: `backend/package.json`
   - Baseline report: `docs/LOAD_TEST_REPORT.md`
+  - k6 harness (reproducible): `loadtest/k6/eduflow-baseline.js`, `loadtest/README.md`, `loadtest/render-k6-report.mjs`
   - Production-scale load testing still required on production-like hardware.
 
 - **TASK 2.5 (Phase 2 review + documentation)**: [DONE - DEV BASELINE]  
@@ -91,6 +103,8 @@ This section marks each top-level task as **Completed / In Progress / Pending** 
 
 - **TASK 3.3 (Monitoring & alerting)**: [DONE - DEV BASELINE]  
   - Dev metrics endpoint: `backend/src/app.ts`, `backend/src/services/telemetry.service.ts`  
+  - Prometheus metrics: `backend/src/observability/prometheus.ts`, `docker-compose.monitoring.yml`, `docker/monitoring/*`
+  - Sentry integration: `backend/src/observability/sentry.ts`, `backend/src/app.ts`, `frontend/src/observability/sentry.ts`, `frontend/src/main.tsx`
   - Monitoring guidance: `docs/MONITORING_ALERTING.md`
   - Production integration still required (APM/Prometheus + alerts).
 
@@ -100,6 +114,7 @@ This section marks each top-level task as **Completed / In Progress / Pending** 
 
 - **TASK 3.5 (Phase 3 code review & sign-off)**: [READY FOR HUMAN SIGN-OFF]  
   - Engineering work complete; requires human sign-off run using: `docs/QC_SECURITY_CHECKLIST.md`
+  - Evidence templates: `docs/QC_SECURITY_REPORT_TEMPLATE.md`, `docs/evidence/EVIDENCE_TEMPLATE.md`
 
 # PHASE 1: CRITICAL SECURITY FIXES (Week 1)
 
@@ -2312,7 +2327,7 @@ Total Score: ___ / 100 test cases passed
 **Total Phase 3 Time**: ~10 hours  
 **Tasks**: 5 tasks (3 implementation + 1 checklist + 1 review)  
 **Issues Fixed**: #4 (preview token), #8 (concurrent sessions)  
-**Deliverables**: Session enforcement, device fingerprinting, QC security checklist, monitoring setup
+**Deliverables**: Session enforcement, cookie-bound preview sessions, QC security checklist, monitoring baseline
 
 ---
 
@@ -2335,8 +2350,9 @@ PHASE 2 SIGN-OFF (Week 3 - May 10)
 - [ ] Issue #6 fixed: N+1 queries resolved
 - [ ] Issue #7 fixed: Database indexes created
 - [ ] Issue #9 fixed: Course settings cached
-- [ ] Load test passing: 100k concurrent users
-- [ ] p95 latency < 500ms
+- [ ] Load test baseline captured (Local Docker)
+- [ ] Load test passing: 100k concurrent users (STAGING/PROD-LIKE ONLY)
+- [ ] p95 latency < 500ms (STAGING/PROD-LIKE ONLY)
 - [ ] Performance improved 50-80%
 - [ ] Zero performance regressions
 - [ ] Ready for Phase 3
@@ -2344,7 +2360,8 @@ PHASE 2 SIGN-OFF (Week 3 - May 10)
 PHASE 3 SIGN-OFF (Week 4 - May 17)
 - [ ] Issue #4 fixed: Preview token device binding
 - [ ] Issue #8 fixed: Concurrent session enforcement
-- [ ] Monitoring & alerting active
+- [ ] Monitoring & alerting baseline active (dev/staging)
+- [ ] Monitoring & alerting active (production)
 - [ ] QC security checklist ready
 - [ ] All 24 tasks completed
 - [ ] All tests passing (100%)
@@ -2353,7 +2370,7 @@ PHASE 3 SIGN-OFF (Week 4 - May 17)
 
 PRODUCTION READINESS
 - [ ] All 10 vulnerabilities fixed
-- [ ] Load tested with 100k concurrent users
+- [ ] Load tested with 100k concurrent users (staging/prod-like)
 - [ ] Security tested by external team
 - [ ] Performance benchmarked
 - [ ] Monitoring and alerting in place
@@ -2361,6 +2378,22 @@ PRODUCTION READINESS
 - [ ] Team trained on security procedures
 - [ ] READY FOR LAUNCH
 ```
+
+## Final Sign-off Evidence Checklist (Where evidence lives)
+
+For each item below, capture artifacts under `docs/evidence/YYYY-MM-DD/` and reference them in a QC report created from `docs/QC_SECURITY_REPORT_TEMPLATE.md`.
+
+- Backend tests PASS: store console output snippet + command line used
+- Frontend build + E2E PASS: store Playwright report path + command line used
+- Load test baseline PASS (local): store k6 summary JSON + run command + docker resource limits (if set)
+- Monitoring baseline PASS (dev/staging): store:
+  - `/metrics` scrape working (Prometheus targets page screenshot)
+  - sample Grafana dashboard screenshot
+  - Sentry test event received (backend + frontend)
+- Manual attacker checks PASS: store:
+  - DevTools screenshots (incognito replay failures)
+  - rate-limit burst result (429) + `VideoSecurityEvent` admin output
+  - logout replay failures (401/403)
 
 ---
 

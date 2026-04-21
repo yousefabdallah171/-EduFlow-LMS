@@ -7,7 +7,10 @@ import { Toaster } from "sonner";
 import App from "./App";
 import { queryClient } from "@/lib/api";
 import i18n from "@/lib/i18n";
+import { initFrontendSentry } from "./observability/sentry";
 import "@/styles/globals.css";
+
+initFrontendSentry();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
