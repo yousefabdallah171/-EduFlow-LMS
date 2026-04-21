@@ -62,7 +62,6 @@ services:
       dockerfile: docker/backend.Dockerfile
       target: runtime
     container_name: eduflow_backend_prod
-    network_mode: host
     depends_on:
       postgres:
         condition: service_healthy
@@ -71,8 +70,8 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
+      DATABASE_URL: postgresql://eduflow_prod:e592739cf7b0be7e999d81070b7a091e@postgres:5432/eduflow_production?schema=public
+      REDIS_URL: redis://redis:6379
       NODE_ENV: ${NODE_ENV}
       BACKEND_PORT: ${BACKEND_PORT}
       FRONTEND_URL: ${FRONTEND_URL}
@@ -89,8 +88,12 @@ services:
       PAYMOB_IFRAME_ID: ${PAYMOB_IFRAME_ID}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+    ports:
+      - "8000:8000"
+    networks:
+      - eduflow_prod_net
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/ >/dev/null 2>&1 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

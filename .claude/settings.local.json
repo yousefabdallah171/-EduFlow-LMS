@@ -105,7 +105,13 @@
       "Bash(pkill -f \"node\\\\|curl\\\\|wget\")",
       "Bash(killall -9 wget curl node)",
       "Bash(netstat -tulpn)",
-      "Bash(kill -9 724244 739860)"
+      "Bash(kill -9 724244 739860)",
+      "Bash(curl -s --max-time 5 http://127.0.0.1:3000/api/v1/auth/health)",
+      "Bash(fuser -k 3000/tcp)",
+      "Bash(killall -9 node wget curl)",
+      "Bash(awk '{print $4}')",
+      "Bash(grep -o ':[0-9]*$')",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/auth/health)"
     ]
   }
 }
