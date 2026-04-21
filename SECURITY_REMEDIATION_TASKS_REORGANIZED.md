@@ -59,7 +59,7 @@
 - [x] No breaking changes to other routes
 
 **Files Modified**:
-- `backend/src/routes/admin.routes.ts`
+- Admin mount enforcement: `backend/src/app.ts`
 
 ---
 
@@ -78,7 +78,7 @@
 
 **Files Modified**:
 - `backend/src/middleware/rbac.middleware.ts`
-- `backend/src/routes/admin.routes.ts`
+- Admin mount enforcement: `backend/src/app.ts`
 
 ---
 
@@ -117,7 +117,7 @@
 **Files Modified**:
 - `backend/src/services/auth.service.ts`
 - `backend/src/utils/jwt.ts`
-- `backend/tests/integration/token-reuse.test.ts`
+- Covered by integration tests: `backend/tests/integration/auth.test.ts`
 
 ---
 
@@ -195,14 +195,21 @@
 
 **Testing Commands**:
 ```bash
-cd backend && npm test
-cd frontend && npm test
-npm run lint
-npm run build
+# Backend (Docker)
+docker compose exec -T backend sh -lc "cd /app/backend && pnpm lint"
+docker compose exec -T backend sh -lc "cd /app/backend && pnpm build"
+docker compose exec -T backend sh -lc "cd /app/backend && pnpm test"
+
+# Frontend (Docker)
+docker compose exec -T frontend sh -lc "cd /app/frontend && pnpm lint"
+docker compose exec -T frontend sh -lc "cd /app/frontend && pnpm build"
+docker compose exec -T frontend sh -lc "cd /app/frontend && pnpm exec playwright test --reporter=line"
 ```
 
 **Files Modified**:
-- `docs/evidence/2026-04-21/phase1-sign-off.md`
+- Phase 1 sign-off evidence: `docs/evidence/2026-04-21/phase1-sign-off.md`
+- Full evidence folder: `docs/evidence/2026-04-21/`
+- Focused Phase 1 test run: `docs/evidence/2026-04-21/phase1-tests.txt`
 
 ---
 
