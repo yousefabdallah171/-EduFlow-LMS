@@ -13,11 +13,22 @@ import { adminRoutes } from "./routes/admin.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import { publicRoutes } from "./routes/public.routes.js";
 import { studentRoutes } from "./routes/student.routes.js";
+import { telemetryService } from "./services/telemetry.service.js";
 
 export const createApp = () => {
   const app = express();
 
   app.set("trust proxy", 1);
+
+  app.use((req, res, next) => {
+    telemetryService.onRequestStart();
+    const start = process.hrtime.bigint();
+    res.on("finish", () => {
+      const elapsedMs = Number(process.hrtime.bigint() - start) / 1_000_000;
+      telemetryService.onRequestFinish(res.statusCode, elapsedMs);
+    });
+    next();
+  });
 
   if (env.NODE_ENV !== "production") {
     app.use((req, res, next) => {
@@ -57,6 +68,10 @@ export const createApp = () => {
 
   app.get("/health", (_req, res) => {
     res.json({ status: "ok" });
+  });
+
+  app.get("/health/metrics", (_req, res) => {
+    res.json(telemetryService.snapshot());
   });
 
   app.use("/api/v1/auth", authRoutes);

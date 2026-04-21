@@ -10,6 +10,8 @@
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
+    "load:course": "node scripts/load/course.mjs",
+    "load:student": "node scripts/load/student.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts"

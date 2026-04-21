@@ -25,75 +25,79 @@ This section marks each top-level task as **Completed / In Progress / Pending** 
 
 ### Phase 1 (Critical Security Fixes)
 
-- **TASK 1.1 (Admin auth middleware)**: ✅ Completed  
+- **TASK 1.1 (Admin auth middleware)**: [DONE]  
   - Enforced at mount point: `backend/src/app.ts`  
   - Auth + RBAC middleware: `backend/src/middleware/auth.middleware.ts`, `backend/src/middleware/rbac.middleware.ts`  
   - Admin routes definition: `backend/src/routes/admin.routes.ts`
 
-- **TASK 1.2 (RBAC verification for admin routes)**: ✅ Completed  
+- **TASK 1.2 (RBAC verification for admin routes)**: [DONE]  
   - RBAC middleware: `backend/src/middleware/rbac.middleware.ts`  
   - Admin mount enforcement: `backend/src/app.ts`  
   - Covered by integration tests: `backend/tests/integration/admin-orders.test.ts`
 
-- **TASK 1.3 (Enrollment re-check for video segments / gating)**: ✅ Completed  
+- **TASK 1.3 (Enrollment re-check for video segments / gating)**: [DONE]  
   - Token + refresh-session gating + enrollment enforcement: `backend/src/services/video-token.service.ts`  
   - Segment endpoint uses token validation before serving: `backend/src/controllers/lesson.controller.ts`
 
-- **TASK 1.4 (Cache invalidation on enrollment revocation)**: ✅ Completed  
+- **TASK 1.4 (Cache invalidation on enrollment revocation)**: [DONE]  
   - Enrollment status cache writes (enroll/revoke): `backend/src/services/enrollment.service.ts`  
   - Revocation clears active sessions + revokes video tokens: `backend/src/controllers/admin/students.controller.ts`
 
-- **TASK 1.5 (Integration tests for Phase 1)**: ✅ Completed  
+- **TASK 1.5 (Integration tests for Phase 1)**: [DONE]  
   - Video hardening tests: `backend/tests/integration/video-hardening.test.ts`  
   - Enrollment revoke + token invalidation: `backend/tests/integration/enrollment.test.ts`  
   - Token flow + logout revoke: `backend/tests/integration/video-token.test.ts`
 
-- **TASK 1.6 (Phase 1 review + testing)**: ✅ Completed  
+- **TASK 1.6 (Phase 1 review + testing)**: [DONE]  
   - Backend test suite: `backend/package.json` (`pnpm lint`, `pnpm build`, `pnpm test`)  
   - Frontend E2E suite: `frontend/package.json` (`pnpm lint`, `pnpm build`, `pnpm test:e2e`)
 
 ### Phase 2 (Performance & Scale Hardening)
 
-- **TASK 2.1 (Fix N+1 queries in lesson listing)**: ✅ Completed  
+- **TASK 2.1 (Fix N+1 queries in lesson listing)**: [DONE]  
   - Batch progress fetch + merge in memory: `backend/src/controllers/lesson.controller.ts`
 
-- **TASK 2.2 (DB indexes for critical queries)**: ✅ Completed  
+- **TASK 2.2 (DB indexes for critical queries)**: [DONE]  
   - Prisma indexes: `backend/prisma/schema.prisma`  
   - Migration: `backend/prisma/migrations/20260421001410_add_perf_indexes/migration.sql`
 
-- **TASK 2.3 (Course settings caching)**: ✅ Completed  
+- **TASK 2.3 (Course settings caching)**: [DONE]  
   - Cached public course response: `backend/src/services/course.service.ts`  
   - Route uses cache: `backend/src/routes/student.routes.ts`  
   - Invalidation on admin mutations: `backend/src/controllers/admin/pricing.controller.ts`, `backend/src/controllers/admin/settings.controller.ts`, `backend/src/controllers/admin/lessons.controller.ts`
 
-- **TASK 2.4 (Load testing & performance validation)**: ⏳ Pending  
-  - Not implemented yet (no load test artifacts committed in repo).
+- **TASK 2.4 (Load testing & performance validation)**: [DONE - DEV BASELINE]  
+  - Dev load scripts: `backend/scripts/load/course.mjs`, `backend/scripts/load/student.mjs`  
+  - Runner scripts: `backend/package.json`
+  - Production-scale load testing still required on production-like hardware.
 
-- **TASK 2.5 (Phase 2 review + documentation)**: 🟡 In Progress  
-  - Code changes tested via CI-equivalent Docker runs; additional load-test documentation still pending.
+- **TASK 2.5 (Phase 2 review + documentation)**: [IN PROGRESS]  
+  - Code changes tested via Docker runs; load scripts included (Task 2.4).
 
 ### Phase 3 (Defense Hardening & Monitoring)
 
-- **TASK 3.1 (Concurrent session enforcement / single active session)**: ✅ Completed  
+- **TASK 3.1 (Concurrent session enforcement / single active session)**: [DONE]  
   - Session enforcement service: `backend/src/services/session.service.ts`  
   - Enforced on auth + request auth: `backend/src/services/auth.service.ts`, `backend/src/middleware/auth.middleware.ts`  
   - Integration test: `backend/tests/integration/single-session.test.ts`  
   - Config toggle: `backend/src/config/env.ts` (`ENFORCE_SINGLE_SESSION`)
 
-- **TASK 3.2 (Strengthen preview token device binding)**: ✅ Completed (cookie-bound preview session)  
+- **TASK 3.2 (Strengthen preview token device binding)**: [DONE] (cookie-bound preview session)  
   - Preview cookie issuance: `backend/src/controllers/lesson.controller.ts`  
   - Preview session validation: `backend/src/services/video-token.service.ts`  
   - Note: device-fingerprint implementation is **not** added; current binding is cookie + Redis record + UA/IP prefix tolerance.
 
-- **TASK 3.3 (Monitoring & alerting)**: ⏳ Pending  
-  - Not implemented yet (requires infra decisions: dashboards/alerts/log sinks).
+- **TASK 3.3 (Monitoring & alerting)**: [DONE - DEV BASELINE]  
+  - Dev metrics endpoint: `backend/src/app.ts`, `backend/src/services/telemetry.service.ts`  
+  - Monitoring guidance: `docs/MONITORING_ALERTING.md`
+  - Production integration still required (APM/Prometheus + alerts).
 
-- **TASK 3.4 (Security checklist for QC team)**: 🟡 In Progress  
-  - Attacker-style automation exists: `frontend/scripts/playwright-manual-check.cjs`  
-  - Still needs a written QC runbook/checklist section in this doc.
+- **TASK 3.4 (Security checklist for QC team)**: [DONE]  
+  - Attacker-style automation: `frontend/scripts/playwright-manual-check.cjs`  
+  - QC runbook: `docs/QC_SECURITY_CHECKLIST.md`
 
-- **TASK 3.5 (Phase 3 code review & sign-off)**: ⏳ Pending  
-  - Awaiting completion of Tasks 3.3–3.4 and a final sign-off pass.
+- **TASK 3.5 (Phase 3 code review & sign-off)**: [READY]  
+  - Engineering work complete; requires human sign-off run using Phase 3 checklist.
 
 # PHASE 1: CRITICAL SECURITY FIXES (Week 1)
 
