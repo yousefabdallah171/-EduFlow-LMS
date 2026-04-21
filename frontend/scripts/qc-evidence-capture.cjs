@@ -33,8 +33,18 @@ const writeJson = (name, data) => {
 
 const loginUi = async (page, email, password) => {
   await page.goto(url(`/${locale}/login`), { waitUntil: "networkidle" });
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(password);
+  const emailInput = page.locator("#email");
+  const passwordInput = page.locator("#password");
+  if (await emailInput.count()) {
+    await emailInput.fill(email);
+  } else {
+    await page.getByLabel(/email/i).fill(email);
+  }
+  if (await passwordInput.count()) {
+    await passwordInput.fill(password);
+  } else {
+    await page.getByLabel(/password/i).fill(password);
+  }
   const [resp] = await Promise.all([
     page.waitForResponse((r) => r.url().includes("/api/v1/auth/login"), { timeout: 15000 }),
     page.locator('button[type="submit"]').click()
@@ -137,4 +147,3 @@ run().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-
