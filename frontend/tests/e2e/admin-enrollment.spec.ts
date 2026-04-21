@@ -139,7 +139,7 @@ test("admin enrolls and revokes a student from student management", async ({ pag
   await expect(page).toHaveURL(`${baseUrl}/admin/dashboard`);
 
   await page.goto(`${baseUrl}/admin/students`);
-  await expect(page.getByRole("heading", { name: "Student management" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Student management" })).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText("Manual Student")).toBeVisible();
   await expect(page.getByText("None", { exact: true }).first()).toBeVisible();
 

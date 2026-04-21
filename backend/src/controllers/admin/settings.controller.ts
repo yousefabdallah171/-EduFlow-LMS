@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../../config/database.js";
+import { courseService } from "../../services/course.service.js";
 
 const courseSchema = z.object({
   titleEn: z.string().min(1).optional(),
@@ -32,6 +33,7 @@ export const adminSettingsController = {
           ...data
         }
       });
+      await courseService.invalidatePublicCourseCache();
       res.json(settings);
     } catch (e) { next(e); }
   },

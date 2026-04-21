@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
 import { prisma } from "../../config/database.js";
+import { courseService } from "../../services/course.service.js";
 
 const updatePricingSchema = z.object({
   priceEgp: z.coerce.number().positive().max(100000)
@@ -75,6 +76,8 @@ export const adminPricingController = {
         }
       });
 
+      await courseService.invalidatePublicCourseCache();
+
       res.json({
         priceEgp: settings.pricePiasters / 100,
         updatedAt: settings.updatedAt
@@ -100,6 +103,8 @@ export const adminPricingController = {
           sortOrder: body.sortOrder
         }
       });
+
+      await courseService.invalidatePublicCourseCache();
 
       res.status(201).json(coursePackage);
     } catch (error) {
@@ -129,6 +134,8 @@ export const adminPricingController = {
           sortOrder: body.sortOrder
         }
       });
+
+      await courseService.invalidatePublicCourseCache();
 
       res.json(coursePackage);
     } catch (error) {

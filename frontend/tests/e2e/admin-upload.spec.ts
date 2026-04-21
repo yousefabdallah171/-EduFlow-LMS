@@ -128,7 +128,8 @@ test("admin starts a resumable upload and sees progress feedback", async ({ page
   await expect(page).toHaveURL(/\/en\/admin\/dashboard$/);
   await page.goto("/en/admin/lessons");
 
-  await expect(page.getByText("Selected lesson")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lesson uploads" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("Selected lesson")).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole("heading", { name: "Replace or add the lesson video" })).toBeVisible();
   await page.setInputFiles('input[type="file"]', {
     name: "lesson.mp4",

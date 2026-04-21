@@ -109,6 +109,11 @@ model RefreshToken {
   expiresAt DateTime
   revokedAt DateTime?
   createdAt DateTime  @default(now())
+
+  @@index([userId, sessionId])
+  @@index([userId, revokedAt])
+  @@index([familyId])
+  @@index([expiresAt])
 }
 
 model Enrollment {
@@ -123,6 +128,10 @@ model Enrollment {
   revokedAt      DateTime?
   revokedById    String?
   revokedBy      User?            @relation("RevokedBy", fields: [revokedById], references: [id])
+
+  @@index([status])
+  @@index([enrolledAt])
+  @@index([revokedAt])
 }
 
 model Payment {
@@ -144,6 +153,9 @@ model Payment {
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
   enrollment          Enrollment?
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
 }
 
 model CoursePackage {
@@ -159,6 +171,8 @@ model CoursePackage {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   payments      Payment[]
+
+  @@index([isActive, sortOrder])
 }
 
 model Coupon {
@@ -184,6 +198,8 @@ model Section {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   lessons       Lesson[]
+
+  @@index([sortOrder])
 }
 
 model Lesson {
@@ -209,6 +225,10 @@ model Lesson {
   notes           Note[]
   resources       LessonResource[]
   videoSecurityEvents VideoSecurityEvent[]
+
+  @@index([isPublished, sortOrder])
+  @@index([sectionId, isPublished, sortOrder])
+  @@index([isPreview, isPublished])
 }
 
 model LessonProgress {
@@ -223,6 +243,7 @@ model LessonProgress {
   updatedAt           DateTime  @updatedAt
 
   @@unique([userId, lessonId])
+  @@index([lessonId])
 }
 
 model VideoToken {
@@ -236,6 +257,11 @@ model VideoToken {
   expiresAt DateTime
   revokedAt DateTime?
   createdAt DateTime  @default(now())
+
+  @@index([sessionId])
+  @@index([userId, sessionId])
+  @@index([lessonId, expiresAt])
+  @@index([expiresAt])
 }
 
 model VideoUpload {

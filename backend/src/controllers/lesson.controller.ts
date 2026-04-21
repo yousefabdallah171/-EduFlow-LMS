@@ -165,15 +165,7 @@ export const lessonController = {
               descriptionAr: true,
               durationSeconds: true,
               sortOrder: true,
-              dripDays: true,
-              progress: {
-                where: { userId: req.user!.userId },
-                select: {
-                  completedAt: true,
-                  lastPositionSeconds: true
-                },
-                take: 1
-              }
+              dripDays: true
             },
             orderBy: { sortOrder: "asc" }
           }
@@ -181,11 +173,28 @@ export const lessonController = {
         orderBy: { sortOrder: "asc" }
       });
 
+      const lessonIds = sections.flatMap((section) => section.lessons.map((lesson) => lesson.id));
+      const progressData = lessonIds.length
+        ? await prisma.lessonProgress.findMany({
+            where: {
+              userId: req.user!.userId,
+              lessonId: { in: lessonIds }
+            },
+            select: {
+              lessonId: true,
+              completedAt: true,
+              lastPositionSeconds: true
+            }
+          })
+        : [];
+
+      const progressByLessonId = new Map(progressData.map((progress) => [progress.lessonId, progress]));
+
       res.json({
         sections: sections.map((section) => ({
           ...section,
           lessons: section.lessons.map((lesson) => {
-            const progress = lesson.progress[0];
+            const progress = progressByLessonId.get(lesson.id);
             const unlocksAt =
               typeof lesson.dripDays === "number"
                 ? new Date(enrollment.enrolledAt.getTime() + lesson.dripDays * 24 * 60 * 60 * 1000)
@@ -274,11 +283,38 @@ export const lessonController = {
         return;
       }
 
-      const lessons = await lessonRepository.findAllPublishedForStudent(req.user!.userId);
+      const lessons = await prisma.lesson.findMany({
+        where: { isPublished: true },
+        orderBy: { sortOrder: "asc" },
+        select: {
+          id: true,
+          titleEn: true,
+          titleAr: true,
+          durationSeconds: true,
+          sortOrder: true,
+          dripDays: true
+        }
+      });
+
+      const lessonIds = lessons.map((lesson) => lesson.id);
+      const progressData = lessonIds.length
+        ? await prisma.lessonProgress.findMany({
+            where: {
+              userId: req.user!.userId,
+              lessonId: { in: lessonIds }
+            },
+            select: {
+              lessonId: true,
+              completedAt: true,
+              lastPositionSeconds: true
+            }
+          })
+        : [];
+      const progressByLessonId = new Map(progressData.map((progress) => [progress.lessonId, progress]));
 
       res.json({
         lessons: lessons.map((lesson) => {
-          const progress = lesson.progress[0];
+          const progress = progressByLessonId.get(lesson.id);
           const unlocksAt =
             typeof lesson.dripDays === "number"
               ? new Date(enrollment.enrolledAt.getTime() + lesson.dripDays * 24 * 60 * 60 * 1000)

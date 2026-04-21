@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "../../config/database.js";
 import { lessonRepository } from "../../repositories/lesson.repository.js";
 import { videoUploadRepository } from "../../repositories/video-upload.repository.js";
+import { courseService } from "../../services/course.service.js";
 
 const getFirstValue = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
@@ -135,6 +136,8 @@ export const adminLessonsController = {
         include: { section: true }
       });
 
+      await courseService.invalidatePublicCourseCache();
+
       res.status(201).json({ lesson });
     } catch (error) {
       handleLessonAdminError(error, res, next);
@@ -169,6 +172,8 @@ export const adminLessonsController = {
         include: { section: true }
       });
 
+      await courseService.invalidatePublicCourseCache();
+
       res.json({ lesson });
     } catch (error) {
       handleLessonAdminError(error, res, next);
@@ -193,6 +198,7 @@ export const adminLessonsController = {
       }
 
       await lessonRepository.delete(lessonId);
+      await courseService.invalidatePublicCourseCache();
       res.json({ message: "Lesson deleted." });
     } catch (error) {
       handleLessonAdminError(error, res, next);
@@ -209,6 +215,7 @@ export const adminLessonsController = {
 
       const { isPreview } = z.object({ isPreview: z.boolean() }).parse(req.body);
       const lesson = await lessonRepository.update(lessonId, { isPreview });
+      await courseService.invalidatePublicCourseCache();
       res.json(lesson);
     } catch (error) {
       handleLessonAdminError(error, res, next);
@@ -226,6 +233,7 @@ export const adminLessonsController = {
           })
         )
       );
+      await courseService.invalidatePublicCourseCache();
       res.json({ message: "Lessons reordered." });
     } catch (error) {
       handleLessonAdminError(error, res, next);
