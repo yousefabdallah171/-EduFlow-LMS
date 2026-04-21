@@ -1,0 +1,92 @@
+﻿{
+  "baseUrl": "http://localhost:5173",
+  "locale": "en",
+  "results": [
+    {
+      "label": "landing-ar",
+      "url": "http://localhost:5173/en",
+      "errors": []
+    },
+    {
+      "label": "login-ar",
+      "url": "http://localhost:5173/en/login",
+      "errors": []
+    },
+    {
+      "label": "register-ar",
+      "url": "http://localhost:5173/en/register",
+      "errors": []
+    },
+    {
+      "label": "forgot-password-ar",
+      "url": "http://localhost:5173/en/forgot-password",
+      "errors": []
+    },
+    {
+      "label": "admin-dashboard",
+      "url": "http://localhost:5173/en/admin/dashboard",
+      "errors": []
+    },
+    {
+      "label": "admin-students",
+      "url": "http://localhost:5173/en/admin/students",
+      "errors": []
+    },
+    {
+      "label": "admin-lessons",
+      "url": "http://localhost:5173/en/admin/lessons",
+      "errors": []
+    },
+    {
+      "label": "admin-pricing",
+      "url": "http://localhost:5173/en/admin/pricing",
+      "errors": []
+    },
+    {
+      "label": "admin-analytics",
+      "url": "http://localhost:5173/en/admin/analytics",
+      "errors": []
+    },
+    {
+      "label": "student-course",
+      "url": "http://localhost:5173/en/course",
+      "errors": []
+    },
+    {
+      "label": "student-checkout",
+      "url": "http://localhost:5173/en/checkout",
+      "errors": []
+    },
+    {
+      "label": "student-lesson",
+      "url": "http://localhost:5173/en/lessons/seed-2",
+      "errors": []
+    },
+    {
+      "label": "student-video-hls",
+      "url": "http://localhost:5173/en/lessons/seed-2",
+      "errors": []
+    },
+    {
+      "label": "student-course-dark",
+      "url": "http://localhost:5173/en/course",
+      "errors": []
+    },
+    {
+      "label": "student-lesson-dark",
+      "url": "http://localhost:5173/en/lessons/seed-2",
+      "errors": []
+    },
+    {
+      "label": "hls-no-cookie",
+      "url": "http://localhost:5173/api/v1/video/seed-2/playlist.m3u8?token=<redacted>",
+      "errors": []
+    },
+    {
+      "label": "preview-hls-no-cookie",
+      "url": "http://localhost:5173/api/v1/video/seed-1/playlist.m3u8?token=<redacted>",
+      "errors": []
+    }
+  ]
+}
+

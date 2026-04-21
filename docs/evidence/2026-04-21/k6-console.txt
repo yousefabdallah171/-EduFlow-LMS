@@ -1,0 +1,629 @@
+﻿
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: /scripts/eduflow-baseline.js
+        output: -
+
+     scenarios: (100.00%) 3 scenarios, 16 max VUs, 2m20s max duration (incl. graceful stop):
+              * public_course: Up to 15 looping VUs for 40s over 3 stages (gracefulRampDown: 30s, exec: publicCourse, gracefulStop: 30s)
+              * student_browse: Up to 1 looping VUs for 40s over 3 stages (gracefulRampDown: 30s, exec: studentBrowse, startTime: 45s, gracefulStop: 30s)
+              * video_path_low_rate: 1 looping VUs for 20s (exec: videoPath, startTime: 1m30s, gracefulStop: 30s)
+
+
+running (0m01.0s), 00/16 VUs, 0 complete and 0 interrupted iterations
+public_course         [   2% ] 00/15 VUs  01.0s/40.0s
+student_browse      • [   0% ] waiting    44.0s
+video_path_low_rate • [   0% ] waiting    1m29.0s
+
+running (0m02.0s), 00/16 VUs, 0 complete and 0 interrupted iterations
+public_course         [   5% ] 00/15 VUs  02.0s/40.0s
+student_browse      • [   0% ] waiting    43.0s
+video_path_low_rate • [   0% ] waiting    1m28.0s
+
+running (0m03.0s), 01/16 VUs, 4 complete and 0 interrupted iterations
+public_course         [   7% ] 01/15 VUs  03.0s/40.0s
+student_browse      • [   0% ] waiting    42.0s
+video_path_low_rate • [   0% ] waiting    1m27.0s
+
+running (0m04.0s), 01/16 VUs, 9 complete and 0 interrupted iterations
+public_course         [  10% ] 01/15 VUs  04.0s/40.0s
+student_browse      • [   0% ] waiting    41.0s
+video_path_low_rate • [   0% ] waiting    1m26.0s
+
+running (0m05.0s), 02/16 VUs, 18 complete and 0 interrupted iterations
+public_course         [  12% ] 02/15 VUs  05.0s/40.0s
+student_browse      • [   0% ] waiting    40.0s
+video_path_low_rate • [   0% ] waiting    1m25.0s
+
+running (0m06.0s), 02/16 VUs, 28 complete and 0 interrupted iterations
+public_course         [  15% ] 02/15 VUs  06.0s/40.0s
+student_browse      • [   0% ] waiting    39.0s
+video_path_low_rate • [   0% ] waiting    1m24.0s
+
+running (0m07.0s), 03/16 VUs, 41 complete and 0 interrupted iterations
+public_course         [  17% ] 03/15 VUs  07.0s/40.0s
+student_browse      • [   0% ] waiting    38.0s
+video_path_low_rate • [   0% ] waiting    1m23.0s
+
+running (0m08.0s), 03/16 VUs, 56 complete and 0 interrupted iterations
+public_course         [  20% ] 03/15 VUs  08.0s/40.0s
+student_browse      • [   0% ] waiting    37.0s
+video_path_low_rate • [   0% ] waiting    1m22.0s
+
+running (0m09.0s), 04/16 VUs, 75 complete and 0 interrupted iterations
+public_course         [  22% ] 04/15 VUs  09.0s/40.0s
+student_browse      • [   0% ] waiting    36.0s
+video_path_low_rate • [   0% ] waiting    1m21.0s
+
+running (0m10.0s), 04/16 VUs, 95 complete and 0 interrupted iterations
+public_course         [  25% ] 04/15 VUs  10.0s/40.0s
+student_browse      • [   0% ] waiting    35.0s
+video_path_low_rate • [   0% ] waiting    1m20.0s
+
+running (0m11.0s), 05/16 VUs, 118 complete and 0 interrupted iterations
+public_course         [  27% ] 05/15 VUs  11.0s/40.0s
+student_browse      • [   0% ] waiting    34.0s
+video_path_low_rate • [   0% ] waiting    1m19.0s
+
+running (0m12.0s), 05/16 VUs, 143 complete and 0 interrupted iterations
+public_course         [  30% ] 05/15 VUs  12.0s/40.0s
+student_browse      • [   0% ] waiting    33.0s
+video_path_low_rate • [   0% ] waiting    1m18.0s
+
+running (0m13.0s), 06/16 VUs, 171 complete and 0 interrupted iterations
+public_course         [  32% ] 06/15 VUs  13.0s/40.0s
+student_browse      • [   0% ] waiting    32.0s
+video_path_low_rate • [   0% ] waiting    1m17.0s
+
+running (0m14.0s), 06/16 VUs, 200 complete and 0 interrupted iterations
+public_course         [  35% ] 06/15 VUs  14.0s/40.0s
+student_browse      • [   0% ] waiting    31.0s
+video_path_low_rate • [   0% ] waiting    1m16.0s
+
+running (0m15.0s), 07/16 VUs, 234 complete and 0 interrupted iterations
+public_course         [  37% ] 07/15 VUs  15.0s/40.0s
+student_browse      • [   0% ] waiting    30.0s
+video_path_low_rate • [   0% ] waiting    1m15.0s
+
+running (0m16.0s), 07/16 VUs, 268 complete and 0 interrupted iterations
+public_course         [  40% ] 07/15 VUs  16.0s/40.0s
+student_browse      • [   0% ] waiting    29.0s
+video_path_low_rate • [   0% ] waiting    1m14.0s
+
+running (0m17.0s), 08/16 VUs, 307 complete and 0 interrupted iterations
+public_course         [  42% ] 08/15 VUs  17.0s/40.0s
+student_browse      • [   0% ] waiting    28.0s
+video_path_low_rate • [   0% ] waiting    1m13.0s
+
+running (0m18.0s), 08/16 VUs, 346 complete and 0 interrupted iterations
+public_course         [  45% ] 08/15 VUs  18.0s/40.0s
+student_browse      • [   0% ] waiting    27.0s
+video_path_low_rate • [   0% ] waiting    1m12.0s
+
+running (0m19.0s), 09/16 VUs, 388 complete and 0 interrupted iterations
+public_course         [  47% ] 09/15 VUs  19.0s/40.0s
+student_browse      • [   0% ] waiting    26.0s
+video_path_low_rate • [   0% ] waiting    1m11.0s
+
+running (0m20.0s), 09/16 VUs, 433 complete and 0 interrupted iterations
+public_course         [  50% ] 09/15 VUs  20.0s/40.0s
+student_browse      • [   0% ] waiting    25.0s
+video_path_low_rate • [   0% ] waiting    1m10.0s
+
+running (0m21.0s), 10/16 VUs, 480 complete and 0 interrupted iterations
+public_course         [  52% ] 10/15 VUs  21.0s/40.0s
+student_browse      • [   0% ] waiting    24.0s
+video_path_low_rate • [   0% ] waiting    1m09.0s
+
+running (0m22.0s), 10/16 VUs, 528 complete and 0 interrupted iterations
+public_course         [  55% ] 10/15 VUs  22.0s/40.0s
+student_browse      • [   0% ] waiting    23.0s
+video_path_low_rate • [   0% ] waiting    1m08.0s
+
+running (0m23.0s), 11/16 VUs, 581 complete and 0 interrupted iterations
+public_course         [  57% ] 11/15 VUs  23.0s/40.0s
+student_browse      • [   0% ] waiting    22.0s
+video_path_low_rate • [   0% ] waiting    1m07.0s
+
+running (0m24.0s), 11/16 VUs, 636 complete and 0 interrupted iterations
+public_course         [  60% ] 11/15 VUs  24.0s/40.0s
+student_browse      • [   0% ] waiting    21.0s
+video_path_low_rate • [   0% ] waiting    1m06.0s
+
+running (0m25.0s), 12/16 VUs, 695 complete and 0 interrupted iterations
+public_course         [  62% ] 12/15 VUs  25.0s/40.0s
+student_browse      • [   0% ] waiting    20.0s
+video_path_low_rate • [   0% ] waiting    1m05.0s
+
+running (0m26.0s), 12/16 VUs, 752 complete and 0 interrupted iterations
+public_course         [  65% ] 12/15 VUs  26.0s/40.0s
+student_browse      • [   0% ] waiting    19.0s
+video_path_low_rate • [   0% ] waiting    1m04.0s
+
+running (0m27.0s), 13/16 VUs, 812 complete and 0 interrupted iterations
+public_course         [  67% ] 13/15 VUs  27.0s/40.0s
+student_browse      • [   0% ] waiting    18.0s
+video_path_low_rate • [   0% ] waiting    1m03.0s
+
+running (0m28.0s), 13/16 VUs, 875 complete and 0 interrupted iterations
+public_course         [  70% ] 13/15 VUs  28.0s/40.0s
+student_browse      • [   0% ] waiting    17.0s
+video_path_low_rate • [   0% ] waiting    1m02.0s
+
+running (0m29.0s), 14/16 VUs, 943 complete and 0 interrupted iterations
+public_course         [  72% ] 14/15 VUs  29.0s/40.0s
+student_browse      • [   0% ] waiting    16.0s
+video_path_low_rate • [   0% ] waiting    1m01.0s
+
+running (0m30.0s), 14/16 VUs, 1012 complete and 0 interrupted iterations
+public_course         [  75% ] 14/15 VUs  30.0s/40.0s
+student_browse      • [   0% ] waiting    15.0s
+video_path_low_rate • [   0% ] waiting    1m00.0s
+
+running (0m31.0s), 14/16 VUs, 1086 complete and 0 interrupted iterations
+public_course         [  77% ] 14/15 VUs  31.0s/40.0s
+student_browse      • [   0% ] waiting    14.0s
+video_path_low_rate • [   0% ] waiting    0m59.0s
+
+running (0m32.0s), 13/16 VUs, 1154 complete and 0 interrupted iterations
+public_course         [  80% ] 13/15 VUs  32.0s/40.0s
+student_browse      • [   0% ] waiting    13.0s
+video_path_low_rate • [   0% ] waiting    0m58.0s
+
+running (0m33.0s), 11/16 VUs, 1211 complete and 0 interrupted iterations
+public_course         [  82% ] 11/15 VUs  33.0s/40.0s
+student_browse      • [   0% ] waiting    12.0s
+video_path_low_rate • [   0% ] waiting    0m57.0s
+
+running (0m34.0s), 10/16 VUs, 1259 complete and 0 interrupted iterations
+public_course         [  85% ] 10/15 VUs  34.0s/40.0s
+student_browse      • [   0% ] waiting    11.0s
+video_path_low_rate • [   0% ] waiting    0m56.0s
+
+running (0m35.0s), 08/16 VUs, 1306 complete and 0 interrupted iterations
+public_course         [  87% ] 08/15 VUs  35.0s/40.0s
+student_browse      • [   0% ] waiting    10.0s
+video_path_low_rate • [   0% ] waiting    0m55.0s
+
+running (0m36.0s), 07/16 VUs, 1342 complete and 0 interrupted iterations
+public_course         [  90% ] 07/15 VUs  36.0s/40.0s
+student_browse      • [   0% ] waiting    09.0s
+video_path_low_rate • [   0% ] waiting    0m54.0s
+
+running (0m37.0s), 05/16 VUs, 1371 complete and 0 interrupted iterations
+public_course         [  92% ] 05/15 VUs  37.0s/40.0s
+student_browse      • [   0% ] waiting    08.0s
+video_path_low_rate • [   0% ] waiting    0m53.0s
+
+running (0m38.0s), 04/16 VUs, 1393 complete and 0 interrupted iterations
+public_course         [  95% ] 04/15 VUs  38.0s/40.0s
+student_browse      • [   0% ] waiting    07.0s
+video_path_low_rate • [   0% ] waiting    0m52.0s
+
+running (0m39.0s), 02/16 VUs, 1408 complete and 0 interrupted iterations
+public_course         [  97% ] 02/15 VUs  39.0s/40.0s
+student_browse      • [   0% ] waiting    06.0s
+video_path_low_rate • [   0% ] waiting    0m51.0s
+
+running (0m40.0s), 01/16 VUs, 1415 complete and 0 interrupted iterations
+public_course         [ 100% ] 01/15 VUs  40.0s/40.0s
+student_browse      • [   0% ] waiting    05.0s
+video_path_low_rate • [   0% ] waiting    0m50.0s
+
+running (0m41.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      • [   0% ] waiting    04.0s
+video_path_low_rate • [   0% ] waiting    0m49.0s
+
+running (0m42.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      • [   0% ] waiting    03.0s
+video_path_low_rate • [   0% ] waiting    0m48.0s
+
+running (0m43.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      • [   0% ] waiting    02.0s
+video_path_low_rate • [   0% ] waiting    0m47.0s
+
+running (0m44.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      • [   0% ] waiting    01.0s
+video_path_low_rate • [   0% ] waiting    0m46.0s
+
+running (0m45.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      • [   0% ] waiting    00.0s
+video_path_low_rate • [   0% ] waiting    0m45.0s
+
+running (0m46.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [   2% ] 0/1 VUs    01.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m44.0s
+
+running (0m47.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [   5% ] 0/1 VUs    02.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m43.0s
+
+running (0m48.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [   7% ] 0/1 VUs    03.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m42.0s
+
+running (0m49.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  10% ] 0/1 VUs    04.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m41.0s
+
+running (0m50.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  12% ] 0/1 VUs    05.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m40.0s
+
+running (0m51.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  15% ] 0/1 VUs    06.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m39.0s
+
+running (0m52.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  17% ] 0/1 VUs    07.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m38.0s
+
+running (0m53.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  20% ] 0/1 VUs    08.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m37.0s
+
+running (0m54.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  22% ] 0/1 VUs    09.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m36.0s
+
+running (0m55.0s), 00/16 VUs, 1416 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  25% ] 0/1 VUs    10.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m35.0s
+
+running (0m56.0s), 01/16 VUs, 1418 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  27% ] 1/1 VUs    11.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m34.0s
+
+running (0m57.0s), 01/16 VUs, 1422 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  30% ] 1/1 VUs    12.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m33.0s
+
+running (0m58.0s), 01/16 VUs, 1426 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  32% ] 1/1 VUs    13.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m32.0s
+
+running (0m59.0s), 01/16 VUs, 1430 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  35% ] 1/1 VUs    14.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m31.0s
+
+running (1m00.0s), 01/16 VUs, 1434 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  37% ] 1/1 VUs    15.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m30.0s
+
+running (1m01.0s), 01/16 VUs, 1437 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  40% ] 1/1 VUs    16.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m29.0s
+
+running (1m02.0s), 01/16 VUs, 1441 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  42% ] 1/1 VUs    17.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m28.0s
+
+running (1m03.0s), 01/16 VUs, 1445 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  45% ] 1/1 VUs    18.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m27.0s
+
+running (1m04.0s), 01/16 VUs, 1449 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  47% ] 1/1 VUs    19.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m26.0s
+
+running (1m05.0s), 01/16 VUs, 1452 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  50% ] 1/1 VUs    20.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m25.0s
+
+running (1m06.0s), 01/16 VUs, 1456 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  52% ] 1/1 VUs    21.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m24.0s
+
+running (1m07.0s), 01/16 VUs, 1460 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  55% ] 1/1 VUs    22.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m23.0s
+
+running (1m08.0s), 01/16 VUs, 1464 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  57% ] 1/1 VUs    23.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m22.0s
+
+running (1m09.0s), 01/16 VUs, 1468 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  60% ] 1/1 VUs    24.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m21.0s
+
+running (1m10.0s), 01/16 VUs, 1471 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  62% ] 1/1 VUs    25.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m20.0s
+
+running (1m11.0s), 01/16 VUs, 1475 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  65% ] 1/1 VUs    26.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m19.0s
+
+running (1m12.0s), 01/16 VUs, 1479 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  67% ] 1/1 VUs    27.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m18.0s
+
+running (1m13.0s), 01/16 VUs, 1483 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  70% ] 1/1 VUs    28.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m17.0s
+
+running (1m14.0s), 01/16 VUs, 1486 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  72% ] 1/1 VUs    29.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m16.0s
+
+running (1m15.0s), 01/16 VUs, 1490 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  75% ] 1/1 VUs    30.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m15.0s
+
+running (1m16.0s), 01/16 VUs, 1494 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  77% ] 1/1 VUs    31.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m14.0s
+
+running (1m17.0s), 01/16 VUs, 1497 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  80% ] 1/1 VUs    32.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m13.0s
+
+running (1m18.0s), 01/16 VUs, 1501 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  82% ] 1/1 VUs    33.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m12.0s
+
+running (1m19.0s), 01/16 VUs, 1505 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  85% ] 1/1 VUs    34.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m11.0s
+
+running (1m20.0s), 01/16 VUs, 1508 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  87% ] 1/1 VUs    35.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m10.0s
+
+running (1m21.0s), 01/16 VUs, 1513 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  90% ] 1/1 VUs    36.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m09.0s
+
+running (1m22.0s), 01/16 VUs, 1516 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  92% ] 1/1 VUs    37.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m08.0s
+
+running (1m23.0s), 01/16 VUs, 1520 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  95% ] 1/1 VUs    38.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m07.0s
+
+running (1m24.0s), 01/16 VUs, 1524 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [  97% ] 1/1 VUs    39.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m06.0s
+
+running (1m25.0s), 01/16 VUs, 1528 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse        [ 100% ] 1/1 VUs    40.0s/40.0s
+video_path_low_rate • [   0% ] waiting    0m05.0s
+
+running (1m26.0s), 00/16 VUs, 1529 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate • [   0% ] waiting    0m04.0s
+
+running (1m27.0s), 00/16 VUs, 1529 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate • [   0% ] waiting    0m03.0s
+
+running (1m28.0s), 00/16 VUs, 1529 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate • [   0% ] waiting    0m02.0s
+
+running (1m29.0s), 00/16 VUs, 1529 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate • [   0% ] waiting    0m01.0s
+
+running (1m30.0s), 00/16 VUs, 1529 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate • [   0% ] waiting    0m00.0s
+
+running (1m31.0s), 01/16 VUs, 1529 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [   5% ] 1 VUs      01.0s/20s
+
+running (1m32.0s), 01/16 VUs, 1529 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  10% ] 1 VUs      02.0s/20s
+
+running (1m33.0s), 01/16 VUs, 1529 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  15% ] 1 VUs      03.0s/20s
+
+running (1m34.0s), 01/16 VUs, 1530 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  20% ] 1 VUs      04.0s/20s
+
+running (1m35.0s), 01/16 VUs, 1530 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  25% ] 1 VUs      05.0s/20s
+
+running (1m36.0s), 01/16 VUs, 1530 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  30% ] 1 VUs      06.0s/20s
+
+running (1m37.0s), 01/16 VUs, 1531 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  35% ] 1 VUs      07.0s/20s
+
+running (1m38.0s), 01/16 VUs, 1531 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  40% ] 1 VUs      08.0s/20s
+
+running (1m39.0s), 01/16 VUs, 1531 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  45% ] 1 VUs      09.0s/20s
+
+running (1m40.0s), 01/16 VUs, 1532 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  50% ] 1 VUs      10.0s/20s
+
+running (1m41.0s), 01/16 VUs, 1532 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  55% ] 1 VUs      11.0s/20s
+
+running (1m42.0s), 01/16 VUs, 1532 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  60% ] 1 VUs      12.0s/20s
+
+running (1m43.0s), 01/16 VUs, 1533 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  65% ] 1 VUs      13.0s/20s
+
+running (1m44.0s), 01/16 VUs, 1533 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  70% ] 1 VUs      14.0s/20s
+
+running (1m45.0s), 01/16 VUs, 1533 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  75% ] 1 VUs      15.0s/20s
+
+running (1m46.0s), 01/16 VUs, 1534 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  80% ] 1 VUs      16.0s/20s
+
+running (1m47.0s), 01/16 VUs, 1534 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  85% ] 1 VUs      17.0s/20s
+
+running (1m48.0s), 01/16 VUs, 1534 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  90% ] 1 VUs      18.0s/20s
+
+running (1m49.0s), 01/16 VUs, 1534 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [  95% ] 1 VUs      19.0s/20s
+
+running (1m50.0s), 01/16 VUs, 1535 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate   [ 100% ] 1 VUs      20.0s/20s
+
+running (1m51.0s), 01/16 VUs, 1535 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate ↓ [ 100% ] 1 VUs      20s
+
+running (1m52.0s), 01/16 VUs, 1535 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate ↓ [ 100% ] 1 VUs      20s
+
+
+  █ THRESHOLDS 
+
+    http_req_duration
+    ✓ 'p(95)<800' p(95)=28.2ms
+    ✓ 'p(99)<1200' p(99)=34.31ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 1792    15.982935/s
+    checks_succeeded...: 100.00% 1792 out of 1792
+    checks_failed......: 0.00%   0 out of 1792
+
+    ✓ course 200
+    ✓ login 200
+    ✓ dashboard 200
+    ✓ lessons/grouped 200
+    ✓ lessons 200
+    ✓ lessons 200 (video)
+    ✓ lesson detail 200
+    ✓ playlist 200
+    ✓ key 200
+    ✓ segment 200/206
+
+    HTTP
+    http_req_duration..............: avg=8.26ms   min=914.68µs med=4.92ms   max=480.41ms p(90)=21.78ms  p(95)=28.2ms  
+      { expected_response:true }...: avg=8.26ms   min=914.68µs med=4.92ms   max=480.41ms p(90)=21.78ms  p(95)=28.2ms  
+    http_req_failed................: 0.00%  0 out of 1792
+    http_reqs......................: 1792   15.982935/s
+
+    EXECUTION
+    iteration_duration.............: avg=223.65ms min=201.13ms med=205.85ms max=3.55s    p(90)=212.31ms p(95)=263.63ms
+    iterations.....................: 1536   13.699659/s
+    vus............................: 1      min=0         max=14
+    vus_max........................: 16     min=16        max=16
+
+    NETWORK
+    data_received..................: 7.1 MB 64 kB/s
+    data_sent......................: 438 kB 3.9 kB/s
+
+
+
+
+running (1m52.1s), 00/16 VUs, 1536 complete and 0 interrupted iterations
+public_course       ✓ [ 100% ] 00/15 VUs  40s
+student_browse      ✓ [ 100% ] 0/1 VUs    40s
+video_path_low_rate ✓ [ 100% ] 1 VUs      20s

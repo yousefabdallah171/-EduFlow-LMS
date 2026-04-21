@@ -5,8 +5,12 @@ const BASE_URL = __ENV.BASE_URL || "http://localhost:3000";
 
 const THRESHOLD_PROFILE = (__ENV.THRESHOLD_PROFILE || "local").toLowerCase();
 const VIDEO_ITERATION_SEGMENTS = Number(__ENV.VIDEO_ITERATION_SEGMENTS || 2);
+const VIDEO_ITERATION_SLEEP_SECONDS = Number(__ENV.VIDEO_ITERATION_SLEEP_SECONDS || 3);
+const DEBUG_K6 = __ENV.DEBUG_K6 === "1";
 
 const STUDENT_USERS_JSON = __ENV.STUDENT_USERS_JSON || "";
+const STUDENT_EMAIL = (__ENV.STUDENT_EMAIL || "").trim();
+const STUDENT_PASSWORD = (__ENV.STUDENT_PASSWORD || "").trim();
 const STUDENT_USERS = (() => {
   if (!STUDENT_USERS_JSON.trim()) return [];
   try {
@@ -15,6 +19,14 @@ const STUDENT_USERS = (() => {
   } catch {
     return [];
   }
+})();
+
+const studentUsers = (() => {
+  if (STUDENT_USERS.length > 0) return STUDENT_USERS;
+  if (STUDENT_EMAIL && STUDENT_PASSWORD) {
+    return [{ email: STUDENT_EMAIL, password: STUDENT_PASSWORD }];
+  }
+  return [];
 })();
 
 const thresholds =
@@ -34,6 +46,7 @@ export const options = {
     public_course: {
       executor: "ramping-vus",
       exec: "publicCourse",
+      startTime: "0s",
       startVUs: 0,
       stages: [
         { duration: "10s", target: 5 },
@@ -44,16 +57,24 @@ export const options = {
     student_browse: {
       executor: "ramping-vus",
       exec: "studentBrowse",
+      // Default to sequential execution to avoid invalidating sessions when only a single seed user exists.
+      // Set PARALLEL_SCENARIOS=1 to run in parallel.
+      startTime: (__ENV.PARALLEL_SCENARIOS === "1" ? "0s" : "45s"),
       startVUs: 0,
-      stages: [
-        { duration: "10s", target: 1 },
-        { duration: "20s", target: 3 },
-        { duration: "10s", target: 0 }
-      ]
+      stages: (() => {
+        // Avoid invalidating sessions when ENFORCE_SINGLE_SESSION=true and only 1 seed user is provided.
+        const cap = Math.max(1, Math.min(3, studentUsers.length || 1));
+        return [
+          { duration: "10s", target: cap },
+          { duration: "20s", target: cap },
+          { duration: "10s", target: 0 }
+        ];
+      })()
     },
     video_path_low_rate: {
       executor: "constant-vus",
       exec: "videoPath",
+      startTime: (__ENV.PARALLEL_SCENARIOS === "1" ? "0s" : "90s"),
       vus: 1,
       duration: "20s"
     }
@@ -63,9 +84,9 @@ export const options = {
 const jsonHeaders = { "content-type": "application/json" };
 
 const pickStudentUserForVu = () => {
-  if (STUDENT_USERS.length === 0) return null;
-  const idx = (__VU - 1) % STUDENT_USERS.length;
-  const u = STUDENT_USERS[idx];
+  if (studentUsers.length === 0) return null;
+  const idx = (__VU - 1) % studentUsers.length;
+  const u = studentUsers[idx];
   if (!u?.email || !u?.password) return null;
   return u;
 };
@@ -141,7 +162,11 @@ export function videoPath() {
   const lessons = http.get(`${BASE_URL}/api/v1/lessons`, { headers: authHeaders, jar, redirects: 0 });
   check(lessons, { "lessons 200 (video)": (r) => r.status === 200 });
   const lessonsBody = lessons.json();
-  const firstLessonId = lessonsBody?.lessons?.find?.((l) => !!l?.id)?.id || lessonsBody?.lessons?.[0]?.id || null;
+  const firstLessonId =
+    lessonsBody?.lessons?.find?.((l) => typeof l?.id === "string" && l.id.startsWith("seed-"))?.id ||
+    lessonsBody?.lessons?.find?.((l) => !!l?.id)?.id ||
+    lessonsBody?.lessons?.[0]?.id ||
+    null;
   if (!firstLessonId) return;
 
   const detail = http.get(`${BASE_URL}/api/v1/lessons/${firstLessonId}`, { headers: authHeaders, jar, redirects: 0 });
@@ -158,8 +183,16 @@ export function videoPath() {
   const playlistText = playlist.body || "";
   const keyPath = extractFirstMatch(playlistText, /URI=\"(\/api\/v1\/video\/[^\\\"]+\/key\?token=[^\"]+)\"/);
   if (keyPath) {
-    const keyRes = http.get(`${BASE_URL}${keyPath}`, { jar, redirects: 0 });
-    check(keyRes, { "key 200": (r) => r.status === 200 });
+    const keyRes = http.get(`${BASE_URL}${keyPath}`, { jar, redirects: 0, responseType: "binary" });
+    check(keyRes, {
+      "key 200": (r) => {
+        if (DEBUG_K6 && r.status !== 200) {
+          // eslint-disable-next-line no-console
+          console.log(`key status=${r.status} url=${r.url}`);
+        }
+        return r.status === 200;
+      }
+    });
   }
 
   const segmentUrls = [];
@@ -172,10 +205,10 @@ export function videoPath() {
   }
 
   for (const url of segmentUrls) {
-    const seg = http.get(url, { jar, redirects: 0 });
+    const seg = http.get(url, { jar, redirects: 0, responseType: "binary" });
     check(seg, { "segment 200/206": (r) => r.status === 200 || r.status === 206 });
   }
 
-  sleep(0.5);
+  // Keep this low-rate so it doesn't trigger playlist/key rate limits in legitimate baseline runs.
+  sleep(VIDEO_ITERATION_SLEEP_SECONDS);
 }
-

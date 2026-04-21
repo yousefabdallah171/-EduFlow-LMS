@@ -19,13 +19,15 @@ const get = (path, fallback = null) => {
 };
 
 const now = new Date().toISOString();
-const checksPass = get("root_group.checks.passes", 0);
-const checksFail = get("root_group.checks.fails", 0);
-const httpReqs = get("metrics.http_reqs.values.count", 0);
-const httpFailRate = get("metrics.http_req_failed.values.rate", 0);
-const p95 = get("metrics.http_req_duration.values.p(95)", null);
-const p99 = get("metrics.http_req_duration.values.p(99)", null);
-const max = get("metrics.http_req_duration.values.max", null);
+
+// k6 summary-export schema differs by version; support both shapes.
+const checksPass = get("metrics.checks.passes", get("root_group.checks.passes", 0));
+const checksFail = get("metrics.checks.fails", get("root_group.checks.fails", 0));
+const httpReqs = get("metrics.http_reqs.count", get("metrics.http_reqs.values.count", 0));
+const httpFailRate = get("metrics.http_req_failed.value", get("metrics.http_req_failed.values.rate", 0));
+const p95 = get("metrics.http_req_duration.p(95)", get("metrics.http_req_duration.values.p(95)", null));
+const p99 = get("metrics.http_req_duration.p(99)", get("metrics.http_req_duration.values.p(99)", null));
+const max = get("metrics.http_req_duration.max", get("metrics.http_req_duration.values.max", null));
 
 const html = `<!doctype html>
 <html lang="en">
@@ -64,4 +66,3 @@ const html = `<!doctype html>
 fs.writeFileSync(outputPath, html, "utf8");
 // eslint-disable-next-line no-console
 console.log(`Wrote ${outputPath}`);
-

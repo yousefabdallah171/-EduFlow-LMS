@@ -1,0 +1,74 @@
+﻿{
+  "protectedLesson": {
+    "playlistWithCookie": 200,
+    "playlistNoCookie": 401,
+    "keyNoCookie": 401,
+    "segmentNoCookie": 401,
+    "playlistAfterLogout": 401,
+    "concurrency": {
+      "sameFingerprint": 200,
+      "differentFingerprint": 429
+    }
+  },
+  "preview": {
+    "playlistWithCookie": 200,
+    "playlistNoCookie": 401,
+    "bindingMismatchDifferentFingerprint": 401,
+    "rateLimit": {
+      "ok200": 9,
+      "tooMany429": 31
+    }
+  },
+  "recentSecurityEvents": [
+    {
+      "createdAt": "2026-04-21T07:11:29.608Z",
+      "eventType": "VIDEO_RATE_LIMIT_PLAYLIST",
+      "severity": "WARN"
+    },
+    {
+      "createdAt": "2026-04-21T07:11:29.597Z",
+      "eventType": "VIDEO_RATE_LIMIT_PLAYLIST",
+      "severity": "WARN"
+    },
+    {
+      "createdAt": "2026-04-21T07:11:29.585Z",
+      "eventType": "VIDEO_RATE_LIMIT_PLAYLIST",
+      "severity": "WARN"
+    },
+    {
+      "createdAt": "2026-04-21T07:11:29.576Z",
+      "eventType": "VIDEO_RATE_LIMIT_PLAYLIST",
+      "severity": "WARN"
+    },
+    {
+      "createdAt": "2026-04-21T07:11:29.561Z",
+      "eventType": "VIDEO_RATE_LIMIT_PLAYLIST",
+      "severity": "WARN"
+    },
+    {
+      "createdAt": "2026-04-21T07:11:29.542Z",
+      "eventType": "VIDEO_RATE_LIMIT_PLAYLIST",
+      "severity": "WARN"
+    },
+    {
+      "createdAt": "2026-04-21T07:11:29.528Z",
+      "eventType": "VIDEO_RATE_LIMIT_PLAYLIST",
+      "severity": "WARN"
+    },
+    {
+      "createdAt": "2026-04-21T07:11:29.516Z",
+      "eventType": "VIDEO_RATE_LIMIT_PLAYLIST",
+      "severity": "WARN"
+    },
+    {
+      "createdAt": "2026-04-21T07:11:29.506Z",
+      "eventType": "VIDEO_RATE_LIMIT_PLAYLIST",
+      "severity": "WARN"
+    },
+    {
+      "createdAt": "2026-04-21T07:11:29.491Z",
+      "eventType": "VIDEO_RATE_LIMIT_PLAYLIST",
+      "severity": "WARN"
+    }
+  ]
+}
