@@ -69,10 +69,12 @@ This section marks each top-level task as **Completed / In Progress / Pending** 
 - **TASK 2.4 (Load testing & performance validation)**: [DONE - DEV BASELINE]  
   - Dev load scripts: `backend/scripts/load/course.mjs`, `backend/scripts/load/student.mjs`  
   - Runner scripts: `backend/package.json`
+  - Baseline report: `docs/LOAD_TEST_REPORT.md`
   - Production-scale load testing still required on production-like hardware.
 
-- **TASK 2.5 (Phase 2 review + documentation)**: [IN PROGRESS]  
-  - Code changes tested via Docker runs; load scripts included (Task 2.4).
+- **TASK 2.5 (Phase 2 review + documentation)**: [DONE - DEV BASELINE]  
+  - Baseline report: `docs/LOAD_TEST_REPORT.md`  
+  - Monitoring runbook: `docs/MONITORING_ALERTING.md`
 
 ### Phase 3 (Defense Hardening & Monitoring)
 
@@ -96,8 +98,8 @@ This section marks each top-level task as **Completed / In Progress / Pending** 
   - Attacker-style automation: `frontend/scripts/playwright-manual-check.cjs`  
   - QC runbook: `docs/QC_SECURITY_CHECKLIST.md`
 
-- **TASK 3.5 (Phase 3 code review & sign-off)**: [READY]  
-  - Engineering work complete; requires human sign-off run using Phase 3 checklist.
+- **TASK 3.5 (Phase 3 code review & sign-off)**: [READY FOR HUMAN SIGN-OFF]  
+  - Engineering work complete; requires human sign-off run using: `docs/QC_SECURITY_CHECKLIST.md`
 
 # PHASE 1: CRITICAL SECURITY FIXES (Week 1)
 
@@ -1528,6 +1530,19 @@ time curl -s http://localhost:3000/api/v1/course > /dev/null
 **Description**:
 Create load tests to verify the platform can handle 100k concurrent users without degradation. This validates that all performance optimizations (batch queries, indexes, caching) are effective.
 
+**Implementation (Current Repo)**:
+- Dev baseline load scripts (no external dependencies):
+  - `backend/scripts/load/course.mjs`
+  - `backend/scripts/load/student.mjs`
+- Report template + captured baseline numbers:
+  - `docs/LOAD_TEST_REPORT.md`
+
+**How To Run (Docker)**:
+```bash
+docker compose exec backend sh -lc "cd /app/backend && pnpm load:course"
+docker compose exec backend sh -lc "cd /app/backend && pnpm load:student"
+```
+
 **Load Test Scenario**:
 ```yaml
 # File: backend/tests/load/course-listing.yml
@@ -1616,6 +1631,10 @@ artillery report backend/tests/load/results.json --output backend/tests/load/rep
 **Description**:
 Code review all Phase 2 changes, ensure performance improvements are measurable, and document findings.
 
+**Implementation (Current Repo)**:
+- Baseline report: `docs/LOAD_TEST_REPORT.md`
+- Monitoring runbook: `docs/MONITORING_ALERTING.md`
+
 **Code Review Checklist**:
 - [ ] N+1 query fix is correct
 - [ ] Database indexes are properly created
@@ -1683,11 +1702,17 @@ Code review all Phase 2 changes, ensure performance improvements are measurable,
 **Related Issue**: #8  
 **Files to Create/Modify**:
 - `backend/src/services/session.service.ts` (NEW)
-- `backend/src/middleware/session.middleware.ts` (NEW)
-- `backend/src/controllers/auth.controller.ts` (MODIFY)
+- `backend/src/services/auth.service.ts` (MODIFY)
+- `backend/src/middleware/auth.middleware.ts` (MODIFY)
 
 **Description**:
 Enforce single active session per user. When a user logs in from a new device, invalidate all previous sessions. This prevents account sharing and unauthorized access.
+
+**Implementation (Current Repo)**:
+- Session invalidation service: `backend/src/services/session.service.ts`
+- Enforced at issuance + refresh/logout: `backend/src/services/auth.service.ts`
+- Enforced on every authenticated request: `backend/src/middleware/auth.middleware.ts`
+- Test: `backend/tests/integration/single-session.test.ts`
 
 **New Service**:
 ```typescript
@@ -1790,12 +1815,19 @@ curl -s -X GET http://localhost:3000/api/v1/student/dashboard \
 **Severity**: 🟠 MEDIUM  
 **Related Issue**: #4  
 **Files to Create/Modify**:
-- `backend/src/utils/device-fingerprint.ts` (NEW)
-- `frontend/src/lib/device-fingerprint.ts` (NEW)
+- `backend/src/controllers/lesson.controller.ts` (MODIFY)
 - `backend/src/services/video-token.service.ts` (MODIFY)
 
 **Description**:
 Replace weak IP/UA binding with device fingerprinting. Preview tokens should bind to unique device characteristics that can't be easily spoofed.
+
+**Implementation (Current Repo)**:
+- Cookie-bound preview session (URL sharing fails):
+  - Cookie issuance: `backend/src/controllers/lesson.controller.ts`
+  - Validation + Redis backing: `backend/src/services/video-token.service.ts`
+- Device fingerprinting is optional/future; not implemented because it can be fragile and increase false positives.
+
+**Optional (Future)**: Device fingerprinting approach (below) can be added if you accept higher false-positive risk.
 
 **Backend Device Fingerprint Generation**:
 ```typescript
@@ -1968,6 +2000,11 @@ async validateToken(input: VideoTokenValidationInput & { deviceFingerprint?: str
 **Description**:
 Setup monitoring to detect security issues and performance problems in real-time.
 
+**Implementation (Current Repo)**:
+- Dev metrics endpoint: `GET /health/metrics` in `backend/src/app.ts`
+- Telemetry snapshot service: `backend/src/services/telemetry.service.ts`
+- Monitoring + alerting runbook: `docs/MONITORING_ALERTING.md`
+
 **Monitoring Checklist**:
 - [ ] Setup APM (Application Performance Monitoring)
 - [ ] Add custom metrics for:
@@ -1997,7 +2034,9 @@ Setup monitoring to detect security issues and performance problems in real-time
 **Severity**: 🟠 MEDIUM  
 **Deliverable**: PDF/Markdown checklist  
 
-**File**: `SECURITY_CHECKLIST_QC.md` (CREATE)
+**Implementation (Current Repo)**:
+- QC runbook: `docs/QC_SECURITY_CHECKLIST.md`
+- Attacker-style automation: `frontend/scripts/playwright-manual-check.cjs`
 
 ```markdown
 # EduFlow LMS - Security Testing Checklist for QC Team
@@ -2235,23 +2274,29 @@ Total Score: ___ / 100 test cases passed
 **Severity**: 🟠 MEDIUM  
 **Related Issues**: #4, #8
 
+**Implementation (Current Repo)**:
+- Session enforcement: `backend/src/services/session.service.ts`, `backend/src/services/auth.service.ts`, `backend/src/middleware/auth.middleware.ts`
+- Preview binding (cookie-bound): `backend/src/controllers/lesson.controller.ts`, `backend/src/services/video-token.service.ts`
+- Monitoring baseline: `backend/src/services/telemetry.service.ts`, `backend/src/app.ts`, `docs/MONITORING_ALERTING.md`
+- QC runbook: `docs/QC_SECURITY_CHECKLIST.md`
+
 **Code Review Checklist**:
 - [ ] Session enforcement logic correct
-- [ ] Device fingerprinting implementation sound
+- [ ] Preview cookie-binding implementation sound
 - [ ] Monitoring alerts configured
 - [ ] QC checklist comprehensive
 - [ ] No new security vulnerabilities
 - [ ] All tests passing
 
 **Performance Impact**:
-- [ ] Device fingerprint generation < 50ms
+- [ ] Preview validation < 10ms
 - [ ] Session check < 10ms
 - [ ] No negative impact on response times
 
 **Acceptance Criteria for Phase 3 Completion**:
 - [ ] All 5 tasks completed
 - [ ] Session enforcement working
-- [ ] Device fingerprinting working
+- [ ] Preview cookie-binding working
 - [ ] Monitoring alerting
 - [ ] QC checklist ready
 - [ ] All tests passing
