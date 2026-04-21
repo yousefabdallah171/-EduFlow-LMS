@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import type { Prisma } from "@prisma/client";
 import { sectionRepository } from "../../repositories/section.repository.js";
+import { lessonService } from "../../services/lesson.service.js";
 
 const getFirstValue = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
@@ -44,6 +45,7 @@ export const createSection = async (req: Request, res: Response): Promise<void> 
       descriptionEn,
       descriptionAr
     });
+    await lessonService.invalidatePublishedLessonsCache();
     res.status(201).json({ section });
   } catch (error) {
     console.error("Error creating section:", error);
@@ -63,6 +65,7 @@ export const updateSection = async (req: Request, res: Response): Promise<void> 
       descriptionAr,
       sortOrder
     });
+    await lessonService.invalidatePublishedLessonsCache();
     res.json({ section });
   } catch (error) {
     console.error("Error updating section:", error);
@@ -74,6 +77,7 @@ export const deleteSection = async (req: Request, res: Response): Promise<void> 
   try {
     const sectionId = getFirstValue(req.params.sectionId);
     await sectionRepository.deleteSection(sectionId as string);
+    await lessonService.invalidatePublishedLessonsCache();
     res.json({ message: "Section deleted successfully" });
   } catch (error) {
     console.error("Error deleting section:", error);
@@ -91,6 +95,7 @@ export const reorderSections = async (req: Request, res: Response): Promise<void
     }
 
     await sectionRepository.reorderSections(sections);
+    await lessonService.invalidatePublishedLessonsCache();
     res.json({ message: "Sections reordered successfully" });
   } catch (error) {
     console.error("Error reordering sections:", error);

@@ -22,6 +22,9 @@ export const createApp = () => {
 
   app.set("trust proxy", 1);
 
+  const redactUrl = (value: string) =>
+    value.replace(/([?&]token=)[^&]+/g, "$1<redacted>");
+
   app.use((req, res, next) => {
     telemetryService.onRequestStart();
     const start = process.hrtime.bigint();
@@ -41,7 +44,9 @@ export const createApp = () => {
         const elapsedMs = Number(process.hrtime.bigint() - start) / 1_000_000;
         if (elapsedMs >= 500) {
           // eslint-disable-next-line no-console
-          console.warn(`[slow] ${req.method} ${req.originalUrl} ${res.statusCode} ${Math.round(elapsedMs)}ms`);
+          console.warn(
+            `[slow] ${req.method} ${redactUrl(req.originalUrl)} ${res.statusCode} ${Math.round(elapsedMs)}ms`
+          );
         }
       });
       next();

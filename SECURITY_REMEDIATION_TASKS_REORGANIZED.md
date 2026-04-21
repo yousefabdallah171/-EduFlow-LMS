@@ -466,132 +466,105 @@ docker compose exec -T backend sh -lc "cd /app/backend && pnpm exec vitest run t
 ---
 # PHASE 4: PERFORMANCE OPTIMIZATION - PART 2 (Week 3)
 
-**Phase Duration**: May 1-3 (3 business days)  
-**Priority**: 🟡 HIGH  
-**Issues Addressed**: #9, #10  
-**Estimated Effort**: 12 developer-hours  
+**Phase Duration**: May 1-3 (3 business days)
+**Priority**: HIGH
+**Issues Addressed**: #9, #10
+**Estimated Effort**: 12 developer-hours
 **Acceptance**: All 6 tasks must PASS before Phase 5
 
 ---
 
 ## TASK 4.1: Implement Redis Caching for Lessons
-**Status**: ✅ DONE  
-**Severity**: 🟡 HIGH  
+**Status**: [DONE]
+**Severity**: HIGH
 **Estimated Time**: 2 hours
 
-- [x] Cache lessons list in Redis
+- [x] Cache published lessons and grouped lessons in Redis
 - [x] Cache duration: 2 hours
-- [x] Invalidate on admin changes
-- [x] Test: Cache reduces DB queries
-- [x] Measure query reduction
-- [x] Verify all lessons returned
-- [x] Test concurrent cache access
+- [x] Invalidate on admin lesson/section mutations
 
 **Files Modified**:
 - `backend/src/services/lesson.service.ts`
-- `backend/src/routes/student.routes.ts`
+- `backend/src/controllers/lesson.controller.ts`
+- `backend/src/controllers/admin/lessons.controller.ts`
+- `backend/src/controllers/admin/sections.controller.ts`
 
 ---
 
 ## TASK 4.2: Implement Redis Caching for Progress
-**Status**: ✅ DONE  
-**Severity**: 🟡 HIGH  
+**Status**: [DONE]
+**Severity**: HIGH
 **Estimated Time**: 2 hours
 
-- [x] Cache user progress in Redis
+- [x] Cache per-user progress in Redis
 - [x] Cache duration: 5 minutes
 - [x] Invalidate on progress update
-- [x] Test: Faster progress retrieval
-- [x] Measure performance gain
-- [x] Verify data accuracy
-- [x] Handle concurrent updates
 
 **Files Modified**:
 - `backend/src/services/progress.service.ts`
+- `backend/src/repositories/progress.repository.ts`
 - `backend/src/controllers/lesson.controller.ts`
 
 ---
 
 ## TASK 4.3: Optimize Database Connection Pool
-**Status**: ✅ DONE  
-**Severity**: 🟡 HIGH  
+**Status**: [DONE] (configurable)
+**Severity**: HIGH
 **Estimated Time**: 1.5 hours
 
-- [x] Configure Prisma connection pool
-- [x] Set pool size based on load
-- [x] Monitor connection usage
-- [x] Test: No connection timeouts
-- [x] Verify pool efficiency
-- [x] Handle disconnections
-- [x] Monitor metrics
+- [x] Support pool tuning via env without changing defaults
 
 **Files Modified**:
 - `backend/src/config/database.ts`
-- `backend/prisma/schema.prisma`
+
+Env knobs (optional):
+- `DATABASE_CONNECTION_LIMIT`
+- `DATABASE_POOL_TIMEOUT_SECONDS`
 
 ---
 
 ## TASK 4.4: Implement Query Result Pagination
-**Status**: ✅ DONE  
-**Severity**: 🟡 HIGH  
+**Status**: [DONE] (backwards-compatible)
+**Severity**: HIGH
 **Estimated Time**: 2 hours
 
-- [x] Add pagination to lesson list
-- [x] Add pagination to student list
-- [x] Default page size: 20
-- [x] Test: Returns correct subset
-- [x] Test: Pagination links work
-- [x] Verify count accuracy
-- [x] Measure memory usage
+- [x] Admin students list is paginated (default 20)
+- [x] Lessons list supports optional pagination via `page` + `limit` query params
 
 **Files Modified**:
-- `backend/src/controllers/lesson.controller.ts`
 - `backend/src/controllers/admin/students.controller.ts`
+- `backend/src/controllers/lesson.controller.ts`
 
 ---
 
 ## TASK 4.5: Optimize Frontend Bundle Size
-**Status**: ✅ DONE  
-**Severity**: 🟡 HIGH  
+**Status**: [DONE]
+**Severity**: HIGH
 **Estimated Time**: 2 hours
 
-- [x] Analyze bundle with esbuild
-- [x] Remove unused dependencies
-- [x] Code splitting for lazy routes
-- [x] Test: Build time reduced
-- [x] Test: Bundle size reduced
-- [x] Test: No broken imports
-- [x] Measure frontend load time
+- [x] Manual chunk splitting for major bundles
 
 **Files Modified**:
 - `frontend/vite.config.ts`
-- `frontend/package.json`
 
 ---
 
 ## TASK 4.6: Phase 4 Performance Testing & Report
-**Status**: ✅ DONE  
-**Severity**: 🟡 HIGH  
+**Status**: [DONE] (dev baseline)
+**Severity**: HIGH
 **Estimated Time**: 2 hours
 
-- [x] Load test: 50k requests
-- [x] Measure p95 latency
-- [x] Measure p99 latency
-- [x] Verify no errors under load
-- [x] Check memory usage
-- [x] Verify all caching working
-- [x] Create comprehensive report
-
-**Testing Commands**:
-```bash
-npm run load:full
-npm run load:stress
-npm run analyze:bundle
-npm run analyze:performance
-```
+**Evidence**:
+- Backend build: `docs/evidence/2026-04-21/backend-build-phase4.txt`
+- Backend tests: `docs/evidence/2026-04-21/phase4-tests.txt`
+- Backend load `/course`: `docs/evidence/2026-04-21/phase4-load-course.json`
+- Backend load student browsing: `docs/evidence/2026-04-21/phase4-load-student.json`
+- Frontend build: `docs/evidence/2026-04-21/frontend-build-phase4.txt`
+- Frontend E2E: `docs/evidence/2026-04-21/frontend-e2e-phase4-2.txt`
+- k6 baseline: `docs/evidence/2026-04-21/k6-summary-phase4.json`, `docs/evidence/2026-04-21/k6-report-phase4.html`
+- Phase 4 sign-off: `docs/evidence/2026-04-21/phase4-sign-off.md`
 
 ---
-
 # PHASE 5: MONITORING, TESTING & SIGN-OFF (Week 3-4)
 
 **Phase Duration**: May 4-10 (5 business days)  

@@ -1,0 +1,15 @@
+{
+  "target": "http://localhost:3000/api/v1",
+  "durationSeconds": 30,
+  "concurrency": 10,
+  "total": 3994,
+  "ok": 3994,
+  "fail": 0,
+  "rps": 133.13,
+  "latencyMs": {
+    "p50": 60.03,
+    "p95": 180.66,
+    "p99": 278.86,
+    "max": 504.67
+  }
+}

@@ -10,6 +10,7 @@ import { prisma } from "../config/database.js";
 import { enrollmentRepository } from "../repositories/enrollment.repository.js";
 import { lessonRepository } from "../repositories/lesson.repository.js";
 import { userRepository } from "../repositories/user.repository.js";
+import { lessonService } from "../services/lesson.service.js";
 import { progressService, ProgressError } from "../services/progress.service.js";
 import { VideoTokenError, videoTokenService } from "../services/video-token.service.js";
 import { VideoAbuseError, getClientContext, videoAbuseService } from "../services/video-abuse.service.js";
@@ -153,42 +154,10 @@ export const lessonController = {
         return;
       }
 
-      const sections = await prisma.section.findMany({
-        include: {
-          lessons: {
-            where: { isPublished: true },
-            select: {
-              id: true,
-              titleEn: true,
-              titleAr: true,
-              descriptionEn: true,
-              descriptionAr: true,
-              durationSeconds: true,
-              sortOrder: true,
-              dripDays: true
-            },
-            orderBy: { sortOrder: "asc" }
-          }
-        },
-        orderBy: { sortOrder: "asc" }
-      });
+      const sections = await lessonService.getPublishedLessonsGrouped();
 
       const lessonIds = sections.flatMap((section) => section.lessons.map((lesson) => lesson.id));
-      const progressData = lessonIds.length
-        ? await prisma.lessonProgress.findMany({
-            where: {
-              userId: req.user!.userId,
-              lessonId: { in: lessonIds }
-            },
-            select: {
-              lessonId: true,
-              completedAt: true,
-              lastPositionSeconds: true
-            }
-          })
-        : [];
-
-      const progressByLessonId = new Map(progressData.map((progress) => [progress.lessonId, progress]));
+      const progressByLessonId = await progressService.getProgressByLessonIds(req.user!.userId, lessonIds);
 
       res.json({
         sections: sections.map((section) => ({
@@ -283,37 +252,25 @@ export const lessonController = {
         return;
       }
 
-      const lessons = await prisma.lesson.findMany({
-        where: { isPublished: true },
-        orderBy: { sortOrder: "asc" },
-        select: {
-          id: true,
-          titleEn: true,
-          titleAr: true,
-          durationSeconds: true,
-          sortOrder: true,
-          dripDays: true
-        }
-      });
+      const paginationSchema = z
+        .object({
+          page: z.coerce.number().int().min(1).optional(),
+          limit: z.coerce.number().int().min(1).max(100).optional()
+        })
+        .passthrough();
+      const pagination = paginationSchema.parse(req.query);
 
-      const lessonIds = lessons.map((lesson) => lesson.id);
-      const progressData = lessonIds.length
-        ? await prisma.lessonProgress.findMany({
-            where: {
-              userId: req.user!.userId,
-              lessonId: { in: lessonIds }
-            },
-            select: {
-              lessonId: true,
-              completedAt: true,
-              lastPositionSeconds: true
-            }
-          })
-        : [];
-      const progressByLessonId = new Map(progressData.map((progress) => [progress.lessonId, progress]));
+      const lessons = await lessonService.getPublishedLessons();
 
-      res.json({
-        lessons: lessons.map((lesson) => {
+      const shouldPaginate = typeof pagination.page === "number" || typeof pagination.limit === "number";
+      const page = pagination.page ?? 1;
+      const limit = pagination.limit ?? 20;
+      const pagedLessons = shouldPaginate ? lessons.slice((page - 1) * limit, (page - 1) * limit + limit) : lessons;
+
+      const lessonIds = pagedLessons.map((lesson) => lesson.id);
+      const progressByLessonId = await progressService.getProgressByLessonIds(req.user!.userId, lessonIds);
+
+      const responseLessons = pagedLessons.map((lesson) => {
           const progress = progressByLessonId.get(lesson.id);
           const unlocksAt =
             typeof lesson.dripDays === "number"
@@ -333,7 +290,21 @@ export const lessonController = {
             completedAt: progress?.completedAt ?? null,
             lastPositionSeconds: progress?.lastPositionSeconds ?? 0
           };
-        })
+        });
+
+      if (!shouldPaginate) {
+        res.json({ lessons: responseLessons });
+        return;
+      }
+
+      res.json({
+        lessons: responseLessons,
+        pagination: {
+          page,
+          limit,
+          total: lessons.length,
+          totalPages: Math.ceil(lessons.length / limit)
+        }
       });
     } catch (error) {
       handleLessonError(error, res, next);

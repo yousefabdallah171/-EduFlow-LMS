@@ -56,5 +56,16 @@ export const progressRepository = {
       completedLessons,
       percentage: totalLessons === 0 ? 0 : Number(((completedLessons / totalLessons) * 100).toFixed(1))
     };
+  },
+
+  findManyByUser(userId: string) {
+    return prisma.lessonProgress.findMany({
+      where: { userId },
+      select: {
+        lessonId: true,
+        completedAt: true,
+        lastPositionSeconds: true
+      }
+    });
   }
 };

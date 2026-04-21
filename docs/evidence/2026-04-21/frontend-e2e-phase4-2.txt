@@ -1,0 +1,23 @@
+
+Running 19 tests using 1 worker
+
+[1A[2K[1/19] [chromium] › tests/e2e/admin-enrollment.spec.ts:3:1 › admin enrolls and revokes a student from student management
+[1A[2K[2/19] [chromium] › tests/e2e/admin-upload.spec.ts:3:1 › admin starts a resumable upload and sees progress feedback
+[1A[2K[3/19] [chromium] › tests/e2e/mobile-student.spec.ts:3:1 › T206: mobile student flow at 375px viewport
+[1A[2K[4/19] [chromium] › tests/e2e/payment.spec.ts:3:1 › student applies a coupon and starts Paymob checkout
+[1A[2K[5/19] [chromium] › tests/e2e/preview-flow.spec.ts:3:1 › guest watches preview, sees CTA banner, register redirects to checkout
+[1A[2K[6/19] [chromium] › tests/e2e/progress.spec.ts:3:1 › student progress updates mark the lesson as completed
+[1A[2K[7/19] [chromium] › tests/e2e/public-funnel.spec.ts:3:1 › public funnel: Landing -> About -> Pricing -> Register
+[1A[2K[8/19] [chromium] › tests/e2e/registration.spec.ts:3:1 › student registration and login flow
+[1A[2K[9/19] [chromium] › tests/e2e/rtl-all-pages.spec.ts:3:1 › T207: RTL Arabic mode renders correctly
+[1A[2K[10/19] [chromium] › tests/e2e/runtime-coverage.spec.ts:238:3 › runtime coverage › public EN/AR routes render and dark mode toggles
+[1A[2K[11/19] [chromium] › tests/e2e/runtime-coverage.spec.ts:256:3 › runtime coverage › student session survives reloads and keeps locale
+[1A[2K[12/19] [chromium] › tests/e2e/runtime-coverage.spec.ts:306:3 › runtime coverage › student route matrix and videos render
+[1A[2K[13/19] [chromium] › tests/e2e/runtime-coverage.spec.ts:349:3 › runtime coverage › admin EN/AR route matrix renders after login
+[1A[2K[14/19] [chromium] › tests/e2e/runtime-coverage.spec.ts:385:3 › runtime coverage › mobile sweep has no horizontal overflow on key public and student pages
+[1A[2K[15/19] [chromium] › tests/e2e/smoke.spec.ts:56:3 › frontend smoke (chromium) › public pages render without console errors
+[1A[2K[16/19] [chromium] › tests/e2e/smoke.spec.ts:68:3 › frontend smoke (chromium) › student flow works without console errors
+[1A[2K[17/19] [chromium] › tests/e2e/smoke.spec.ts:84:3 › frontend smoke (chromium) › admin flow works without console errors
+[1A[2K[18/19] [chromium] › tests/e2e/student-dashboard.spec.ts:4:3 › student dashboard › T143: login -> dashboard -> Continue Learning -> correct lesson
+[1A[2K[19/19] [chromium] › tests/e2e/video-playback.spec.ts:3:1 › video playback shows watermark for the enrolled student
+[1A[2K  19 passed (6.5m)
