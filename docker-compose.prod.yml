@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database with health check
+  postgres:
+    image: postgres:16-alpine
+    container_name: eduflow_postgres_prod
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: "-c listen_addresses='*'"
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    networks:
+      eduflow_prod_net:
+        aliases:
+          - postgres
+          - db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis Cache with health check
+  redis:
+    image: redis:7-alpine
+    container_name: eduflow_redis_prod
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redisdata_prod:/data
+    networks:
+      eduflow_prod_net:
+        aliases:
+          - redis
+          - cache
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Node.js Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+      target: runtime
+    container_name: eduflow_backend_prod
+    network_mode: host
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      NODE_ENV: ${NODE_ENV}
+      BACKEND_PORT: ${BACKEND_PORT}
+      FRONTEND_URL: ${FRONTEND_URL}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      VIDEO_TOKEN_SECRET: ${VIDEO_TOKEN_SECRET}
+      PAYMOB_API_KEY: ${PAYMOB_API_KEY}
+      PAYMOB_HMAC_SECRET: ${PAYMOB_HMAC_SECRET}
+      PAYMOB_INTEGRATION_ID: ${PAYMOB_INTEGRATION_ID}
+      PAYMOB_IFRAME_ID: ${PAYMOB_IFRAME_ID}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    volumes:
+      - video_storage_prod:/app/backend/storage
+
+  # React Frontend with Nginx
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    container_name: eduflow_frontend_prod
+    networks:
+      - eduflow_prod_net
+    ports:
+      - "3007:80"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  eduflow_prod_net:
+    driver: bridge
+
+volumes:
+  pgdata_prod:
+    driver: local
+  redisdata_prod:
+    driver: local
+  video_storage_prod:
+    driver: local
