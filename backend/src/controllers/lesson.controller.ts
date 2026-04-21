@@ -379,12 +379,14 @@ export const lessonController = {
           lastPositionSeconds: progress?.lastPositionSeconds ?? 0,
           completedAt: progress?.completedAt ?? null
         },
-        section: access.lesson.sectionId
-          ? await prisma.section.findUnique({
-              where: { id: access.lesson.sectionId },
-              select: { id: true, titleEn: true, titleAr: true }
-            })
-          : null
+        section:
+          access.lesson.sectionId && access.lesson.section
+            ? {
+                id: access.lesson.section.id,
+                titleEn: access.lesson.section.titleEn,
+                titleAr: access.lesson.section.titleAr
+              }
+            : null
       });
     } catch (error) {
       if (error instanceof VideoTokenError && error.code === "LESSON_LOCKED") {

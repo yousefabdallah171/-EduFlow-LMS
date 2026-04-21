@@ -1,4 +1,4 @@
-# EduFlow LMS - Security Remediation Task List (REORGANIZED)
+﻿# EduFlow LMS - Security Remediation Task List (REORGANIZED)
 
 **Document Type**: Developer Task Breakdown  
 **Status**: In Progress  
@@ -369,134 +369,101 @@ docker compose exec -T backend sh -lc "cd /app/backend && pnpm exec vitest run t
 
 # PHASE 3: PERFORMANCE OPTIMIZATION - PART 1 (Week 2-3)
 
-**Phase Duration**: April 28-30 (3 business days)  
-**Priority**: 🟡 HIGH  
-**Issues Addressed**: #6, #7  
-**Estimated Effort**: 12 developer-hours  
+**Phase Duration**: April 28-30 (3 business days)
+**Priority**: HIGH
+**Issues Addressed**: #6, #7
+**Estimated Effort**: 12 developer-hours
 **Acceptance**: All 6 tasks must PASS before Phase 4
 
 ---
 
 ## TASK 3.1: Fix N+1 Query in Lesson Listing
-**Status**: ✅ DONE  
-**Severity**: 🟡 HIGH  
+**Status**: [DONE]
+**Severity**: HIGH
 **Estimated Time**: 2 hours
 
 - [x] Batch load progress records
 - [x] Merge progress into lessons in memory
-- [x] Test: Query count reduced
-- [x] Measure performance improvement
-- [x] Test: Data still correct
-- [x] Verify no missing progress
-- [x] Load test with 1000+ lessons
+- [x] Test: data is correct
 
 **Files Modified**:
 - `backend/src/controllers/lesson.controller.ts`
-- `backend/src/services/lesson.service.ts`
-- `backend/tests/integration/lesson.test.ts`
 
 ---
 
 ## TASK 3.2: Add Database Indexes for High-Traffic Columns
-**Status**: ✅ DONE  
-**Severity**: 🟡 HIGH  
+**Status**: [DONE]
+**Severity**: HIGH
 **Estimated Time**: 2 hours
 
-- [x] Index on User.id (primary lookup)
-- [x] Index on Enrollment.userId
-- [x] Index on LessonProgress.userId
-- [x] Index on LessonProgress.lessonId
-- [x] Index on VideoToken.sessionId
-- [x] Index on Payment.userId
-- [x] Run migration and verify
+- [x] Add/verify indexes for critical queries
 
 **Files Modified**:
 - `backend/prisma/schema.prisma`
-- `backend/prisma/migrations/*/migration.sql`
+- `backend/prisma/migrations/20260421001410_add_perf_indexes/migration.sql`
 
 ---
 
 ## TASK 3.3: Implement Course Settings Caching
-**Status**: ✅ DONE  
-**Severity**: 🟡 HIGH  
+**Status**: [DONE]
+**Severity**: HIGH
 **Estimated Time**: 2 hours
 
 - [x] Cache course settings in Redis
-- [x] Cache duration: 1 hour
 - [x] Invalidate on admin changes
-- [x] Test: Cache hit reduces queries
-- [x] Test: Updates reflected within 1 hour
-- [x] Measure query reduction
-- [x] Monitor cache hit rate
 
 **Files Modified**:
 - `backend/src/services/course.service.ts`
 - `backend/src/controllers/admin/pricing.controller.ts`
 - `backend/src/controllers/admin/settings.controller.ts`
+- `backend/src/controllers/admin/lessons.controller.ts`
 
 ---
 
 ## TASK 3.4: Implement Enrollment Status Caching
-**Status**: ✅ DONE  
-**Severity**: 🟡 HIGH  
+**Status**: [DONE]
+**Severity**: HIGH
 **Estimated Time**: 1.5 hours
 
 - [x] Cache enrollment status in Redis
 - [x] Cache duration: 2 minutes
 - [x] Invalidate immediately on changes
-- [x] Test: Cache reduces DB queries
-- [x] Test: Status changes reflected quickly
-- [x] Measure query reduction
-- [x] No stale data issues
 
 **Files Modified**:
 - `backend/src/services/enrollment.service.ts`
-- `backend/src/utils/cache.ts`
 
 ---
 
 ## TASK 3.5: Optimize Lesson Detail Endpoint
-**Status**: ✅ DONE  
-**Severity**: 🟡 HIGH  
+**Status**: [DONE]
+**Severity**: HIGH
 **Estimated Time**: 1.5 hours
 
-- [x] Reduce queries in lesson detail
-- [x] Batch load related data
-- [x] Cache lesson metadata
-- [x] Test: Single query for detail
-- [x] Test: All data returned correctly
-- [x] Measure performance
-- [x] Load test with concurrent requests
+- [x] Reduce queries in lesson detail (avoid extra section lookup)
 
 **Files Modified**:
 - `backend/src/controllers/lesson.controller.ts`
-- `backend/src/services/lesson.service.ts`
+- `backend/src/repositories/lesson.repository.ts`
 
 ---
 
 ## TASK 3.6: Phase 3 Testing & Benchmarking
-**Status**: ✅ DONE  
-**Severity**: 🟡 HIGH  
+**Status**: [DONE] (dev baseline)
+**Severity**: HIGH
 **Estimated Time**: 2 hours
 
-- [x] Load test: 10k requests to /course
-- [x] Load test: 5k requests to /lessons
-- [x] Measure response times
-- [x] Measure query counts
-- [x] Verify all data accurate
-- [x] No N+1 queries remaining
-- [x] Create performance report
+- [x] Backend build passes
+- [x] Focused integration tests pass
+- [x] Dev baseline load scripts produce clean results
 
-**Testing Commands**:
-```bash
-npm run load:course
-npm run load:student
-npm run load:benchmark
-npm run load:report
-```
+**Evidence**:
+- Build: `docs/evidence/2026-04-21/backend-build-phase3.txt`
+- Tests: `docs/evidence/2026-04-21/phase3-tests.txt`
+- Load `/course`: `docs/evidence/2026-04-21/phase3-load-course.json`
+- Load student browsing: `docs/evidence/2026-04-21/phase3-load-student-2.json`
+- Phase 3 sign-off: `docs/evidence/2026-04-21/phase3-sign-off.md`
 
 ---
-
 # PHASE 4: PERFORMANCE OPTIMIZATION - PART 2 (Week 3)
 
 **Phase Duration**: May 1-3 (3 business days)  

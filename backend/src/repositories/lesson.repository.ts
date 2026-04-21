@@ -96,6 +96,13 @@ export const lessonRepository = {
         isPublished: true
       },
       include: {
+        section: {
+          select: {
+            id: true,
+            titleEn: true,
+            titleAr: true
+          }
+        },
         progress: {
           where: { userId },
           take: 1
