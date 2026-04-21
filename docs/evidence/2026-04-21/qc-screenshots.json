@@ -1,0 +1,14 @@
+{
+  "evidenceDate": "2026-04-21",
+  "baseUrl": "http://localhost:5173",
+  "locale": "en",
+  "screenshots": [
+    "screenshots/preview-page.png",
+    "screenshots/student-lesson.png",
+    "screenshots/admin-dashboard.png"
+  ],
+  "incognitoReplay": {
+    "hlsUrl": "http://localhost:5173/api/v1/video/seed-2/playlist.m3u8?token=<redacted>",
+    "status": 401
+  }
+}

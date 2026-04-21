@@ -1,0 +1,197 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "course 200": {
+                    "id": "667f15b408ac27da014b6dd51c57a3cb",
+                    "passes": 1422,
+                    "fails": 0,
+                    "name": "course 200",
+                    "path": "::course 200"
+                },
+                "login 200": {
+                    "id": "48b06dc5cde7f6ebb606ad7da726a2a5",
+                    "passes": 2,
+                    "fails": 0,
+                    "name": "login 200",
+                    "path": "::login 200"
+                },
+                "dashboard 200": {
+                    "passes": 118,
+                    "fails": 0,
+                    "name": "dashboard 200",
+                    "path": "::dashboard 200",
+                    "id": "834732e3e331ab0c1efa32a058e51217"
+                },
+                "lessons/grouped 200": {
+                    "name": "lessons/grouped 200",
+                    "path": "::lessons/grouped 200",
+                    "id": "272ce3d8c103f1c8362db851a46c7b02",
+                    "passes": 118,
+                    "fails": 0
+                },
+                "lessons 200": {
+                    "name": "lessons 200",
+                    "path": "::lessons 200",
+                    "id": "4aeb8aec4b1b1fdbbb90552363fa449c",
+                    "passes": 118,
+                    "fails": 0
+                },
+                "lessons 200 (video)": {
+                    "path": "::lessons 200 (video)",
+                    "id": "cf289be2e57d94a4d09772cba5e111a9",
+                    "passes": 7,
+                    "fails": 0,
+                    "name": "lessons 200 (video)"
+                },
+                "lesson detail 200": {
+                    "id": "601d97ffccbf3ab7a78832d7a34773d0",
+                    "passes": 7,
+                    "fails": 0,
+                    "name": "lesson detail 200",
+                    "path": "::lesson detail 200"
+                },
+                "playlist 200": {
+                    "name": "playlist 200",
+                    "path": "::playlist 200",
+                    "id": "66d5ef36f4efa1b42f891a68e0c2a383",
+                    "passes": 7,
+                    "fails": 0
+                },
+                "key 200": {
+                    "name": "key 200",
+                    "path": "::key 200",
+                    "id": "c94357702306ad80a9682e6f8cbc32c0",
+                    "passes": 7,
+                    "fails": 0
+                },
+                "segment 200/206": {
+                    "fails": 0,
+                    "name": "segment 200/206",
+                    "path": "::segment 200/206",
+                    "id": "30845b44e13b3de34ed7ec70329eb7d0",
+                    "passes": 7
+                }
+            }
+    },
+    "metrics": {
+        "http_req_sending": {
+            "avg": 0.06429046718146707,
+            "min": 0.009101,
+            "med": 0.045604,
+            "max": 0.401124,
+            "p(90)": 0.1424132,
+            "p(95)": 0.166716
+        },
+        "checks": {
+            "passes": 1813,
+            "fails": 0,
+            "value": 1
+        },
+        "iterations": {
+            "rate": 13.793084998260689,
+            "count": 1547
+        },
+        "data_sent": {
+            "rate": 4027.8661321746968,
+            "count": 451756
+        },
+        "vus": {
+            "value": 1,
+            "min": 0,
+            "max": 14
+        },
+        "iteration_duration": {
+            "avg": 222.48940376729175,
+            "min": 201.449341,
+            "med": 205.482028,
+            "max": 3548.967283,
+            "p(90)": 210.9396916,
+            "p(95)": 244.68765519999997
+        },
+        "http_req_connecting": {
+            "med": 0,
+            "max": 1.186414,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.004323246001103144,
+            "min": 0
+        },
+        "data_received": {
+            "count": 7197021,
+            "rate": 64168.792751950314
+        },
+        "http_req_duration": {
+            "med": 4.985068,
+            "max": 484.597453,
+            "p(90)": 14.956531399999996,
+            "p(95)": 22.5302036,
+            "avg": 7.347559474351905,
+            "min": 1.056701,
+            "thresholds": {
+                "p(95)<800": false,
+                "p(99)<1200": false
+            }
+        },
+        "http_req_failed": {
+            "fails": 1813,
+            "passes": 0,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "http_reqs": {
+            "count": 1813,
+            "rate": 16.164746672169766
+        },
+        "http_req_blocked": {
+            "p(90)": 0.020081999999999992,
+            "p(95)": 0.024382599999999973,
+            "avg": 0.019833615002757845,
+            "min": 0.003201,
+            "med": 0.011801,
+            "max": 1.752569
+        },
+        "vus_max": {
+            "max": 16,
+            "value": 16,
+            "min": 16
+        },
+        "http_req_receiving": {
+            "p(90)": 0.4315616,
+            "p(95)": 0.5014517999999994,
+            "avg": 0.25066466574738017,
+            "min": 0.070506,
+            "med": 0.21182,
+            "max": 1.480843
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 7.347559474351905,
+            "min": 1.056701,
+            "med": 4.985068,
+            "max": 484.597453,
+            "p(90)": 14.956531399999996,
+            "p(95)": 22.5302036
+        },
+        "http_req_tls_handshaking": {
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0
+        },
+        "http_req_waiting": {
+            "min": 0.975794,
+            "med": 4.559337,
+            "max": 484.101105,
+            "p(90)": 14.700720199999994,
+            "p(95)": 22.137184199999982,
+            "avg": 7.032604341423045
+        }
+    }
+}

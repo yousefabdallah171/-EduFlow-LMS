@@ -14,6 +14,12 @@ This file is created from `docs/evidence/EVIDENCE_TEMPLATE.md`.
   - Branch: `phase-1`
   - Commit: `86dddfc257554c8d716d5145bcc3eeeea82219ba`
 
+### Rerun (dev) — 2026-04-21 18:20 (Africa/Cairo)
+
+- Git:
+  - Branch: `phase-1`
+  - Commit: `4055b908ef17fbf36a93cc330fb4af35c46d28ba`
+
 ## Backend Verification
 
 ### Lint
@@ -30,6 +36,8 @@ Output: `docs/evidence/2026-04-21/backend-build.txt`
 
 Command: `docker compose exec -T backend sh -lc "cd /app/backend && pnpm test"`
 Output: `docs/evidence/2026-04-21/backend-test.txt`
+
+Rerun output: `docs/evidence/2026-04-21/backend-test-2.txt`
 
 ## Frontend Verification
 
@@ -49,6 +57,8 @@ Command: `docker compose exec -T frontend sh -lc "cd /app/frontend && pnpm exec 
 Output: `docs/evidence/2026-04-21/frontend-e2e.txt`
 Report path (if generated): `frontend/test-results/` (screenshots on failure; none for PASS)
 
+Rerun outputs: `docs/evidence/2026-04-21/frontend-build-2.txt`, `docs/evidence/2026-04-21/frontend-e2e-2.txt`
+
 ## Load Test (Local Baseline Only)
 
 Tool: k6 (via Docker)
@@ -60,6 +70,11 @@ Artifacts:
 - Console output: `docs/evidence/2026-04-21/k6-console.txt`
 Notes (p95/error rate): see report; local baseline only (not a 100k certification).
 
+Rerun artifacts:
+- Summary JSON: `docs/evidence/2026-04-21/k6-summary-2.json`
+- Optional HTML: `docs/evidence/2026-04-21/k6-report-2.html`
+- Console output: `docs/evidence/2026-04-21/k6-console-2.txt`
+
 ## Monitoring Baseline (Dev/Staging)
 
 ### Prometheus scrape
@@ -70,6 +85,12 @@ Notes (p95/error rate): see report; local baseline only (not a 100k certificatio
 ### Grafana dashboards
 
 - Grafana health: `docs/evidence/2026-04-21/grafana-health.json`
+
+Rerun evidence:
+- Prometheus targets: `docs/evidence/2026-04-21/prom-targets-2.json`
+- Prometheus rules: `docs/evidence/2026-04-21/prom-rules-2.json`
+- Metrics sample: `docs/evidence/2026-04-21/prom-metrics-sample-2.txt`
+- Grafana health: `docs/evidence/2026-04-21/grafana-health-2.json`
 
 ### Sentry test events
 
@@ -83,3 +104,8 @@ Use `docs/QC_SECURITY_CHECKLIST.md`.
 - Automated attacker-style run (Playwright helper): `docs/evidence/2026-04-21/playwright-manual-check.json`
 - API-based attacker checks (no secrets logged): `docs/evidence/2026-04-21/qc-attacker-checks.json`
 - Security anomalies (admin API export): `docs/evidence/2026-04-21/qc-events.json`
+
+Rerun artifacts:
+- Playwright helper output (redacted tokens): `docs/evidence/2026-04-21/playwright-manual-check-3.txt`
+- Evidence screenshots output: `docs/evidence/2026-04-21/qc-screenshots.json`
+- Screenshots folder: `docs/evidence/2026-04-21/screenshots/`

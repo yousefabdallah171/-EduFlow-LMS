@@ -9,6 +9,12 @@ This file is created from `docs/QC_SECURITY_REPORT_TEMPLATE.md`.
 - Tester(s): automated (Codex run); human DevTools screenshots not captured
 - Date/time: 2026-04-21 (Africa/Cairo)
 
+### Rerun (dev)
+
+- Git commit: `4055b908ef17fbf36a93cc330fb4af35c46d28ba`
+- Date/time: 2026-04-21 18:20 (Africa/Cairo)
+- Added artifacts: screenshots + rerun logs in `docs/evidence/2026-04-21/`
+
 ## Automated Checks
 
 ### Backend (Vitest)
@@ -16,7 +22,7 @@ This file is created from `docs/QC_SECURITY_REPORT_TEMPLATE.md`.
 - Status: PASS
 - Evidence:
   - Command: `docker compose exec -T backend sh -lc "cd /app/backend && pnpm test"`
-  - Output: `docs/evidence/2026-04-21/backend-test.txt`
+  - Output: `docs/evidence/2026-04-21/backend-test.txt` (original), `docs/evidence/2026-04-21/backend-test-2.txt` (rerun)
 
 ### Frontend (Build + Playwright)
 
@@ -24,7 +30,8 @@ This file is created from `docs/QC_SECURITY_REPORT_TEMPLATE.md`.
 - Evidence:
   - Build command: `docker compose exec -T frontend sh -lc "cd /app/frontend && pnpm build"`
   - E2E command: `docker compose exec -T frontend sh -lc "cd /app/frontend && pnpm exec playwright test --reporter=line"`
-  - Output: `docs/evidence/2026-04-21/frontend-build.txt`, `docs/evidence/2026-04-21/frontend-e2e.txt`
+  - Output: `docs/evidence/2026-04-21/frontend-build.txt`, `docs/evidence/2026-04-21/frontend-e2e.txt` (original)
+  - Rerun output: `docs/evidence/2026-04-21/frontend-build-2.txt`, `docs/evidence/2026-04-21/frontend-e2e-2.txt`
   - Playwright report path: `frontend/test-results/`
 
 ## Video Security Checks (Attacker-style)
@@ -40,6 +47,7 @@ Evidence:
 - Attacker checks JSON: `docs/evidence/2026-04-21/qc-attacker-checks.json`
 - `VideoSecurityEvent` anomalies: `docs/evidence/2026-04-21/qc-events.json`
 - Playwright attacker helper output: `docs/evidence/2026-04-21/playwright-manual-check.json`
+- Screenshot evidence: `docs/evidence/2026-04-21/qc-screenshots.json`, `docs/evidence/2026-04-21/screenshots/`
 
 ## Admin / RBAC
 
@@ -79,6 +87,10 @@ Evidence:
 Artifacts:
 - Summary JSON: `docs/evidence/2026-04-21/k6-summary.json`
 - Optional HTML: `docs/evidence/2026-04-21/k6-report.html`
+
+Rerun artifacts:
+- Summary JSON: `docs/evidence/2026-04-21/k6-summary-2.json`
+- Optional HTML: `docs/evidence/2026-04-21/k6-report-2.html`
 
 ## Final Result
 

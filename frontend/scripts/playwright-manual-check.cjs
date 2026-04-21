@@ -16,6 +16,9 @@ if (!adminEmail || !adminPassword || !studentEmail || !studentPassword) {
 
 const url = (path) => `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
 
+const redactTokenParam = (value) =>
+  String(value || "").replace(/token=[A-Za-z0-9._-]+/g, "token=<redacted>");
+
 const captureConsole = (page, bucket) => {
   const onConsole = (msg) => {
     if (msg.type() === "error" || msg.type() === "warning") {
@@ -119,7 +122,7 @@ const run = async () => {
       await extraChecks(errors);
     }
     detach();
-    results.push({ label, url: targetUrl, errors });
+    results.push({ label, url: redactTokenParam(targetUrl), errors });
   };
 
   await checkPage("landing-ar", url(`/${locale}`));
@@ -251,7 +254,7 @@ const run = async () => {
     const status = resp?.status() ?? 0;
     results.push({
       label: "hls-no-cookie",
-      url: `${baseUrl}${hlsUrl}`,
+      url: redactTokenParam(`${baseUrl}${hlsUrl}`),
       errors: status === 401 ? [] : [{ type: "assert", text: `Expected 401 without cookies, got ${status}.` }]
     });
     await unauth.close();
@@ -276,7 +279,7 @@ const run = async () => {
     const status = resp?.status() ?? 0;
     results.push({
       label: "preview-hls-no-cookie",
-      url: `${baseUrl}${previewHlsUrl}`,
+      url: redactTokenParam(`${baseUrl}${previewHlsUrl}`),
       errors: status === 401 ? [] : [{ type: "assert", text: `Expected 401 without preview cookie, got ${status}.` }]
     });
     await unauth.close();

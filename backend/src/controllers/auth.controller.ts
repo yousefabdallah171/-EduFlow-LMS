@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import passport from "passport";
 import { z } from "zod";
 import type { User } from "@prisma/client";
+import crypto from "node:crypto";
 
 import { env } from "../config/env.js";
 import { AuthError, authService } from "../services/auth.service.js";
@@ -63,6 +64,28 @@ const getRefreshMarkerCookieOptions = (req: Request) => ({
   path: "/",
   maxAge: REFRESH_SESSION_WINDOW_MS
 });
+
+const GOOGLE_OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
+
+const getGoogleOauthStateCookieOptions = (req: Request) => ({
+  httpOnly: true,
+  secure: shouldUseSecureCookie(req),
+  // OAuth callback is a top-level navigation from google.com -> our domain, so Strict would block the cookie.
+  sameSite: "lax" as const,
+  path: "/api/v1/auth/oauth/google",
+  maxAge: GOOGLE_OAUTH_STATE_TTL_MS
+});
+
+const setGoogleOauthStateCookie = (req: Request, res: Response, value: string) => {
+  res.cookie("google_oauth_state", value, getGoogleOauthStateCookieOptions(req));
+};
+
+const clearGoogleOauthStateCookie = (req: Request, res: Response) => {
+  res.clearCookie("google_oauth_state", {
+    ...getGoogleOauthStateCookieOptions(req),
+    maxAge: undefined
+  });
+};
 
 const setRefreshCookie = (req: Request, res: Response, refreshToken: string) => {
   res.cookie("refresh_token", refreshToken, getRefreshCookieOptions(req));
@@ -185,13 +208,21 @@ export const authController = {
     }
   },
 
-  googleStart: passport.authenticate("google", {
-    scope: ["profile", "email"],
-    state: true,
-    session: false
-  }),
+  googleStart(req: Request, res: Response, next: NextFunction) {
+    const state = crypto.randomBytes(24).toString("hex");
+    setGoogleOauthStateCookie(req, res, state);
+    passport.authenticate("google", { scope: ["profile", "email"], state, session: false })(req, res, next);
+  },
 
   googleCallback(req: Request, res: Response, next: NextFunction) {
+    const cookieState = typeof req.cookies?.google_oauth_state === "string" ? req.cookies.google_oauth_state : null;
+    const queryState = typeof req.query?.state === "string" ? req.query.state : null;
+    clearGoogleOauthStateCookie(req, res);
+    if (!cookieState || !queryState || cookieState !== queryState) {
+      handleError(new AuthError("OAUTH_STATE_MISMATCH", 401, "Invalid OAuth state."), res, next);
+      return;
+    }
+
     passport.authenticate("google", { session: false }, async (error: unknown, user?: User) => {
       try {
         if (error) throw error;

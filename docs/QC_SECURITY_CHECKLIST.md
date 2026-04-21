@@ -10,6 +10,7 @@ Use this checklist for manual QC and scripted verification before opening testin
 cd frontend
 pnpm test:e2e
 node scripts/playwright-manual-check.cjs
+node scripts/qc-evidence-capture.cjs
 ```
 
 ## Video Security Checks (HLS)
@@ -63,4 +64,3 @@ Actual Result:
 Status: PASS / FAIL
 Notes:
 ```
-
