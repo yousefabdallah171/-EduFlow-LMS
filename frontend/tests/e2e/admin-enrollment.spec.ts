@@ -154,5 +154,5 @@ test("admin enrolls and revokes a student from student management", async ({ pag
   await page.getByRole("button", { name: "Revoke access" }).first().click();
   await page.getByRole("dialog").getByRole("button", { name: "Revoke access" }).click();
 
-  await expect(page.getByText("Revoked", { exact: true })).toBeVisible();
+  await expect(page.locator("tbody").getByText("Revoked", { exact: true })).toBeVisible();
 });

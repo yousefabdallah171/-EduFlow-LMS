@@ -6,6 +6,7 @@ config();
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   BACKEND_PORT: z.coerce.number().int().positive().default(3000),
+  ENFORCE_SINGLE_SESSION: z.coerce.boolean().default(true),
   STORAGE_PATH: z.string().default("storage"),
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().min(1),

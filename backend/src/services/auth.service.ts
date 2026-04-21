@@ -7,6 +7,7 @@ import { redis } from "../config/redis.js";
 import { refreshTokenRepository } from "../repositories/refresh-token.repository.js";
 import { userRepository } from "../repositories/user.repository.js";
 import { videoTokenService } from "./video-token.service.js";
+import { sessionService } from "./session.service.js";
 import { sendPasswordResetEmail, sendVerificationEmail } from "../utils/email.js";
 import {
   REFRESH_SESSION_WINDOW_MS,
@@ -89,6 +90,7 @@ const issueSession = async (user: User, sessionId: string = crypto.randomUUID(),
 
   await redis.set(sessionCacheKey(user.id, sessionId), "active", "EX", REFRESH_SESSION_WINDOW_SECONDS);
   await redis.set(refreshCurrentCacheKey(user.id, sessionId), refreshTokenHash, "EX", REFRESH_SESSION_WINDOW_SECONDS);
+  await sessionService.setActiveSession(user.id, sessionId, REFRESH_SESSION_WINDOW_SECONDS);
 
   return {
     accessToken,
@@ -182,6 +184,17 @@ export const authService = {
       throw new AuthError("INVALID_REFRESH_TOKEN", 401, "Invalid refresh token.");
     }
 
+    if (env.ENFORCE_SINGLE_SESSION) {
+      const ok = await sessionService.ensureActiveSession(payload.userId, payload.sessionId, REFRESH_SESSION_WINDOW_SECONDS);
+      if (!ok) {
+        await refreshTokenRepository.revokeBySession(payload.userId, payload.sessionId);
+        await redis.del(sessionCacheKey(payload.userId, payload.sessionId));
+        await redis.del(refreshCurrentCacheKey(payload.userId, payload.sessionId));
+        await videoTokenService.revokeSession(payload.userId, payload.sessionId);
+        throw new AuthError("SESSION_INVALIDATED", 401, "Session has been invalidated. Please log in again.");
+      }
+    }
+
     await refreshTokenRepository.revokeByHash(tokenHash);
 
     return issueSession(user, payload.sessionId, storedToken.familyId);
@@ -210,6 +223,9 @@ export const authService = {
       await redis.del(sessionCacheKey(payload.userId, payload.sessionId));
       await redis.del(refreshCurrentCacheKey(payload.userId, payload.sessionId));
       await videoTokenService.revokeSession(payload.userId, payload.sessionId);
+      if (env.ENFORCE_SINGLE_SESSION) {
+        await sessionService.invalidateIfActive(payload.userId, payload.sessionId);
+      }
     }
   },
 
