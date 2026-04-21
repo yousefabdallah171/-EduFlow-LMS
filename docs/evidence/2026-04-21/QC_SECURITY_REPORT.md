@@ -11,7 +11,7 @@ This file is created from `docs/QC_SECURITY_REPORT_TEMPLATE.md`.
 
 ### Rerun (dev)
 
-- Git commit: `4055b908ef17fbf36a93cc330fb4af35c46d28ba`
+- Git commit: `07fe597e5ceb0ba6c5f2d06a861b47e6a2ae112b`
 - Date/time: 2026-04-21 18:20 (Africa/Cairo)
 - Added artifacts: screenshots + rerun logs in `docs/evidence/2026-04-21/`
 
