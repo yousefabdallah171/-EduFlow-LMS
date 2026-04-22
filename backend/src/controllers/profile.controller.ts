@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "../config/database.js";
+import { paymentService } from "../services/payment.service.js";
 
 const profileSchema = z.object({
   fullName: z.string().min(2).optional(),
@@ -31,12 +32,36 @@ const handleError = (error: unknown, res: Response, next: NextFunction) => {
 export const profileController = {
   async get(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await prisma.user.findUnique({
-        where: { id: req.user!.userId },
-        select: { id: true, email: true, fullName: true, avatarUrl: true, role: true, locale: true, theme: true, emailVerified: true }
-      });
+      const userId = req.user!.userId;
+      const [user, enrollment, payments] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: { id: true, email: true, fullName: true, avatarUrl: true, role: true, locale: true, theme: true, emailVerified: true }
+        }),
+        prisma.enrollment.findUnique({
+          where: { userId },
+          select: { status: true, enrolledAt: true }
+        }),
+        paymentService.listPaymentHistory(userId)
+      ]);
       if (!user) { res.status(404).json({ error: "NOT_FOUND", message: "User not found" }); return; }
-      res.json(user);
+
+      res.json({
+        ...user,
+        enrollments: [
+          {
+            courseId: "primary",
+            status: enrollment?.status ?? null,
+            startDate: enrollment?.enrolledAt?.toISOString() ?? null
+          }
+        ],
+        certificates: [] as Array<{ courseId: string; issuedDate: string; certificateUrl: string }>,
+        paymentHistory: payments.map((payment) => ({
+          date: payment.createdAt,
+          amount: payment.amountEgp,
+          status: payment.status
+        }))
+      });
     } catch (e) { next(e); }
   },
   async update(req: Request, res: Response, next: NextFunction) {

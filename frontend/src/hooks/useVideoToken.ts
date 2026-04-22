@@ -81,7 +81,7 @@ export const useVideoToken = (lessonId: string | undefined, enabled = true) => {
       if (demo && lessonId) {
         return demoLessonPlayback(lessonId);
       }
-      const response = await api.get<LessonPlaybackApiResponse>(`/lessons/${lessonId}`);
+      const response = await api.get<LessonPlaybackApiResponse>(`/lessons/${lessonId}/detail`);
       return normalizeLessonPlayback(response.data);
     }
   });
