@@ -1,0 +1,17 @@
+[Unit]
+Description=EduFlow GitHub Webhook Handler
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=youesf-abdallah-workflow-course
+WorkingDirectory=/home/youesf-abdallah-workflow-course/htdocs/workflow-course.youesf-abdallah.online
+ExecStart=/bin/bash /home/youesf-abdallah-workflow-course/htdocs/workflow-course.youesf-abdallah.online/webhook-handler.sh
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
