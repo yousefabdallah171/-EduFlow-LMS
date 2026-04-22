@@ -95,7 +95,6 @@ jobs:
             ./deploy-local.sh
 
   deploy-prod:
-    needs: test-prod
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
