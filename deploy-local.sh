@@ -31,7 +31,6 @@ DOCKER_BUILDKIT=0 docker build \
   --file docker/backend.Dockerfile \
   --target runtime \
   --tag "$BACKEND_IMAGE" \
-  --progress=plain \
   .
 
 # ── 3. Build frontend image ──────────────────────────────────────────────────
@@ -39,7 +38,6 @@ log "Building frontend image (using local registry)..."
 DOCKER_BUILDKIT=0 docker build \
   --file docker/frontend.Dockerfile \
   --tag "$FRONTEND_IMAGE" \
-  --progress=plain \
   .
 
 # ── 4. Update docker-compose.prod.yml to use local images ────────────────────
