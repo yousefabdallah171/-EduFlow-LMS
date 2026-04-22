@@ -1,6 +1,28 @@
 {
   "app.title": "AI Workflow",
   "app.subtitle": "Build real products with AI, from idea to production",
+  "landing.hero.badge": "EARLY ACCESS",
+  "landing.hero.badgeMeta": "Only 30 seats",
+  "landing.hero.title": ["The", "AI", "ships products", "while you still", "watch."],
+  "landing.hero.subtitle": "Learn a practical workflow to turn ideas into production-ready apps: PRD, Spec Kit, UI direction, implementation, review, testing, security, SEO, Docker, and deployment.",
+  "landing.hero.ctaPrimary": "Get started",
+  "landing.hero.ctaSecondary": "See pricing",
+  "landing.hero.tech": ["PRD", "Spec Kit", "Codex", "Docker"],
+  "landing.hero.trust": ["Secure payment", "Replies within an hour", "Instant access"],
+  "landing.hero.stats": [
+    { "value": "7", "label": "clear phases" },
+    { "value": "hands-on", "label": "not theory" },
+    { "value": "production", "label": "from day one" }
+  ],
+  "landing.audience.eyebrow": "Who is this for?",
+  "landing.audience.title": "If you are one of these,",
+  "landing.audience.accent": "you are in the right place",
+  "landing.audience.subtitle": "Before the technical details: you need clarity and a repeatable system.",
+  "landing.audience.cards": [
+    { "title": "Non-technical with an idea", "body": "Turn your idea into an executable plan without waiting for a full team." },
+    { "title": "A developer who wants speed", "body": "Ship faster with clearer steps and a real review/testing loop." },
+    { "title": "You know the basics and want a system", "body": "A clear workflow from idea → execution → deployment." }
+  ],
   "actions.apply": "Apply",
   "actions.cancel": "Cancel",
   "actions.confirm": "Confirm",

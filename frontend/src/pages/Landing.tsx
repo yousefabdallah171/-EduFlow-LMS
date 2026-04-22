@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import {
   ArrowLeft,
-  CheckCircle2,
   Cpu,
   FileText,
   Layers3,
@@ -16,6 +15,9 @@ import { Link, useParams } from "react-router-dom";
 import { resolveLocale } from "@/lib/locale";
 import { contactInfo } from "@/lib/public-page-content";
 import { getPublicTrustCopy } from "@/lib/public-trust-copy";
+import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
+import { LandingHero } from "@/components/landing/LandingHero";
+import { LandingAudience } from "@/components/landing/LandingAudience";
 
 const phaseIcons = [FileText, Layers3, Cpu, TestTube2, ShieldCheck, Search, Rocket] as const;
 
@@ -148,80 +150,14 @@ export const Landing = () => {
   const faq = getPublicTrustCopy(resolved).faq;
 
   const phases = useMemo(() => copy.phases.map((phase, index) => ({ ...phase, icon: phaseIcons[index] ?? Rocket })), [copy.phases]);
+  useRevealOnScroll({ selector: "[data-landing-section]" });
 
   return (
-    <main className="reference-page">
+    <main className="reference-page landing-page">
+      <div className="landing-noise" aria-hidden="true" />
       <div className="reference-shell">
-        <section className="reference-hero">
-          <span className="reference-badge">
-            <span className="reference-dot" aria-hidden="true" />
-            {copy.badge}
-            <span className="mx-2 opacity-60">•</span>
-            {copy.badgeMeta}
-          </span>
-          <h1 className="reference-title">
-            {copy.title[0]} <span className="accent-word">{copy.title[1]}</span> {copy.title[2]}
-            <span className="block">
-              {copy.title[3]} <span className="accent-word">{copy.title[4]}</span>
-            </span>
-          </h1>
-          <p className="reference-subtitle">{copy.subtitle}</p>
-
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link className="reference-button" to={`${prefix}/register`}>
-              {copy.primaryCta}
-              <ArrowLeft className="icon-dir h-4 w-4" />
-            </Link>
-            <Link className="reference-button-secondary" to={`${prefix}/pricing`}>
-              {copy.secondaryCta}
-            </Link>
-          </div>
-
-          <div className="mt-7 flex flex-wrap justify-center gap-2">
-            {copy.trust.map((item) => (
-              <span key={item} className="reference-chip">
-                {item}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-10 grid gap-3 md:grid-cols-3">
-          {copy.stats.map((stat) => (
-            <div className="reference-card p-6 text-center" key={stat.label}>
-              <p className="font-display text-3xl font-black text-brand-600">{stat.value}</p>
-              <p className="mt-2 text-sm font-black" style={{ color: "var(--color-text-primary)" }}>{stat.label}</p>
-            </div>
-          ))}
-        </section>
-
-        <section className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start">
-          <div>
-            <span className="reference-badge">
-              <span className="reference-dot" aria-hidden="true" />
-              {copy.whoBadge}
-            </span>
-            <h2 className="mt-5 font-display text-3xl font-black tracking-tight">
-              {copy.whoTitle} <span className="accent-word">{copy.whoAccent}</span>
-            </h2>
-            <p className="mt-3 leading-8" style={{ color: "var(--color-text-secondary)" }}>
-              {isAr ? "قبل أي تفاصيل تقنية: المهم يكون عندك اتجاه واضح وقرار واضح." : "Before the technical details: you need clarity and a repeatable system."}
-            </p>
-          </div>
-
-          <div className="grid gap-3">
-            {copy.who.map((item) => (
-              <div className="reference-card p-6" key={item.title}>
-                <p className="text-sm font-black" style={{ color: "var(--color-text-primary)" }}>{item.title}</p>
-                <p className="mt-2 text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>{item.body}</p>
-                <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-brand-600">
-                  <CheckCircle2 className="h-4 w-4" />
-                  {isAr ? "مناسب" : "Good fit"}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+        <LandingHero prefix={prefix} isAr={isAr} />
+        <LandingAudience isAr={isAr} />
 
         <section className="reference-card reference-card--lime mt-12 p-8 md:p-10">
           <span className="reference-badge">
