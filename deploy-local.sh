@@ -28,6 +28,7 @@ git reset --hard origin/main
 # ── 2. Build backend image (with BuildKit disabled for reliability) ──────────
 log "Building backend image (using local registry)..."
 DOCKER_BUILDKIT=0 docker build \
+  --no-cache \
   --file docker/backend.Dockerfile \
   --target runtime \
   --tag "$BACKEND_IMAGE" \
@@ -36,6 +37,7 @@ DOCKER_BUILDKIT=0 docker build \
 # ── 3. Build frontend image ──────────────────────────────────────────────────
 log "Building frontend image (using local registry)..."
 DOCKER_BUILDKIT=0 docker build \
+  --no-cache \
   --file docker/frontend.Dockerfile \
   --tag "$FRONTEND_IMAGE" \
   .
@@ -48,23 +50,12 @@ sed "s|ghcr.io/yousefabdallah171/-eduflow-lms/backend:latest|$BACKEND_IMAGE|g; \
      s|ghcr.io/yousefabdallah171/-eduflow-lms/frontend:latest|$FRONTEND_IMAGE|g" \
   "$COMPOSE_FILE" > "$TEMP_COMPOSE"
 
-# ── 5. Run DB migrations in a temp container ─────────────────────────────────
-log "Running Prisma migrations..."
-NETWORK=$(docker inspect eduflow_backend_prod --format='{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null || echo "")
-docker run --rm \
-  --network "${NETWORK:-bridge}" \
-  --env-file "$DEPLOY_DIR/.env" \
-  --entrypoint "" \
-  "$BACKEND_IMAGE" \
-  sh -c "cd /app/backend && node node_modules/.bin/prisma migrate deploy" || die "Migration failed"
-
-log "Migrations complete. OLD BACKEND STILL RUNNING — ZERO DOWNTIME WINDOW"
-
-# ── 6. Restart backend with new image ────────────────────────────────────────
+# ── 5. Restart backend with new image (migrations run in container startup) ────
 log "Restarting backend container..."
+log "   (Note: Migrations will run automatically on container startup)"
 docker compose -f "$TEMP_COMPOSE" up -d --no-deps --force-recreate backend
 
-# ── 7. Wait for backend to be healthy ────────────────────────────────────────
+# ── 6. Wait for backend to be healthy ────────────────────────────────────────
 log "Waiting for backend to become healthy (max 60s)..."
 TIMEOUT=60; ELAPSED=0
 while true; do
