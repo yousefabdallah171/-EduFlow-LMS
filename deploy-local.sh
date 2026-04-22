@@ -50,10 +50,12 @@ sed "s|ghcr.io/yousefabdallah171/-eduflow-lms/backend:latest|$BACKEND_IMAGE|g; \
      s|ghcr.io/yousefabdallah171/-eduflow-lms/frontend:latest|$FRONTEND_IMAGE|g" \
   "$COMPOSE_FILE" > "$TEMP_COMPOSE"
 
-# ── 5. Restart backend with new image (migrations run in container startup) ────
-log "Restarting backend container..."
+# ── 5. Remove old backend and restart with new image ─────────────────────────────
+log "Removing old backend container..."
+docker rm -f eduflow_backend_prod 2>/dev/null || true
+log "Starting backend with new image..."
 log "   (Note: Migrations will run automatically on container startup)"
-docker compose -f "$TEMP_COMPOSE" up -d --no-deps --force-recreate backend
+docker compose -f "$TEMP_COMPOSE" up -d --no-deps backend
 
 # ── 6. Wait for backend to be healthy ────────────────────────────────────────
 log "Waiting for backend to become healthy (max 60s)..."
@@ -74,9 +76,11 @@ while true; do
   ELAPSED=$((ELAPSED + 3))
 done
 
-# ── 8. Restart frontend with new image ───────────────────────────────────────
-log "Restarting frontend container..."
-docker compose -f "$TEMP_COMPOSE" up -d --no-deps --force-recreate frontend
+# ── 8. Remove old frontend and restart with new image ────────────────────────────
+log "Removing old frontend container..."
+docker rm -f eduflow_frontend_prod 2>/dev/null || true
+log "Starting frontend with new image..."
+docker compose -f "$TEMP_COMPOSE" up -d --no-deps frontend
 
 # ── 9. Verify frontend ───────────────────────────────────────────────────────
 log "Waiting for frontend to respond (max 30s)..."
@@ -100,9 +104,10 @@ done
 log "Restoring docker-compose.prod.yml..."
 rm -f "$TEMP_COMPOSE"
 
-# ── 11. Prune old images ─────────────────────────────────────────────────────
-log "Pruning dangling images..."
+# ── 11. Aggressive cleanup of old images and networks ──────────────────────────
+log "Cleaning up old Docker images and networks..."
 docker image prune -f || true
+docker system prune -f --volumes || true
 
 # ── 12. Final status ─────────────────────────────────────────────────────────
 log "✅ Deployment complete!"
