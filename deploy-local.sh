@@ -28,6 +28,7 @@ git reset --hard origin/main
 # ── 2. Build backend image (with BuildKit disabled for reliability) ──────────
 log "Building backend image (using local registry)..."
 DOCKER_BUILDKIT=0 docker build \
+  --no-cache \
   --file docker/backend.Dockerfile \
   --target runtime \
   --tag "$BACKEND_IMAGE" \
@@ -36,6 +37,7 @@ DOCKER_BUILDKIT=0 docker build \
 # ── 3. Build frontend image ──────────────────────────────────────────────────
 log "Building frontend image (using local registry)..."
 DOCKER_BUILDKIT=0 docker build \
+  --no-cache \
   --file docker/frontend.Dockerfile \
   --tag "$FRONTEND_IMAGE" \
   .
