@@ -1,6 +1,28 @@
 {
   "app.title": "AI Workflow",
   "app.subtitle": "ابنِ منتجات حقيقية بالذكاء الاصطناعي من الفكرة إلى الـ production",
+  "landing.hero.badge": "EARLY ACCESS",
+  "landing.hero.badgeMeta": "أول 30 مقعد بس",
+  "landing.hero.title": ["الـ", "AI", "بيبني مشاريع", "انت لسه", "بتتفرج؟"],
+  "landing.hero.subtitle": "تعلم الـ workflow اللي بيحوّل الأفكار لتطبيقات حقيقية: PRD، Spec Kit، UI direction، تنفيذ، مراجعة، اختبارات، أمان، SEO، Docker، وإطلاق production.",
+  "landing.hero.ctaPrimary": "احجز مكانك",
+  "landing.hero.ctaSecondary": "شوف التسعير",
+  "landing.hero.tech": ["PRD", "Spec Kit", "Codex", "Docker"],
+  "landing.hero.trust": ["🔒 دفع آمن", "ردود خلال ساعة", "وصول فوري"],
+  "landing.hero.stats": [
+    { "value": "7", "label": "مراحل واضحة" },
+    { "value": "عملي", "label": "مش نظرية" },
+    { "value": "Production", "label": "من أول يوم" }
+  ],
+  "landing.audience.eyebrow": "لمين ده؟",
+  "landing.audience.title": "لو واحد من دول",
+  "landing.audience.accent": "فأنت في المكان الصح",
+  "landing.audience.subtitle": "قبل أي تفاصيل تقنية: المهم يكون عندك اتجاه واضح وقرار واضح.",
+  "landing.audience.cards": [
+    { "title": "مش تقني بس عندك فكرة", "body": "هتتعلم تحول الفكرة لخطوات تنفيذ منظمة من غير ما تستنى فريق كامل." },
+    { "title": "Developer عايز يسرّع شغله", "body": "هتشتغل أسرع بوضوح أكتر، من غير لف ودوران، وبـ review عملي." },
+    { "title": "عندك أساس وعايز نظام", "body": "لو عندك أساس وعايز workflow واضح من أول الفكرة لحد الإطلاق—ده بالضبط اللي هنا." }
+  ],
   "actions.apply": "تطبيق",
   "actions.cancel": "إلغاء",
   "actions.confirm": "تأكيد",
