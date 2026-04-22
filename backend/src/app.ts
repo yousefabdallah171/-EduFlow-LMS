@@ -79,6 +79,15 @@ export const createApp = () => {
     res.json({ status: "ok" });
   });
 
+  // Convenience health routes for deployments where the reverse proxy only forwards `/api/*`.
+  app.get("/api/health", (_req, res) => {
+    res.json({ status: "ok" });
+  });
+
+  app.get("/api/v1/health", (_req, res) => {
+    res.json({ status: "ok" });
+  });
+
   app.get("/health/metrics", (_req, res) => {
     res.json(telemetryService.snapshot());
   });

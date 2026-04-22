@@ -46,6 +46,13 @@ const dropSchema = async (databaseUrl: string, schema: string) => {
 export default async () => {
   process.env.NODE_ENV = "test";
 
+  const argv = process.argv.join(" ");
+  const isUnitOnlyRun = argv.includes("tests/unit") || argv.includes("tests\\unit") || argv.includes("--unit");
+
+  if (isUnitOnlyRun) {
+    return;
+  }
+
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL is required for backend integration tests.");
   }

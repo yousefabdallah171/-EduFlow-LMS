@@ -5,6 +5,7 @@ const redisStore = new Map<string, string>();
 const prismaMock = vi.hoisted(() => ({
   payment: {
     findMany: vi.fn(),
+    aggregate: vi.fn(),
     findUnique: vi.fn(),
     update: vi.fn(),
     count: vi.fn()
@@ -54,8 +55,8 @@ describe("analyticsService", () => {
       .mockResolvedValueOnce([
         { amountPiasters: 49_900, createdAt: new Date("2026-04-10"), status: "COMPLETED" },
         { amountPiasters: 39_900, createdAt: new Date("2026-04-11"), status: "COMPLETED" }
-      ])
-      .mockResolvedValueOnce([{ amountPiasters: 20_000, createdAt: new Date("2026-03-01"), status: "COMPLETED" }]);
+      ]);
+    prismaMock.payment.aggregate.mockResolvedValueOnce({ _sum: { amountPiasters: 20_000 } });
     prismaMock.enrollment.findMany
       .mockResolvedValueOnce([
         { enrolledAt: new Date("2026-04-10"), status: "ACTIVE" },

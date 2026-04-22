@@ -2,12 +2,15 @@ import type { Payment } from "@prisma/client";
 import type { PaymobWebhookPayload } from "../utils/hmac.js";
 
 import { env } from "../config/env.js";
+import { redis } from "../config/redis.js";
 import { couponRepository } from "../repositories/coupon.repository.js";
 import { paymentRepository } from "../repositories/payment.repository.js";
 import { userRepository } from "../repositories/user.repository.js";
 import { prisma } from "../config/database.js";
 import { couponService } from "./coupon.service.js";
+import { courseService } from "./course.service.js";
 import { enrollmentService } from "./enrollment.service.js";
+import { prometheus } from "../observability/prometheus.js";
 
 class PaymentError extends Error {
   constructor(
@@ -20,6 +23,8 @@ class PaymentError extends Error {
 }
 
 const PAYMOB_BASE_URL = "https://accept.paymob.com/api";
+const PAYMENTS_CACHE_TTL_SECONDS = 60 * 60;
+const paymentsCacheKey = (userId: string) => `student:payments:${userId}`;
 
 const paymobRequest = async <T>(path: string, body: Record<string, unknown>) => {
   const response = await fetch(`${PAYMOB_BASE_URL}${path}`, {
@@ -38,16 +43,67 @@ const paymobRequest = async <T>(path: string, body: Record<string, unknown>) => 
 };
 
 export const paymentService = {
+  async invalidatePaymentHistoryCache(userId: string) {
+    try {
+      await redis.del(paymentsCacheKey(userId));
+    } catch {
+      // ignore redis failures
+    }
+  },
+
+  async listPaymentHistory(userId: string) {
+    try {
+      const cached = await redis.get(paymentsCacheKey(userId));
+      if (cached) {
+        prometheus.recordCacheHit("student_payments");
+        return JSON.parse(cached) as Array<{
+          id: string;
+          amountEgp: number;
+          status: Payment["status"];
+          createdAt: string;
+        }>;
+      }
+      prometheus.recordCacheMiss("student_payments");
+    } catch {
+      // ignore redis failures
+    }
+
+    const rows = await prisma.payment.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        amountPiasters: true,
+        status: true,
+        createdAt: true
+      }
+    });
+
+    const payload = rows.map((row) => ({
+      id: row.id,
+      amountEgp: row.amountPiasters / 100,
+      status: row.status,
+      createdAt: row.createdAt.toISOString()
+    }));
+
+    try {
+      await redis.set(paymentsCacheKey(userId), JSON.stringify(payload), "EX", PAYMENTS_CACHE_TTL_SECONDS);
+    } catch {
+      // ignore redis failures
+    }
+
+    return payload;
+  },
+
   async getCheckoutPackage(packageId?: string) {
-    const coursePackage = packageId
-      ? await prisma.coursePackage.findFirst({ where: { id: packageId, isActive: true } })
-      : await prisma.coursePackage.findFirst({ where: { isActive: true }, orderBy: { sortOrder: "asc" } });
+    const packages = await courseService.getCoursePackagesCached();
+    const coursePackage = packageId ? packages.find((entry) => entry.id === packageId) ?? null : packages[0] ?? null;
 
     if (coursePackage) {
       return coursePackage;
     }
 
-    const settings = await prisma.courseSettings.findUnique({ where: { id: 1 } });
+    const settings = await courseService.getCourseSettingsCached();
     if (!settings) {
       throw new PaymentError("COURSE_SETTINGS_MISSING", 500, "Course settings are not configured.");
     }
@@ -108,6 +164,8 @@ export const paymentService = {
         }
       });
     });
+
+    await paymentService.invalidatePaymentHistoryCache(userId);
 
     const auth = await paymobRequest<{ token: string }>("/auth/tokens", {
       api_key: env.PAYMOB_API_KEY
@@ -190,10 +248,13 @@ export const paymentService = {
       webhookHmac: hmac
     });
 
+    await paymentService.invalidatePaymentHistoryCache(payment.userId);
+
     if (updatedPayment.status === "COMPLETED") {
       await enrollmentService.enroll(payment.userId, "PAID", payment.id);
       if (payment.couponId) {
         await couponRepository.incrementUses(payment.couponId);
+        await couponService.invalidateCouponCache();
       }
     }
 

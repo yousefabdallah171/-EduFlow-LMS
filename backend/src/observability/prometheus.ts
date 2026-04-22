@@ -32,10 +32,24 @@ const videoSecurityEventsTotal = new client.Counter({
   labelNames: ["eventType", "severity"] as const
 });
 
+const redisCacheHitsTotal = new client.Counter({
+  name: "redis_cache_hits_total",
+  help: "Redis cache hits",
+  labelNames: ["cache"] as const
+});
+
+const redisCacheMissesTotal = new client.Counter({
+  name: "redis_cache_misses_total",
+  help: "Redis cache misses",
+  labelNames: ["cache"] as const
+});
+
 registry.registerMetric(httpDurationMs);
 registry.registerMetric(httpRequestsTotal);
 registry.registerMetric(httpInflight);
 registry.registerMetric(videoSecurityEventsTotal);
+registry.registerMetric(redisCacheHitsTotal);
+registry.registerMetric(redisCacheMissesTotal);
 
 const normalizeRoute = (req: Request): string => {
   const original = req.originalUrl.split("?")[0] ?? "/";
@@ -96,6 +110,24 @@ export const prometheus = {
     if (!enabled) return;
     try {
       videoSecurityEventsTotal.inc({ eventType, severity });
+    } catch {
+      // ignore metrics failures
+    }
+  },
+
+  recordCacheHit(cache: string) {
+    if (!enabled) return;
+    try {
+      redisCacheHitsTotal.inc({ cache });
+    } catch {
+      // ignore metrics failures
+    }
+  },
+
+  recordCacheMiss(cache: string) {
+    if (!enabled) return;
+    try {
+      redisCacheMissesTotal.inc({ cache });
     } catch {
       // ignore metrics failures
     }

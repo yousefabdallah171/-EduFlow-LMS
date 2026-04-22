@@ -1,22 +1,14 @@
 import crypto from "node:crypto";
 
 import { redis } from "../config/redis.js";
+import { prometheus } from "../observability/prometheus.js";
 import { lessonRepository } from "../repositories/lesson.repository.js";
 import { progressRepository } from "../repositories/progress.repository.js";
+import { dashboardService } from "./dashboard.service.js";
 
 const PROGRESS_CACHE_TTL_SECONDS = 5 * 60;
-const progressCacheVersionKey = "progress:cache-version:v1";
 
-const getCacheVersion = async () => (await redis.get(progressCacheVersionKey)) ?? "0";
-
-const bumpCacheVersion = async () => {
-  await redis.set(progressCacheVersionKey, String(Date.now()), "EX", PROGRESS_CACHE_TTL_SECONDS);
-};
-
-const progressCacheKey = (userId: string, version: string) => {
-  const hash = crypto.createHash("sha256").update(`${version}:${userId}`).digest("hex");
-  return `progress:${hash}`;
-};
+const progressCacheKey = (userId: string) => `student:progress:${userId}`;
 
 export class ProgressError extends Error {
   constructor(
@@ -29,8 +21,12 @@ export class ProgressError extends Error {
 }
 
 export const progressService = {
-  async invalidateProgressCache() {
-    await bumpCacheVersion();
+  async invalidateProgressCache(userId: string) {
+    try {
+      await redis.del(progressCacheKey(userId));
+    } catch {
+      // ignore redis failures
+    }
   },
 
   async getProgressByLessonIds(userId: string, lessonIds: string[]) {
@@ -38,22 +34,27 @@ export const progressService = {
       return new Map<string, { completedAt: Date | null; lastPositionSeconds: number }>();
     }
 
-    const version = await getCacheVersion();
-    const key = progressCacheKey(userId, version);
-    const cached = await redis.get(key);
-    if (cached) {
-      const parsed = JSON.parse(cached) as Record<string, { completedAt: string | null; lastPositionSeconds: number }>;
-      const map = new Map<string, { completedAt: Date | null; lastPositionSeconds: number }>();
-      for (const lessonId of lessonIds) {
-        const value = parsed[lessonId];
-        if (value) {
-          map.set(lessonId, {
-            completedAt: value.completedAt ? new Date(value.completedAt) : null,
-            lastPositionSeconds: value.lastPositionSeconds ?? 0
-          });
+    const key = progressCacheKey(userId);
+    try {
+      const cached = await redis.get(key);
+      if (cached) {
+        prometheus.recordCacheHit("student_progress");
+        const parsed = JSON.parse(cached) as Record<string, { completedAt: string | null; lastPositionSeconds: number }>;
+        const map = new Map<string, { completedAt: Date | null; lastPositionSeconds: number }>();
+        for (const lessonId of lessonIds) {
+          const value = parsed[lessonId];
+          if (value) {
+            map.set(lessonId, {
+              completedAt: value.completedAt ? new Date(value.completedAt) : null,
+              lastPositionSeconds: value.lastPositionSeconds ?? 0
+            });
+          }
         }
+        return map;
       }
-      return map;
+      prometheus.recordCacheMiss("student_progress");
+    } catch {
+      // ignore redis failures
     }
 
     const rows = await progressRepository.findManyByUser(userId);
@@ -65,7 +66,11 @@ export const progressService = {
       };
     }
 
-    await redis.set(key, JSON.stringify(record), "EX", PROGRESS_CACHE_TTL_SECONDS);
+    try {
+      await redis.set(key, JSON.stringify(record), "EX", PROGRESS_CACHE_TTL_SECONDS);
+    } catch {
+      // ignore redis failures
+    }
 
     const map = new Map<string, { completedAt: Date | null; lastPositionSeconds: number }>();
     for (const lessonId of lessonIds) {
@@ -111,7 +116,8 @@ export const progressService = {
     });
 
     const completion = await progressRepository.findCourseCompletion(userId);
-    await this.invalidateProgressCache();
+    await this.invalidateProgressCache(userId);
+    await dashboardService.invalidateStudentDashboard(userId);
 
     return {
       lastPositionSeconds: progress.lastPositionSeconds,

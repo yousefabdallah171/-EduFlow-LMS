@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Coupon } from "@prisma/client";
 
+const redisStore = new Map<string, string>();
+
 const couponRepositoryMock = vi.hoisted(() => ({
   findByCode: vi.fn(),
   findById: vi.fn(),
@@ -24,6 +26,20 @@ vi.mock("../../src/config/database.js", () => ({
   prisma: prismaMock
 }));
 
+vi.mock("../../src/config/redis.js", () => ({
+  redis: {
+    get: vi.fn(async (key: string) => redisStore.get(key) ?? null),
+    set: vi.fn(async (key: string, value: string) => {
+      redisStore.set(key, value);
+      return "OK";
+    }),
+    del: vi.fn(async (...keys: string[]) => {
+      keys.forEach((key) => redisStore.delete(key));
+      return keys.length;
+    })
+  }
+}));
+
 const makeCoupon = (overrides: Partial<Coupon> = {}): Coupon => ({
   id: "coupon-1",
   code: "SAVE20",
@@ -40,6 +56,7 @@ const makeCoupon = (overrides: Partial<Coupon> = {}): Coupon => ({
 describe("couponService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    redisStore.clear();
   });
 
   it("rejects expired coupons during validation", async () => {

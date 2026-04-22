@@ -202,42 +202,33 @@ export const lessonController = {
         return;
       }
 
-      const lesson = await prisma.lesson.findUnique({
-        where: { id: lessonId },
-        include: {
-          section: {
-            select: {
-              id: true,
-              titleEn: true,
-              titleAr: true
-            }
-          },
-          resources: {
-            select: {
-              id: true,
-              title: true,
-              fileUrl: true,
-              fileSizeBytes: true,
-              createdAt: true
-            }
-          },
-          progress: userId ? {
-            where: { userId },
-            select: {
-              completedAt: true,
-              watchTimeSeconds: true,
-              lastPositionSeconds: true
-            }
-          } : undefined
-        }
-      });
+      const lesson = await lessonService.getLessonMetadata(lessonId);
 
       if (!lesson) {
         res.status(404).json({ message: "Lesson not found" });
         return;
       }
 
-      res.json({ lesson });
+      if (!userId) {
+        res.json({ lesson });
+        return;
+      }
+
+      const progress = await prisma.lessonProgress.findUnique({
+        where: { userId_lessonId: { userId, lessonId } },
+        select: {
+          completedAt: true,
+          watchTimeSeconds: true,
+          lastPositionSeconds: true
+        }
+      });
+
+      res.json({
+        lesson: {
+          ...lesson,
+          progress: progress ? [progress] : []
+        }
+      });
     } catch (error) {
       console.error("Error fetching lesson:", error);
       res.status(500).json({ message: "Failed to fetch lesson" });

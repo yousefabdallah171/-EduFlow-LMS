@@ -139,6 +139,7 @@ export const adminLessonsController = {
 
       await courseService.invalidatePublicCourseCache();
       await lessonService.invalidatePublishedLessonsCache();
+      await lessonService.invalidateLessonMetadataCache(lesson.id);
 
       res.status(201).json({ lesson });
     } catch (error) {
@@ -176,6 +177,7 @@ export const adminLessonsController = {
 
       await courseService.invalidatePublicCourseCache();
       await lessonService.invalidatePublishedLessonsCache();
+      await lessonService.invalidateLessonMetadataCache(lessonId);
 
       res.json({ lesson });
     } catch (error) {
@@ -203,6 +205,7 @@ export const adminLessonsController = {
       await lessonRepository.delete(lessonId);
       await courseService.invalidatePublicCourseCache();
       await lessonService.invalidatePublishedLessonsCache();
+      await lessonService.invalidateLessonMetadataCache(lessonId);
       res.json({ message: "Lesson deleted." });
     } catch (error) {
       handleLessonAdminError(error, res, next);
@@ -221,6 +224,7 @@ export const adminLessonsController = {
       const lesson = await lessonRepository.update(lessonId, { isPreview });
       await courseService.invalidatePublicCourseCache();
       await lessonService.invalidatePublishedLessonsCache();
+      await lessonService.invalidateLessonMetadataCache(lessonId);
       res.json(lesson);
     } catch (error) {
       handleLessonAdminError(error, res, next);
@@ -240,6 +244,7 @@ export const adminLessonsController = {
       );
       await courseService.invalidatePublicCourseCache();
       await lessonService.invalidatePublishedLessonsCache();
+      await lessonService.invalidateLessonMetadataCache(body.order.map((entry) => entry.id));
       res.json({ message: "Lessons reordered." });
     } catch (error) {
       handleLessonAdminError(error, res, next);

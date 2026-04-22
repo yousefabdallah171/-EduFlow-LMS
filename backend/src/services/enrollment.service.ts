@@ -2,8 +2,12 @@ import type { EnrollmentType } from "@prisma/client";
 
 import { redis } from "../config/redis.js";
 import { enrollmentRepository } from "../repositories/enrollment.repository.js";
+import { dashboardService } from "./dashboard.service.js";
+import { prometheus } from "../observability/prometheus.js";
 
-const enrollmentCacheKey = (userId: string) => `enrollment:${userId}`;
+const DEFAULT_COURSE_ID = "primary";
+const enrollmentCacheKeyLegacy = (userId: string) => `enrollment:${userId}`;
+const enrollmentStatusCacheKey = (userId: string, courseId: string) => `enrollment:status:${userId}:${courseId}`;
 const ENROLLMENT_CACHE_TTL_SECONDS = 2 * 60;
 
 export const enrollmentService = {
@@ -25,30 +29,49 @@ export const enrollmentService = {
           payment: paymentId ? { connect: { id: paymentId } } : undefined
         });
 
-    await redis.set(
-      enrollmentCacheKey(userId),
-      JSON.stringify({ enrolled: true, status: enrollment.status }),
-      "EX",
-      ENROLLMENT_CACHE_TTL_SECONDS
-    );
+    const payload = { enrolled: true, status: enrollment.status };
+    try {
+      await redis.set(enrollmentCacheKeyLegacy(userId), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
+      await redis.set(enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
+    } catch {
+      // ignore redis failures
+    }
+    await dashboardService.invalidateStudentDashboard(userId);
     return enrollment;
   },
 
   async revoke(userId: string, revokedById?: string) {
     const enrollment = await enrollmentRepository.revoke(userId, revokedById);
-    await redis.set(
-      enrollmentCacheKey(userId),
-      JSON.stringify({ enrolled: false, status: enrollment.status }),
-      "EX",
-      ENROLLMENT_CACHE_TTL_SECONDS
-    );
+    const payload = { enrolled: false, status: enrollment.status };
+    try {
+      await redis.set(enrollmentCacheKeyLegacy(userId), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
+      await redis.set(enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
+    } catch {
+      // ignore redis failures
+    }
+    await dashboardService.invalidateStudentDashboard(userId);
     return enrollment;
   },
 
   async getStatus(userId: string) {
-    const cached = await redis.get(enrollmentCacheKey(userId));
-    if (cached) {
-      return JSON.parse(cached) as { enrolled: boolean; status?: string };
+    try {
+      const cached = await redis.get(enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID));
+      if (cached) {
+        prometheus.recordCacheHit("enrollment_status");
+        return JSON.parse(cached) as { enrolled: boolean; status?: string };
+      }
+    } catch {
+      // ignore redis failures
+    }
+    prometheus.recordCacheMiss("enrollment_status");
+
+    try {
+      const cachedLegacy = await redis.get(enrollmentCacheKeyLegacy(userId));
+      if (cachedLegacy) {
+        return JSON.parse(cachedLegacy) as { enrolled: boolean; status?: string };
+      }
+    } catch {
+      // ignore redis failures
     }
 
     const enrollment = await enrollmentRepository.findByUserId(userId);
@@ -57,11 +80,46 @@ export const enrollmentService = {
           enrolled: enrollment.status === "ACTIVE",
           status: enrollment.status,
           enrollmentType: enrollment.enrollmentType,
-          enrolledAt: enrollment.enrolledAt
-        }
-      : { enrolled: false };
+           enrolledAt: enrollment.enrolledAt
+         }
+       : { enrolled: false };
 
-    await redis.set(enrollmentCacheKey(userId), JSON.stringify(value), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
+    try {
+      await redis.set(enrollmentCacheKeyLegacy(userId), JSON.stringify(value), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
+      await redis.set(
+        enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID),
+        JSON.stringify(value),
+        "EX",
+        ENROLLMENT_CACHE_TTL_SECONDS
+      );
+    } catch {
+      // ignore redis failures
+    }
     return value;
+  },
+
+  getStatusForCourse(userId: string, courseId: string) {
+    if (!courseId.trim() || courseId === DEFAULT_COURSE_ID) {
+      return enrollmentService.getStatus(userId);
+    }
+
+    return (async () => {
+      try {
+        const cached = await redis.get(enrollmentStatusCacheKey(userId, courseId));
+        if (cached) {
+          return JSON.parse(cached) as { enrolled: boolean; status?: string };
+        }
+      } catch {
+        // ignore redis failures
+      }
+
+      const value = await enrollmentService.getStatus(userId);
+      try {
+        await redis.set(enrollmentStatusCacheKey(userId, courseId), JSON.stringify(value), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
+      } catch {
+        // ignore redis failures
+      }
+      return value;
+    })();
   }
 };
