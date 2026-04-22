@@ -7,7 +7,7 @@
   "landing.hero.subtitle": "Learn a practical workflow to turn ideas into production-ready apps: PRD, Spec Kit, UI direction, implementation, review, testing, security, SEO, Docker, and deployment.",
   "landing.hero.ctaPrimary": "Get started",
   "landing.hero.ctaSecondary": "See pricing",
-  "landing.hero.tech": [" PRD", "Spec Kit", "Codex", "Docker"],
+  "landing.hero.tech": ["Prd", "Spec Kit", "Codex", "Docker"],
   "landing.hero.trust": ["Secure payment", "Replies within an hour", "Instant access"],
   "landing.hero.stats": [
     { "value": "7", "label": "clear phases" },
