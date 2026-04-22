@@ -6,14 +6,9 @@ import { getPublicTrustCopy } from "@/lib/public-trust-copy";
 
 export const Terms = () => {
   const { locale } = useParams();
-  const copy = getPublicTrustCopy(resolveLocale(locale)).policies.terms;
+  const resolved = resolveLocale(locale);
+  const policy = getPublicTrustCopy(resolved).policies.terms;
 
-  return (
-    <PolicyPage
-      title={copy.title}
-      accent={copy.accent}
-      intro={copy.intro}
-      sections={copy.sections}
-    />
-  );
+  return <PolicyPage title={policy.title} accent={policy.accent} intro={policy.intro} sections={policy.sections} />;
 };
+

@@ -1,3 +1,5 @@
+import { redis } from "../config/redis.js";
+import { prometheus } from "../observability/prometheus.js";
 import { noteRepository } from "../repositories/note.repository.js";
 
 export class NoteError extends Error {
@@ -10,12 +12,47 @@ export class NoteError extends Error {
   }
 }
 
+const NOTES_CACHE_TTL_SECONDS = 10 * 60;
+const notesCacheKey = (userId: string) => `student:notes:${userId}`;
+
 export const noteService = {
-  list(userId: string) {
-    return noteRepository.findAllByUser(userId);
+  async invalidateNotesCache(userId: string) {
+    try {
+      await redis.del(notesCacheKey(userId));
+    } catch {
+      // ignore redis failures
+    }
   },
-  upsert(userId: string, lessonId: string, content: string) {
-    return noteRepository.upsert(userId, lessonId, content);
+
+  async list(userId: string) {
+    const key = notesCacheKey(userId);
+    try {
+      const cached = await redis.get(key);
+      if (cached) {
+        try {
+          prometheus.recordCacheHit("student_notes");
+          return JSON.parse(cached) as Awaited<ReturnType<typeof noteRepository.findAllByUser>>;
+        } catch {
+          // Fall through to DB.
+        }
+      }
+      prometheus.recordCacheMiss("student_notes");
+    } catch {
+      // ignore redis failures
+    }
+
+    const notes = await noteRepository.findAllByUser(userId);
+    try {
+      await redis.set(key, JSON.stringify(notes), "EX", NOTES_CACHE_TTL_SECONDS);
+    } catch {
+      // ignore redis failures
+    }
+    return notes;
+  },
+  async upsert(userId: string, lessonId: string, content: string) {
+    const note = await noteRepository.upsert(userId, lessonId, content);
+    await noteService.invalidateNotesCache(userId);
+    return note;
   },
   async update(id: string, userId: string, content: string) {
     const note = await noteRepository.findByIdForUser(id, userId);
@@ -23,7 +60,9 @@ export const noteService = {
       throw new NoteError("NOTE_NOT_FOUND", 404, "Note not found.");
     }
 
-    return noteRepository.updateForUser(id, userId, content);
+    const updated = await noteRepository.updateForUser(id, userId, content);
+    await noteService.invalidateNotesCache(userId);
+    return updated;
   },
   async delete(id: string, userId: string) {
     const note = await noteRepository.findByIdForUser(id, userId);
@@ -31,10 +70,12 @@ export const noteService = {
       throw new NoteError("NOTE_NOT_FOUND", 404, "Note not found.");
     }
 
-    return noteRepository.deleteForUser(id, userId);
+    const deleted = await noteRepository.deleteForUser(id, userId);
+    await noteService.invalidateNotesCache(userId);
+    return deleted;
   },
   async exportText(userId: string): Promise<string> {
-    const notes = await noteRepository.findAllByUser(userId);
+    const notes = await noteService.list(userId);
     return notes
       .map((n) => `Lesson: ${n.lesson.titleEn}\n${n.content}`)
       .join("\n\n---\n\n");

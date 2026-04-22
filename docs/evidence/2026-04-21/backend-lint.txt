@@ -1,0 +1,2 @@
+﻿> backend lint
+ > backend@ lint /app/backend > eslint --no-error-on-unmatched-pattern "src/**/*.ts" "tests/**/*.ts" 

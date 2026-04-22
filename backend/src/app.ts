@@ -13,12 +13,17 @@ import { adminRoutes } from "./routes/admin.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import { publicRoutes } from "./routes/public.routes.js";
 import { studentRoutes } from "./routes/student.routes.js";
+import { prometheus } from "./observability/prometheus.js";
+import { sentry } from "./observability/sentry.js";
 import { telemetryService } from "./services/telemetry.service.js";
 
 export const createApp = () => {
   const app = express();
 
   app.set("trust proxy", 1);
+
+  const redactUrl = (value: string) =>
+    value.replace(/([?&]token=)[^&]+/g, "$1<redacted>");
 
   app.use((req, res, next) => {
     telemetryService.onRequestStart();
@@ -30,6 +35,8 @@ export const createApp = () => {
     next();
   });
 
+  app.use(prometheus.middleware);
+
   if (env.NODE_ENV !== "production") {
     app.use((req, res, next) => {
       const start = process.hrtime.bigint();
@@ -37,7 +44,9 @@ export const createApp = () => {
         const elapsedMs = Number(process.hrtime.bigint() - start) / 1_000_000;
         if (elapsedMs >= 500) {
           // eslint-disable-next-line no-console
-          console.warn(`[slow] ${req.method} ${req.originalUrl} ${res.statusCode} ${Math.round(elapsedMs)}ms`);
+          console.warn(
+            `[slow] ${req.method} ${redactUrl(req.originalUrl)} ${res.statusCode} ${Math.round(elapsedMs)}ms`
+          );
         }
       });
       next();
@@ -70,8 +79,21 @@ export const createApp = () => {
     res.json({ status: "ok" });
   });
 
+  // Convenience health routes for deployments where the reverse proxy only forwards `/api/*`.
+  app.get("/api/health", (_req, res) => {
+    res.json({ status: "ok" });
+  });
+
+  app.get("/api/v1/health", (_req, res) => {
+    res.json({ status: "ok" });
+  });
+
   app.get("/health/metrics", (_req, res) => {
     res.json(telemetryService.snapshot());
+  });
+
+  app.get("/metrics", (req, res) => {
+    void prometheus.handler(req, res);
   });
 
   app.use("/api/v1/auth", authRoutes);
@@ -79,8 +101,9 @@ export const createApp = () => {
   app.use("/api/v1", studentRoutes);
   app.use("/api/v1/admin", authenticate, requireRole("ADMIN"), adminRoutes);
 
-  app.use((err: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+  app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     void next;
+    sentry.captureException(err, req);
     res.status(500).json({
       error: "INTERNAL_SERVER_ERROR",
       message: err.message

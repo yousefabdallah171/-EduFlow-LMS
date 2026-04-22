@@ -1,0 +1,85 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.4 [39m[90m/app/backend[39m
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "eduflow_dev", schema "vitest_1776804773766_217f4a2f" at "postgres:5432"
+
+12 migrations found in prisma/migrations
+
+Applying migration `20260412180000_init`
+Applying migration `20260412193000_add_refresh_token_session_id`
+Applying migration `20260414000001_add_is_preview`
+Applying migration `20260414000002_add_notes`
+Applying migration `20260414000003_add_resources`
+Applying migration `20260414000004_add_audit_logs`
+Applying migration `20260414000005_add_tickets`
+Applying migration `20260414000006_add_notification_templates`
+Applying migration `20260415000007_add_sections`
+Applying migration `20260419000008_add_course_packages`
+Applying migration `20260420000009_add_video_security_events`
+Applying migration `20260421001410_add_perf_indexes`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260412180000_init/
+    └─ migration.sql
+  └─ 20260412193000_add_refresh_token_session_id/
+    └─ migration.sql
+  └─ 20260414000001_add_is_preview/
+    └─ migration.sql
+  └─ 20260414000002_add_notes/
+    └─ migration.sql
+  └─ 20260414000003_add_resources/
+    └─ migration.sql
+  └─ 20260414000004_add_audit_logs/
+    └─ migration.sql
+  └─ 20260414000005_add_tickets/
+    └─ migration.sql
+  └─ 20260414000006_add_notification_templates/
+    └─ migration.sql
+  └─ 20260415000007_add_sections/
+    └─ migration.sql
+  └─ 20260419000008_add_course_packages/
+    └─ migration.sql
+  └─ 20260420000009_add_video_security_events/
+    └─ migration.sql
+  └─ 20260421001410_add_perf_indexes/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+ [31m❯[39m tests/integration/progress.test.ts [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m[33m 30411[2mms[22m[39m
+     [2m[90m↓[39m[22m updates progress and marks completion once watch time reaches 90 percent
+[90mstderr[2m | tests/integration/student-dashboard.test.ts[2m > [22m[2mStudent Dashboard[2m > [22m[2mreturns enrollment state, last lesson, and course completion summary
+[22m[39m[slow] POST /api/v1/auth/login 200 677ms
+
+ [32m✓[39m tests/integration/student-dashboard.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 10083[2mms[22m[39m
+     [33m[2m✓[22m[39m returns enrollment state, last lesson, and course completion summary [33m 2598[2mms[22m[39m
+[90mstderr[2m | tests/integration/admin-orders.test.ts[2m > [22m[2mAdmin Orders[2m > [22m[2mmarks a pending payment as paid, enrolls the student, and records an audit log
+[22m[39m[slow] POST /api/v1/auth/login 200 884ms
+
+ [32m✓[39m tests/integration/admin-orders.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 5701[2mms[22m[39m
+     [33m[2m✓[22m[39m marks a pending payment as paid, enrolls the student, and records an audit log [33m 2930[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/integration/progress.test.ts[2m [ tests/integration/progress.test.ts ][22m
+[31m[1mError[22m: Hook timed out in 30000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".[39m
+[36m [2m❯[22m tests/integration/progress.test.ts:[2m32:1[22m[39m
+    [90m 30|[39m [35mconst[39m studentEmail [33m=[39m [32m"progress-student@example.com"[39m[33m;[39m
+    [90m 31|[39m
+    [90m 32|[39m [34mbeforeAll[39m([35masync[39m () [33m=>[39m {
+    [90m   |[39m [31m^[39m
+    [90m 33|[39m   [35mconst[39m appModule [33m=[39m [35mawait[39m [35mimport[39m([32m"../../src/app.js"[39m)[33m;[39m
+    [90m 34|[39m   [35mconst[39m databaseModule [33m=[39m [35mawait[39m [35mimport[39m([32m"../../src/config/database.js"[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (3)[39m
+[2m   Start at [22m 20:52:49
+[2m   Duration [22m 131.25s[2m (transform 29.41s, setup 0ms, import 6.88s, tests 46.19s, environment 2ms)[22m
+

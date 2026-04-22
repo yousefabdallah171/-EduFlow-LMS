@@ -149,7 +149,13 @@ button {
   letter-spacing: inherit;
 }
 
-/* Brand buttons should always use dark text for contrast in both themes. */
+/* Brand buttons should always use dark text for contrast (especially in light mode). */
+button[style*="var(--gradient-brand)"],
+button[style*="--gradient-brand"],
+a[style*="var(--gradient-brand)"],
+a[style*="--gradient-brand"],
+button[style*="var(--color-brand)"],
+a[style*="var(--color-brand)"],
 button.text-white[style*="var(--gradient-brand)"],
 button.text-white[style*="--gradient-brand"],
 a.text-white[style*="var(--gradient-brand)"],
@@ -314,8 +320,14 @@ p {
   overflow-x: clip;
   background:
     radial-gradient(circle at 50% -10%, color-mix(in oklab, var(--color-brand) 10%, transparent), transparent 28rem),
-    linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 88%, black), var(--color-page));
+    linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 82%, var(--color-page)), var(--color-page));
   color: var(--color-text-primary);
+}
+
+:root.dark .reference-page {
+  background:
+    radial-gradient(circle at 50% -10%, color-mix(in oklab, var(--color-brand) 10%, transparent), transparent 28rem),
+    linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 90%, black), var(--color-page));
 }
 
 .reference-page::before {
@@ -335,8 +347,7 @@ p {
   inset-inline: auto -8rem;
 }
 
-.marketing-dark,
-.reference-page {
+.marketing-dark {
   --color-page:          oklch(0.035 0.004 145);
   --color-surface:       oklch(0.075 0.006 145);
   --color-surface-2:     oklch(0.105 0.008 145);
@@ -410,7 +421,7 @@ p {
 .reference-title {
   margin: 18px auto 0;
   max-width: 900px;
-  font-family: var(--font-arabic-display);
+  font-family: var(--font-display);
   font-size: clamp(2rem, 5vw, 4.2rem);
   font-weight: 900;
   line-height: 1.12;
@@ -419,6 +430,7 @@ p {
 }
 
 [dir="rtl"] .reference-title {
+  font-family: var(--font-arabic-display);
   letter-spacing: 0;
 }
 

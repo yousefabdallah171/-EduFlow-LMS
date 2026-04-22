@@ -1,0 +1,36 @@
+﻿{
+    "status":  "success",
+    "data":  {
+                 "activeTargets":  [
+                                       {
+                                           "discoveredLabels":  {
+                                                                    "__address__":  "backend:3000",
+                                                                    "__metrics_path__":  "/metrics",
+                                                                    "__scheme__":  "http",
+                                                                    "__scrape_interval__":  "15s",
+                                                                    "__scrape_timeout__":  "10s",
+                                                                    "job":  "backend"
+                                                                },
+                                           "labels":  {
+                                                          "instance":  "backend:3000",
+                                                          "job":  "backend"
+                                                      },
+                                           "scrapePool":  "backend",
+                                           "scrapeUrl":  "http://backend:3000/metrics",
+                                           "globalUrl":  "http://backend:3000/metrics",
+                                           "lastError":  "",
+                                           "lastScrape":  "2026-04-21T16:21:18.768621931Z",
+                                           "lastScrapeDuration":  0.035246114,
+                                           "health":  "up",
+                                           "scrapeInterval":  "15s",
+                                           "scrapeTimeout":  "10s"
+                                       }
+                                   ],
+                 "droppedTargets":  [
+
+                                    ],
+                 "droppedTargetCounts":  {
+                                             "backend":  0
+                                         }
+             }
+}

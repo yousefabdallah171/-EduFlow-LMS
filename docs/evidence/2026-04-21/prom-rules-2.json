@@ -1,0 +1,77 @@
+﻿{
+    "status":  "success",
+    "data":  {
+                 "groups":  [
+                                {
+                                    "name":  "eduflow-api",
+                                    "file":  "/etc/prometheus/alerts.yml",
+                                    "rules":  [
+                                                  {
+                                                      "state":  "inactive",
+                                                      "name":  "ApiHigh5xxRate",
+                                                      "query":  "(sum(rate(http_requests_total{status=~\"5..\"}[5m])) / clamp_min(sum(rate(http_requests_total[5m])), 1)) \u003e 0.01",
+                                                      "duration":  300,
+                                                      "keepFiringFor":  0,
+                                                      "labels":  {
+                                                                     "severity":  "critical"
+                                                                 },
+                                                      "annotations":  {
+                                                                          "summary":  "5xx error rate \u003e 1% (5m)"
+                                                                      },
+                                                      "alerts":  [
+
+                                                                 ],
+                                                      "health":  "ok",
+                                                      "evaluationTime":  0.000472244,
+                                                      "lastEvaluation":  "2026-04-21T16:21:21.373916179Z",
+                                                      "type":  "alerting"
+                                                  },
+                                                  {
+                                                      "state":  "inactive",
+                                                      "name":  "ApiHighLatencyP95",
+                                                      "query":  "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_ms_bucket[5m]))) \u003e 500",
+                                                      "duration":  300,
+                                                      "keepFiringFor":  0,
+                                                      "labels":  {
+                                                                     "severity":  "warning"
+                                                                 },
+                                                      "annotations":  {
+                                                                          "summary":  "p95 latency \u003e 500ms (5m)"
+                                                                      },
+                                                      "alerts":  [
+
+                                                                 ],
+                                                      "health":  "ok",
+                                                      "evaluationTime":  0.002269913,
+                                                      "lastEvaluation":  "2026-04-21T16:21:21.374390724Z",
+                                                      "type":  "alerting"
+                                                  },
+                                                  {
+                                                      "state":  "inactive",
+                                                      "name":  "VideoAbuseEventsSpike",
+                                                      "query":  "sum(rate(video_security_events_total[5m])) \u003e 1",
+                                                      "duration":  600,
+                                                      "keepFiringFor":  0,
+                                                      "labels":  {
+                                                                     "severity":  "warning"
+                                                                 },
+                                                      "annotations":  {
+                                                                          "summary":  "Spike in VideoSecurityEvent anomalies"
+                                                                      },
+                                                      "alerts":  [
+
+                                                                 ],
+                                                      "health":  "ok",
+                                                      "evaluationTime":  0.000063106,
+                                                      "lastEvaluation":  "2026-04-21T16:21:21.376664737Z",
+                                                      "type":  "alerting"
+                                                  }
+                                              ],
+                                    "interval":  15,
+                                    "limit":  0,
+                                    "evaluationTime":  0.002824765,
+                                    "lastEvaluation":  "2026-04-21T16:21:21.373904178Z"
+                                }
+                            ]
+             }
+}

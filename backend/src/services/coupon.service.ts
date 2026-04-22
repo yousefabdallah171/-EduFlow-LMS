@@ -2,6 +2,8 @@ import type { Coupon, CouponDiscountType, Prisma, PrismaClient } from "@prisma/c
 import { Prisma as PrismaNamespace } from "@prisma/client";
 
 import { prisma } from "../config/database.js";
+import { redis } from "../config/redis.js";
+import { prometheus } from "../observability/prometheus.js";
 import { couponRepository } from "../repositories/coupon.repository.js";
 
 type CouponPayload = {
@@ -31,6 +33,16 @@ type CouponApplication = {
   discountPiasters: number;
 };
 
+type CouponValidationResult =
+  | { valid: false; reason: "NOT_FOUND" | "EXPIRED" | "MAX_USES_REACHED" }
+  | {
+      valid: true;
+      discountType: CouponDiscountType;
+      discountValue: number;
+      originalAmountEgp: number;
+      discountedAmountEgp: number;
+    };
+
 class CouponError extends Error {
   constructor(
     public readonly code: string,
@@ -47,7 +59,32 @@ const normalizeCode = (code: string) => code.trim().toUpperCase();
 
 const toNumericValue = (value: PrismaNamespace.Decimal | number | string) => Number(value);
 
-const getDiscountAmount = (coupon: Pick<Coupon, "discountType" | "discountValue">, originalAmountPiasters: number) => {
+const COUPON_VALIDATION_CACHE_TTL_SECONDS = 60 * 60;
+const COUPON_VALIDATION_NEGATIVE_TTL_SECONDS = 5 * 60;
+const couponCacheVersionKey = "coupon:cache-version:v1";
+
+const getCacheVersion = async () => {
+  try {
+    return (await redis.get(couponCacheVersionKey)) ?? "0";
+  } catch {
+    return "0";
+  }
+};
+
+const bumpCacheVersion = async () => {
+  try {
+    await redis.set(couponCacheVersionKey, String(Date.now()), "EX", COUPON_VALIDATION_CACHE_TTL_SECONDS);
+  } catch {
+    // ignore redis failures
+  }
+};
+
+const couponValidationCacheKey = (code: string) => `coupon:valid:${normalizeCode(code)}`;
+
+const getDiscountAmount = (
+  coupon: Pick<Coupon, "discountType"> & { discountValue: PrismaNamespace.Decimal | number | string },
+  originalAmountPiasters: number
+) => {
   if (coupon.discountType === "PERCENTAGE") {
     return Math.min(originalAmountPiasters, Math.round((originalAmountPiasters * toNumericValue(coupon.discountValue)) / 100));
   }
@@ -135,10 +172,53 @@ const parseCouponPayload = (payload: CouponPayload) => {
 };
 
 export const couponService = {
-  async validateCoupon(code: string | undefined, originalAmountPiasters: number) {
+  async invalidateCouponCache() {
+    await bumpCacheVersion();
+  },
+
+  async validateCoupon(code: string | undefined, originalAmountPiasters: number): Promise<CouponValidationResult> {
     if (!code?.trim()) {
       return { valid: false as const, reason: "NOT_FOUND" as const };
     }
+
+    const version = await getCacheVersion();
+    const key = couponValidationCacheKey(code);
+
+    try {
+      const cached = await redis.get(key);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached) as
+            | ({ v: string } & { valid: false; reason: "NOT_FOUND" | "EXPIRED" | "MAX_USES_REACHED" })
+            | ({ v: string } & { valid: true; discountType: CouponDiscountType; discountValue: number; expiryDate: string | null });
+
+          if (parsed.v === version) {
+            prometheus.recordCacheHit("coupon_validation");
+            if (!parsed.valid) {
+              return { valid: false, reason: parsed.reason };
+            }
+
+            const discountPiasters = getDiscountAmount(
+              { discountType: parsed.discountType, discountValue: parsed.discountValue },
+              originalAmountPiasters
+            );
+
+            return {
+              valid: true,
+              discountType: parsed.discountType,
+              discountValue: parsed.discountValue,
+              originalAmountEgp: originalAmountPiasters / 100,
+              discountedAmountEgp: (originalAmountPiasters - discountPiasters) / 100
+            };
+          }
+        } catch {
+          // Fall through to DB validation.
+        }
+      }
+    } catch {
+      // ignore redis failures
+    }
+    prometheus.recordCacheMiss("coupon_validation");
 
     const coupon = await couponRepository.findByCode(normalizeCode(code));
 
@@ -146,7 +226,21 @@ export const couponService = {
       ensureCouponIsUsable(coupon);
     } catch (error) {
       if (error instanceof CouponError) {
-        return { valid: false as const, reason: error.message.includes("expired") ? "EXPIRED" : "MAX_USES_REACHED" };
+        const payload: CouponValidationResult = {
+          valid: false,
+          reason: error.message.includes("expired") ? "EXPIRED" : "MAX_USES_REACHED"
+        };
+        try {
+          await redis.set(
+            key,
+            JSON.stringify({ v: version, valid: false as const, reason: payload.reason }),
+            "EX",
+            COUPON_VALIDATION_NEGATIVE_TTL_SECONDS
+          );
+        } catch {
+          // ignore redis failures
+        }
+        return payload;
       }
 
       throw error;
@@ -155,13 +249,40 @@ export const couponService = {
     const resolvedCoupon = coupon as Coupon;
     const discountPiasters = getDiscountAmount(resolvedCoupon, originalAmountPiasters);
 
-    return {
+    const payload: CouponValidationResult = {
       valid: true as const,
       discountType: resolvedCoupon.discountType,
       discountValue: toNumericValue(resolvedCoupon.discountValue),
       originalAmountEgp: originalAmountPiasters / 100,
       discountedAmountEgp: (originalAmountPiasters - discountPiasters) / 100
     };
+
+    const secondsUntilExpiry = resolvedCoupon.expiryDate
+      ? Math.floor((resolvedCoupon.expiryDate.getTime() - Date.now()) / 1000)
+      : null;
+    const ttlSeconds =
+      typeof secondsUntilExpiry === "number"
+        ? Math.max(1, Math.min(COUPON_VALIDATION_CACHE_TTL_SECONDS, secondsUntilExpiry))
+        : COUPON_VALIDATION_CACHE_TTL_SECONDS;
+
+    try {
+      await redis.set(
+        key,
+        JSON.stringify({
+          v: version,
+          valid: true as const,
+          discountType: payload.discountType,
+          discountValue: payload.discountValue,
+          expiryDate: resolvedCoupon.expiryDate?.toISOString() ?? null
+        }),
+        "EX",
+        ttlSeconds
+      );
+    } catch {
+      // ignore redis failures
+    }
+
+    return payload;
   },
 
   async applyCoupon(
@@ -232,6 +353,7 @@ export const couponService = {
       expiryDate: parsed.expiryDate
     });
 
+    await couponService.invalidateCouponCache();
     return toCouponSummary(coupon);
   },
 
@@ -254,6 +376,7 @@ export const couponService = {
       expiryDate: payload.expiryDate
     });
 
+    await couponService.invalidateCouponCache();
     return toCouponSummary(updated);
   },
 
@@ -266,6 +389,8 @@ export const couponService = {
     await couponRepository.update(id, {
       deletedAt: new Date()
     });
+
+    await couponService.invalidateCouponCache();
   },
 
   getDiscountAmount,

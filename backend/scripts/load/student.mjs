@@ -29,8 +29,7 @@ const login = async () => {
   return body.accessToken;
 };
 
-const worker = async (until) => {
-  const token = await login();
+const worker = async (until, token) => {
   const headers = { Authorization: `Bearer ${token}` };
 
   const latencies = [];
@@ -65,8 +64,9 @@ const worker = async (until) => {
 };
 
 const run = async () => {
+  const token = await login();
   const until = Date.now() + durationSeconds * 1000;
-  const results = await Promise.all(Array.from({ length: concurrency }, () => worker(until)));
+  const results = await Promise.all(Array.from({ length: concurrency }, () => worker(until, token)));
 
   const latencies = results.flatMap((r) => r.latencies).sort((a, b) => a - b);
   const ok = results.reduce((sum, r) => sum + r.ok, 0);
@@ -93,4 +93,3 @@ const run = async () => {
 };
 
 await run();
-

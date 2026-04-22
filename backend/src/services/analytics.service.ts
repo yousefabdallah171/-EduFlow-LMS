@@ -95,7 +95,11 @@ export const analyticsService = {
     };
     const enrollmentWhere = startDate ? { enrolledAt: { gte: startDate } } : {};
 
-    const [payments, enrollments, allEnrollments, publishedLessons, progresses] = await Promise.all([
+    const previousStartDate = startDate
+      ? new Date(startDate.getTime() - (Date.now() - startDate.getTime()))
+      : null;
+
+    const [payments, enrollments, allEnrollments, publishedLessons, previousRevenueAggregate] = await Promise.all([
       prisma.payment.findMany({
         where: paymentWhere,
         orderBy: { createdAt: "asc" }
@@ -109,56 +113,83 @@ export const analyticsService = {
         where: {
           isPublished: true
         },
-        orderBy: { sortOrder: "asc" }
-      }),
-      prisma.lessonProgress.findMany({
-        include: {
-          lesson: {
-            select: {
-              id: true,
-              titleEn: true,
-              titleAr: true,
-              durationSeconds: true,
-              isPublished: true
-            }
-          }
+        orderBy: { sortOrder: "asc" },
+        select: {
+          id: true,
+          titleEn: true,
+          titleAr: true,
+          durationSeconds: true,
+          sortOrder: true
         }
-      })
-    ]);
-
-    const totalRevenuePiasters = payments.reduce((sum, payment) => sum + payment.amountPiasters, 0);
-    const previousStartDate = startDate
-      ? new Date(startDate.getTime() - (Date.now() - startDate.getTime()))
-      : null;
-    const previousRevenuePiasters = previousStartDate
-      ? (
-          await prisma.payment.findMany({
+      }),
+      previousStartDate
+        ? prisma.payment.aggregate({
             where: {
               status: "COMPLETED",
               createdAt: {
                 gte: previousStartDate,
                 lt: startDate ?? new Date()
               }
+            },
+            _sum: {
+              amountPiasters: true
             }
           })
-        ).reduce((sum, payment) => sum + payment.amountPiasters, 0)
-      : totalRevenuePiasters;
+        : Promise.resolve(null)
+    ]);
+
+    const totalRevenuePiasters = payments.reduce((sum, payment) => sum + payment.amountPiasters, 0);
+    const previousRevenuePiasters =
+      previousStartDate && previousRevenueAggregate?._sum?.amountPiasters != null
+        ? previousRevenueAggregate._sum.amountPiasters
+        : totalRevenuePiasters;
 
     const revenueChangePercent =
       previousRevenuePiasters === 0 ? (totalRevenuePiasters > 0 ? 100 : 0) : ((totalRevenuePiasters - previousRevenuePiasters) / previousRevenuePiasters) * 100;
 
     const activeEnrollments = allEnrollments.filter((entry) => entry.status === "ACTIVE").length;
     const revokedEnrollments = allEnrollments.filter((entry) => entry.status === "REVOKED").length;
-    const progressForPublishedLessons = progresses.filter((progress) => progress.lesson.isPublished);
-    const totalWatchTimeSeconds = progressForPublishedLessons.reduce((sum, progress) => sum + progress.watchTimeSeconds, 0);
-    const totalUsersWithProgress = new Set(progressForPublishedLessons.map((progress) => progress.userId)).size;
 
+    const publishedLessonIds = publishedLessons.map((lesson) => lesson.id);
+    const progressForPublishedLessons = publishedLessonIds.length
+      ? await prisma.lessonProgress.findMany({
+          where: {
+            lessonId: { in: publishedLessonIds }
+          },
+          select: {
+            userId: true,
+            lessonId: true,
+            watchTimeSeconds: true,
+            lastPositionSeconds: true,
+            completedAt: true
+          }
+        })
+      : [];
+
+    const progressAggByLesson = new Map<
+      string,
+      { total: number; completed: number; watchTimeSeconds: number; exitPositionSeconds: number }
+    >();
     const completedPerUser = new Map<string, number>();
     for (const progress of progressForPublishedLessons) {
+      const bucket = progressAggByLesson.get(progress.lessonId) ?? {
+        total: 0,
+        completed: 0,
+        watchTimeSeconds: 0,
+        exitPositionSeconds: 0
+      };
+      bucket.total += 1;
+      bucket.watchTimeSeconds += progress.watchTimeSeconds;
+      bucket.exitPositionSeconds += progress.lastPositionSeconds;
       if (progress.completedAt) {
+        bucket.completed += 1;
         completedPerUser.set(progress.userId, (completedPerUser.get(progress.userId) ?? 0) + 1);
       }
+      progressAggByLesson.set(progress.lessonId, bucket);
     }
+
+    const totalWatchTimeSeconds = progressForPublishedLessons.reduce((sum, progress) => sum + progress.watchTimeSeconds, 0);
+    const totalUsersWithProgress = new Set(progressForPublishedLessons.map((progress) => progress.userId)).size;
 
     const totalLessons = publishedLessons.length;
     const completionPercentages = totalLessons
@@ -184,17 +215,11 @@ export const analyticsService = {
     }
 
     const lessonStats = publishedLessons.map((lesson) => {
-      const lessonProgress = progressForPublishedLessons.filter((progress) => progress.lessonId === lesson.id);
-      const completionRate = lessonProgress.length
-        ? (lessonProgress.filter((entry) => entry.completedAt).length / lessonProgress.length) * 100
-        : 0;
-      const averageWatchTimeSeconds = lessonProgress.length
-        ? lessonProgress.reduce((sum, entry) => sum + entry.watchTimeSeconds, 0) / lessonProgress.length
-        : 0;
+      const stats = progressAggByLesson.get(lesson.id);
+      const completionRate = stats?.total ? (stats.completed / stats.total) * 100 : 0;
+      const averageWatchTimeSeconds = stats?.total ? stats.watchTimeSeconds / stats.total : 0;
       const durationSeconds = lesson.durationSeconds ?? 1;
-      const averageExitPositionSeconds = lessonProgress.length
-        ? lessonProgress.reduce((sum, entry) => sum + entry.lastPositionSeconds, 0) / lessonProgress.length
-        : 0;
+      const averageExitPositionSeconds = stats?.total ? stats.exitPositionSeconds / stats.total : 0;
       const dropOffRate = Math.max(0, Math.min(100, 100 - (averageExitPositionSeconds / durationSeconds) * 100));
 
       return {
@@ -286,7 +311,7 @@ export const analyticsService = {
         : {})
     };
 
-    const [payments, total, summaryPayments] = await Promise.all([
+    const [payments, total, summaryByStatus] = await Promise.all([
       prisma.payment.findMany({
         where,
         include: {
@@ -308,14 +333,16 @@ export const analyticsService = {
         take: params.limit
       }),
       prisma.payment.count({ where }),
-      prisma.payment.findMany({
+      prisma.payment.groupBy({
+        by: ["status"],
         where,
-        select: {
-          amountPiasters: true,
-          status: true
-        }
+        _count: { _all: true },
+        _sum: { amountPiasters: true }
       })
     ]);
+
+    const completedSummary = summaryByStatus.find((entry) => entry.status === "COMPLETED");
+    const failedSummary = summaryByStatus.find((entry) => entry.status === "FAILED");
 
     return {
       data: payments.map((payment) => ({
@@ -335,11 +362,9 @@ export const analyticsService = {
         totalPages: Math.max(1, Math.ceil(total / params.limit))
       },
       summary: {
-        totalRevenue: summaryPayments
-          .filter((payment) => payment.status === "COMPLETED")
-          .reduce((sum, payment) => sum + payment.amountPiasters / 100, 0),
-        completedCount: summaryPayments.filter((payment) => payment.status === "COMPLETED").length,
-        failedCount: summaryPayments.filter((payment) => payment.status === "FAILED").length
+        totalRevenue: (completedSummary?._sum?.amountPiasters ?? 0) / 100,
+        completedCount: completedSummary?._count?._all ?? 0,
+        failedCount: failedSummary?._count?._all ?? 0
       }
     };
   },

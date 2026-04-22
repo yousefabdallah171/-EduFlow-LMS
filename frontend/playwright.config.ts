@@ -3,6 +3,7 @@ import fs from "node:fs";
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  workers: process.env.PW_WORKERS ? Number(process.env.PW_WORKERS) : 1,
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5173",
     screenshot: "only-on-failure"

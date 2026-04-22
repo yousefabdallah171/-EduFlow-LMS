@@ -1,0 +1,21 @@
+﻿Commit: 86dddfc257554c8d716d5145bcc3eeeea82219ba
+Branch: phase-1
+Date: 2026-04-21 15:44:40
+
+Status summary lines (from SECURITY_REMEDIATION_TASKS.md):
+39:- **TASK 1.1 (Admin auth middleware)**: [DONE]  
+44:- **TASK 1.2 (RBAC verification for admin routes)**: [DONE]  
+49:- **TASK 1.3 (Enrollment re-check for video segments / gating)**: [DONE]  
+53:- **TASK 1.4 (Cache invalidation on enrollment revocation)**: [DONE]  
+57:- **TASK 1.5 (Integration tests for Phase 1)**: [DONE]  
+62:- **TASK 1.6 (Phase 1 review + testing)**: [DONE]  
+68:- **TASK 2.1 (Fix N+1 queries in lesson listing)**: [DONE]  
+71:- **TASK 2.2 (DB indexes for critical queries)**: [DONE]  
+75:- **TASK 2.3 (Course settings caching)**: [DONE]  
+80:- **TASK 2.4 (Load testing & performance validation)**: [DONE - DEV BASELINE]  
+87:- **TASK 2.5 (Phase 2 review + documentation)**: [DONE - DEV BASELINE]  
+93:- **TASK 3.1 (Concurrent session enforcement / single active session)**: [DONE]  
+99:- **TASK 3.2 (Strengthen preview token device binding)**: [DONE] (cookie-bound preview session)  
+104:- **TASK 3.3 (Monitoring & alerting)**: [DONE - DEV BASELINE]  
+111:- **TASK 3.4 (Security checklist for QC team)**: [DONE]  
+115:- **TASK 3.5 (Phase 3 code review & sign-off)**: [READY FOR HUMAN SIGN-OFF]

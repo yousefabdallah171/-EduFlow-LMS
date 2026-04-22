@@ -1,0 +1,987 @@
+﻿# HELP process_cpu_user_seconds_total Total user CPU time spent in seconds.
+# TYPE process_cpu_user_seconds_total counter
+process_cpu_user_seconds_total 133.84089499999988
+
+# HELP process_cpu_system_seconds_total Total system CPU time spent in seconds.
+# TYPE process_cpu_system_seconds_total counter
+process_cpu_system_seconds_total 48.874421999999996
+
+# HELP process_cpu_seconds_total Total user and system CPU time spent in seconds.
+# TYPE process_cpu_seconds_total counter
+process_cpu_seconds_total 182.71531699999989
+
+# HELP process_start_time_seconds Start time of the process since unix epoch in seconds.
+# TYPE process_start_time_seconds gauge
+process_start_time_seconds 1776804680
+
+# HELP process_resident_memory_bytes Resident memory size in bytes.
+# TYPE process_resident_memory_bytes gauge
+process_resident_memory_bytes 131330048
+
+# HELP process_virtual_memory_bytes Virtual memory size in bytes.
+# TYPE process_virtual_memory_bytes gauge
+process_virtual_memory_bytes 33570353152
+
+# HELP process_heap_bytes Process heap size in bytes.
+# TYPE process_heap_bytes gauge
+process_heap_bytes 172404736
+
+# HELP process_open_fds Number of open file descriptors.
+# TYPE process_open_fds gauge
+process_open_fds 49
+
+# HELP process_max_fds Maximum number of open file descriptors.
+# TYPE process_max_fds gauge
+process_max_fds 1048576
+
+# HELP nodejs_eventloop_lag_seconds Lag of event loop in seconds.
+# TYPE nodejs_eventloop_lag_seconds gauge
+nodejs_eventloop_lag_seconds 0.004661468
+
+# HELP nodejs_eventloop_lag_min_seconds The minimum recorded event loop delay.
+# TYPE nodejs_eventloop_lag_min_seconds gauge
+nodejs_eventloop_lag_min_seconds 0.009117696
+
+# HELP nodejs_eventloop_lag_max_seconds The maximum recorded event loop delay.
+# TYPE nodejs_eventloop_lag_max_seconds gauge
+nodejs_eventloop_lag_max_seconds 0.012271615
+
+# HELP nodejs_eventloop_lag_mean_seconds The mean of the recorded event loop delays.
+# TYPE nodejs_eventloop_lag_mean_seconds gauge
+nodejs_eventloop_lag_mean_seconds 0.010222239873517787
+
+# HELP nodejs_eventloop_lag_stddev_seconds The standard deviation of the recorded event loop delays.
+# TYPE nodejs_eventloop_lag_stddev_seconds gauge
+nodejs_eventloop_lag_stddev_seconds 0.0002958293000323414
+
+# HELP nodejs_eventloop_lag_p50_seconds The 50th percentile of the recorded event loop delays.
+# TYPE nodejs_eventloop_lag_p50_seconds gauge
+nodejs_eventloop_lag_p50_seconds 0.010239999
+
+# HELP nodejs_eventloop_lag_p90_seconds The 90th percentile of the recorded event loop delays.
+# TYPE nodejs_eventloop_lag_p90_seconds gauge
+nodejs_eventloop_lag_p90_seconds 0.010485759
+
+# HELP nodejs_eventloop_lag_p99_seconds The 99th percentile of the recorded event loop delays.
+# TYPE nodejs_eventloop_lag_p99_seconds gauge
+nodejs_eventloop_lag_p99_seconds 0.010797055
+
+# HELP nodejs_active_resources Number of active resources that are currently keeping the event loop alive, grouped by async resource type.
+# TYPE nodejs_active_resources gauge
+nodejs_active_resources{type="PipeWrap"} 2
+nodejs_active_resources{type="TCPServerWrap"} 1
+nodejs_active_resources{type="TCPSocketWrap"} 2
+nodejs_active_resources{type="Immediate"} 1
+
+# HELP nodejs_active_resources_total Total number of active resources.
+# TYPE nodejs_active_resources_total gauge
+nodejs_active_resources_total 6
+
+# HELP nodejs_active_handles Number of active libuv handles grouped by handle type. Every handle type is C++ class name.
+# TYPE nodejs_active_handles gauge
+nodejs_active_handles{type="Socket"} 4
+nodejs_active_handles{type="Server"} 1
+
+# HELP nodejs_active_handles_total Total number of active handles.
+# TYPE nodejs_active_handles_total gauge
+nodejs_active_handles_total 5
+
+# HELP nodejs_active_requests Number of active libuv requests grouped by request type. Every request type is C++ class name.
+# TYPE nodejs_active_requests gauge
+
+# HELP nodejs_active_requests_total Total number of active requests.
+# TYPE nodejs_active_requests_total gauge
+nodejs_active_requests_total 0
+
+# HELP nodejs_heap_size_total_bytes Process heap size from Node.js in bytes.
+# TYPE nodejs_heap_size_total_bytes gauge
+nodejs_heap_size_total_bytes 45772800
+
+# HELP nodejs_heap_size_used_bytes Process heap size used from Node.js in bytes.
+# TYPE nodejs_heap_size_used_bytes gauge
+nodejs_heap_size_used_bytes 38900816
+
+# HELP nodejs_external_memory_bytes Node.js external memory size in bytes.
+# TYPE nodejs_external_memory_bytes gauge
+nodejs_external_memory_bytes 4326810
+
+# HELP nodejs_heap_space_size_total_bytes Process heap space size total from Node.js in bytes.
+# TYPE nodejs_heap_space_size_total_bytes gauge
+nodejs_heap_space_size_total_bytes{space="read_only"} 0
+nodejs_heap_space_size_total_bytes{space="new"} 1048576
+nodejs_heap_space_size_total_bytes{space="old"} 40075264
+nodejs_heap_space_size_total_bytes{space="code"} 3407872
+nodejs_heap_space_size_total_bytes{space="shared"} 0
+nodejs_heap_space_size_total_bytes{space="new_large_object"} 0
+nodejs_heap_space_size_total_bytes{space="large_object"} 1085440
+nodejs_heap_space_size_total_bytes{space="code_large_object"} 155648
+nodejs_heap_space_size_total_bytes{space="shared_large_object"} 0
+
+# HELP nodejs_heap_space_size_used_bytes Process heap space size used from Node.js in bytes.
+# TYPE nodejs_heap_space_size_used_bytes gauge
+nodejs_heap_space_size_used_bytes{space="read_only"} 0
+nodejs_heap_space_size_used_bytes{space="new"} 254552
+nodejs_heap_space_size_used_bytes{space="old"} 34547992
+nodejs_heap_space_size_used_bytes{space="code"} 2913168
+nodejs_heap_space_size_used_bytes{space="shared"} 0
+nodejs_heap_space_size_used_bytes{space="new_large_object"} 0
+nodejs_heap_space_size_used_bytes{space="large_object"} 1050376
+nodejs_heap_space_size_used_bytes{space="code_large_object"} 138432
+nodejs_heap_space_size_used_bytes{space="shared_large_object"} 0
+
+# HELP nodejs_heap_space_size_available_bytes Process heap space size available from Node.js in bytes.
+# TYPE nodejs_heap_space_size_available_bytes gauge
+nodejs_heap_space_size_available_bytes{space="read_only"} 0
+nodejs_heap_space_size_available_bytes{space="new"} 776328
+nodejs_heap_space_size_available_bytes{space="old"} 4796024
+nodejs_heap_space_size_available_bytes{space="code"} 281056
+nodejs_heap_space_size_available_bytes{space="shared"} 0
+nodejs_heap_space_size_available_bytes{space="new_large_object"} 1048576
+nodejs_heap_space_size_available_bytes{space="large_object"} 0
+nodejs_heap_space_size_available_bytes{space="code_large_object"} 0
+nodejs_heap_space_size_available_bytes{space="shared_large_object"} 0
+
+# HELP nodejs_version_info Node.js version info.
+# TYPE nodejs_version_info gauge
+nodejs_version_info{version="v20.20.2",major="20",minor="20",patch="2"} 1
+
+# HELP nodejs_gc_duration_seconds Garbage collection duration by kind, one of major, minor, incremental or weakcb.
+# TYPE nodejs_gc_duration_seconds histogram
+nodejs_gc_duration_seconds_bucket{le="0.001",kind="minor"} 38
+nodejs_gc_duration_seconds_bucket{le="0.01",kind="minor"} 456
+nodejs_gc_duration_seconds_bucket{le="0.1",kind="minor"} 487
+nodejs_gc_duration_seconds_bucket{le="1",kind="minor"} 487
+nodejs_gc_duration_seconds_bucket{le="2",kind="minor"} 487
+nodejs_gc_duration_seconds_bucket{le="5",kind="minor"} 487
+nodejs_gc_duration_seconds_bucket{le="+Inf",kind="minor"} 487
+nodejs_gc_duration_seconds_sum{kind="minor"} 1.835288811951876
+nodejs_gc_duration_seconds_count{kind="minor"} 487
+nodejs_gc_duration_seconds_bucket{le="0.001",kind="incremental"} 8
+nodejs_gc_duration_seconds_bucket{le="0.01",kind="incremental"} 33
+nodejs_gc_duration_seconds_bucket{le="0.1",kind="incremental"} 34
+nodejs_gc_duration_seconds_bucket{le="1",kind="incremental"} 34
+nodejs_gc_duration_seconds_bucket{le="2",kind="incremental"} 34
+nodejs_gc_duration_seconds_bucket{le="5",kind="incremental"} 34
+nodejs_gc_duration_seconds_bucket{le="+Inf",kind="incremental"} 34
+nodejs_gc_duration_seconds_sum{kind="incremental"} 0.07320496100187301
+nodejs_gc_duration_seconds_count{kind="incremental"} 34
+nodejs_gc_duration_seconds_bucket{le="0.001",kind="major"} 0
+nodejs_gc_duration_seconds_bucket{le="0.01",kind="major"} 17
+nodejs_gc_duration_seconds_bucket{le="0.1",kind="major"} 34
+nodejs_gc_duration_seconds_bucket{le="1",kind="major"} 34
+nodejs_gc_duration_seconds_bucket{le="2",kind="major"} 34
+nodejs_gc_duration_seconds_bucket{le="5",kind="major"} 34
+nodejs_gc_duration_seconds_bucket{le="+Inf",kind="major"} 34
+nodejs_gc_duration_seconds_sum{kind="major"} 0.4613499460816384
+nodejs_gc_duration_seconds_count{kind="major"} 34
+
+# HELP http_request_duration_ms HTTP request duration in milliseconds
+# TYPE http_request_duration_ms histogram
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/course",status="200"} 3167
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/course",status="200"} 8209
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/course",status="200"} 10419
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/course",status="200"} 10670
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/course",status="200"} 10670
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/course",status="200"} 10671
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/course",status="200"} 10696
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/course",status="200"} 10696
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/course",status="200"} 10696
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/course",status="200"} 10696
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/course",status="200"} 10696
+http_request_duration_ms_sum{method="GET",route="/api/v1/course",status="200"} 412114.4861379972
+http_request_duration_ms_count{method="GET",route="/api/v1/course",status="200"} 10696
+http_request_duration_ms_bucket{le="25",method="POST",route="/api/v1/auth/login",status="200"} 0
+http_request_duration_ms_bucket{le="50",method="POST",route="/api/v1/auth/login",status="200"} 0
+http_request_duration_ms_bucket{le="100",method="POST",route="/api/v1/auth/login",status="200"} 0
+http_request_duration_ms_bucket{le="200",method="POST",route="/api/v1/auth/login",status="200"} 0
+http_request_duration_ms_bucket{le="300",method="POST",route="/api/v1/auth/login",status="200"} 0
+http_request_duration_ms_bucket{le="500",method="POST",route="/api/v1/auth/login",status="200"} 0
+http_request_duration_ms_bucket{le="800",method="POST",route="/api/v1/auth/login",status="200"} 3
+http_request_duration_ms_bucket{le="1200",method="POST",route="/api/v1/auth/login",status="200"} 9
+http_request_duration_ms_bucket{le="2000",method="POST",route="/api/v1/auth/login",status="200"} 17
+http_request_duration_ms_bucket{le="5000",method="POST",route="/api/v1/auth/login",status="200"} 18
+http_request_duration_ms_bucket{le="+Inf",method="POST",route="/api/v1/auth/login",status="200"} 18
+http_request_duration_ms_sum{method="POST",route="/api/v1/auth/login",status="200"} 21580.433483
+http_request_duration_ms_count{method="POST",route="/api/v1/auth/login",status="200"} 18
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/student/dashboard",status="200"} 759
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/student/dashboard",status="200"} 1318
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/student/dashboard",status="200"} 1441
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/student/dashboard",status="200"} 1460
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/student/dashboard",status="200"} 1461
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/student/dashboard",status="200"} 1462
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/student/dashboard",status="200"} 1462
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/student/dashboard",status="200"} 1462
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/student/dashboard",status="200"} 1462
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/student/dashboard",status="200"} 1462
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/student/dashboard",status="200"} 1462
+http_request_duration_ms_sum{method="GET",route="/api/v1/student/dashboard",status="200"} 42580.71620199997
+http_request_duration_ms_count{method="GET",route="/api/v1/student/dashboard",status="200"} 1462
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/lessons/:id",status="200"} 143
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/lessons/:id",status="200"} 686
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/lessons/:id",status="200"} 1259
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/lessons/:id",status="200"} 1444
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/lessons/:id",status="200"} 1475
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/lessons/:id",status="200"} 1480
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/lessons/:id",status="200"} 1480
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/lessons/:id",status="200"} 1480
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/lessons/:id",status="200"} 1480
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/lessons/:id",status="200"} 1480
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/lessons/:id",status="200"} 1480
+http_request_duration_ms_sum{method="GET",route="/api/v1/lessons/:id",status="200"} 96763.58369699982
+http_request_duration_ms_count{method="GET",route="/api/v1/lessons/:id",status="200"} 1480
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/lessons",status="200"} 130
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/lessons",status="200"} 678
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/lessons",status="200"} 1216
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/lessons",status="200"} 1428
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/lessons",status="200"} 1458
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/lessons",status="200"} 1461
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/lessons",status="200"} 1461
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/lessons",status="200"} 1461
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/lessons",status="200"} 1461
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/lessons",status="200"} 1461
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/lessons",status="200"} 1461
+http_request_duration_ms_sum{method="GET",route="/api/v1/lessons",status="200"} 96653.41080200006
+http_request_duration_ms_count{method="GET",route="/api/v1/lessons",status="200"} 1461
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 3
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 8
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 10
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 10
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 10
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 10
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 10
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 10
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 10
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 10
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 10
+http_request_duration_ms_sum{method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 345.40033700000004
+http_request_duration_ms_count{method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 10
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/video/:id/key",status="200"} 1
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/video/:id/key",status="200"} 7
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/video/:id/key",status="200"} 9
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/video/:id/key",status="200"} 9
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/video/:id/key",status="200"} 9
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/video/:id/key",status="200"} 9
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/video/:id/key",status="200"} 9
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/video/:id/key",status="200"} 9
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/video/:id/key",status="200"} 9
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/video/:id/key",status="200"} 9
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/video/:id/key",status="200"} 9
+http_request_duration_ms_sum{method="GET",route="/api/v1/video/:id/key",status="200"} 404.79397600000004
+http_request_duration_ms_count{method="GET",route="/api/v1/video/:id/key",status="200"} 9
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/video/:id/segment",status="200"} 1
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/video/:id/segment",status="200"} 5
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/video/:id/segment",status="200"} 8
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/video/:id/segment",status="200"} 8
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/video/:id/segment",status="200"} 8
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/video/:id/segment",status="200"} 8
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/video/:id/segment",status="200"} 8
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/video/:id/segment",status="200"} 8
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/video/:id/segment",status="200"} 8
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/video/:id/segment",status="200"} 8
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/video/:id/segment",status="200"} 8
+http_request_duration_ms_sum{method="GET",route="/api/v1/video/:id/segment",status="200"} 395.60210599999994
+http_request_duration_ms_count{method="GET",route="/api/v1/video/:id/segment",status="200"} 8
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/analytics",status="401"} 5
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/analytics",status="401"} 5
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/analytics",status="401"} 5
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/analytics",status="401"} 5
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/analytics",status="401"} 5
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/analytics",status="401"} 5
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/analytics",status="401"} 5
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/analytics",status="401"} 5
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/analytics",status="401"} 5
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/analytics",status="401"} 5
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/analytics",status="401"} 5
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/analytics",status="401"} 36.978842
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/analytics",status="401"} 5
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/course",status="304"} 15
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/course",status="304"} 16
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/course",status="304"} 16
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/course",status="304"} 16
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/course",status="304"} 16
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/course",status="304"} 16
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/course",status="304"} 16
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/course",status="304"} 16
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/course",status="304"} 16
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/course",status="304"} 16
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/course",status="304"} 16
+http_request_duration_ms_sum{method="GET",route="/api/v1/course",status="304"} 83.855759
+http_request_duration_ms_count{method="GET",route="/api/v1/course",status="304"} 16
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/enrollment",status="401"} 2
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/enrollment",status="401"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/enrollment",status="401"} 2
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/enrollment",status="401"} 2
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/enrollment",status="401"} 2
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/enrollment",status="401"} 2
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/enrollment",status="401"} 2
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/enrollment",status="401"} 2
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/enrollment",status="401"} 2
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/enrollment",status="401"} 2
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/enrollment",status="401"} 2
+http_request_duration_ms_sum{method="GET",route="/api/v1/enrollment",status="401"} 3.600088
+http_request_duration_ms_count{method="GET",route="/api/v1/enrollment",status="401"} 2
+http_request_duration_ms_bucket{le="25",method="POST",route="/api/v1/auth/refresh",status="401"} 2
+http_request_duration_ms_bucket{le="50",method="POST",route="/api/v1/auth/refresh",status="401"} 2
+http_request_duration_ms_bucket{le="100",method="POST",route="/api/v1/auth/refresh",status="401"} 2
+http_request_duration_ms_bucket{le="200",method="POST",route="/api/v1/auth/refresh",status="401"} 2
+http_request_duration_ms_bucket{le="300",method="POST",route="/api/v1/auth/refresh",status="401"} 2
+http_request_duration_ms_bucket{le="500",method="POST",route="/api/v1/auth/refresh",status="401"} 2
+http_request_duration_ms_bucket{le="800",method="POST",route="/api/v1/auth/refresh",status="401"} 2
+http_request_duration_ms_bucket{le="1200",method="POST",route="/api/v1/auth/refresh",status="401"} 2
+http_request_duration_ms_bucket{le="2000",method="POST",route="/api/v1/auth/refresh",status="401"} 2
+http_request_duration_ms_bucket{le="5000",method="POST",route="/api/v1/auth/refresh",status="401"} 2
+http_request_duration_ms_bucket{le="+Inf",method="POST",route="/api/v1/auth/refresh",status="401"} 2
+http_request_duration_ms_sum{method="POST",route="/api/v1/auth/refresh",status="401"} 7.937893000000001
+http_request_duration_ms_count{method="POST",route="/api/v1/auth/refresh",status="401"} 2
+http_request_duration_ms_bucket{le="25",method="POST",route="/api/v1/auth/refresh",status="200"} 1
+http_request_duration_ms_bucket{le="50",method="POST",route="/api/v1/auth/refresh",status="200"} 50
+http_request_duration_ms_bucket{le="100",method="POST",route="/api/v1/auth/refresh",status="200"} 137
+http_request_duration_ms_bucket{le="200",method="POST",route="/api/v1/auth/refresh",status="200"} 159
+http_request_duration_ms_bucket{le="300",method="POST",route="/api/v1/auth/refresh",status="200"} 161
+http_request_duration_ms_bucket{le="500",method="POST",route="/api/v1/auth/refresh",status="200"} 161
+http_request_duration_ms_bucket{le="800",method="POST",route="/api/v1/auth/refresh",status="200"} 161
+http_request_duration_ms_bucket{le="1200",method="POST",route="/api/v1/auth/refresh",status="200"} 161
+http_request_duration_ms_bucket{le="2000",method="POST",route="/api/v1/auth/refresh",status="200"} 161
+http_request_duration_ms_bucket{le="5000",method="POST",route="/api/v1/auth/refresh",status="200"} 161
+http_request_duration_ms_bucket{le="+Inf",method="POST",route="/api/v1/auth/refresh",status="200"} 161
+http_request_duration_ms_sum{method="POST",route="/api/v1/auth/refresh",status="200"} 11322.342210999997
+http_request_duration_ms_count{method="POST",route="/api/v1/auth/refresh",status="200"} 161
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/enrollment",status="200"} 8
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/enrollment",status="200"} 11
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/enrollment",status="200"} 12
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/enrollment",status="200"} 12
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/enrollment",status="200"} 12
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/enrollment",status="200"} 12
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/enrollment",status="200"} 12
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/enrollment",status="200"} 12
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/enrollment",status="200"} 12
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/enrollment",status="200"} 12
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/enrollment",status="200"} 12
+http_request_duration_ms_sum{method="GET",route="/api/v1/enrollment",status="200"} 237.95403799999997
+http_request_duration_ms_count{method="GET",route="/api/v1/enrollment",status="200"} 12
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/enrollment",status="304"} 70
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/enrollment",status="304"} 72
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/enrollment",status="304"} 72
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/enrollment",status="304"} 72
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/enrollment",status="304"} 72
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/enrollment",status="304"} 72
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/enrollment",status="304"} 72
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/enrollment",status="304"} 72
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/enrollment",status="304"} 72
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/enrollment",status="304"} 72
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/enrollment",status="304"} 72
+http_request_duration_ms_sum{method="GET",route="/api/v1/enrollment",status="304"} 755.7347290000005
+http_request_duration_ms_count{method="GET",route="/api/v1/enrollment",status="304"} 72
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/student/dashboard",status="304"} 14
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/student/dashboard",status="304"} 18
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/student/dashboard",status="304"} 18
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/student/dashboard",status="304"} 18
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/student/dashboard",status="304"} 18
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/student/dashboard",status="304"} 18
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/student/dashboard",status="304"} 18
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/student/dashboard",status="304"} 18
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/student/dashboard",status="304"} 18
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/student/dashboard",status="304"} 18
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/student/dashboard",status="304"} 18
+http_request_duration_ms_sum{method="GET",route="/api/v1/student/dashboard",status="304"} 374.73269
+http_request_duration_ms_count{method="GET",route="/api/v1/student/dashboard",status="304"} 18
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/student/profile",status="200"} 6
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/student/profile",status="200"} 7
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/student/profile",status="200"} 7
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/student/profile",status="200"} 7
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/student/profile",status="200"} 7
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/student/profile",status="200"} 7
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/student/profile",status="200"} 7
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/student/profile",status="200"} 7
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/student/profile",status="200"} 7
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/student/profile",status="200"} 7
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/student/profile",status="200"} 7
+http_request_duration_ms_sum{method="GET",route="/api/v1/student/profile",status="200"} 122.786103
+http_request_duration_ms_count{method="GET",route="/api/v1/student/profile",status="200"} 7
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/student/profile",status="304"} 13
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/student/profile",status="304"} 13
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/student/profile",status="304"} 13
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/student/profile",status="304"} 13
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/student/profile",status="304"} 13
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/student/profile",status="304"} 13
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/student/profile",status="304"} 13
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/student/profile",status="304"} 13
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/student/profile",status="304"} 13
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/student/profile",status="304"} 13
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/student/profile",status="304"} 13
+http_request_duration_ms_sum{method="GET",route="/api/v1/student/profile",status="304"} 153.576976
+http_request_duration_ms_count{method="GET",route="/api/v1/student/profile",status="304"} 13
+http_request_duration_ms_bucket{le="25",method="POST",route="/api/v1/auth/refresh",status="403"} 0
+http_request_duration_ms_bucket{le="50",method="POST",route="/api/v1/auth/refresh",status="403"} 0
+http_request_duration_ms_bucket{le="100",method="POST",route="/api/v1/auth/refresh",status="403"} 0
+http_request_duration_ms_bucket{le="200",method="POST",route="/api/v1/auth/refresh",status="403"} 0
+http_request_duration_ms_bucket{le="300",method="POST",route="/api/v1/auth/refresh",status="403"} 0
+http_request_duration_ms_bucket{le="500",method="POST",route="/api/v1/auth/refresh",status="403"} 1
+http_request_duration_ms_bucket{le="800",method="POST",route="/api/v1/auth/refresh",status="403"} 1
+http_request_duration_ms_bucket{le="1200",method="POST",route="/api/v1/auth/refresh",status="403"} 1
+http_request_duration_ms_bucket{le="2000",method="POST",route="/api/v1/auth/refresh",status="403"} 1
+http_request_duration_ms_bucket{le="5000",method="POST",route="/api/v1/auth/refresh",status="403"} 1
+http_request_duration_ms_bucket{le="+Inf",method="POST",route="/api/v1/auth/refresh",status="403"} 1
+http_request_duration_ms_sum{method="POST",route="/api/v1/auth/refresh",status="403"} 342.836784
+http_request_duration_ms_count{method="POST",route="/api/v1/auth/refresh",status="403"} 1
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/lessons",status="304"} 14
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/lessons",status="304"} 17
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/lessons",status="304"} 17
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/lessons",status="304"} 17
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/lessons",status="304"} 17
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/lessons",status="304"} 17
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/lessons",status="304"} 17
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/lessons",status="304"} 17
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/lessons",status="304"} 17
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/lessons",status="304"} 17
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/lessons",status="304"} 17
+http_request_duration_ms_sum{method="GET",route="/api/v1/lessons",status="304"} 352.522906
+http_request_duration_ms_count{method="GET",route="/api/v1/lessons",status="304"} 17
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/student/notes",status="200"} 2
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/student/notes",status="200"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/student/notes",status="200"} 2
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/student/notes",status="200"} 2
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/student/notes",status="200"} 2
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/student/notes",status="200"} 2
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/student/notes",status="200"} 2
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/student/notes",status="200"} 2
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/student/notes",status="200"} 2
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/student/notes",status="200"} 2
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/student/notes",status="200"} 2
+http_request_duration_ms_sum{method="GET",route="/api/v1/student/notes",status="200"} 37.002233000000004
+http_request_duration_ms_count{method="GET",route="/api/v1/student/notes",status="200"} 2
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/student/notes",status="304"} 4
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/student/notes",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/student/notes",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/student/notes",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/student/notes",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/student/notes",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/student/notes",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/student/notes",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/student/notes",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/student/notes",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/student/notes",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/student/notes",status="304"} 72.871216
+http_request_duration_ms_count{method="GET",route="/api/v1/student/notes",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/lessons/:id",status="304"} 6
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/lessons/:id",status="304"} 6
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/lessons/:id",status="304"} 6
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/lessons/:id",status="304"} 6
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/lessons/:id",status="304"} 6
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/lessons/:id",status="304"} 6
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/lessons/:id",status="304"} 6
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/lessons/:id",status="304"} 6
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/lessons/:id",status="304"} 6
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/lessons/:id",status="304"} 6
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/lessons/:id",status="304"} 6
+http_request_duration_ms_sum{method="GET",route="/api/v1/lessons/:id",status="304"} 102.70007000000001
+http_request_duration_ms_count{method="GET",route="/api/v1/lessons/:id",status="304"} 6
+http_request_duration_ms_bucket{le="25",method="PATCH",route="/api/v1/student/profile",status="200"} 1
+http_request_duration_ms_bucket{le="50",method="PATCH",route="/api/v1/student/profile",status="200"} 2
+http_request_duration_ms_bucket{le="100",method="PATCH",route="/api/v1/student/profile",status="200"} 2
+http_request_duration_ms_bucket{le="200",method="PATCH",route="/api/v1/student/profile",status="200"} 3
+http_request_duration_ms_bucket{le="300",method="PATCH",route="/api/v1/student/profile",status="200"} 3
+http_request_duration_ms_bucket{le="500",method="PATCH",route="/api/v1/student/profile",status="200"} 3
+http_request_duration_ms_bucket{le="800",method="PATCH",route="/api/v1/student/profile",status="200"} 3
+http_request_duration_ms_bucket{le="1200",method="PATCH",route="/api/v1/student/profile",status="200"} 3
+http_request_duration_ms_bucket{le="2000",method="PATCH",route="/api/v1/student/profile",status="200"} 3
+http_request_duration_ms_bucket{le="5000",method="PATCH",route="/api/v1/student/profile",status="200"} 3
+http_request_duration_ms_bucket{le="+Inf",method="PATCH",route="/api/v1/student/profile",status="200"} 3
+http_request_duration_ms_sum{method="PATCH",route="/api/v1/student/profile",status="200"} 193.537772
+http_request_duration_ms_count{method="PATCH",route="/api/v1/student/profile",status="200"} 3
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/students",status="200"} 1
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/students",status="200"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/students",status="200"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/students",status="200"} 6
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/students",status="200"} 6
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/students",status="200"} 6
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/students",status="200"} 6
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/students",status="200"} 6
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/students",status="200"} 6
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/students",status="200"} 6
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/students",status="200"} 6
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/students",status="200"} 498.724362
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/students",status="200"} 6
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/analytics",status="200"} 3
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/analytics",status="200"} 3
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/analytics",status="200"} 3
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/analytics",status="200"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/analytics",status="200"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/analytics",status="200"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/analytics",status="200"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/analytics",status="200"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/analytics",status="200"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/analytics",status="200"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/analytics",status="200"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/analytics",status="200"} 207.978689
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/analytics",status="200"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/analytics",status="304"} 12
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/analytics",status="304"} 12
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/analytics",status="304"} 12
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/analytics",status="304"} 12
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/analytics",status="304"} 12
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/analytics",status="304"} 12
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/analytics",status="304"} 12
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/analytics",status="304"} 12
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/analytics",status="304"} 12
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/analytics",status="304"} 12
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/analytics",status="304"} 12
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/analytics",status="304"} 157.51264899999998
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/analytics",status="304"} 12
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/sections",status="200"} 3
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/sections",status="200"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/sections",status="200"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/sections",status="200"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/sections",status="200"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/sections",status="200"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/sections",status="200"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/sections",status="200"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/sections",status="200"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/sections",status="200"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/sections",status="200"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/sections",status="200"} 89.421291
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/sections",status="200"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/lessons",status="200"} 2
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/lessons",status="200"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/lessons",status="200"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/lessons",status="200"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/lessons",status="200"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/lessons",status="200"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/lessons",status="200"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/lessons",status="200"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/lessons",status="200"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/lessons",status="200"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/lessons",status="200"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/lessons",status="200"} 116.69658100000001
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/lessons",status="200"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 3
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 72.37226700000001
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/students",status="304"} 0
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/students",status="304"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/students",status="304"} 5
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/students",status="304"} 5
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/students",status="304"} 6
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/students",status="304"} 6
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/students",status="304"} 6
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/students",status="304"} 6
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/students",status="304"} 6
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/students",status="304"} 6
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/students",status="304"} 6
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/students",status="304"} 583.104059
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/students",status="304"} 6
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/coupons",status="200"} 0
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/coupons",status="200"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/coupons",status="200"} 2
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/coupons",status="200"} 2
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/coupons",status="200"} 2
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/coupons",status="200"} 2
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/coupons",status="200"} 2
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/coupons",status="200"} 2
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/coupons",status="200"} 2
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/coupons",status="200"} 2
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/coupons",status="200"} 2
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/coupons",status="200"} 88.341358
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/coupons",status="200"} 2
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/pricing",status="200"} 0
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/pricing",status="200"} 1
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/pricing",status="200"} 2
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/pricing",status="200"} 2
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/pricing",status="200"} 2
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/pricing",status="200"} 2
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/pricing",status="200"} 2
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/pricing",status="200"} 2
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/pricing",status="200"} 2
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/pricing",status="200"} 2
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/pricing",status="200"} 2
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/pricing",status="200"} 109.365889
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/pricing",status="200"} 2
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/payments",status="200"} 1
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/payments",status="200"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/payments",status="200"} 2
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/payments",status="200"} 2
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/payments",status="200"} 2
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/payments",status="200"} 2
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/payments",status="200"} 2
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/payments",status="200"} 2
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/payments",status="200"} 2
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/payments",status="200"} 2
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/payments",status="200"} 2
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/payments",status="200"} 46.198572
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/payments",status="200"} 2
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/orders",status="200"} 2
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/orders",status="200"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/orders",status="200"} 2
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/orders",status="200"} 2
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/orders",status="200"} 2
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/orders",status="200"} 2
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/orders",status="200"} 2
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/orders",status="200"} 2
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/orders",status="200"} 2
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/orders",status="200"} 2
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/orders",status="200"} 2
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/orders",status="200"} 25.113529
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/orders",status="200"} 2
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/uploads",status="200"} 2
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/uploads",status="200"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/uploads",status="200"} 2
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/uploads",status="200"} 2
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/uploads",status="200"} 2
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/uploads",status="200"} 2
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/uploads",status="200"} 2
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/uploads",status="200"} 2
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/uploads",status="200"} 2
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/uploads",status="200"} 2
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/uploads",status="200"} 2
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/uploads",status="200"} 29.291052
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/uploads",status="200"} 2
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/audit",status="200"} 2
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/audit",status="200"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/audit",status="200"} 2
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/audit",status="200"} 2
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/audit",status="200"} 2
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/audit",status="200"} 2
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/audit",status="200"} 2
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/audit",status="200"} 2
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/audit",status="200"} 2
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/audit",status="200"} 2
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/audit",status="200"} 2
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/audit",status="200"} 41.626005
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/audit",status="200"} 2
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/tickets",status="200"} 2
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/tickets",status="200"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/tickets",status="200"} 2
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/tickets",status="200"} 2
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/tickets",status="200"} 2
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/tickets",status="200"} 2
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/tickets",status="200"} 2
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/tickets",status="200"} 2
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/tickets",status="200"} 2
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/tickets",status="200"} 2
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/tickets",status="200"} 2
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/tickets",status="200"} 20.372062
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/tickets",status="200"} 2
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/settings/course",status="200"} 1
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/settings/course",status="200"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/settings/course",status="200"} 2
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/settings/course",status="200"} 2
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/settings/course",status="200"} 2
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/settings/course",status="200"} 2
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/settings/course",status="200"} 2
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/settings/course",status="200"} 2
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/settings/course",status="200"} 2
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/settings/course",status="200"} 2
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/settings/course",status="200"} 2
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/settings/course",status="200"} 48.811926
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/settings/course",status="200"} 2
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/settings/system",status="200"} 2
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/settings/system",status="200"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/settings/system",status="200"} 2
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/settings/system",status="200"} 2
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/settings/system",status="200"} 2
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/settings/system",status="200"} 2
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/settings/system",status="200"} 2
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/settings/system",status="200"} 2
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/settings/system",status="200"} 2
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/settings/system",status="200"} 2
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/settings/system",status="200"} 2
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/settings/system",status="200"} 28.622293
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/settings/system",status="200"} 2
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/notifications/templates",status="200"} 1
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/notifications/templates",status="200"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/notifications/templates",status="200"} 2
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/notifications/templates",status="200"} 2
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/notifications/templates",status="200"} 2
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/notifications/templates",status="200"} 2
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/notifications/templates",status="200"} 2
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/notifications/templates",status="200"} 2
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/notifications/templates",status="200"} 2
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/notifications/templates",status="200"} 2
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/notifications/templates",status="200"} 2
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/notifications/templates",status="200"} 50.383281999999994
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/notifications/templates",status="200"} 2
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/sections",status="304"} 3
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/sections",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/sections",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/sections",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/sections",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/sections",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/sections",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/sections",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/sections",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/sections",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/sections",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/sections",status="304"} 83.239018
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/sections",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/lessons",status="304"} 2
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/lessons",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/lessons",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/lessons",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/lessons",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/lessons",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/lessons",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/lessons",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/lessons",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/lessons",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/lessons",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/lessons",status="304"} 92.081696
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/lessons",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 3
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 77.569319
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/coupons",status="304"} 3
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/coupons",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/coupons",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/coupons",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/coupons",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/coupons",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/coupons",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/coupons",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/coupons",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/coupons",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/coupons",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/coupons",status="304"} 90.84342799999999
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/coupons",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/pricing",status="304"} 1
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/pricing",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/pricing",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/pricing",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/pricing",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/pricing",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/pricing",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/pricing",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/pricing",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/pricing",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/pricing",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/pricing",status="304"} 121.35827900000001
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/pricing",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/payments",status="304"} 3
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/payments",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/payments",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/payments",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/payments",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/payments",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/payments",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/payments",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/payments",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/payments",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/payments",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/payments",status="304"} 100.634217
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/payments",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/orders",status="304"} 3
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/orders",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/orders",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/orders",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/orders",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/orders",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/orders",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/orders",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/orders",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/orders",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/orders",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/orders",status="304"} 73.852689
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/orders",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/uploads",status="304"} 4
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/uploads",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/uploads",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/uploads",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/uploads",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/uploads",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/uploads",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/uploads",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/uploads",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/uploads",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/uploads",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/uploads",status="304"} 45.956599
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/uploads",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/audit",status="304"} 4
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/audit",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/audit",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/audit",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/audit",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/audit",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/audit",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/audit",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/audit",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/audit",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/audit",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/audit",status="304"} 67.05749800000001
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/audit",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/tickets",status="304"} 3
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/tickets",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/tickets",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/tickets",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/tickets",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/tickets",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/tickets",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/tickets",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/tickets",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/tickets",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/tickets",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/tickets",status="304"} 89.19406799999999
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/tickets",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/settings/system",status="304"} 4
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/settings/system",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/settings/system",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/settings/system",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/settings/system",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/settings/system",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/settings/system",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/settings/system",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/settings/system",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/settings/system",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/settings/system",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/settings/system",status="304"} 44.645965000000004
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/settings/system",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/settings/course",status="304"} 4
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/settings/course",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/settings/course",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/settings/course",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/settings/course",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/settings/course",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/settings/course",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/settings/course",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/settings/course",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/settings/course",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/settings/course",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/settings/course",status="304"} 77.870805
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/settings/course",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/notifications/templates",status="304"} 3
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/notifications/templates",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/notifications/templates",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/notifications/templates",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/notifications/templates",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/notifications/templates",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/notifications/templates",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/notifications/templates",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/notifications/templates",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/notifications/templates",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/notifications/templates",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/notifications/templates",status="304"} 70.514005
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/notifications/templates",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 1
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 2
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 2
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 2
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 2
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 2
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 2
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 2
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 2
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 2
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 2
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 55.772079000000005
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 2
+http_request_duration_ms_bucket{le="25",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 1
+http_request_duration_ms_bucket{le="50",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 4
+http_request_duration_ms_bucket{le="100",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 4
+http_request_duration_ms_bucket{le="200",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 4
+http_request_duration_ms_bucket{le="300",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 4
+http_request_duration_ms_bucket{le="500",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 4
+http_request_duration_ms_bucket{le="800",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 4
+http_request_duration_ms_bucket{le="1200",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 4
+http_request_duration_ms_bucket{le="2000",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 4
+http_request_duration_ms_bucket{le="5000",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 4
+http_request_duration_ms_bucket{le="+Inf",method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 4
+http_request_duration_ms_sum{method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 124.88227
+http_request_duration_ms_count{method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 4
+http_request_duration_ms_bucket{le="25",method="POST",route="/api/v1/auth/login",status="401"} 2
+http_request_duration_ms_bucket{le="50",method="POST",route="/api/v1/auth/login",status="401"} 2
+http_request_duration_ms_bucket{le="100",method="POST",route="/api/v1/auth/login",status="401"} 2
+http_request_duration_ms_bucket{le="200",method="POST",route="/api/v1/auth/login",status="401"} 2
+http_request_duration_ms_bucket{le="300",method="POST",route="/api/v1/auth/login",status="401"} 2
+http_request_duration_ms_bucket{le="500",method="POST",route="/api/v1/auth/login",status="401"} 2
+http_request_duration_ms_bucket{le="800",method="POST",route="/api/v1/auth/login",status="401"} 2
+http_request_duration_ms_bucket{le="1200",method="POST",route="/api/v1/auth/login",status="401"} 2
+http_request_duration_ms_bucket{le="2000",method="POST",route="/api/v1/auth/login",status="401"} 2
+http_request_duration_ms_bucket{le="5000",method="POST",route="/api/v1/auth/login",status="401"} 2
+http_request_duration_ms_bucket{le="+Inf",method="POST",route="/api/v1/auth/login",status="401"} 2
+http_request_duration_ms_sum{method="POST",route="/api/v1/auth/login",status="401"} 14.336174
+http_request_duration_ms_count{method="POST",route="/api/v1/auth/login",status="401"} 2
+
+# HELP http_requests_total HTTP requests total
+# TYPE http_requests_total counter
+http_requests_total{method="GET",route="/api/v1/course",status="200"} 10696
+http_requests_total{method="POST",route="/api/v1/auth/login",status="200"} 18
+http_requests_total{method="GET",route="/api/v1/student/dashboard",status="200"} 1462
+http_requests_total{method="GET",route="/api/v1/lessons/:id",status="200"} 1480
+http_requests_total{method="GET",route="/api/v1/lessons",status="200"} 1461
+http_requests_total{method="GET",route="/api/v1/video/:id/playlist.m3u8",status="200"} 10
+http_requests_total{method="GET",route="/api/v1/video/:id/key",status="200"} 9
+http_requests_total{method="GET",route="/api/v1/video/:id/segment",status="200"} 8
+http_requests_total{method="GET",route="/api/v1/admin/analytics",status="401"} 5
+http_requests_total{method="GET",route="/api/v1/course",status="304"} 16
+http_requests_total{method="GET",route="/api/v1/enrollment",status="401"} 2
+http_requests_total{method="POST",route="/api/v1/auth/refresh",status="401"} 2
+http_requests_total{method="POST",route="/api/v1/auth/refresh",status="200"} 161
+http_requests_total{method="GET",route="/api/v1/enrollment",status="200"} 12
+http_requests_total{method="GET",route="/api/v1/enrollment",status="304"} 72
+http_requests_total{method="GET",route="/api/v1/student/dashboard",status="304"} 18
+http_requests_total{method="GET",route="/api/v1/student/profile",status="200"} 7
+http_requests_total{method="GET",route="/api/v1/student/profile",status="304"} 13
+http_requests_total{method="POST",route="/api/v1/auth/refresh",status="403"} 1
+http_requests_total{method="GET",route="/api/v1/lessons",status="304"} 17
+http_requests_total{method="GET",route="/api/v1/student/notes",status="200"} 2
+http_requests_total{method="GET",route="/api/v1/student/notes",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/lessons/:id",status="304"} 6
+http_requests_total{method="PATCH",route="/api/v1/student/profile",status="200"} 3
+http_requests_total{method="GET",route="/api/v1/admin/students",status="200"} 6
+http_requests_total{method="GET",route="/api/v1/admin/analytics",status="200"} 4
+http_requests_total{method="GET",route="/api/v1/admin/analytics",status="304"} 12
+http_requests_total{method="GET",route="/api/v1/admin/sections",status="200"} 4
+http_requests_total{method="GET",route="/api/v1/admin/lessons",status="200"} 4
+http_requests_total{method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="200"} 4
+http_requests_total{method="GET",route="/api/v1/admin/students",status="304"} 6
+http_requests_total{method="GET",route="/api/v1/admin/coupons",status="200"} 2
+http_requests_total{method="GET",route="/api/v1/admin/pricing",status="200"} 2
+http_requests_total{method="GET",route="/api/v1/admin/payments",status="200"} 2
+http_requests_total{method="GET",route="/api/v1/admin/orders",status="200"} 2
+http_requests_total{method="GET",route="/api/v1/admin/uploads",status="200"} 2
+http_requests_total{method="GET",route="/api/v1/admin/audit",status="200"} 2
+http_requests_total{method="GET",route="/api/v1/admin/tickets",status="200"} 2
+http_requests_total{method="GET",route="/api/v1/admin/settings/course",status="200"} 2
+http_requests_total{method="GET",route="/api/v1/admin/settings/system",status="200"} 2
+http_requests_total{method="GET",route="/api/v1/admin/notifications/templates",status="200"} 2
+http_requests_total{method="GET",route="/api/v1/admin/sections",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/admin/lessons",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/admin/lessons/seed-3/resources",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/admin/coupons",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/admin/pricing",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/admin/payments",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/admin/orders",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/admin/uploads",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/admin/audit",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/admin/tickets",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/admin/settings/system",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/admin/settings/course",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/admin/notifications/templates",status="304"} 4
+http_requests_total{method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="200"} 2
+http_requests_total{method="GET",route="/api/v1/admin/students/f55c4380-45e9-4613-b5c9-b3280c0cc18f",status="304"} 4
+http_requests_total{method="POST",route="/api/v1/auth/login",status="401"} 2
+
+# HELP http_inflight_requests In-flight HTTP requests
+# TYPE http_inflight_requests gauge
+http_inflight_requests 5
+
+# HELP video_security_events_total Persisted VideoSecurityEvent anomalies
+# TYPE video_security_events_total counter

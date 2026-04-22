@@ -1,0 +1,197 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "course 200": {
+                    "id": "667f15b408ac27da014b6dd51c57a3cb",
+                    "passes": 1424,
+                    "fails": 0,
+                    "name": "course 200",
+                    "path": "::course 200"
+                },
+                "login 200": {
+                    "name": "login 200",
+                    "path": "::login 200",
+                    "id": "48b06dc5cde7f6ebb606ad7da726a2a5",
+                    "passes": 2,
+                    "fails": 0
+                },
+                "dashboard 200": {
+                    "name": "dashboard 200",
+                    "path": "::dashboard 200",
+                    "id": "834732e3e331ab0c1efa32a058e51217",
+                    "passes": 118,
+                    "fails": 0
+                },
+                "lessons/grouped 200": {
+                    "name": "lessons/grouped 200",
+                    "path": "::lessons/grouped 200",
+                    "id": "272ce3d8c103f1c8362db851a46c7b02",
+                    "passes": 118,
+                    "fails": 0
+                },
+                "lessons 200": {
+                    "name": "lessons 200",
+                    "path": "::lessons 200",
+                    "id": "4aeb8aec4b1b1fdbbb90552363fa449c",
+                    "passes": 118,
+                    "fails": 0
+                },
+                "lessons 200 (video)": {
+                    "name": "lessons 200 (video)",
+                    "path": "::lessons 200 (video)",
+                    "id": "cf289be2e57d94a4d09772cba5e111a9",
+                    "passes": 6,
+                    "fails": 0
+                },
+                "lesson detail 200": {
+                    "id": "601d97ffccbf3ab7a78832d7a34773d0",
+                    "passes": 6,
+                    "fails": 0,
+                    "name": "lesson detail 200",
+                    "path": "::lesson detail 200"
+                },
+                "playlist 200": {
+                    "id": "66d5ef36f4efa1b42f891a68e0c2a383",
+                    "passes": 6,
+                    "fails": 0,
+                    "name": "playlist 200",
+                    "path": "::playlist 200"
+                },
+                "key 200": {
+                    "name": "key 200",
+                    "path": "::key 200",
+                    "id": "c94357702306ad80a9682e6f8cbc32c0",
+                    "passes": 6,
+                    "fails": 0
+                },
+                "segment 200/206": {
+                    "path": "::segment 200/206",
+                    "id": "30845b44e13b3de34ed7ec70329eb7d0",
+                    "passes": 6,
+                    "fails": 0,
+                    "name": "segment 200/206"
+                }
+            }
+    },
+    "metrics": {
+        "checks": {
+            "passes": 1810,
+            "fails": 0,
+            "value": 1
+        },
+        "http_req_sending": {
+            "p(95)": 0.12770269999999997,
+            "avg": 0.06078358397790058,
+            "min": 0.009904,
+            "med": 0.045866000000000004,
+            "max": 9.757773,
+            "p(90)": 0.09376660000000017
+        },
+        "data_received": {
+            "rate": 62402.037795662094,
+            "count": 7017540
+        },
+        "http_req_waiting": {
+            "min": 1.172565,
+            "med": 3.3963625,
+            "max": 2559.500809,
+            "p(90)": 16.83707680000002,
+            "p(95)": 23.18028655,
+            "avg": 8.672261132596686
+        },
+        "http_req_receiving": {
+            "min": 0.061925,
+            "med": 0.1876245,
+            "max": 6.191114,
+            "p(90)": 0.30078080000000024,
+            "p(95)": 0.37035755,
+            "avg": 0.22133614972375668
+        },
+        "iteration_duration": {
+            "med": 204.4407025,
+            "max": 6063.361295,
+            "p(90)": 215.2468586,
+            "p(95)": 244.89759074999998,
+            "avg": 222.61600022351436,
+            "min": 201.678037
+        },
+        "data_sent": {
+            "count": 447434,
+            "rate": 3978.7152448100437
+        },
+        "vus_max": {
+            "value": 16,
+            "min": 16,
+            "max": 16
+        },
+        "http_reqs": {
+            "count": 1810,
+            "rate": 16.095054450726096
+        },
+        "http_req_blocked": {
+            "avg": 0.03174329447513806,
+            "min": 0.003401,
+            "med": 0.009204,
+            "max": 26.860085,
+            "p(90)": 0.016606,
+            "p(95)": 0.023363999999999996
+        },
+        "http_req_connecting": {
+            "avg": 0.004148927071823205,
+            "min": 0,
+            "med": 0,
+            "max": 0.946766,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "iterations": {
+            "rate": 13.765273088245301,
+            "count": 1548
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 1810,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "http_req_duration": {
+            "avg": 8.954380866298344,
+            "min": 1.282309,
+            "med": 3.6760159999999997,
+            "max": 2559.902561,
+            "p(90)": 17.1525191,
+            "p(95)": 23.69924804999999,
+            "thresholds": {
+                "p(95)<800": false,
+                "p(99)<1200": false
+            }
+        },
+        "vus": {
+            "value": 1,
+            "min": 0,
+            "max": 14
+        },
+        "http_req_duration{expected_response:true}": {
+            "med": 3.6760159999999997,
+            "max": 2559.902561,
+            "p(90)": 17.1525191,
+            "p(95)": 23.69924804999999,
+            "avg": 8.954380866298344,
+            "min": 1.282309
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        }
+    }
+}

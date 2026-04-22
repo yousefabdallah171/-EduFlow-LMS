@@ -1,0 +1,2 @@
+﻿> frontend lint
+ > frontend@ lint /app/frontend > eslint "src/**/*.{ts,tsx}" && node scripts/check-logical-css.mjs 

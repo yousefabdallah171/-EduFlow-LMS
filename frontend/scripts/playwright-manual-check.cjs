@@ -16,6 +16,9 @@ if (!adminEmail || !adminPassword || !studentEmail || !studentPassword) {
 
 const url = (path) => `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
 
+const redactTokenParam = (value) =>
+  String(value || "").replace(/token=[A-Za-z0-9._-]+/g, "token=<redacted>");
+
 const captureConsole = (page, bucket) => {
   const onConsole = (msg) => {
     if (msg.type() === "error" || msg.type() === "warning") {
@@ -54,8 +57,19 @@ const captureConsole = (page, bucket) => {
 const login = async (page, email, password, expectedPath) => {
   for (let attempt = 1; attempt <= 4; attempt += 1) {
     await page.goto(url(`/${locale}/login`), { waitUntil: "networkidle" });
+    await page.waitForSelector("#email", { state: "visible", timeout: 15000 });
     await page.fill("#email", email);
+    await page.waitForSelector("#password", { state: "visible", timeout: 15000 });
     await page.fill("#password", password);
+
+    const debugValues = await page.evaluate(() => {
+      const emailInput = document.querySelector("#email");
+      const passwordInput = document.querySelector("#password");
+      return {
+        emailValue: emailInput && "value" in emailInput ? emailInput.value : null,
+        passwordLength: passwordInput && "value" in passwordInput ? passwordInput.value.length : null
+      };
+    });
     const submit = page.locator('button[type="submit"]').first();
     const [loginResponse] = await Promise.all([
       page.waitForResponse((response) => response.url().includes("/api/v1/auth/login"), { timeout: 15000 }),
@@ -68,7 +82,9 @@ const login = async (page, email, password, expectedPath) => {
     }
     if (status >= 400) {
       const body = await loginResponse.text();
-      throw new Error(`Login failed with status ${status}. Response: ${body.slice(0, 200)}`);
+      throw new Error(
+        `Login failed with status ${status}. Response: ${body.slice(0, 200)}. Debug: email=${debugValues.emailValue} pwLen=${debugValues.passwordLength}`
+      );
     }
     await page.waitForLoadState("networkidle");
     if (expectedPath) {
@@ -119,7 +135,7 @@ const run = async () => {
       await extraChecks(errors);
     }
     detach();
-    results.push({ label, url: targetUrl, errors });
+    results.push({ label, url: redactTokenParam(targetUrl), errors });
   };
 
   await checkPage("landing-ar", url(`/${locale}`));
@@ -251,7 +267,7 @@ const run = async () => {
     const status = resp?.status() ?? 0;
     results.push({
       label: "hls-no-cookie",
-      url: `${baseUrl}${hlsUrl}`,
+      url: redactTokenParam(`${baseUrl}${hlsUrl}`),
       errors: status === 401 ? [] : [{ type: "assert", text: `Expected 401 without cookies, got ${status}.` }]
     });
     await unauth.close();
@@ -276,7 +292,7 @@ const run = async () => {
     const status = resp?.status() ?? 0;
     results.push({
       label: "preview-hls-no-cookie",
-      url: `${baseUrl}${previewHlsUrl}`,
+      url: redactTokenParam(`${baseUrl}${previewHlsUrl}`),
       errors: status === 401 ? [] : [{ type: "assert", text: `Expected 401 without preview cookie, got ${status}.` }]
     });
     await unauth.close();

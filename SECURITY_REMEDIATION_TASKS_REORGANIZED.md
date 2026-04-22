@@ -1,0 +1,736 @@
+﻿# EduFlow LMS - Security Remediation Task List (REORGANIZED)
+
+**Document Type**: Developer Task Breakdown  
+**Status**: In Progress  
+**Date Created**: 2026-04-21  
+**Last Updated**: 2026-04-21  
+**Total Phases**: 5 (Reorganized)
+**Tasks Per Phase**: 6-8 tasks  
+**Total Tasks**: 32 detailed tasks  
+**Estimated Effort**: 80 developer-hours  
+**Target Completion**: 2026-05-24
+
+---
+
+## QUICK START
+
+1. Complete ONE PHASE at a time
+2. Each phase has 6-8 focused tasks
+3. Follow checklist items in order
+4. Run tests after each task
+5. Mark with ✅ when complete
+6. Move to next phase only when all tasks PASS
+
+---
+
+## PHASE OVERVIEW
+
+| Phase | Focus | Tasks | Status | Timeline |
+|-------|-------|-------|--------|----------|
+| **Phase 1** | Authentication & Authorization | 8 tasks | ✅ DONE | Apr 22-24 |
+| **Phase 2** | Video Security & Session Management | 7 tasks | ✅ DONE | Apr 25-27 |
+| **Phase 3** | Performance Optimization (Part 1) | 6 tasks | ✅ DONE | Apr 28-30 |
+| **Phase 4** | Performance Optimization (Part 2) | 6 tasks | ✅ DONE | May 1-3 |
+| **Phase 5** | Monitoring, Testing & Sign-Off | 8 tasks | 🟢 READY FOR HUMAN SIGN-OFF | May 4-10 |
+
+---
+
+# PHASE 1: AUTHENTICATION & AUTHORIZATION (Week 1)
+
+**Phase Duration**: April 22-24 (3 business days)  
+**Priority**: 🔴 MUST COMPLETE FIRST  
+**Issues Addressed**: #1, #2  
+**Estimated Effort**: 16 developer-hours  
+**Acceptance**: All 8 tasks must PASS before Phase 2
+
+---
+
+## TASK 1.1: Add Authentication Middleware to Admin Routes
+**Status**: ✅ DONE  
+**Severity**: 🔴 CRITICAL  
+**Estimated Time**: 2 hours
+
+- [x] Import `authenticate` middleware in admin.routes.ts
+- [x] Add `router.use(authenticate)` before other middleware
+- [x] Test: Guest request returns 401
+- [x] Test: Invalid token returns 401
+- [x] Test: Expired token returns 401
+- [x] Verify admin routes still work with valid token
+- [x] No breaking changes to other routes
+
+**Files Modified**:
+- Admin mount enforcement: `backend/src/app.ts`
+
+---
+
+## TASK 1.2: Add RBAC Middleware to Admin Routes
+**Status**: ✅ DONE  
+**Severity**: 🔴 CRITICAL  
+**Estimated Time**: 2 hours
+
+- [x] Import `requireRole("ADMIN")` middleware
+- [x] Add middleware after authenticate check
+- [x] Test: Student token returns 403 FORBIDDEN
+- [x] Test: Admin token returns 200 OK
+- [x] Verify all admin endpoints are protected
+- [x] Check audit logs show access attempts
+- [x] Integration test coverage for RBAC
+
+**Files Modified**:
+- `backend/src/middleware/rbac.middleware.ts`
+- Admin mount enforcement: `backend/src/app.ts`
+
+---
+
+## TASK 1.3: Protect Student-Only Routes
+**Status**: ✅ DONE  
+**Severity**: 🔴 CRITICAL  
+**Estimated Time**: 2 hours
+
+- [x] Add `authenticate` to /api/v1/student/* routes
+- [x] Add `requireRole("STUDENT")` where needed
+- [x] Test: Guest cannot access /dashboard
+- [x] Test: Admin cannot access /student/notes
+- [x] Test: Students can only see their own data
+- [x] Verify course preview is still public
+- [x] Check all student endpoints are secured
+
+**Files Modified**:
+- `backend/src/routes/student.routes.ts`
+- `backend/src/middleware/auth.middleware.ts`
+
+---
+
+## TASK 1.4: Implement Token Refresh Security
+**Status**: ✅ DONE  
+**Severity**: 🔴 CRITICAL  
+**Estimated Time**: 2 hours
+
+- [x] Token reuse detection in refresh logic
+- [x] Track refresh token hash in Redis
+- [x] Detect when same token is used twice
+- [x] Invalidate all tokens on reuse detected
+- [x] Test: Replayed refresh token fails
+- [x] Test: Token rotation works properly
+- [x] Verify error messages don't leak info
+
+**Files Modified**:
+- `backend/src/services/auth.service.ts`
+- `backend/src/utils/jwt.ts`
+- Covered by integration tests: `backend/tests/integration/auth.test.ts`
+
+---
+
+## TASK 1.5: Verify Login/Register Security
+**Status**: ✅ DONE  
+**Severity**: 🟡 HIGH  
+**Estimated Time**: 1.5 hours
+
+- [x] Password validation rules enforced
+- [x] Email uniqueness constraint working
+- [x] Invalid email format rejected
+- [x] Weak password rejected
+- [x] Test: Register with duplicate email fails
+- [x] Test: Register with weak password fails
+- [x] Test: Successful registration creates user
+
+**Files Modified**:
+- `backend/src/controllers/auth.controller.ts`
+- `backend/tests/integration/auth.test.ts`
+
+---
+
+## TASK 1.6: Add Logout Functionality
+**Status**: ✅ DONE  
+**Severity**: 🟡 HIGH  
+**Estimated Time**: 1.5 hours
+
+- [x] Logout endpoint clears refresh tokens
+- [x] Logout invalidates session in Redis
+- [x] After logout, refresh token fails
+- [x] Frontend clears localStorage on logout
+- [x] Test: Cannot use token after logout
+- [x] Test: Cannot refresh after logout
+- [x] Verify cleanup on server and client
+
+**Files Modified**:
+- `backend/src/controllers/auth.controller.ts`
+- `backend/src/services/auth.service.ts`
+- `frontend/src/hooks/useAuth.ts`
+
+---
+
+## TASK 1.7: Add Audit Logging for Auth Events
+**Status**: ✅ DONE  
+**Severity**: 🟡 HIGH  
+**Estimated Time**: 2 hours
+
+- [x] Log all login attempts (success/failure)
+- [x] Log all logout events
+- [x] Log token refresh events
+- [x] Log failed auth attempts with reason
+- [x] Include user ID, IP, timestamp in logs
+- [x] Test: Audit log shows all events
+- [x] Verify sensitive data not logged
+
+**Files Modified**:
+- `backend/src/middleware/audit.middleware.ts`
+- `backend/src/services/auth.service.ts`
+- `backend/src/controllers/auth.controller.ts`
+
+---
+
+## TASK 1.8: Phase 1 Testing & Sign-Off
+**Status**: ✅ DONE  
+**Severity**: 🟡 HIGH  
+**Estimated Time**: 2 hours
+
+- [x] All unit tests pass
+- [x] All integration tests pass
+- [x] No console errors in browser
+- [x] No TypeScript errors
+- [x] Linting passes
+- [x] Manual testing of all 4 auth flows
+- [x] Create Phase 1 sign-off evidence
+
+**Testing Commands**:
+```bash
+# Backend (Docker)
+docker compose exec -T backend sh -lc "cd /app/backend && pnpm lint"
+docker compose exec -T backend sh -lc "cd /app/backend && pnpm build"
+docker compose exec -T backend sh -lc "cd /app/backend && pnpm test"
+
+# Frontend (Docker)
+docker compose exec -T frontend sh -lc "cd /app/frontend && pnpm lint"
+docker compose exec -T frontend sh -lc "cd /app/frontend && pnpm build"
+docker compose exec -T frontend sh -lc "cd /app/frontend && pnpm exec playwright test --reporter=line"
+```
+
+**Files Modified**:
+- Phase 1 sign-off evidence: `docs/evidence/2026-04-21/phase1-sign-off.md`
+- Full evidence folder: `docs/evidence/2026-04-21/`
+- Focused Phase 1 test run: `docs/evidence/2026-04-21/phase1-tests.txt`
+
+---
+
+# PHASE 2: VIDEO SECURITY & SESSION MANAGEMENT (Week 2)
+
+**Phase Duration**: April 25-27 (3 business days)  
+**Priority**: 🔴 CRITICAL  
+**Issues Addressed**: #3, #4, #8  
+**Estimated Effort**: 14 developer-hours  
+**Acceptance**: All 7 tasks must PASS before Phase 3
+
+---
+
+## TASK 2.1: Implement Video Token Expiration (5 minutes)
+**Status**: ✅ DONE  
+**Severity**: 🔴 CRITICAL  
+**Estimated Time**: 2 hours
+
+- [x] Video tokens expire in 5 minutes
+- [x] Expired tokens cannot access segments
+- [x] Check token expiry on every segment request
+- [x] Test: Old token after 5 min fails
+- [x] Test: New token works within 5 min
+- [x] Verify frontend refreshes tokens
+- [x] No silent failures on expired token
+
+**Files Modified**:
+- `backend/src/utils/video-token.ts`
+- `backend/src/services/video-token.service.ts`
+- `backend/tests/integration/video-token.test.ts`
+
+---
+
+## TASK 2.2: Add Enrollment Re-Check at Segment Endpoint
+**Status**: ✅ DONE  
+**Severity**: 🔴 CRITICAL  
+**Estimated Time**: 2 hours
+
+- [x] Before serving segment, check enrollment
+- [x] Check enrollment status is ACTIVE
+- [x] Check student hasn't been revoked
+- [x] Reject if enrollment expired
+- [x] Test: Revoked student cannot access
+- [x] Test: Active student can access
+- [x] Test: Expired enrollment denied
+
+**Files Modified**:
+- `backend/src/controllers/lesson.controller.ts`
+- `backend/src/services/video-token.service.ts`
+- `backend/tests/integration/video-hardening.test.ts`
+
+---
+
+## TASK 2.3: Implement Token Revocation on Enrollment Change
+**Status**: ✅ DONE  
+**Severity**: 🔴 CRITICAL  
+**Estimated Time**: 2 hours
+
+- [x] When enrollment revoked, invalidate all tokens
+- [x] When status changed, clear token cache
+- [x] When refund processed, revoke access
+- [x] Test: Token invalid after revoke
+- [x] Test: Student cannot re-use old token
+- [x] Test: Admin can force revoke
+- [x] Verify token cleanup in Redis
+
+**Files Modified**:
+- `backend/src/services/enrollment.service.ts`
+- `backend/src/controllers/admin/students.controller.ts`
+- `backend/tests/integration/enrollment.test.ts`
+
+---
+
+## TASK 2.4: Fix Enrollment Cache Expiry Issue
+**Status**: ✅ DONE  
+**Severity**: 🟡 HIGH  
+**Estimated Time**: 1.5 hours
+
+- [x] Enrollment cache TTL reduced to 2 minutes
+- [x] Revocation immediately clears cache
+- [x] Cache invalidation tested
+- [x] Test: New token after revoke fails
+- [x] Test: Cache doesn't delay revocation
+- [x] Verify no 5-minute window
+- [x] Monitor Redis cache behavior
+
+**Files Modified**:
+- `backend/src/services/enrollment.service.ts`
+- (No shared cache util; TTL lives in `backend/src/services/enrollment.service.ts`)
+
+---
+
+## TASK 2.5: Implement Concurrent Session Enforcement
+**Status**: ✅ DONE  
+**Severity**: 🔴 CRITICAL  
+**Estimated Time**: 2 hours
+
+- [x] Only one active session per user
+- [x] New login invalidates old sessions
+- [x] Each session has unique session ID
+- [x] Test: Second login logs out first
+- [x] Test: Old token fails after new login
+- [x] Test: Session ID in Redis updated
+- [x] Toggle via ENFORCE_SINGLE_SESSION env var
+
+**Files Modified**:
+- `backend/src/services/session.service.ts`
+- `backend/src/services/auth.service.ts`
+- `backend/src/middleware/auth.middleware.ts`
+- `backend/tests/integration/single-session.test.ts`
+
+---
+
+## TASK 2.6: Add Device Fingerprinting to Preview
+**Status**: ✅ DONE (cookie-bound preview session + UA/IP-prefix tolerance)  
+**Severity**: 🟡 HIGH  
+**Estimated Time**: 2 hours
+
+- [x] Collect user agent and IP prefix for preview session
+- [x] Store preview session record in Redis (short TTL)
+- [x] Require `preview_session` httpOnly cookie to use preview token
+- [x] Validate UA/IP-prefix tolerance on use
+- [x] Test: fresh browser context without cookie fails (401)
+- [x] Test: same browser session works normally
+
+**Files Modified**:
+- `backend/src/services/video-token.service.ts`
+- `backend/src/controllers/lesson.controller.ts`
+- Covered by integration tests: `backend/tests/integration/preview.test.ts`, `backend/tests/integration/video-hardening.test.ts`
+
+---
+
+## TASK 2.7: Phase 2 Testing & Sign-Off
+**Status**: ✅ DONE  
+**Severity**: 🟡 HIGH  
+**Estimated Time**: 1.5 hours
+
+- [x] All video security tests pass
+- [x] Session management tests pass
+- [x] Manual video playback test
+- [x] Test enrollment revocation flow
+- [x] Test concurrent sessions
+- [x] No TypeScript errors
+- [x] Create Phase 2 sign-off evidence
+
+**Testing Commands**:
+```bash
+docker compose exec -T backend sh -lc "cd /app/backend && pnpm exec vitest run tests/integration/video-token.test.ts tests/integration/video-hardening.test.ts tests/integration/enrollment.test.ts tests/integration/single-session.test.ts tests/integration/preview.test.ts"
+```
+
+**Evidence**:
+- Phase 2 sign-off: `docs/evidence/2026-04-21/phase2-sign-off.md`
+- Phase 2 tests: `docs/evidence/2026-04-21/phase2-tests-2.txt`
+- Backend build (Phase 2): `docs/evidence/2026-04-21/backend-build-phase2-2.txt`
+
+---
+
+# PHASE 3: PERFORMANCE OPTIMIZATION - PART 1 (Week 2-3)
+
+**Phase Duration**: April 28-30 (3 business days)
+**Priority**: HIGH
+**Issues Addressed**: #6, #7
+**Estimated Effort**: 12 developer-hours
+**Acceptance**: All 6 tasks must PASS before Phase 4
+
+---
+
+## TASK 3.1: Fix N+1 Query in Lesson Listing
+**Status**: [DONE]
+**Severity**: HIGH
+**Estimated Time**: 2 hours
+
+- [x] Batch load progress records
+- [x] Merge progress into lessons in memory
+- [x] Test: data is correct
+
+**Files Modified**:
+- `backend/src/controllers/lesson.controller.ts`
+
+---
+
+## TASK 3.2: Add Database Indexes for High-Traffic Columns
+**Status**: [DONE]
+**Severity**: HIGH
+**Estimated Time**: 2 hours
+
+- [x] Add/verify indexes for critical queries
+
+**Files Modified**:
+- `backend/prisma/schema.prisma`
+- `backend/prisma/migrations/20260421001410_add_perf_indexes/migration.sql`
+
+---
+
+## TASK 3.3: Implement Course Settings Caching
+**Status**: [DONE]
+**Severity**: HIGH
+**Estimated Time**: 2 hours
+
+- [x] Cache course settings in Redis
+- [x] Invalidate on admin changes
+
+**Files Modified**:
+- `backend/src/services/course.service.ts`
+- `backend/src/controllers/admin/pricing.controller.ts`
+- `backend/src/controllers/admin/settings.controller.ts`
+- `backend/src/controllers/admin/lessons.controller.ts`
+
+---
+
+## TASK 3.4: Implement Enrollment Status Caching
+**Status**: [DONE]
+**Severity**: HIGH
+**Estimated Time**: 1.5 hours
+
+- [x] Cache enrollment status in Redis
+- [x] Cache duration: 2 minutes
+- [x] Invalidate immediately on changes
+
+**Files Modified**:
+- `backend/src/services/enrollment.service.ts`
+
+---
+
+## TASK 3.5: Optimize Lesson Detail Endpoint
+**Status**: [DONE]
+**Severity**: HIGH
+**Estimated Time**: 1.5 hours
+
+- [x] Reduce queries in lesson detail (avoid extra section lookup)
+
+**Files Modified**:
+- `backend/src/controllers/lesson.controller.ts`
+- `backend/src/repositories/lesson.repository.ts`
+
+---
+
+## TASK 3.6: Phase 3 Testing & Benchmarking
+**Status**: [DONE] (dev baseline)
+**Severity**: HIGH
+**Estimated Time**: 2 hours
+
+- [x] Backend build passes
+- [x] Focused integration tests pass
+- [x] Dev baseline load scripts produce clean results
+
+**Evidence**:
+- Build: `docs/evidence/2026-04-21/backend-build-phase3.txt`
+- Tests: `docs/evidence/2026-04-21/phase3-tests.txt`
+- Load `/course`: `docs/evidence/2026-04-21/phase3-load-course.json`
+- Load student browsing: `docs/evidence/2026-04-21/phase3-load-student-2.json`
+- Phase 3 sign-off: `docs/evidence/2026-04-21/phase3-sign-off.md`
+
+---
+# PHASE 4: PERFORMANCE OPTIMIZATION - PART 2 (Week 3)
+
+**Phase Duration**: May 1-3 (3 business days)
+**Priority**: HIGH
+**Issues Addressed**: #9, #10
+**Estimated Effort**: 12 developer-hours
+**Acceptance**: All 6 tasks must PASS before Phase 5
+
+---
+
+## TASK 4.1: Implement Redis Caching for Lessons
+**Status**: [DONE]
+**Severity**: HIGH
+**Estimated Time**: 2 hours
+
+- [x] Cache published lessons and grouped lessons in Redis
+- [x] Cache duration: 2 hours
+- [x] Invalidate on admin lesson/section mutations
+
+**Files Modified**:
+- `backend/src/services/lesson.service.ts`
+- `backend/src/controllers/lesson.controller.ts`
+- `backend/src/controllers/admin/lessons.controller.ts`
+- `backend/src/controllers/admin/sections.controller.ts`
+
+---
+
+## TASK 4.2: Implement Redis Caching for Progress
+**Status**: [DONE]
+**Severity**: HIGH
+**Estimated Time**: 2 hours
+
+- [x] Cache per-user progress in Redis
+- [x] Cache duration: 5 minutes
+- [x] Invalidate on progress update
+
+**Files Modified**:
+- `backend/src/services/progress.service.ts`
+- `backend/src/repositories/progress.repository.ts`
+- `backend/src/controllers/lesson.controller.ts`
+
+---
+
+## TASK 4.3: Optimize Database Connection Pool
+**Status**: [DONE] (configurable)
+**Severity**: HIGH
+**Estimated Time**: 1.5 hours
+
+- [x] Support pool tuning via env without changing defaults
+
+**Files Modified**:
+- `backend/src/config/database.ts`
+
+Env knobs (optional):
+- `DATABASE_CONNECTION_LIMIT`
+- `DATABASE_POOL_TIMEOUT_SECONDS`
+
+---
+
+## TASK 4.4: Implement Query Result Pagination
+**Status**: [DONE] (backwards-compatible)
+**Severity**: HIGH
+**Estimated Time**: 2 hours
+
+- [x] Admin students list is paginated (default 20)
+- [x] Lessons list supports optional pagination via `page` + `limit` query params
+
+**Files Modified**:
+- `backend/src/controllers/admin/students.controller.ts`
+- `backend/src/controllers/lesson.controller.ts`
+
+---
+
+## TASK 4.5: Optimize Frontend Bundle Size
+**Status**: [DONE]
+**Severity**: HIGH
+**Estimated Time**: 2 hours
+
+- [x] Manual chunk splitting for major bundles
+
+**Files Modified**:
+- `frontend/vite.config.ts`
+
+---
+
+## TASK 4.6: Phase 4 Performance Testing & Report
+**Status**: [DONE] (dev baseline)
+**Severity**: HIGH
+**Estimated Time**: 2 hours
+
+**Evidence**:
+- Backend build: `docs/evidence/2026-04-21/backend-build-phase4.txt`
+- Backend tests: `docs/evidence/2026-04-21/phase4-tests.txt`
+- Backend load `/course`: `docs/evidence/2026-04-21/phase4-load-course.json`
+- Backend load student browsing: `docs/evidence/2026-04-21/phase4-load-student.json`
+- Frontend build: `docs/evidence/2026-04-21/frontend-build-phase4.txt`
+- Frontend E2E: `docs/evidence/2026-04-21/frontend-e2e-phase4-2.txt`
+- k6 baseline: `docs/evidence/2026-04-21/k6-summary-phase4.json`, `docs/evidence/2026-04-21/k6-report-phase4.html`
+- Phase 4 sign-off: `docs/evidence/2026-04-21/phase4-sign-off.md`
+
+---
+# PHASE 5: MONITORING, TESTING & SIGN-OFF (Week 3-4)
+
+**Phase Duration**: May 4-10 (5 business days)
+**Priority**: HIGH
+**Issues Addressed**: All remaining
+**Estimated Effort**: 20 developer-hours
+**Acceptance**: QC + reviewer sign-off required
+
+---
+
+## TASK 5.1: Set Up Prometheus Monitoring
+**Status**: [DONE] (dev baseline)
+**Severity**: HIGH
+
+- [x] Monitoring overlay compose exists and is running in dev
+- [x] Backend metrics exposed on `/metrics` when enabled
+- [x] Prometheus scrape configured + alert rules present
+
+**Files Modified**:
+- `docker-compose.monitoring.yml`
+- `docker/monitoring/prometheus/prometheus.yml`
+- `docker/monitoring/prometheus/alerts.yml`
+- `backend/src/observability/prometheus.ts`
+
+**Evidence**:
+- `docs/evidence/2026-04-21/prom-targets-phase5.json`
+- `docs/evidence/2026-04-21/prom-rules-phase5.json`
+- `docs/evidence/2026-04-21/prom-metrics-sample-phase5.txt`
+
+---
+
+## TASK 5.2: Set Up Grafana Dashboard
+**Status**: [DONE] (dev baseline)
+**Severity**: HIGH
+
+- [x] Grafana provisioning + dashboard JSON included
+- [x] Grafana container runs with monitoring overlay
+
+**Files Modified**:
+- `docker/monitoring/grafana/provisioning/dashboards/dashboards.yml`
+- `docker/monitoring/grafana/provisioning/datasources/datasource.yml`
+- `docker/monitoring/grafana/dashboards/eduflow-api.json`
+
+**Evidence**:
+- `docs/evidence/2026-04-21/grafana-health-phase5.json`
+
+---
+
+## TASK 5.3: Set Up Sentry Error Tracking
+**Status**: [DONE] (integration wired; DSNs required)
+**Severity**: HIGH
+
+- [x] Backend Sentry integration present (captures exceptions)
+- [x] Frontend Sentry integration present
+- [ ] Real Sentry projects/DSNs + alert routing (human/prod wiring)
+
+**Files Modified**:
+- `backend/src/observability/sentry.ts`
+- `backend/src/app.ts`
+- `frontend/src/observability/sentry.ts`
+- `frontend/src/main.tsx`
+
+---
+
+## TASK 5.4: Create QC Security Checklist
+**Status**: [DONE]
+**Severity**: HIGH
+
+**Files Modified**:
+- `docs/QC_SECURITY_CHECKLIST.md`
+- `docs/QC_SECURITY_REPORT_TEMPLATE.md`
+- `docs/evidence/EVIDENCE_TEMPLATE.md`
+- `frontend/scripts/playwright-manual-check.cjs`
+- `frontend/scripts/qc-evidence-capture.cjs`
+
+---
+
+## TASK 5.5: Create Integration Test Suite
+**Status**: [DONE]
+**Severity**: HIGH
+
+**Files Modified**:
+- `backend/tests/integration/*.test.ts`
+
+---
+
+## TASK 5.6: Create E2E Testing Suite
+**Status**: [DONE] (Chromium dev baseline)
+**Severity**: HIGH
+
+**Files Modified**:
+- `frontend/tests/e2e/*.spec.ts`
+- `frontend/playwright.config.ts`
+
+---
+
+## TASK 5.7: Document All Security Measures
+**Status**: [DONE] (dev baseline)
+**Severity**: HIGH
+
+**Files Created**:
+- `docs/SECURITY_ARCHITECTURE.md`
+- `docs/SECURITY_RUNBOOK.md`
+- `docs/TROUBLESHOOTING.md`
+- `docs/DEPLOYMENT_CHECKLIST.md`
+
+---
+
+## TASK 5.8: Phase 5 QC Sign-Off
+**Status**: [READY FOR HUMAN SIGN-OFF]
+**Severity**: CRITICAL
+
+Automated evidence captured:
+- `docs/evidence/2026-04-21/phase5-sign-off.md`
+- `docs/evidence/2026-04-21/QC_SECURITY_REPORT.md`
+- `docs/evidence/2026-04-21/EVIDENCE.md`
+
+Still required to close:
+- Human reviewer runs `docs/QC_SECURITY_CHECKLIST.md` with DevTools/Incognito screenshots and approves.
+- Staging/prod-like load evidence for any “100k users” claim.
+
+---
+## SUMMARY TABLE
+
+| Phase | Status | Tasks | Estimated Hours | Start Date | End Date |
+|-------|--------|-------|-----------------|------------|----------|
+| Phase 1 | [DONE] | 8 | 16 | Apr 22 | Apr 24 |
+| Phase 2 | [DONE] | 7 | 14 | Apr 25 | Apr 27 |
+| Phase 3 | [DONE] | 6 | 12 | Apr 28 | Apr 30 |
+| Phase 4 | [DONE] | 6 | 12 | May 1 | May 3 |
+| Phase 5 | [READY FOR HUMAN SIGN-OFF] | 8 | 20 | May 4 | May 10 |
+| **TOTAL** | **ONGOING** | **32** | **80** | **Apr 22** | **May 10** |
+
+---
+## HOW TO USE THIS DOCUMENT
+
+1. **Pick your current phase** (1-5)
+2. **Work through tasks in order** (1.1, 1.2, ... 1.8)
+3. **Check off each completed task** with ✅
+4. **Run tests after each task**
+5. **Don't skip ahead** - phases build on each other
+6. **Only move to next phase when ALL tasks PASS**
+7. **Document evidence** for QC in `docs/evidence/2026-04-21/`
+
+---
+
+## EVIDENCE & DOCUMENTATION
+
+All evidence artifacts stored in:
+
+```
+docs/evidence/2026-04-21/
+  phase1-sign-off.md
+  phase1-tests.txt
+  phase2-sign-off.md
+  phase2-tests-2.txt
+  phase3-sign-off.md
+  phase3-tests.txt
+  phase4-sign-off.md
+  phase4-tests.txt
+  phase5-sign-off.md
+  QC_SECURITY_REPORT.md
+  EVIDENCE.md
+  LOAD_TEST_REPORT.md
+```
+
+---
+
+**Status Updated**: April 21, 2026
