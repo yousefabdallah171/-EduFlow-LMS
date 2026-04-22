@@ -7,7 +7,7 @@
 #
 
 DEPLOY_DIR="/home/youesf-abdallah-workflow-course/htdocs/workflow-course.youesf-abdallah.online"
-WEBHOOK_SECRET="your-secret-here"  # Change this to a random string
+WEBHOOK_SECRET="b876f16fcd10d4d83a3cf644ab94d9177ebc0f8326b9dcdc4478d8a5be09dd90"
 WEBHOOK_PORT=9000
 LOG_FILE="/tmp/webhook-deploy.log"
 
