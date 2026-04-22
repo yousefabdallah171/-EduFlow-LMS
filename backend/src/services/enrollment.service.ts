@@ -10,6 +10,20 @@ const enrollmentCacheKeyLegacy = (userId: string) => `enrollment:${userId}`;
 const enrollmentStatusCacheKey = (userId: string, courseId: string) => `enrollment:status:${userId}:${courseId}`;
 const ENROLLMENT_CACHE_TTL_SECONDS = 2 * 60;
 
+export type EnrollmentStatusResponse =
+  | {
+      enrolled: true;
+      status: string;
+      enrollmentType?: EnrollmentType;
+      enrolledAt?: Date;
+    }
+  | {
+      enrolled: false;
+      status?: string;
+      enrollmentType?: EnrollmentType;
+      enrolledAt?: Date;
+    };
+
 export const enrollmentService = {
   async enroll(userId: string, enrollmentType: EnrollmentType, paymentId?: string | null) {
     const existing = await enrollmentRepository.findByUserId(userId);
@@ -53,12 +67,12 @@ export const enrollmentService = {
     return enrollment;
   },
 
-  async getStatus(userId: string) {
+  async getStatus(userId: string): Promise<EnrollmentStatusResponse> {
     try {
       const cached = await redis.get(enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID));
       if (cached) {
         prometheus.recordCacheHit("enrollment_status");
-        return JSON.parse(cached) as { enrolled: boolean; status?: string };
+        return JSON.parse(cached) as EnrollmentStatusResponse;
       }
     } catch {
       // ignore redis failures
@@ -68,21 +82,21 @@ export const enrollmentService = {
     try {
       const cachedLegacy = await redis.get(enrollmentCacheKeyLegacy(userId));
       if (cachedLegacy) {
-        return JSON.parse(cachedLegacy) as { enrolled: boolean; status?: string };
+        return JSON.parse(cachedLegacy) as EnrollmentStatusResponse;
       }
     } catch {
       // ignore redis failures
     }
 
     const enrollment = await enrollmentRepository.findByUserId(userId);
-    const value = enrollment
+    const value: EnrollmentStatusResponse = enrollment
       ? {
           enrolled: enrollment.status === "ACTIVE",
           status: enrollment.status,
           enrollmentType: enrollment.enrollmentType,
-           enrolledAt: enrollment.enrolledAt
-         }
-       : { enrolled: false };
+          enrolledAt: enrollment.enrolledAt
+        }
+      : { enrolled: false };
 
     try {
       await redis.set(enrollmentCacheKeyLegacy(userId), JSON.stringify(value), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
@@ -107,7 +121,7 @@ export const enrollmentService = {
       try {
         const cached = await redis.get(enrollmentStatusCacheKey(userId, courseId));
         if (cached) {
-          return JSON.parse(cached) as { enrolled: boolean; status?: string };
+          return JSON.parse(cached) as EnrollmentStatusResponse;
         }
       } catch {
         // ignore redis failures

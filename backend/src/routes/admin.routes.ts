@@ -15,10 +15,14 @@ import * as sectionsController from "../controllers/admin/sections.controller.js
 import { resourcesController as adminResourcesController } from "../controllers/resources.controller.js";
 import { ticketsController } from "../controllers/tickets.controller.js";
 import { auditMiddleware } from "../middleware/audit.middleware.js";
+import { adminDashboardRoutes } from "./admin-dashboard.routes.js";
+import { courseAnalyticsRoutes } from "./course-analytics.routes.js";
 
 const router = Router();
 
 router.use(auditMiddleware);
+router.use(adminDashboardRoutes);
+router.use(courseAnalyticsRoutes);
 
 router.get("/health", (_req, res) => {
   res.json({ scope: "admin" });

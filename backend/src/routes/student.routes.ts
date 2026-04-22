@@ -14,10 +14,14 @@ import { validatePaymobHmac } from "../middleware/hmac.middleware.js";
 import { paymentRateLimit, videoIpRateLimit } from "../middleware/rate-limit.middleware.js";
 import { requireRole } from "../middleware/rbac.middleware.js";
 import { courseService } from "../services/course.service.js";
+import { studentDashboardRoutes } from "./student-dashboard.routes.js";
+import { paymentService } from "../services/payment.service.js";
+import { lessonDetailRoutes } from "./lesson-detail.routes.js";
 
 const router = Router();
 
-router.get("/student/dashboard", authenticate, requireRole("STUDENT"), studentController.dashboard);
+router.get("/student/dashboard/summary", authenticate, requireRole("STUDENT"), studentController.dashboard);
+router.use("/student/dashboard", authenticate, requireRole("STUDENT"), studentDashboardRoutes);
 
 router.get("/course", async (_req, res, next) => {
   try {
@@ -34,7 +38,12 @@ router.post("/checkout", authenticate, requireRole("STUDENT"), paymentRateLimit,
 router.get("/lessons/preview", lessonController.preview);
 router.get("/lessons/grouped", authenticate, requireRole("STUDENT"), lessonController.getAllLessonsGrouped);
 router.get("/lessons", authenticate, requireRole("STUDENT"), lessonController.list);
-router.get("/lessons/:id", authenticate, requireRole("STUDENT"), lessonController.detail);
+router.use("/lessons/:id", authenticate, requireRole("STUDENT"), lessonDetailRoutes);
+router.get("/lessons/:id", authenticate, requireRole("STUDENT"), (req, res, next) => {
+  res.setHeader("Deprecation", "true");
+  res.setHeader("Link", '</api/v1/lessons/:id/detail>; rel="successor-version"');
+  void lessonController.detail(req, res, next);
+});
 router.post("/lessons/:id/progress", authenticate, requireRole("STUDENT"), lessonController.updateProgress);
 router.get("/video/:id/playlist.m3u8", videoIpRateLimit, lessonController.playlist);
 router.get("/video/:id/key", videoIpRateLimit, lessonController.key);
@@ -66,12 +75,16 @@ router.patch("/student/profile/password", authenticate, requireRole("STUDENT"), 
 // Orders route
 router.get("/student/orders", authenticate, requireRole("STUDENT"), async (req, res, next) => {
   try {
-    const payments = await prisma.payment.findMany({
-      where: { userId: req.user!.userId },
-      orderBy: { createdAt: "desc" },
-      select: { id: true, amountPiasters: true, currency: true, status: true, createdAt: true }
+    const payments = await paymentService.listPaymentHistory(req.user!.userId);
+    res.json({
+      orders: payments.map((p) => ({
+        id: p.id,
+        amountEgp: p.amountEgp,
+        currency: "EGP",
+        status: p.status,
+        createdAt: p.createdAt
+      }))
     });
-    res.json({ orders: payments.map(p => ({ ...p, amountEgp: p.amountPiasters / 100 })) });
   } catch (e) { next(e); }
 });
 
