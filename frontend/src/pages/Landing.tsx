@@ -24,7 +24,7 @@ const phaseIcons = [FileText, Layers3, Cpu, TestTube2, ShieldCheck, Search, Rock
 const landingCopy = {
   ar: {
     badge: "EARLY ACCESS",
-    badgeMeta: "أول 30 مقعد بس",
+    badgeMeta: "أول 25 مقعد بس",
     title: ["الـ", "AI", "بيبني مشاريع", "انت لسه", "بتتفرج؟"],
     subtitle:
       "تعلم الـ workflow اللي بيحوّل الأفكار لتطبيقات حقيقية: PRD، Spec Kit، UI direction، تنفيذ، مراجعة، اختبارات، أمان، SEO، Docker، وإطلاق production.",
