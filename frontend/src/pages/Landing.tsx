@@ -24,7 +24,7 @@ const phaseIcons = [FileText, Layers3, Cpu, TestTube2, ShieldCheck, Search, Rock
 const landingCopy = {
   ar: {
     badge: "EARLY ACCESS",
-    badgeMeta: "أول 50 مقعد بس",
+    badgeMeta: "أول 90 مقعد بس",
     title: ["الـ", "AI", "بيبني مشاريع", "انت لسه", "بتتفرج؟"],
     subtitle:
       "تعلم الـ workflow اللي بيحوّل الأفكار لتطبيقات حقيقية: PRD، Spec Kit، UI direction، تنفيذ، مراجعة، اختبارات، أمان، SEO، Docker، وإطلاق production.",
@@ -93,7 +93,7 @@ const landingCopy = {
   },
   en: {
     badge: "EARLY ACCESS",
-    badgeMeta: "Only 50 seats",
+    badgeMeta: "Only 90 seats",
     title: ["The", "AI", "ships products", "while you still", "watch."],
     subtitle:
       "Learn a practical workflow to turn ideas into production-ready apps: PRD, Spec Kit, UI direction, implementation, review, testing, security, SEO, Docker, and deployment.",
