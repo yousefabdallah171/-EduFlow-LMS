@@ -41,6 +41,7 @@ const PublicPricing = lazy(async () => import("@/pages/Pricing").then((m) => ({ 
 const PrivacyPolicy = lazy(async () => import("@/pages/PrivacyPolicy").then((m) => ({ default: m.PrivacyPolicy })));
 const Terms = lazy(async () => import("@/pages/Terms").then((m) => ({ default: m.Terms })));
 const RefundPolicy = lazy(async () => import("@/pages/RefundPolicy").then((m) => ({ default: m.RefundPolicy })));
+const Roadmap = lazy(async () => import("@/pages/Roadmap").then((m) => ({ default: m.Roadmap })));
 const NotFoundPage = lazy(async () => import("@/pages/NotFound").then((m) => ({ default: m.NotFound })));
 const StudentDashboard = lazy(async () => import("@/pages/student/Dashboard").then((m) => ({ default: m.StudentDashboard })));
 const StudentProgress = lazy(async () => import("@/pages/student/Progress").then((m) => ({ default: m.StudentProgress })));
@@ -250,6 +251,7 @@ export const AppRoutes = () => (
       <Route element={<FAQ />} path="/faq" />
       <Route element={<Contact />} path="/contact" />
       <Route element={<PublicPricing />} path="/pricing" />
+      <Route element={<Roadmap />} path="/roadmap" />
       <Route element={<PrivacyPolicy />} path="/privacy" />
       <Route element={<Terms />} path="/terms" />
       <Route element={<RefundPolicy />} path="/refund" />
@@ -291,6 +293,7 @@ export const AppRoutes = () => (
       <Route element={<FAQ />} path="/:locale/faq" />
       <Route element={<Contact />} path="/:locale/contact" />
       <Route element={<PublicPricing />} path="/:locale/pricing" />
+      <Route element={<Roadmap />} path="/:locale/roadmap" />
       <Route element={<PrivacyPolicy />} path="/:locale/privacy" />
       <Route element={<Terms />} path="/:locale/terms" />
       <Route element={<RefundPolicy />} path="/:locale/refund" />

@@ -7,7 +7,8 @@ const cssPatterns = [/^\s*left\s*:/im, /^\s*right\s*:/im, ...sourcePatterns];
 
 const files = globSync("src/**/*.{ts,tsx,css}", {
   cwd: process.cwd(),
-  absolute: true
+  absolute: true,
+  ignore: []
 });
 
 const violations = [];
