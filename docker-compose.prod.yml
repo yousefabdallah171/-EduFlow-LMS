@@ -60,10 +60,6 @@ services:
   # Node.js Backend API
   backend:
     image: ghcr.io/yousefabdallah171/-eduflow-lms/backend:latest
-    build:
-      context: .
-      dockerfile: docker/backend.Dockerfile
-      target: runtime
     command: node /app/backend/dist/src/server.js
     container_name: eduflow_backend_prod
     depends_on:
@@ -113,9 +109,6 @@ services:
   # React Frontend with Nginx
   frontend:
     image: ghcr.io/yousefabdallah171/-eduflow-lms/frontend:latest
-    build:
-      context: .
-      dockerfile: docker/frontend.Dockerfile
     container_name: eduflow_frontend_prod
     networks:
       - eduflow_prod_net
