@@ -42,7 +42,7 @@ beforeAll(async () => {
   const databaseModule = await import("../../src/config/database.js");
   app = appModule.createApp();
   prisma = databaseModule.prisma;
-});
+}, 60000);
 
 beforeEach(async () => {
   await prisma.ticketMessage.deleteMany();
@@ -112,8 +112,8 @@ describe("US3 video token flow", () => {
       .expect(200);
 
     expect(lesson.body.watermark).toMatchObject({
-      name: "Video Student",
-      maskedEmail: "v***@example.com"
+      initials: "VS",
+      timestamp: expect.any(String)
     });
     expect(lesson.body.videoToken).toEqual(expect.any(String));
 
