@@ -1,6 +1,6 @@
 import { type FormEvent, useMemo, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { AxiosError } from "axios";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
@@ -8,10 +8,12 @@ import { useTranslation } from "react-i18next";
 import { AuthShell } from "@/components/shared/AuthShell";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth.store";
 
 type FieldErrors = Partial<Record<"fullName" | "email" | "password", string>>;
 
 export const Register = () => {
+  const { isAuthReady, user } = useAuthStore();
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const { t, i18n } = useTranslation();
@@ -64,6 +66,11 @@ export const Register = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (isAuthReady && user) {
+    const target = user.role === "ADMIN" ? `${prefix}/admin/dashboard` : `${prefix}/profile`;
+    return <Navigate replace to={target} />;
+  }
 
   return (
     <AuthShell

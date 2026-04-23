@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import { ChevronDown, Send, ShieldCheck, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -7,13 +7,15 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { api } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth.store";
 
 const FAQ_KEYS = ["access", "download", "arabic", "coupons", "refund", "progress", "devices", "updates"] as const;
 
 export const StudentHelp = () => {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const { user } = useAuthStore();
+  const [form, setForm] = useState({ subject: "", message: "" });
   const [sending, setSending] = useState(false);
 
   const faqItems = FAQ_KEYS.map((key) => ({
@@ -22,47 +24,27 @@ export const StudentHelp = () => {
     a: t(`faq.items.${key}.a`)
   }));
 
-  const validationMessages = {
-    nameRequired: isAr ? "الاسم مطلوب" : "Name is required",
-    emailRequired: isAr ? "البريد الإلكتروني مطلوب" : "Email is required",
-    nameShort: isAr ? "الاسم يجب أن يكون حرفين على الأقل" : "Name must be at least 2 characters",
-    emailInvalid: isAr ? "اكتب بريدًا إلكترونيًا صحيحًا" : "Please enter a valid email address",
-    messageShort: isAr ? "الرسالة يجب أن تكون 10 أحرف على الأقل" : "Message must be at least 10 characters"
-  };
+  const signedInLabel = useMemo(() => {
+    if (!user?.email) return "";
+    return isAr ? `مسجل الدخول: ${user.email}` : `Signed in as: ${user.email}`;
+  }, [isAr, user?.email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
     try {
-      if (!form.name.trim()) {
-        toast.error(validationMessages.nameRequired);
-        setSending(false);
+      if (form.subject.trim().length < 5) {
+        toast.error(isAr ? "الموضوع يجب أن يكون 5 أحرف على الأقل" : "Subject must be at least 5 characters");
         return;
       }
-      if (!form.email.trim()) {
-        toast.error(validationMessages.emailRequired);
-        setSending(false);
-        return;
-      }
-      if (form.name.length < 2) {
-        toast.error(validationMessages.nameShort);
-        setSending(false);
-        return;
-      }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-        toast.error(validationMessages.emailInvalid);
-        setSending(false);
-        return;
-      }
-      if (form.message.length < 10) {
-        toast.error(validationMessages.messageShort);
-        setSending(false);
+      if (form.message.trim().length < 10) {
+        toast.error(isAr ? "الرسالة يجب أن تكون 10 أحرف على الأقل" : "Message must be at least 10 characters");
         return;
       }
 
-      await api.post("/contact", form);
+      await api.post("/student/tickets", { subject: form.subject.trim(), message: form.message.trim() });
       toast.success(t("contact.successMessage"));
-      setForm({ name: "", email: "", message: "" });
+      setForm({ subject: "", message: "" });
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string; fields?: Record<string, string> } } };
       const errorMsg = error.response?.data?.message || (error.response?.data?.fields ? Object.values(error.response.data.fields)[0] : t("contact.errorMessage"));
@@ -138,22 +120,24 @@ export const StudentHelp = () => {
           </div>
 
           <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-            {[
-              { label: t("contact.name"), field: "name" as const, type: "text" },
-              { label: t("contact.email"), field: "email" as const, type: "email" },
-            ].map(({ label, field, type }) => (
-              <div key={field}>
-                <label className="ui-field-label">{label}</label>
-                <input
-                  required
-                  type={type}
-                  className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
-                  style={{ backgroundColor: "var(--color-page)", borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
-                  value={form[field]}
-                  onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-                />
-              </div>
-            ))}
+            {signedInLabel ? (
+              <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                {signedInLabel}
+              </p>
+            ) : null}
+
+            <div>
+              <label className="ui-field-label">{isAr ? "الموضوع" : "Subject"}</label>
+              <input
+                required
+                type="text"
+                className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+                style={{ backgroundColor: "var(--color-page)", borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                value={form.subject}
+                onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                placeholder={isAr ? "مثال: مشكلة في تسجيل الدخول" : "Example: Login issue"}
+              />
+            </div>
             <div>
               <label className="ui-field-label">{t("contact.message")}</label>
               <textarea

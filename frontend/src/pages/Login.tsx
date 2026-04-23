@@ -1,5 +1,5 @@
 import { type FormEvent, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { AxiosError } from "axios";
 import { useTranslation } from "react-i18next";
 
@@ -7,10 +7,12 @@ import { AuthShell } from "@/components/shared/AuthShell";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth.store";
 
 export const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { isAuthReady, user } = useAuthStore();
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const { t, i18n } = useTranslation();
@@ -24,6 +26,11 @@ export const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const canResend = useMemo(() => errorCode === "EMAIL_NOT_VERIFIED" && email.trim().length > 3, [email, errorCode]);
+
+  if (isAuthReady && user) {
+    const target = user.role === "ADMIN" ? `${prefix}/admin/dashboard` : `${prefix}/profile`;
+    return <Navigate replace to={target} />;
+  }
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
