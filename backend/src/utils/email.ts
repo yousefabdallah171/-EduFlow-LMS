@@ -69,8 +69,10 @@ const getEmailTemplate = (title: string, content: string): string => {
 const sendTemplate = async (to: string, subject: string, content: string) => {
   try {
     const currentTransporter = getTransporter();
+    const fromUser = process.env.SMTP_USER || env.SMTP_USER;
+    const from = process.env.SMTP_FROM || `AI Workflow <${fromUser}>`;
     const result = await currentTransporter.sendMail({
-      from: process.env.SMTP_USER || env.SMTP_USER,
+      from,
       to,
       subject,
       html: content

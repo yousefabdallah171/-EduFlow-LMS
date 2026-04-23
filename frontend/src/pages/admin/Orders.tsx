@@ -132,7 +132,11 @@ export const AdminOrders = () => {
                   onClick={() => setStatusFilter(filter)}
                   type="button"
                 >
-                  {filter === "ALL" ? copy.orders.allOrders : isAr ? t(`orders.status.${filter.toLowerCase()}`) : filter}
+                  {filter === "ALL"
+                    ? copy.orders.allOrders
+                    : isAr
+                      ? t(`orders.status.${String(filter).toLowerCase()}`)
+                      : filter}
                 </button>
               ))}
               <button
@@ -176,7 +180,7 @@ export const AdminOrders = () => {
                     <div className="space-y-3">
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant={formatStatusTone(payment.status)}>
-                          {isAr ? t(`orders.status.${payment.status.toLowerCase()}`) : payment.status}
+                          {isAr ? t(`orders.status.${String(payment.status ?? "").toLowerCase()}`) : payment.status}
                         </Badge>
                         <span
                           className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
@@ -227,7 +231,7 @@ export const AdminOrders = () => {
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     {[
-                      { label: copy.common.status, value: isAr ? t(`orders.status.${selectedPayment.status.toLowerCase()}`) : selectedPayment.status },
+                      { label: copy.common.status, value: isAr ? t(`orders.status.${String(selectedPayment.status ?? "").toLowerCase()}`) : selectedPayment.status },
                       { label: copy.common.amount, value: `${formatMoney(selectedPayment.amountPiasters, locale)} ${copy.common.egp}` },
                       { label: copy.orders.date, value: formatDate(selectedPayment.createdAt, locale, { dateStyle: "medium", timeStyle: "short" }) },
                       { label: copy.orders.orderId, value: selectedPayment.id }
