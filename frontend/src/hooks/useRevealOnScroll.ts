@@ -28,7 +28,16 @@ export const useRevealOnScroll = ({ selector, threshold = 0.12, rootMargin = "0p
       { threshold, rootMargin }
     );
 
-    nodes.forEach((node) => observer.observe(node));
+    const viewHeight = window.innerHeight || 0;
+    nodes.forEach((node) => {
+      const rect = node.getBoundingClientRect();
+      const isInViewport = rect.top < viewHeight * 0.92 && rect.bottom > 0;
+      if (isInViewport) {
+        node.classList.add("is-visible");
+        return;
+      }
+      observer.observe(node);
+    });
     return () => observer.disconnect();
   }, [rootMargin, selector, threshold]);
 };

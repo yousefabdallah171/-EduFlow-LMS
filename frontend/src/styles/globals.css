@@ -395,6 +395,16 @@ p {
   contain: strict;
 }
 
+.landing-page {
+  --landing-code-bg: oklch(0.06 0.006 145);
+  --landing-code-bar: oklch(0.095 0.006 145);
+  --landing-code-border: rgba(255,255,255,0.08);
+  --landing-code-divider: rgba(255,255,255,0.07);
+  --landing-code-text: oklch(0.93 0.008 145);
+  --landing-code-muted: oklch(0.70 0.01 145);
+  --landing-code-subtle: rgba(255,255,255,0.04);
+}
+
 .landing-section {
   opacity: 0;
   transform: translate3d(0, 22px, 0);
@@ -626,8 +636,8 @@ p {
   position: relative;
   overflow: hidden;
   border-radius: 18px;
-  background: color-mix(in oklab, var(--color-invert) 10%, var(--color-surface));
-  border: 1px solid color-mix(in oklab, var(--color-text-primary) 10%, transparent);
+  background: var(--landing-code-bg);
+  border: 1px solid var(--landing-code-border);
   box-shadow: var(--shadow-elevated), 0 0 0 1px color-mix(in oklab, white 4%, transparent);
   animation: eduflow-landing-float 7s ease-in-out infinite;
   will-change: transform;
@@ -655,8 +665,8 @@ p {
   justify-content: space-between;
   gap: 16px;
   padding: 11px 16px;
-  background: color-mix(in oklab, var(--color-surface-2) 92%, transparent);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--landing-code-bar);
+  border-bottom: 1px solid var(--landing-code-divider);
 }
 
 .landing-window-dots {
@@ -682,7 +692,7 @@ p {
 }
 
 .landing-filename {
-  color: var(--color-text-muted);
+  color: var(--landing-code-muted);
   font-size: 11px;
   font-weight: 800;
 }
@@ -713,9 +723,12 @@ p {
 }
 
 .landing-live-text {
-  color: color-mix(in oklab, var(--color-brand) 84%, var(--color-text-primary));
+  color: color-mix(in oklab, var(--color-brand) 84%, var(--landing-code-text));
   font-size: 10px;
   font-weight: 900;
+}
+
+[dir="ltr"] .landing-live-text {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -727,12 +740,12 @@ p {
 
 .landing-line-numbers {
   padding: 20px 0 20px 8px;
-  border-inline-end: 1px solid var(--color-border);
+  border-inline-end: 1px solid var(--landing-code-divider);
   user-select: none;
 }
 
 .landing-line-number {
-  color: var(--color-text-muted);
+  color: color-mix(in oklab, var(--landing-code-muted) 92%, transparent);
   font-size: 12px;
   line-height: 1.9;
   text-align: end;
@@ -749,7 +762,7 @@ p {
   display: block;
   opacity: 0;
   white-space: pre;
-  color: color-mix(in oklab, var(--color-text-primary) 92%, white);
+  color: var(--landing-code-text);
   font-size: 13px;
   line-height: 1.9;
   overflow: hidden;
@@ -758,7 +771,7 @@ p {
 }
 
 .landing-code-line:hover {
-  background: color-mix(in oklab, var(--color-text-primary) 4%, transparent);
+  background: var(--landing-code-subtle);
 }
 
 .landing-code-lines.is-writing .landing-code-line {
