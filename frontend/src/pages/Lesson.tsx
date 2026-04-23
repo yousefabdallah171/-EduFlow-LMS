@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { VideoPlayer } from "@/components/shared/VideoPlayer";
 import { ResourcesList } from "@/components/student/ResourcesList";
+import { SkeletonLessonDetail } from "@/components/skeletons";
 import { Progress } from "@/components/ui/progress";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { useVideoToken } from "@/hooks/useVideoToken";
@@ -254,7 +255,13 @@ export const Lesson = () => {
       );
     }
 
-    return loadingState(t("lesson.loading"));
+    return (
+      <div className="min-h-dvh px-6 py-10" style={{ backgroundColor: "var(--color-page)" }}>
+        <div className="mx-auto w-full max-w-6xl">
+          <SkeletonLessonDetail />
+        </div>
+      </div>
+    );
   }
 
   const lessonProgress = lessonQuery.data.progress ?? {

@@ -3,6 +3,8 @@ import { BookOpen, Layers3, LockKeyhole, Sparkles, TriangleAlert } from "lucide-
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 
+import { SkeletonLessonCard } from "@/components/skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionGroup } from "@/components/student/SectionGroup";
@@ -99,9 +101,44 @@ export const Lessons = () => {
         </div>
 
         {isLoading ? (
-          <div className="dashboard-panel rounded-3xl p-12 text-center">
-            <p style={{ color: "var(--color-text-muted)" }}>{t("common.loading")}</p>
-          </div>
+          <section aria-label={t("common.loading")}>
+            <div className="dashboard-panel rounded-[26px] p-5">
+              <Skeleton className="h-4 w-44 rounded-lg" />
+              <Skeleton className="mt-3 h-4 w-8/12 rounded-lg" />
+            </div>
+
+            <div className="mt-6 grid gap-6">
+              {[0, 1].map((index) => (
+                <div
+                  key={index}
+                  className="overflow-hidden rounded-[30px] border shadow-card"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 98%, white), color-mix(in oklab, var(--color-surface-2) 86%, transparent))",
+                    borderColor: "var(--color-border)"
+                  }}
+                  aria-hidden="true"
+                >
+                  <div className="flex items-center justify-between gap-4 p-5 sm:p-6">
+                    <div className="flex items-start gap-4">
+                      <Skeleton className="h-12 w-12 rounded-2xl" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-6 w-56 rounded-xl" />
+                        <Skeleton className="h-4 w-40 rounded-lg" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-6 w-6 rounded-full" />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 border-t p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3" style={{ borderColor: "var(--color-border)" }}>
+                    <SkeletonLessonCard />
+                    <SkeletonLessonCard />
+                    <SkeletonLessonCard />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         ) : !isEnrolled ? (
           <div className="dashboard-panel rounded-3xl p-12 text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand)" }}>

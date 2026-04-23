@@ -4,6 +4,7 @@ import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "re
 import { isAccessTokenExpiringSoon, refreshAccessToken } from "@/lib/api";
 import { isDemoMode } from "@/lib/demo";
 import { hasStoredRefreshFlag, useAuthStore } from "@/stores/auth.store";
+import { SkeletonFullPage } from "@/components/skeletons";
 
 const Landing = lazy(async () => import("@/pages/Landing").then((module) => ({ default: module.Landing })));
 const Register = lazy(async () => import("@/pages/Register").then((module) => ({ default: module.Register })));
@@ -228,9 +229,7 @@ const RequireRole = ({ role, children }: { role: "ADMIN" | "STUDENT"; children: 
 export const AppRoutes = () => (
   <Suspense
     fallback={
-      <div className="flex min-h-dvh items-center justify-center" style={{ backgroundColor: "var(--color-page)" }}>
-        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>Loading…</p>
-      </div>
+      <SkeletonFullPage />
     }
   >
     <Routes>
