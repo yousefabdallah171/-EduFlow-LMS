@@ -1,51 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
+import { CheckCircle2, Sparkles } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
-import { Skeleton } from "@/components/ui/skeleton";
-import { api } from "@/lib/api";
-
-type CoursePackage = {
-  id: string;
-  titleEn: string;
-  titleAr: string;
-  descriptionEn?: string | null;
-  descriptionAr?: string | null;
-  priceEgp: number;
-  currency: string;
-};
-
-const packageFallbacks: CoursePackage[] = [
-  {
-    id: "core-course",
-    titleEn: "AI Workflow Course",
-    titleAr: "كورس AI Workflow",
-    descriptionEn: "The full 7-phase workflow with lifetime access and future updates.",
-    descriptionAr: "الـ workflow الكامل في ٧ مراحل مع وصول دائم وتحديثات مستقبلية.",
-    priceEgp: 1000,
-    currency: "EGP"
-  },
-  {
-    id: "course-review-session",
-    titleEn: "Course + Review Session",
-    titleAr: "الكورس + جلسة مراجعة",
-    descriptionEn: "Everything in the course plus one private project review session.",
-    descriptionAr: "كل محتوى الكورس بالإضافة إلى جلسة مراجعة خاصة لمشروعك.",
-    priceEgp: 2500,
-    currency: "EGP"
-  }
-];
-
-const features = [
-  "الـ workflow الكامل من الفكرة إلى الـ production",
-  "PRD وSpec Kit وClaude Code وCodex",
-  "اتجاه UI قبل الكود بدل التنفيذ العشوائي",
-  "مراجعة كود واختبارات E2E",
-  "أمان وأداء وSEO وتتبع",
-  "Docker وProduction وCI/CD",
-  "مشاهدة محمية وتقدم محفوظ",
-  "تحديثات مستقبلية بدون اشتراك"
-];
+import { LandingPricingSection } from "@/components/landing/LandingPricingSection";
 
 const copy = {
   ar: {
@@ -97,20 +53,6 @@ export const Pricing = () => {
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const isAr = locale !== "en";
   const text = isAr ? copy.ar : copy.en;
-  const [packages, setPackages] = useState<CoursePackage[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    void api
-      .get<{ priceEgp: number; currency: string; packages?: CoursePackage[] }>("/course")
-      .then((response) => {
-        setPackages(response.data.packages?.length ? response.data.packages : packageFallbacks);
-      })
-      .catch(() => setPackages(packageFallbacks))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const visiblePackages = useMemo(() => (packages.length ? packages : packageFallbacks).slice(0, 2), [packages]);
 
   return (
     <main className="reference-page">
@@ -147,67 +89,7 @@ export const Pricing = () => {
           ))}
         </section>
 
-        {loading ? (
-          <div className="reference-grid">
-            <Skeleton className="h-[520px] rounded-[18px]" />
-            <Skeleton className="h-[520px] rounded-[18px]" />
-          </div>
-        ) : (
-          <div className="reference-grid">
-            {visiblePackages.map((coursePackage, index) => {
-              const featured = index === 0;
-              return (
-                <article
-                  className={`reference-card pricing-card-reference ${featured ? "reference-card--lime featured" : "reference-card--amber"}`}
-                  key={coursePackage.id}
-                >
-                  {featured ? (
-                    <span className="reference-chip self-start">{text.recommended}</span>
-                  ) : (
-                    <span className="reference-chip self-start">{text.reviewTrack}</span>
-                  )}
-                  <h2 className="mt-5 font-display text-2xl font-black">
-                    {isAr ? coursePackage.titleAr : coursePackage.titleEn}
-                  </h2>
-                  <p className="mt-2 min-h-[56px] leading-8" style={{ color: "var(--color-text-secondary)" }}>
-                    {isAr ? coursePackage.descriptionAr : coursePackage.descriptionEn}
-                  </p>
-
-                  <div className="pricing-price">
-                    {coursePackage.priceEgp.toLocaleString(isAr ? "ar-EG" : "en-US")}
-                    <span className="ms-2 text-base font-black">{isAr ? "جنيه" : "EGP"}</span>
-                  </div>
-                  <p className="m-0 text-sm font-bold" style={{ color: "var(--color-text-muted)" }}>
-                    {text.oneTime}
-                  </p>
-
-                  <ul className="pricing-features">
-                    {features.map((feature) => (
-                      <li key={feature}>{feature}</li>
-                    ))}
-                  </ul>
-
-                  <div className="mt-auto rounded-xl p-4" style={{ backgroundColor: "var(--color-surface-2)" }}>
-                    <div className="flex items-start gap-3">
-                      <ShieldCheck className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-600" />
-                      <div>
-                        <p className="m-0 text-sm font-black">{text.guaranteeTitle}</p>
-                        <p className="m-0 mt-1 text-xs leading-6" style={{ color: "var(--color-text-muted)" }}>
-                          {text.guaranteeBody}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Link className="reference-button mt-6 w-full" to={`${prefix}/checkout?package=${coursePackage.id}`}>
-                    {text.reserve}
-                    <ArrowLeft className="h-4 w-4" />
-                  </Link>
-                </article>
-              );
-            })}
-          </div>
-        )}
+        <LandingPricingSection forceVisible prefix={prefix} showHeader={false} />
 
         <section className="reference-card mt-12 p-6 md:p-8">
           <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">

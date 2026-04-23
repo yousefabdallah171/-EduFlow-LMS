@@ -1,6 +1,9 @@
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+
+import { api } from "@/lib/api";
 
 type PricingCard = {
   id: string;
@@ -21,12 +24,35 @@ type PricingCard = {
   ctaDisabled?: string;
 };
 
-export const LandingPricingSection = ({ prefix }: { prefix: string }) => {
-  const { t } = useTranslation();
+type CoursePackage = { id: string; priceEgp: number; currency: string };
+
+export const LandingPricingSection = ({
+  prefix,
+  showHeader = true,
+  forceVisible = false
+}: {
+  prefix: string;
+  showHeader?: boolean;
+  forceVisible?: boolean;
+}) => {
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
 
   const titleLines = t("landing.pricing.titleLines", { returnObjects: true }) as string[];
-  const trust = t("landing.pricing.trust", { returnObjects: true }) as string[];
   const cards = t("landing.pricing.cards", { returnObjects: true }) as PricingCard[];
+  const trust = t("landing.pricing.trust", { returnObjects: true }) as string[];
+
+  const courseQuery = useQuery({
+    queryKey: ["course-public"],
+    queryFn: async () => {
+      const response = await api.get<{ packages?: CoursePackage[] }>("/course");
+      return response.data;
+    },
+    staleTime: 60_000
+  });
+
+  const packages = courseQuery.data?.packages ?? [];
+  const byId = new Map(packages.map((pkg) => [pkg.id, pkg] as const));
 
   const starter = cards.find((card) => card.variant === "starter");
   const featured = cards.find((card) => card.variant === "featured");
@@ -35,19 +61,25 @@ export const LandingPricingSection = ({ prefix }: { prefix: string }) => {
   const ordered = [starter, featured, vip].filter(Boolean) as PricingCard[];
 
   return (
-    <section className="landing-section landing-pricing" id="pricing" data-landing-section>
-      <div className="section-header">
-        <div className="landing-eyebrow landing-reveal">
-          <span className="landing-eyebrow-dot" aria-hidden="true" />
-          <span className="landing-eyebrow-text">{t("landing.pricing.eyebrow")}</span>
+    <section
+      className={["landing-section", "landing-pricing", forceVisible ? "is-visible" : ""].join(" ")}
+      id="pricing"
+      data-landing-section
+    >
+      {showHeader ? (
+        <div className="section-header">
+          <div className="landing-eyebrow landing-reveal">
+            <span className="landing-eyebrow-dot" aria-hidden="true" />
+            <span className="landing-eyebrow-text">{t("landing.pricing.eyebrow")}</span>
+          </div>
+          <h2 className="landing-section-title landing-reveal">
+            {titleLines[0]}
+            <br />
+            <span className="accent-word">{titleLines[1]}</span> {titleLines[2]}
+          </h2>
+          <p className="landing-section-subtitle landing-reveal">{t("landing.pricing.subtitle")}</p>
         </div>
-        <h2 className="landing-section-title landing-reveal">
-          {titleLines[0]}
-          <br />
-          <span className="accent-word">{titleLines[1]}</span> {titleLines[2]}
-        </h2>
-        <p className="landing-section-subtitle landing-reveal">{t("landing.pricing.subtitle")}</p>
-      </div>
+      ) : null}
 
       <div className="landing-guarantee landing-reveal">
         <div className="landing-guarantee-badge">{t("landing.pricing.guarantee.badge")}</div>
@@ -61,6 +93,10 @@ export const LandingPricingSection = ({ prefix }: { prefix: string }) => {
         {ordered.map((card, index) => {
           const featuredCard = card.variant === "featured";
           const soldOut = card.variant === "vip";
+          const pkg = byId.get(card.id);
+          const resolvedCurrency = pkg?.currency ?? card.currency;
+          const currencyLabel = isAr && resolvedCurrency === "EGP" ? "جنيه" : resolvedCurrency;
+          const resolvedPrice = pkg?.priceEgp != null ? pkg.priceEgp.toLocaleString(isAr ? "ar-EG" : "en-US") : card.price;
 
           return (
             <article
@@ -111,9 +147,9 @@ export const LandingPricingSection = ({ prefix }: { prefix: string }) => {
                 <div className="landing-pricing-old">{card.oldPrice}</div>
                 <div className="landing-pricing-row">
                   <span className="landing-pricing-value" dir="ltr">
-                    {card.price}
+                    {resolvedPrice}
                   </span>
-                  <span className="landing-pricing-currency">{card.currency}</span>
+                  <span className="landing-pricing-currency">{currencyLabel}</span>
                 </div>
                 <span className="landing-pricing-save">{card.savePill}</span>
                 {card.priceNote ? <span className="landing-pricing-note">{card.priceNote}</span> : null}
@@ -163,4 +199,3 @@ export const LandingPricingSection = ({ prefix }: { prefix: string }) => {
     </section>
   );
 };
-
