@@ -45,6 +45,79 @@
       "pills": ["Spec Kit", "Composer", "task size: focused"]
     }
   ],
+  "landing.curriculum.eyebrow": "Course content (full map)",
+  "landing.curriculum.titleLines": ["What will you learn", "across the", "7 phases?"],
+  "landing.curriculum.subtitle": "Not vague headlines or theory. This is the full course map—from planning to a live project on a server that deploys automatically.",
+  "landing.curriculum.kicker": "FROM IDEA TO PRODUCTION",
+  "landing.curriculum.introText": "Every phase has a clear goal, specific tools, and a real output you ship. After the course you won’t just understand the workflow—you’ll be able to apply it to your project immediately.",
+  "landing.curriculum.metaPills": ["7 sequential phases", "Templates + prompts + execution", "From PRD to CI/CD"],
+  "landing.curriculum.cards": [
+    {
+      "accent": "lime",
+      "number": "01",
+      "badge": "Planning",
+      "title": "Before you write a line of code",
+      "body": "Turn any idea into a complete planning document + technical map that the AI can follow from the first conversation—without guessing or drifting.",
+      "tags": ["PRD", "Scope", "Technical Map"],
+      "output": "A complete PRD + a clear execution direction"
+    },
+    {
+      "accent": "orange",
+      "number": "02",
+      "badge": "Design",
+      "title": "Full UI before code",
+      "body": "Generate real HTML screens with Stitch, then convert them into real components—no time wasted between mockups and mismatched code.",
+      "tags": ["Stitch", "HTML Screens", "Components"],
+      "output": "All screens ready to become working code"
+    },
+    {
+      "accent": "blue",
+      "number": "03",
+      "badge": "Implementation",
+      "title": "A cheap model that builds correctly",
+      "body": "With a clear spec, the AI doesn’t need to “think”. Build fast, reduce token usage, and ship features that actually connect together.",
+      "tags": ["Spec Kit", "Tasks", "Cheap Model"],
+      "output": "Frontend + backend working on real data"
+    },
+    {
+      "accent": "purple",
+      "number": "04",
+      "badge": "Review",
+      "title": "Claude reviews, another model executes",
+      "body": "Know when to let Claude produce a review + TODO list, and when to let another model write E2E tests—so you move fast without dropping quality.",
+      "tags": ["Code Review", "TODO List", "E2E Tests"],
+      "output": "Cleaner code + critical paths covered by tests"
+    },
+    {
+      "accent": "red",
+      "number": "05",
+      "badge": "Security + Performance",
+      "title": "Fast and secure before anyone sees it",
+      "body": "A full security audit + performance tuning to Lighthouse 90+, so the project is production-ready before launch.",
+      "tags": ["Security Audit", "Lighthouse", "Fixes"],
+      "output": "Faster product + fewer vulnerabilities + higher confidence"
+    },
+    {
+      "accent": "teal",
+      "number": "06",
+      "badge": "SEO + Marketing",
+      "title": "Get traffic and track conversion",
+      "body": "Technical SEO + Meta Pixel + GA4, so the product is not only working—but measurable and ready for traffic and conversions.",
+      "tags": ["SEO", "Meta Pixel", "GA4"],
+      "output": "Google-ready site + correct tracking"
+    },
+    {
+      "accent": "amber",
+      "number": "07",
+      "badge": "Docker + Production",
+      "title": "Live project with automatic updates",
+      "body": "Docker containers + CI/CD + server deploy. This closes the loop: from an idea in your head to a live product that updates with every push.",
+      "tags": ["Docker", "CI/CD", "Deploy", "Live Project"],
+      "output": "A live project + a complete code-to-production pipeline",
+      "wide": true
+    }
+  ],
+  "landing.curriculum.footerMicro": "Not just an AI course. A complete workflow you can reuse on every project.",
   "actions.apply": "Apply",
   "actions.cancel": "Cancel",
   "actions.confirm": "Confirm",

@@ -45,6 +45,79 @@
       "pills": ["Spec Kit", "Composer", "task size: focused"]
     }
   ],
+  "landing.curriculum.eyebrow": "محتوى الكورس بالتفصيل",
+  "landing.curriculum.titleLines": ["هتتعلم إيه", "في الـ", "7 مراحل؟"],
+  "landing.curriculum.subtitle": "مش عناوين عامة ولا كلام نظري. دي خريطة الكورس كاملة من أول التخطيط لحد ما المشروع يبقى live على السيرفر ويتحدث أوتوماتيك.",
+  "landing.curriculum.kicker": "FROM IDEA TO PRODUCTION",
+  "landing.curriculum.introText": "كل مرحلة فيها هدف واضح، أدوات محددة، وـ output حقيقي يطلع بإيدك في الآخر. يعني بعد الكورس مش هتبقى فاهم الـ workflow بس، هتبقى قادر تطبقه على مشروعك فورًا.",
+  "landing.curriculum.metaPills": ["7 مراحل متسلسلة", "Templates + prompts + execution", "من PRD لحد CI/CD"],
+  "landing.curriculum.cards": [
+    {
+      "accent": "lime",
+      "number": "01",
+      "badge": "التخطيط",
+      "title": "قبل ما تكتب سطر كود",
+      "body": "إزاي تحول أي فكرة لمستند تخطيط كامل + خريطة تقنية يشتغل عليها الـ AI من أول محادثة من غير تخمين أو لف ودوران.",
+      "tags": ["PRD", "Scope", "Technical Map"],
+      "output": "PRD كامل + اتجاه تنفيذي واضح"
+    },
+    {
+      "accent": "orange",
+      "number": "02",
+      "badge": "التصميم",
+      "title": "الـ UI كامل قبل الكود",
+      "body": "تطلع كل شاشات المشروع HTML حقيقي من Stitch، وبعدها تحولها لـ components فعلية بدل ما تضيع وقتك بين mockups وكود مش متطابق.",
+      "tags": ["Stitch", "HTML Screens", "Components"],
+      "output": "كل الشاشات جاهزة للتحويل لكود شغال"
+    },
+    {
+      "accent": "blue",
+      "number": "03",
+      "badge": "التنفيذ",
+      "title": "موديل رخيص يبني صح",
+      "body": "لما الـ Spec يبقى واضح، الـ AI مش محتاج يفكر. هنا بتتعلم تبني بسرعة، تقلل استهلاك الـ tokens، وتطلع features مربوطة ببعض فعلاً.",
+      "tags": ["Spec Kit", "Tasks", "Cheap Model"],
+      "output": "Frontend + backend شغالين على بيانات حقيقية"
+    },
+    {
+      "accent": "purple",
+      "number": "04",
+      "badge": "المراجعة",
+      "title": "Claude يراجع وموديل تاني ينفذ",
+      "body": "تعرف إمتى تخلّي Claude يعمل review ويطلع TODO list، وإمتى تسيب موديل تاني يكتب الـ E2E tests عشان تمشي بسرعة من غير ما الجودة تقع.",
+      "tags": ["Code Review", "TODO List", "E2E Tests"],
+      "output": "كود أنضف + critical paths متغطية بالاختبارات"
+    },
+    {
+      "accent": "red",
+      "number": "05",
+      "badge": "الأمان والأداء",
+      "title": "سريع وآمن قبل ما الناس تشوفه",
+      "body": "Security audit كامل + ضبط الأداء لحد Lighthouse 90+، عشان المشروع يطلع production-ready بدل ما تكتشف المشاكل بعد النشر.",
+      "tags": ["Security Audit", "Lighthouse", "Fixes"],
+      "output": "مشروع أسرع + أقل ثغرات + ثقة أعلى قبل الإطلاق"
+    },
+    {
+      "accent": "teal",
+      "number": "06",
+      "badge": "SEO والـ Marketing",
+      "title": "جيب زوار وتتبّع التحويل",
+      "body": "SEO تقني كامل + Meta Pixel + GA4، بحيث المشروع ما يبقاش شغال بس، لكن كمان قابل للقياس وجاهز يجيب traffic وconversions.",
+      "tags": ["SEO", "Meta Pixel", "GA4"],
+      "output": "موقع متجهز لـ Google + tracking شغال صح"
+    },
+    {
+      "accent": "amber",
+      "number": "07",
+      "badge": "Docker + Production",
+      "title": "المشروع live ويتحدث أوتوماتيك",
+      "body": "Docker containers + CI/CD + deploy على السيرفر. دي المرحلة اللي بتقفل الدايرة: من فكرة كانت في دماغك لمشروع شغال على الإنترنت ويتحدث مع كل push.",
+      "tags": ["Docker", "CI/CD", "Deploy", "Live Project"],
+      "output": "مشروع live + pipeline كاملة من الكود للـ production",
+      "wide": true
+    }
+  ],
+  "landing.curriculum.footerMicro": "مش مجرد كورس AI. دي طريقة شغل كاملة تمشي بيها على أي مشروع بعد كده.",
   "actions.apply": "تطبيق",
   "actions.cancel": "إلغاء",
   "actions.confirm": "تأكيد",

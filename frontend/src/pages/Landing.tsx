@@ -1,14 +1,8 @@
-import { useMemo } from "react";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import {
   ArrowLeft,
-  Cpu,
-  FileText,
-  Layers3,
-  Rocket,
   Search,
   ShieldCheck,
-  TestTube2
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
@@ -19,8 +13,7 @@ import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import { LandingHero } from "@/components/landing/LandingHero";
 import { LandingAudience } from "@/components/landing/LandingAudience";
 import { LandingWorkflowSection } from "@/components/landing/LandingWorkflowSection";
-
-const phaseIcons = [FileText, Layers3, Cpu, TestTube2, ShieldCheck, Search, Rocket] as const;
+import { LandingCourseContentSection } from "@/components/landing/LandingCourseContentSection";
 
 const landingCopy = {
   ar: {
@@ -150,7 +143,6 @@ export const Landing = () => {
   const copy = landingCopy[resolved];
   const faq = getPublicTrustCopy(resolved).faq;
 
-  const phases = useMemo(() => copy.phases.map((phase, index) => ({ ...phase, icon: phaseIcons[index] ?? Rocket })), [copy.phases]);
   useRevealOnScroll({ selector: "[data-landing-section]" });
 
   return (
@@ -160,60 +152,7 @@ export const Landing = () => {
         <LandingHero prefix={prefix} isAr={isAr} />
         <LandingAudience isAr={isAr} />
         <LandingWorkflowSection />
-
-        <section className="mt-12">
-          <header className="text-center">
-            <span className="reference-badge">
-              <span className="reference-dot" aria-hidden="true" />
-              {copy.phasesBadge}
-            </span>
-            <h2 className="mt-5 font-display text-3xl font-black tracking-tight md:text-5xl">
-              {copy.phasesTitle} <span className="accent-word">{copy.phasesAccent}</span>
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl leading-8" style={{ color: "var(--color-text-secondary)" }}>
-              {isAr ? "كل مرحلة لها outputs واضحة + تطبيق عملي." : "Each phase has clear outputs and hands-on practice."}
-            </p>
-          </header>
-
-          <div className="mt-8 grid gap-3 lg:grid-cols-2">
-            {phases.map((phase) => {
-              const Icon = phase.icon;
-              return (
-                <div className="reference-card p-6" key={phase.title}>
-                  <div className="flex items-start gap-4">
-                    <span
-                      className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-2xl text-brand-600"
-                      style={{ backgroundColor: "var(--color-brand-muted)" }}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-text-muted)" }}>
-                        {phase.label}
-                      </p>
-                      <p className="mt-2 text-base font-black" style={{ color: "var(--color-text-primary)" }}>
-                        {phase.title}
-                      </p>
-                      <p className="mt-2 text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>
-                        {phase.body}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link className="reference-button" to={`${prefix}/pricing`}>
-              {isAr ? "شوف الباقات" : "See packages"}
-              <ArrowLeft className="icon-dir h-4 w-4" />
-            </Link>
-            <Link className="reference-button-secondary" to={`${prefix}/roadmap`}>
-              {isAr ? "شوف الـ Roadmap" : "Open roadmap"}
-            </Link>
-          </div>
-        </section>
+        <LandingCourseContentSection />
 
         <section className="mt-12">
           <header className="text-center">
