@@ -1,6 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../config/database.js";
+import { env } from "../config/env.js";
+import { sendTicketCreatedEmail } from "../utils/email.js";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -51,6 +53,13 @@ async function submit(req: Request, res: Response, next: NextFunction) {
       },
       include: { messages: true }
     });
+
+    try {
+      await sendTicketCreatedEmail(user.email, user.fullName, ticket.id, ticket.subject, message, `${env.FRONTEND_URL}/help`);
+    } catch (emailError) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to send contact ticket email:", emailError);
+    }
 
     res.json({ ok: true, ticketId: ticket.id });
   } catch (error) {

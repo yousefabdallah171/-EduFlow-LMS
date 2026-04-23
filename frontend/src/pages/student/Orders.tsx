@@ -112,7 +112,7 @@ export const StudentOrders = () => {
                     <td className="px-5 py-4">
                       <Badge variant={statusVariant(order.status)} className="gap-1">
                         {order.status === "COMPLETED" ? <CircleCheckBig className="h-3.5 w-3.5" /> : null}
-                        {t(`payments.${order.status.toLowerCase()}`) || order.status}
+                        {t(`payments.${String(order.status ?? "").toLowerCase()}`) || order.status}
                       </Badge>
                     </td>
                   </tr>

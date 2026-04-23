@@ -124,11 +124,11 @@ export const NavBar = () => {
                   boxShadow: "0 10px 24px rgba(163,230,53,0.22)"
                 }}
               >
-                AI
+                YA
               </span>
               <span className="min-w-0">
                 <span className="font-display block truncate text-sm font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-                  AI Workflow
+                  {t("app.title")}
                 </span>
                 <span className="hidden truncate text-[11px] leading-tight sm:block" style={{ color: "var(--color-text-muted)" }}>
                   {t("app.subtitle")}

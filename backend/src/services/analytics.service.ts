@@ -1,5 +1,10 @@
 import { prisma } from "../config/database.js";
 import { redis } from "../config/redis.js";
+import { env } from "../config/env.js";
+import { paymentService } from "./payment.service.js";
+import { enrollmentService } from "./enrollment.service.js";
+import { userRepository } from "../repositories/user.repository.js";
+import { sendEnrollmentActivatedEmail, sendPaymentReceiptEmail } from "../utils/email.js";
 
 type AnalyticsPeriod = "7d" | "30d" | "90d" | "all";
 
@@ -397,28 +402,29 @@ export const analyticsService = {
       }
     });
 
-    const enrollment = existingEnrollment
-      ? await prisma.enrollment.update({
-          where: { userId: payment.userId },
-          data: {
-            status: "ACTIVE",
-            enrollmentType: "PAID",
-            paymentId: payment.id,
-            revokedAt: null,
-            revokedById: null,
-            enrolledAt: new Date()
-          }
-        })
-      : await prisma.enrollment.create({
-          data: {
-            userId: payment.userId,
-            status: "ACTIVE",
-            enrollmentType: "PAID",
-            paymentId: payment.id
-          }
-        });
+    const enrollment = await enrollmentService.enroll(payment.userId, "PAID", payment.id);
+    await paymentService.invalidatePaymentHistoryCache(payment.userId);
 
     await analyticsService.invalidateCache();
+
+    try {
+      const student = await userRepository.findById(payment.userId);
+      if (student) {
+        await sendPaymentReceiptEmail({
+          to: student.email,
+          fullName: student.fullName,
+          paymentId: updatedPayment.id,
+          amountEgp: updatedPayment.amountPiasters / 100,
+          currency: updatedPayment.currency,
+          purchasedAt: updatedPayment.createdAt,
+          dashboardUrl: `${env.FRONTEND_URL}/dashboard`
+        });
+        await sendEnrollmentActivatedEmail(student.email, student.fullName, `${env.FRONTEND_URL}/dashboard`);
+      }
+    } catch (emailError) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to send payment/enrollment email:", emailError);
+    }
 
     return {
       payment: updatedPayment,

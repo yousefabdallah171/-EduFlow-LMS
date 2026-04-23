@@ -15,6 +15,7 @@ router.get("/oauth/google/callback", authController.googleCallback);
 router.post("/refresh", refreshRateLimit, authController.refresh);
 router.post("/logout", authController.logout);
 router.post("/forgot-password", authRateLimit, authController.forgotPassword);
+router.post("/resend-verification", authRateLimit, authController.resendVerification);
 router.post("/reset-password", authRateLimit, authController.resetPassword);
 router.get("/verify-email", authController.verifyEmail);
 

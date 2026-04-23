@@ -27,8 +27,8 @@ export const adminSettingsController = {
         update: data,
         create: {
           id: 1,
-          titleEn: data.titleEn ?? "AI Workflow: From Idea to Production",
-          titleAr: data.titleAr ?? "AI Workflow: من الفكرة إلى الـ Production",
+          titleEn: data.titleEn ?? "Yousef Abdallah Course: From Idea to Production",
+          titleAr: data.titleAr ?? "كورس يوسف عبدالله: من الفكرة إلى الـ Production",
           pricePiasters: 0,
           ...data
         }

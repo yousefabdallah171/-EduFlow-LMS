@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MessageCircle, Send, ShieldCheck, Sparkles } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -7,15 +7,31 @@ import { resolveLocale } from "@/lib/locale";
 import { api } from "@/lib/api";
 import { contactInfo } from "@/lib/public-page-content";
 import { getPublicTrustCopy } from "@/lib/public-trust-copy";
+import { useAuthStore } from "@/stores/auth.store";
 
 export const Contact = () => {
   const { locale } = useParams();
   const resolved = resolveLocale(locale);
   const copy = getPublicTrustCopy(resolved).contact;
   const isAr = resolved === "ar";
+  const { user } = useAuthStore();
 
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    setForm((prev) => ({
+      ...prev,
+      name: prev.name || user.fullName || "",
+      email: prev.email || user.email || ""
+    }));
+  }, [user]);
+
+  const signedInLabel = useMemo(() => {
+    if (!user?.email) return "";
+    return isAr ? `مسجل الدخول: ${user.email}` : `Signed in as: ${user.email}`;
+  }, [isAr, user?.email]);
 
   const validationMessages = {
     nameRequired: isAr ? "الاسم مطلوب" : "Name is required",
@@ -30,13 +46,16 @@ export const Contact = () => {
     setSending(true);
 
     try {
-      if (!form.name.trim()) { toast.error(validationMessages.nameRequired); return; }
-      if (!form.email.trim()) { toast.error(validationMessages.emailRequired); return; }
-      if (form.name.trim().length < 2) { toast.error(validationMessages.nameShort); return; }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) { toast.error(validationMessages.emailInvalid); return; }
+      const name = (user?.fullName ?? form.name).trim();
+      const email = (user?.email ?? form.email).trim();
+
+      if (!name) { toast.error(validationMessages.nameRequired); return; }
+      if (!email) { toast.error(validationMessages.emailRequired); return; }
+      if (name.length < 2) { toast.error(validationMessages.nameShort); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast.error(validationMessages.emailInvalid); return; }
       if (form.message.trim().length < 10) { toast.error(validationMessages.messageShort); return; }
 
-      await api.post("/contact", { name: form.name.trim(), email: form.email.trim(), message: form.message.trim() });
+      await api.post("/contact", { name, email, message: form.message.trim() });
       toast.success(copy.success);
       setForm({ name: "", email: "", message: "" });
     } catch (err: unknown) {
@@ -114,22 +133,28 @@ export const Contact = () => {
             </div>
 
             <form className="space-y-4" onSubmit={(e) => void handleSubmit(e)}>
-              {([
-                { label: copy.name, field: "name" as const, type: "text" as const },
-                { label: copy.email, field: "email" as const, type: "email" as const }
-              ]).map(({ label, field, type }) => (
-                <div key={field}>
-                  <label className="ui-field-label">{label}</label>
-                  <input
-                    required
-                    type={type}
-                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
-                    style={{ backgroundColor: "var(--color-page)", borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
-                    value={form[field]}
-                    onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-                  />
-                </div>
-              ))}
+              {signedInLabel ? (
+                <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                  {signedInLabel}
+                </p>
+              ) : (
+                ([
+                  { label: copy.name, field: "name" as const, type: "text" as const },
+                  { label: copy.email, field: "email" as const, type: "email" as const }
+                ]).map(({ label, field, type }) => (
+                  <div key={field}>
+                    <label className="ui-field-label">{label}</label>
+                    <input
+                      required
+                      type={type}
+                      className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+                      style={{ backgroundColor: "var(--color-page)", borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                      value={form[field]}
+                      onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+                    />
+                  </div>
+                ))
+              )}
 
               <div>
                 <label className="ui-field-label">{copy.message}</label>

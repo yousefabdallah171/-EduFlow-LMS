@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 
-const STATIC_CACHE = "eduflow-static-v1";
-const RUNTIME_CACHE = "eduflow-runtime-v1";
+const STATIC_CACHE = "yousef-course-static-v2";
+const RUNTIME_CACHE = "yousef-course-runtime-v2";
 const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {
@@ -44,6 +44,24 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  let url;
+  try {
+    url = new URL(request.url);
+  } catch {
+    return;
+  }
+
+  // Only handle http(s) requests. Browser extensions often generate non-http(s) requests
+  // (e.g. chrome-extension://...) which CacheStorage does not support.
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    return;
+  }
+
+  // Only handle same-origin requests within the SW scope.
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
   // Navigation: network-first, then offline fallback.
   if (request.mode === "navigate") {
     event.respondWith(
@@ -51,7 +69,11 @@ self.addEventListener("fetch", (event) => {
         try {
           const response = await fetch(request);
           const cache = await caches.open(RUNTIME_CACHE);
-          cache.put("/", response.clone());
+          try {
+            await cache.put("/", response.clone());
+          } catch {
+            // Ignore cache write failures.
+          }
           return response;
         } catch {
           const cached = await caches.match(request);
@@ -71,7 +93,11 @@ self.addEventListener("fetch", (event) => {
         const cache = await caches.open(RUNTIME_CACHE);
         try {
           const response = await fetch(request);
-          cache.put(request, response.clone());
+          try {
+            await cache.put(request, response.clone());
+          } catch {
+            // Ignore cache write failures.
+          }
           return response;
         } catch {
           const cached = await cache.match(request);
@@ -91,7 +117,11 @@ self.addEventListener("fetch", (event) => {
         if (cached) return cached;
         const response = await fetch(request);
         const cache = await caches.open(RUNTIME_CACHE);
-        cache.put(request, response.clone());
+        try {
+          await cache.put(request, response.clone());
+        } catch {
+          // Ignore cache write failures.
+        }
         return response;
       })()
     );

@@ -41,7 +41,7 @@ export const demoLessons = [
 export const demoLessonPlayback = (lessonId: string): LessonPlayback => ({
   id: lessonId,
   title: lessonId === "demo-lesson-2" ? "Spec Kit Execution" : "Planning Before Code",
-  descriptionHtml: "Demo playback fixture for validating the AI Workflow lesson experience locally.",
+  descriptionHtml: "Demo playback fixture for validating the Yousef Abdallah Course lesson experience locally.",
   durationSeconds: lessonId === "demo-lesson-2" ? 900 : 480,
   videoToken: "demo-video-token",
   hlsUrl: "/demo-video.m3u8",

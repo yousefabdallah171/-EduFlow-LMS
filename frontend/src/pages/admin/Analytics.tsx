@@ -289,7 +289,7 @@ export const AdminAnalytics = () => {
                   onClick={() => setStatusFilter(value)}
                   type="button"
                 >
-                  {value ? (isAr ? t(`orders.status.${value.toLowerCase()}`) : value) : copy.common.all}
+                  {value ? (isAr ? t(`orders.status.${String(value).toLowerCase()}`) : value) : copy.common.all}
                 </button>
               ))}
             </div>
@@ -330,7 +330,7 @@ export const AdminAnalytics = () => {
                               className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
                               style={{ backgroundColor: tone.bg, color: tone.color }}
                             >
-                              {isAr ? t(`orders.status.${payment.status.toLowerCase()}`) : payment.status}
+                              {isAr ? t(`orders.status.${String(payment.status ?? "").toLowerCase()}`) : payment.status}
                             </span>
                             {payment.couponCode ? (
                               <span

@@ -8,7 +8,7 @@ import { refreshTokenRepository } from "../repositories/refresh-token.repository
 import { userRepository } from "../repositories/user.repository.js";
 import { videoTokenService } from "./video-token.service.js";
 import { sessionService } from "./session.service.js";
-import { sendPasswordResetEmail, sendVerificationEmail } from "../utils/email.js";
+import { sendPasswordResetEmail, sendVerificationEmail, sendWelcomeEmail } from "../utils/email.js";
 import {
   REFRESH_SESSION_WINDOW_MS,
   REFRESH_SESSION_WINDOW_SECONDS,
@@ -124,7 +124,26 @@ export const authService = {
     });
 
     if (!isDevMode) {
-      await sendVerificationEmail(user.email, user.fullName, verificationUrl(emailVerifyToken));
+      let emailDeliveryFailed = false;
+      try {
+        await sendVerificationEmail(user.email, user.fullName, verificationUrl(emailVerifyToken));
+      } catch (error) {
+        emailDeliveryFailed = true;
+        // eslint-disable-next-line no-console
+        console.error("Verification email send failed:", error);
+      }
+
+      if (emailDeliveryFailed) {
+        return {
+          message:
+            "Registration successful. We could not deliver the verification email right now. Please use 'Resend verification' from the login page in a minute.",
+          user: {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName
+          }
+        };
+      }
     }
 
     return {
@@ -137,6 +156,39 @@ export const authService = {
         fullName: user.fullName
       }
     };
+  },
+
+  async resendVerificationEmail(emailInput: string) {
+    const email = normalizeEmail(emailInput);
+    const user = await userRepository.findByEmail(email);
+
+    // Avoid user enumeration.
+    if (!user) {
+      return { message: "If that email is registered, a verification link has been sent." };
+    }
+
+    if (user.emailVerified) {
+      return { message: "This email address is already verified." };
+    }
+
+    const token = randomToken();
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await userRepository.update(user.id, {
+      emailVerifyToken: token,
+      emailVerifyExpires: expires
+    });
+
+    try {
+      await sendVerificationEmail(user.email, user.fullName, verificationUrl(token));
+    } catch {
+      throw new AuthError(
+        "EMAIL_DELIVERY_FAILED",
+        503,
+        "We could not send the verification email right now. Please try again in a minute."
+      );
+    }
+
+    return { message: "Verification email sent. Please check your inbox." };
   },
 
   async login(input: { email: string; password: string }) {
@@ -245,6 +297,13 @@ export const authService = {
       emailVerifyExpires: null
     });
 
+    try {
+      await sendWelcomeEmail(user.email, user.fullName, `${env.FRONTEND_URL}/dashboard`);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Welcome email send failed:", error);
+    }
+
     return { message: "Email verified. You can now log in." };
   },
 
@@ -259,7 +318,14 @@ export const authService = {
         passwordResetToken,
         passwordResetExpires
       });
-      await sendPasswordResetEmail(user.email, user.fullName, resetUrl(passwordResetToken));
+      try {
+        await sendPasswordResetEmail(user.email, user.fullName, resetUrl(passwordResetToken));
+      } catch {
+        await userRepository.update(user.id, {
+          passwordResetToken: null,
+          passwordResetExpires: null
+        });
+      }
     }
 
     return { message: "If that email is registered, a reset link has been sent." };

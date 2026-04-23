@@ -11,6 +11,7 @@ import { couponService } from "./coupon.service.js";
 import { courseService } from "./course.service.js";
 import { enrollmentService } from "./enrollment.service.js";
 import { prometheus } from "../observability/prometheus.js";
+import { sendEnrollmentActivatedEmail, sendPaymentReceiptEmail } from "../utils/email.js";
 
 class PaymentError extends Error {
   constructor(
@@ -255,6 +256,25 @@ export const paymentService = {
       if (payment.couponId) {
         await couponRepository.incrementUses(payment.couponId);
         await couponService.invalidateCouponCache();
+      }
+
+      try {
+        const student = await userRepository.findById(payment.userId);
+        if (student) {
+          await sendPaymentReceiptEmail({
+            to: student.email,
+            fullName: student.fullName,
+            paymentId: updatedPayment.id,
+            amountEgp: updatedPayment.amountPiasters / 100,
+            currency: updatedPayment.currency,
+            purchasedAt: updatedPayment.createdAt,
+            dashboardUrl: `${env.FRONTEND_URL}/dashboard`
+          });
+          await sendEnrollmentActivatedEmail(student.email, student.fullName, `${env.FRONTEND_URL}/dashboard`);
+        }
+      } catch (emailError) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to send payment/enrollment email:", emailError);
       }
     }
 

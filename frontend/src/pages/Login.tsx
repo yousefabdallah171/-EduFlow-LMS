@@ -1,15 +1,18 @@
-import { type FormEvent, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { type FormEvent, useMemo, useState } from "react";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { AxiosError } from "axios";
 import { useTranslation } from "react-i18next";
 
 import { AuthShell } from "@/components/shared/AuthShell";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
+import { api } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth.store";
 
 export const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { isAuthReady, user } = useAuthStore();
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const { t, i18n } = useTranslation();
@@ -17,20 +20,51 @@ export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [resendMessage, setResendMessage] = useState<string>("");
+  const [isResending, setIsResending] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const canResend = useMemo(() => errorCode === "EMAIL_NOT_VERIFIED" && email.trim().length > 3, [email, errorCode]);
+
+  if (isAuthReady && user) {
+    const target = user.role === "ADMIN" ? `${prefix}/admin/dashboard` : `${prefix}/profile`;
+    return <Navigate replace to={target} />;
+  }
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
     setMessage("");
+    setResendMessage("");
+    setErrorCode(null);
     try {
       const nextUser = await login(email, password);
       navigate(nextUser.role === "ADMIN" ? `${prefix}/admin/dashboard` : `${prefix}/dashboard`, { replace: true });
     } catch (error: unknown) {
-      const apiError = error as AxiosError<{ message?: string }>;
+      const apiError = error as AxiosError<{ message?: string; error?: string }>;
+      const apiStatus = apiError.response?.status;
+      const apiErrorCode = apiError.response?.data?.error ?? null;
+      setErrorCode(apiErrorCode ?? (apiStatus === 403 ? "EMAIL_NOT_VERIFIED" : null));
       setMessage(apiError.response?.data?.message ?? (isAr ? "تعذر تسجيل الدخول. راجع بياناتك وحاول مرة أخرى." : "Login failed. Please try again."));
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const resendVerification = async () => {
+    if (!canResend) return;
+
+    setIsResending(true);
+    setResendMessage("");
+    try {
+      const response = await api.post<{ message: string }>("/auth/resend-verification", { email: email.trim() });
+      setResendMessage(response.data.message);
+    } catch (error: unknown) {
+      const apiError = error as AxiosError<{ message?: string }>;
+      setResendMessage(apiError.response?.data?.message ?? (isAr ? "تعذر إرسال الرابط الآن." : "Could not send the verification email right now."));
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -119,6 +153,22 @@ export const Login = () => {
         {message ? (
           <div className="ui-feedback ui-feedback--danger">
             <p>{message}</p>
+            {canResend ? (
+              <div className="mt-3 flex flex-col gap-2">
+                <button
+                  type="button"
+                  className="rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-surface2 disabled:opacity-50"
+                  style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                  onClick={() => void resendVerification()}
+                  disabled={isResending}
+                >
+                  {isResending ? (isAr ? "جاري الإرسال…" : "Sending…") : (isAr ? "إعادة إرسال رابط التحقق" : "Resend verification email")}
+                </button>
+                {resendMessage ? (
+                  <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{resendMessage}</p>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         ) : null}
 

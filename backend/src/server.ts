@@ -8,5 +8,5 @@ const app = createApp();
 
 app.listen(env.BACKEND_PORT, () => {
   // eslint-disable-next-line no-console
-  console.log(`AI Workflow backend listening on ${env.BACKEND_PORT}`);
+  console.log(`Yousef Abdallah Course backend listening on ${env.BACKEND_PORT}`);
 });
