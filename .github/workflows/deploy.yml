@@ -35,27 +35,19 @@ jobs:
       
       - name: Deploy to server
         env:
-          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
-          
           # Copy frontend build
-          scp -i ~/.ssh/deploy_key -r frontend/dist/* $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/public_html/
-          
+          cp -r frontend/dist/* $DEPLOY_PATH/public_html/
+
           # Copy backend files
-          scp -i ~/.ssh/deploy_key -r backend/src $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/backend/
-          scp -i ~/.ssh/deploy_key backend/package.json $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/backend/
-          scp -i ~/.ssh/deploy_key backend/tsconfig.json $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/backend/
-          scp -i ~/.ssh/deploy_key backend/prisma $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/backend/
-          
+          cp -r backend/src $DEPLOY_PATH/backend/
+          cp backend/package.json $DEPLOY_PATH/backend/
+          cp backend/tsconfig.json $DEPLOY_PATH/backend/
+          cp -r backend/prisma $DEPLOY_PATH/backend/
+
           # Run deployment script on server
-          ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST "bash $DEPLOY_PATH/deploy.sh"
+          bash $DEPLOY_PATH/deploy.sh
       
       - name: Notify deployment
         if: success()
