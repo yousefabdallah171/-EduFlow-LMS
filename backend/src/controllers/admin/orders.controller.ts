@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { PaymentStatus, type Prisma } from "@prisma/client";
 
 import { prisma } from "../../config/database.js";
+import { analyticsService } from "../../services/analytics.service.js";
 
 const firstQueryValue = (value: unknown) => (Array.isArray(value) ? value[0] : value);
 const firstParamValue = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
@@ -58,31 +59,15 @@ export const adminOrdersController = {
       const id = firstParamValue(req.params.id);
       if (!id) { res.status(400).json({ error: "PAYMENT_ID_REQUIRED", message: "Payment ID is required" }); return; }
 
-      const payment = await prisma.payment.findUnique({ where: { id } });
-      if (!payment) { res.status(404).json({ error: "NOT_FOUND", message: "Payment not found" }); return; }
-
-      if (payment.status === "COMPLETED") {
-        res.status(400).json({ error: "ALREADY_PAID", message: "This payment is already marked as completed" });
-        return;
-      }
-
-      const updatedPayment = await prisma.payment.update({
-        where: { id },
-        data: { status: "COMPLETED" }
-      });
-
-      // Create enrollment if not exists
-      const existing = await prisma.enrollment.findUnique({ where: { userId: payment.userId } });
-      if (!existing) {
-        await prisma.enrollment.create({
-          data: { userId: payment.userId, enrollmentType: "PAID", paymentId: payment.id, status: "ACTIVE" }
-        });
-      }
-
-      res.json({ message: "Payment marked as completed", payment: updatedPayment });
+      const result = await analyticsService.markPaymentPaid(id);
+      res.json({ message: "Payment marked as completed", payment: result.payment, enrollment: result.enrollment });
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error("Error marking payment as paid:", e);
+      if (e instanceof analyticsService.AnalyticsError) {
+        res.status(e.status).json({ error: e.code, message: e.message });
+        return;
+      }
       next(e);
     }
   },

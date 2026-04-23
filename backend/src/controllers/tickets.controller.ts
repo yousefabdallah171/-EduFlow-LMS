@@ -1,7 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../config/database.js";
-import { sendTicketReplyEmail } from "../utils/email.js";
+import { env } from "../config/env.js";
+import { sendTicketCreatedEmail, sendTicketReplyEmail } from "../utils/email.js";
 
 const firstParamValue = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
@@ -62,6 +63,26 @@ export const ticketsController = {
         },
         include: { messages: true }
       });
+
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { email: true, fullName: true }
+        });
+        if (user) {
+          await sendTicketCreatedEmail(
+            user.email,
+            user.fullName,
+            ticket.id,
+            ticket.subject,
+            message,
+            `${env.FRONTEND_URL}/help`
+          );
+        }
+      } catch (emailError) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to send ticket created email:", emailError);
+      }
 
       res.status(201).json(ticket);
     } catch (e) {

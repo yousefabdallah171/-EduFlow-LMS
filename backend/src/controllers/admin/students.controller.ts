@@ -5,10 +5,12 @@ import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
 import { prisma } from "../../config/database.js";
+import { env } from "../../config/env.js";
 import { redis } from "../../config/redis.js";
 import { refreshTokenRepository } from "../../repositories/refresh-token.repository.js";
 import { enrollmentService } from "../../services/enrollment.service.js";
 import { videoTokenService } from "../../services/video-token.service.js";
+import { sendEnrollmentActivatedEmail, sendEnrollmentRevokedEmail } from "../../utils/email.js";
 
 const getFirstValue = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
@@ -372,6 +374,14 @@ export const adminStudentsController = {
 
       const enrollment = await enrollmentService.enroll(student.id, "ADMIN_ENROLLED");
       await bumpSearchCacheVersion();
+
+      try {
+        await sendEnrollmentActivatedEmail(student.email, student.fullName, `${env.FRONTEND_URL}/dashboard`);
+      } catch (emailError) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to send enrollment activated email:", emailError);
+      }
+
       res.status(201).json({
         enrollment: enrollmentResponse(enrollment),
         message: "Student enrolled successfully."
@@ -408,6 +418,13 @@ export const adminStudentsController = {
       }
       await videoTokenService.revokeUser(student.id);
       await bumpSearchCacheVersion();
+
+      try {
+        await sendEnrollmentRevokedEmail(student.email, student.fullName, `${env.FRONTEND_URL}/help`);
+      } catch (emailError) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to send enrollment revoked email:", emailError);
+      }
 
       res.json({
         enrollment: enrollmentResponse(enrollment),

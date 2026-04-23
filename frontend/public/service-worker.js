@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 
-const STATIC_CACHE = "eduflow-static-v1";
-const RUNTIME_CACHE = "eduflow-runtime-v1";
+const STATIC_CACHE = "yousef-course-static-v2";
+const RUNTIME_CACHE = "yousef-course-runtime-v2";
 const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {
@@ -54,6 +54,11 @@ self.addEventListener("fetch", (event) => {
   // Only handle http(s) requests. Browser extensions often generate non-http(s) requests
   // (e.g. chrome-extension://...) which CacheStorage does not support.
   if (url.protocol !== "http:" && url.protocol !== "https:") {
+    return;
+  }
+
+  // Only handle same-origin requests within the SW scope.
+  if (url.origin !== self.location.origin) {
     return;
   }
 

@@ -8,7 +8,7 @@ import { refreshTokenRepository } from "../repositories/refresh-token.repository
 import { userRepository } from "../repositories/user.repository.js";
 import { videoTokenService } from "./video-token.service.js";
 import { sessionService } from "./session.service.js";
-import { sendPasswordResetEmail, sendVerificationEmail } from "../utils/email.js";
+import { sendPasswordResetEmail, sendVerificationEmail, sendWelcomeEmail } from "../utils/email.js";
 import {
   REFRESH_SESSION_WINDOW_MS,
   REFRESH_SESSION_WINDOW_SECONDS,
@@ -124,15 +124,25 @@ export const authService = {
     });
 
     if (!isDevMode) {
+      let emailDeliveryFailed = false;
       try {
         await sendVerificationEmail(user.email, user.fullName, verificationUrl(emailVerifyToken));
       } catch (error) {
-        await userRepository.delete(user.id);
-        throw new AuthError(
-          "EMAIL_DELIVERY_FAILED",
-          503,
-          "We could not send the verification email right now. Please try again in a minute."
-        );
+        emailDeliveryFailed = true;
+        // eslint-disable-next-line no-console
+        console.error("Verification email send failed:", error);
+      }
+
+      if (emailDeliveryFailed) {
+        return {
+          message:
+            "Registration successful. We could not deliver the verification email right now. Please use 'Resend verification' from the login page in a minute.",
+          user: {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName
+          }
+        };
       }
     }
 
@@ -286,6 +296,13 @@ export const authService = {
       emailVerifyToken: null,
       emailVerifyExpires: null
     });
+
+    try {
+      await sendWelcomeEmail(user.email, user.fullName, `${env.FRONTEND_URL}/dashboard`);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Welcome email send failed:", error);
+    }
 
     return { message: "Email verified. You can now log in." };
   },

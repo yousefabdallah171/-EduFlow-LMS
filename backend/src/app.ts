@@ -104,9 +104,13 @@ export const createApp = () => {
   app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     void next;
     sentry.captureException(err, req);
+    const message =
+      env.NODE_ENV === "production"
+        ? "Something went wrong. Please try again."
+        : err.message;
     res.status(500).json({
       error: "INTERNAL_SERVER_ERROR",
-      message: err.message
+      message
     });
   });
 
