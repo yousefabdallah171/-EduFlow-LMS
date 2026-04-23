@@ -9,11 +9,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { api } from "@/lib/api";
-import { formatMinutesShort, formatNumber, resolveLocale } from "@/lib/locale";
+import { formatMinutesShort, formatNumber, pickLocalizedText, resolveLocale } from "@/lib/locale";
 
 type LessonItem = {
   id: string;
   title: string;
+  titleEn?: string;
+  titleAr?: string | null;
   durationSeconds: number | null;
   completedAt: string | null;
   lastPositionSeconds: number;
@@ -116,7 +118,7 @@ export const StudentProgress = () => {
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                      {lesson.title}
+                      {pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
                       <span className="inline-flex items-center gap-1.5">
