@@ -33,15 +33,6 @@ export const StudentHelp = () => {
     e.preventDefault();
     setSending(true);
     try {
-      if (form.subject.trim().length < 5) {
-        toast.error(isAr ? "الموضوع يجب أن يكون 5 أحرف على الأقل" : "Subject must be at least 5 characters");
-        return;
-      }
-      if (form.message.trim().length < 10) {
-        toast.error(isAr ? "الرسالة يجب أن تكون 10 أحرف على الأقل" : "Message must be at least 10 characters");
-        return;
-      }
-
       await api.post("/student/tickets", { subject: form.subject.trim(), message: form.message.trim() });
       toast.success(t("contact.successMessage"));
       setForm({ subject: "", message: "" });

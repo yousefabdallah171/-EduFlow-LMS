@@ -5,7 +5,7 @@ import { prisma } from "../config/database.js";
 import { paymentService } from "../services/payment.service.js";
 
 const profileSchema = z.object({
-  fullName: z.string().min(2).optional(),
+  fullName: z.string().min(1).optional(),
   avatarUrl: z.string().url().optional().nullable(),
   locale: z.enum(["en", "ar"]).optional(),
   theme: z.enum(["light", "dark"]).optional()

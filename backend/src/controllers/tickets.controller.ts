@@ -7,7 +7,7 @@ import { sendTicketCreatedEmail, sendTicketReplyEmail } from "../utils/email.js"
 const firstParamValue = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
 const createTicketSchema = z.object({
-  subject: z.string().min(5, "Subject must be at least 5 characters"),
+  subject: z.string().min(1, "Subject is required"),
   message: z.string().min(1, "Message is required")
 });
 

@@ -5,9 +5,9 @@ import { env } from "../config/env.js";
 import { sendTicketCreatedEmail } from "../utils/email.js";
 
 const contactSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
-  message: z.string().min(10, "Message must be at least 10 characters")
+  message: z.string().min(1, "Message is required")
 });
 
 const validationError = (error: z.ZodError) => {
