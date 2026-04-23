@@ -1,6 +1,5 @@
 ﻿import { Router } from "express";
 
-import { prisma } from "../config/database.js";
 import { lessonController } from "../controllers/lesson.controller.js";
 import { notesController } from "../controllers/notes.controller.js";
 import { paymentController } from "../controllers/payment.controller.js";

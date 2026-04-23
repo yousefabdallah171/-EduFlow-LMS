@@ -1,5 +1,3 @@
-import crypto from "node:crypto";
-
 import { redis } from "../config/redis.js";
 import { prometheus } from "../observability/prometheus.js";
 import { lessonRepository } from "../repositories/lesson.repository.js";
