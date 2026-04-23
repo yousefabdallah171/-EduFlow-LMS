@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StudentShell } from "@/components/layout/StudentShell";
+import { Avatar } from "@/components/Avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 
@@ -23,7 +24,6 @@ export const StudentProfile = () => {
   const isAr = i18n.language === "ar";
   const [profile, setProfile] = useState({ fullName: "", avatarUrl: "" });
   const [passwords, setPasswords] = useState({ currentPassword: "", newPassword: "", confirmNewPassword: "" });
-  const [imageError, setImageError] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["student-profile"],
@@ -37,7 +37,6 @@ export const StudentProfile = () => {
   const profileMut = useMutation({
     mutationFn: () => api.patch("/student/profile", { fullName: profile.fullName, avatarUrl: profile.avatarUrl || null }),
     onSuccess: () => {
-      setImageError(false);
       toast.success(t("student.profile.saved"));
     },
     onError: () => toast.error(t("student.profile.failedSave"))
@@ -64,7 +63,7 @@ export const StudentProfile = () => {
   });
 
   const initials = data?.fullName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "?";
-  const avatarUrl = profile.avatarUrl?.trim() && !imageError ? profile.avatarUrl : null;
+  const avatarUrl = profile.avatarUrl?.trim() ? profile.avatarUrl : null;
 
   return (
     <StudentShell>
@@ -99,17 +98,13 @@ export const StudentProfile = () => {
                   className="flex h-28 w-28 flex-shrink-0 items-center justify-center overflow-hidden rounded-[24px] text-4xl font-bold text-white shadow-card"
                   style={{ background: "var(--gradient-brand)", border: "3px solid var(--color-surface)" }}
                 >
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt={data?.fullName}
-                      className="h-full w-full object-cover"
-                      onError={() => setImageError(true)}
-                      onLoad={() => setImageError(false)}
-                    />
-                  ) : (
-                    <span>{initials}</span>
-                  )}
+                  <Avatar
+                    alt={data?.fullName ?? t("student.profile.title")}
+                    className="h-full w-full rounded-[24px] text-4xl font-bold text-white"
+                    fallback={initials}
+                    src={avatarUrl}
+                    style={{ background: "var(--gradient-brand)" }}
+                  />
                 </div>
 
                 <div className="min-w-0 flex-1 text-center sm:text-start">
@@ -152,7 +147,6 @@ export const StudentProfile = () => {
                     style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-page)", color: "var(--color-text-primary)" }}
                     value={profile.avatarUrl}
                     onChange={(e) => {
-                      setImageError(false);
                       setProfile({ ...profile, avatarUrl: e.target.value });
                     }}
                     placeholder="https://example.com/avatar.jpg"

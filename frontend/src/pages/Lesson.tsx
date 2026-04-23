@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 
 import { VideoPlayer } from "@/components/shared/VideoPlayer";
 import { ResourcesList } from "@/components/student/ResourcesList";
+import { SkeletonLessonDetail } from "@/components/skeletons";
+import { VirtualList } from "@/components/VirtualList";
 import { Progress } from "@/components/ui/progress";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { useVideoToken } from "@/hooks/useVideoToken";
@@ -37,6 +39,14 @@ type LessonSection = {
   titleEn: string;
   titleAr: string;
   lessons: GroupedLessonSummary[];
+};
+
+type LessonNavItem = {
+  id: string;
+  title: string;
+  completedAt: string | null;
+  isUnlocked: boolean;
+  index: number;
 };
 
 export const Lesson = () => {
@@ -114,6 +124,14 @@ export const Lesson = () => {
     orderedLessons.length > 0
       ? Math.round((orderedLessons.filter((lesson) => lesson.completedAt).length / orderedLessons.length) * 100)
       : 0;
+
+  const orderedLessonNavItems: LessonNavItem[] = orderedLessons.map((lesson, index) => ({
+    id: lesson.id,
+    title: pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr),
+    completedAt: lesson.completedAt,
+    isUnlocked: lesson.isUnlocked,
+    index
+  }));
 
   const loadingState = (message: string) => (
     <div className="flex min-h-dvh items-center justify-center" style={{ backgroundColor: "var(--color-page)" }}>
@@ -254,7 +272,13 @@ export const Lesson = () => {
       );
     }
 
-    return loadingState(t("lesson.loading"));
+    return (
+      <div className="min-h-dvh px-6 py-10" style={{ backgroundColor: "var(--color-page)" }}>
+        <div className="mx-auto w-full max-w-6xl">
+          <SkeletonLessonDetail />
+        </div>
+      </div>
+    );
   }
 
   const lessonProgress = lessonQuery.data.progress ?? {
@@ -486,14 +510,17 @@ export const Lesson = () => {
                     );
                   })
                 ) : orderedLessons.length > 0 ? (
-                  <div className="space-y-1">
-                    {orderedLessons.map((lesson, index) => {
-                      const isCurrent = lesson.id === lessonId;
-                      const lessonTitle = pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr);
+                  <VirtualList
+                    className="max-h-[520px] pr-1"
+                    style={{ overscrollBehavior: "contain" }}
+                    items={orderedLessonNavItems}
+                    estimateItemHeight={56}
+                    getKey={(item) => item.id}
+                    renderItem={(item) => {
+                      const isCurrent = item.id === lessonId;
 
                       return (
                         <Link
-                          key={lesson.id}
                           className="flex items-center gap-3 rounded-2xl border px-3 py-3 no-underline transition-colors"
                           style={{
                             background:
@@ -503,9 +530,9 @@ export const Lesson = () => {
                             borderColor: isCurrent ? "color-mix(in oklab, var(--color-brand) 28%, transparent)" : "var(--color-border)",
                             color: isCurrent ? "var(--color-brand-text)" : "var(--color-text-secondary)"
                           }}
-                          to={lesson.isUnlocked ? `${prefix}/lessons/${lesson.id}` : "#"}
+                          to={item.isUnlocked ? `${prefix}/lessons/${item.id}` : "#"}
                           onClick={(event) => {
-                            if (!lesson.isUnlocked) {
+                            if (!item.isUnlocked) {
                               event.preventDefault();
                             }
                           }}
@@ -513,25 +540,25 @@ export const Lesson = () => {
                           <span
                             className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
                             style={{
-                              backgroundColor: lesson.completedAt
+                              backgroundColor: item.completedAt
                                 ? "rgb(34 197 94 / 0.15)"
                                 : isCurrent
                                   ? "var(--color-brand-muted)"
                                   : "var(--color-surface-2)",
-                              color: lesson.completedAt
+                              color: item.completedAt
                                 ? "rgb(34 197 94)"
                                 : isCurrent
                                   ? "var(--color-brand)"
                                   : "var(--color-text-muted)"
                             }}
                           >
-                            {lesson.completedAt ? <Check className="h-3.5 w-3.5" /> : index + 1}
+                            {item.completedAt ? <Check className="h-3.5 w-3.5" /> : item.index + 1}
                           </span>
-                          <span className="flex-1 truncate text-sm font-medium">{lessonTitle}</span>
+                          <span className="flex-1 truncate text-sm font-medium">{item.title}</span>
                         </Link>
                       );
-                    })}
-                  </div>
+                    }}
+                  />
                 ) : null}
               </div>
             </div>

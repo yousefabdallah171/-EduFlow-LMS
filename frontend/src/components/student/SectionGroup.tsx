@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { LessonCard } from "./LessonCard";
+import { SkeletonLessonCard } from "@/components/skeletons";
 
 interface Lesson {
   id: string;
@@ -33,8 +34,50 @@ export const SectionGroup = ({
 }: SectionGroupProps) => {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const initialRenderCount = 12;
+  const incrementBy = 12;
+  const [visibleCount, setVisibleCount] = useState(() => Math.min(lessons.length, initialRenderCount));
   const sectionTitle = locale === "ar" ? sectionTitleAr : sectionTitleEn;
   const totalMinutes = Math.round(lessons.reduce((sum, lesson) => sum + (lesson.durationSeconds ?? 0), 0) / 60);
+  const visibleLessons = useMemo(() => lessons.slice(0, visibleCount), [lessons, visibleCount]);
+
+  useEffect(() => {
+    if (!isExpanded) {
+      return;
+    }
+
+    setVisibleCount((current) => Math.min(lessons.length, Math.max(current, initialRenderCount)));
+  }, [isExpanded, lessons.length]);
+
+  useEffect(() => {
+    if (!isExpanded) {
+      return;
+    }
+
+    if (visibleCount >= lessons.length) {
+      return;
+    }
+
+    const node = sentinelRef.current;
+    if (!node) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) {
+          return;
+        }
+
+        setVisibleCount((current) => Math.min(lessons.length, current + incrementBy));
+      },
+      { rootMargin: "240px 0px" }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [incrementBy, isExpanded, lessons.length, visibleCount]);
 
   return (
     <section
@@ -83,7 +126,7 @@ export const SectionGroup = ({
 
       {isExpanded ? (
         <div className="grid grid-cols-1 gap-4 border-t p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-3" style={{ borderColor: "var(--color-border)" }}>
-          {lessons.map((lesson) => (
+          {visibleLessons.map((lesson) => (
             <LessonCard
               key={lesson.id}
               id={lesson.id}
@@ -96,6 +139,14 @@ export const SectionGroup = ({
               locale={locale}
             />
           ))}
+
+          {visibleCount < lessons.length ? (
+            <div ref={sentinelRef} className="contents" aria-hidden="true">
+              <SkeletonLessonCard />
+              <SkeletonLessonCard />
+              <SkeletonLessonCard />
+            </div>
+          ) : null}
         </div>
       ) : null}
     </section>

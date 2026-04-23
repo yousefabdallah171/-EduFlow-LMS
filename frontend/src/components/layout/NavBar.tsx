@@ -26,6 +26,7 @@ import { useTranslation } from "react-i18next";
 
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { Avatar } from "@/components/Avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
@@ -187,11 +188,13 @@ export const NavBar = () => {
                   {...getReferenceProps()}
                 >
                   <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-brand-600 text-xs font-bold text-white">
-                    {user.avatarUrl ? (
-                      <img src={user.avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
-                    ) : (
-                      user.fullName.charAt(0).toUpperCase()
-                    )}
+                    <Avatar
+                      alt={user.fullName}
+                      className="h-full w-full rounded-full text-xs font-bold text-white"
+                      fallback={user.fullName.charAt(0).toUpperCase()}
+                      src={user.avatarUrl}
+                      style={{ backgroundColor: "var(--color-brand)" }}
+                    />
                   </div>
                   <div className="hidden text-start sm:block">
                     <p className="max-w-[110px] truncate text-sm font-semibold">{user.fullName.split(" ")[0]}</p>
