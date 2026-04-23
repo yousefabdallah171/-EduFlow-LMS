@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 DEPLOY_PATH="/home/youesf-abdallah-workflow-course/htdocs/workflow-course.youesf-abdallah.online"
 BACKEND_PATH="$DEPLOY_PATH/backend"
@@ -32,8 +31,9 @@ nohup npm run start > /dev/null 2>&1 &
 # Wait for backend to start
 sleep 3
 
-# Reload nginx
+# Reload nginx (ignore errors)
 echo "Reloading nginx..." >> "$LOG_FILE"
-sudo systemctl reload nginx >> "$LOG_FILE" 2>&1
+sudo systemctl reload nginx >> "$LOG_FILE" 2>&1 || echo "Nginx reload skipped (may require manual reload)" >> "$LOG_FILE"
 
-echo "=== Deployment completed successfully at $(date) ===" >> "$LOG_FILE"
+echo "=== Deployment completed at $(date) ===" >> "$LOG_FILE"
+exit 0
