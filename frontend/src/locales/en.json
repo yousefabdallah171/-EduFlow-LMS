@@ -10,7 +10,7 @@
   "landing.hero.tech": ["PRD", "Spec Kit", "Codex", "Docker"],
   "landing.hero.trust": ["Secure payment", "Replies within an hour", "Instant access"],
   "landing.hero.stats": [
-    { "value": "7", "label": "clear phases" },
+    { "value": "7", "label": "clear phases " },
     { "value": "hands-on", "label": "not theory" },
     { "value": "production", "label": "from day one" }
   ],
