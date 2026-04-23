@@ -1,6 +1,13 @@
 export type AppLocale = "en" | "ar";
 
-export const resolveLocale = (locale?: string | null): AppLocale => (locale === "ar" ? "ar" : "en");
+export const resolveLocale = (locale?: string | null): AppLocale => {
+  if (!locale) {
+    return "en";
+  }
+
+  const normalized = locale.toLowerCase();
+  return normalized === "ar" || normalized.startsWith("ar-") ? "ar" : "en";
+};
 
 export const pickLocalizedText = (
   locale: AppLocale,

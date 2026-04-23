@@ -20,7 +20,6 @@ type VideoPlayerProps = {
 export const VideoPlayer = ({
   lessonTitle,
   sourceUrl,
-  watermark,
   initialPositionSeconds = 0,
   onProgress,
   onCurrentPositionChange,
@@ -225,18 +224,22 @@ export const VideoPlayer = ({
         boxShadow: "var(--shadow-elevated)"
       }}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="m-0 text-xs font-semibold uppercase tracking-[0.25em] text-brand-600">
-            {t("lesson.secureStream")}
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold" style={{ color: "var(--color-text-primary)" }}>{lessonTitle}</h2>
-        </div>
-      </div>
+	      <div className="flex items-start justify-between gap-4">
+	        <div>
+	          <p className="m-0 text-xs font-semibold uppercase tracking-[0.25em] text-brand-600">
+	            {t("lesson.secureStream")}
+	          </p>
+	          <h2 className="mt-2 text-2xl font-semibold" style={{ color: "var(--color-text-primary)" }}>{lessonTitle}</h2>
+	        </div>
+	      </div>
 
-      <div
-        className="relative mt-6 overflow-hidden rounded-[1.75rem]"
-        style={{
+	      <p className="sr-only" aria-live="polite">
+	        {status}
+	      </p>
+
+	      <div
+	        className="relative mt-6 overflow-hidden rounded-[1.75rem]"
+	        style={{
           background:
             "linear-gradient(180deg, color-mix(in oklab, var(--color-invert) 92%, black), color-mix(in oklab, var(--color-invert-2) 96%, black))"
         }}

@@ -1,0 +1,50 @@
+﻿[
+  {
+    "antipattern": "gray-on-color",
+    "name": "Gray text on colored background",
+    "description": "Gray text looks washed out on colored backgrounds. Use a darker shade of the background color instead, or white/near-white for contrast.",
+    "file": "C:\\Users\\Yousef\\Desktop\\Projects\\-EduFlow-LMS\\frontend\\dist\\assets\\index-BA0jc_XA.css",
+    "line": 1,
+    "snippet": "text-slate-950 on bg-green-500"
+  },
+  {
+    "antipattern": "gray-on-color",
+    "name": "Gray text on colored background",
+    "description": "Gray text looks washed out on colored backgrounds. Use a darker shade of the background color instead, or white/near-white for contrast.",
+    "file": "C:\\Users\\Yousef\\Desktop\\Projects\\-EduFlow-LMS\\frontend\\dist\\assets\\index-BA0jc_XA.css",
+    "line": 1,
+    "snippet": "text-slate-900 on bg-green-500"
+  },
+  {
+    "antipattern": "gray-on-color",
+    "name": "Gray text on colored background",
+    "description": "Gray text looks washed out on colored backgrounds. Use a darker shade of the background color instead, or white/near-white for contrast.",
+    "file": "C:\\Users\\Yousef\\Desktop\\Projects\\-EduFlow-LMS\\frontend\\dist\\assets\\index-BA0jc_XA.css",
+    "line": 1,
+    "snippet": "text-slate-700 on bg-green-500"
+  },
+  {
+    "antipattern": "gray-on-color",
+    "name": "Gray text on colored background",
+    "description": "Gray text looks washed out on colored backgrounds. Use a darker shade of the background color instead, or white/near-white for contrast.",
+    "file": "C:\\Users\\Yousef\\Desktop\\Projects\\-EduFlow-LMS\\frontend\\dist\\assets\\index-BA0jc_XA.css",
+    "line": 1,
+    "snippet": "text-slate-600 on bg-green-500"
+  },
+  {
+    "antipattern": "gray-on-color",
+    "name": "Gray text on colored background",
+    "description": "Gray text looks washed out on colored backgrounds. Use a darker shade of the background color instead, or white/near-white for contrast.",
+    "file": "C:\\Users\\Yousef\\Desktop\\Projects\\-EduFlow-LMS\\frontend\\dist\\assets\\index-BA0jc_XA.css",
+    "line": 1,
+    "snippet": "text-slate-500 on bg-green-500"
+  },
+  {
+    "antipattern": "layout-transition",
+    "name": "Layout property animation",
+    "description": "Animating width, height, padding, or margin causes layout thrash and janky performance. Use transform and opacity instead, or grid-template-rows for height animations.",
+    "file": "C:\\Users\\Yousef\\Desktop\\Projects\\-EduFlow-LMS\\frontend\\dist\\assets\\index-BgF6HO4x.js",
+    "line": 2,
+    "snippet": "transition: height"
+  }
+]

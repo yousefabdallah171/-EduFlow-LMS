@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
-import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
-import { ChevronDown, Send, ShieldCheck, Sparkles } from "lucide-react";
+import { Send, ShieldCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -9,25 +8,16 @@ import { StudentShell } from "@/components/layout/StudentShell";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth.store";
 
-const FAQ_KEYS = ["access", "download", "arabic", "coupons", "refund", "progress", "devices", "updates"] as const;
-
 export const StudentHelp = () => {
-  const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const [form, setForm] = useState({ subject: "", message: "" });
   const [sending, setSending] = useState(false);
 
-  const faqItems = FAQ_KEYS.map((key) => ({
-    key,
-    q: t(`faq.items.${key}.q`),
-    a: t(`faq.items.${key}.a`)
-  }));
-
   const signedInLabel = useMemo(() => {
     if (!user?.email) return "";
-    return isAr ? `مسجل الدخول: ${user.email}` : `Signed in as: ${user.email}`;
-  }, [isAr, user?.email]);
+    return t("student.help.signedInAs", { email: user.email });
+  }, [t, user?.email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,61 +42,16 @@ export const StudentHelp = () => {
           hero
           eyebrow={t("student.shell.section")}
           title={t("student.help.title")}
-          description={
-            isAr
-              ? "ابدأ بالإجابات السريعة، ثم تواصل إذا احتجت دعمًا بخصوص الوصول أو الدفع أو استخدام المنصة."
-              : "Start with the quick answers below, then reach out if you need help with access, payments, or using the platform."
-          }
+          description={t("student.help.description")}
         />
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="dashboard-panel dashboard-panel--accent p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{isAr ? "البدء السريع" : "Quick start"}</p>
-            <p className="mt-2 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
-              {isAr ? "راجع الأسئلة الشائعة أولًا، فغالبًا ستجد أسرع إجابة هناك." : "Check the FAQ first, since it usually gives you the fastest answer."}
-            </p>
-          </div>
-          <div className="dashboard-panel p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{isAr ? "الوصول والدفع" : "Access and payment"}</p>
-            <p className="mt-2 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
-              {isAr ? "إذا كانت المشكلة مرتبطة بالشراء أو فتح الدروس، وضّح ذلك في رسالتك لتسريع المعالجة." : "If the issue is related to checkout or lesson access, mention that clearly in your message so support can triage faster."}
-            </p>
-          </div>
-          <div className="dashboard-panel p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{isAr ? "الثقة والأمان" : "Trust and safety"}</p>
-            <p className="mt-2 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
-              {isAr ? "لا تشارك بيانات حساسة داخل الرسالة، واكتفِ بشرح المشكلة وسياقها." : "Do not include sensitive details in your message. A clear description of the issue and context is enough."}
-            </p>
-          </div>
-        </div>
-
-        <section className="space-y-2">
-          {faqItems.map((item) => (
-            <Disclosure key={item.key}>
-              {({ open }) => (
-                <div className="dashboard-panel overflow-hidden rounded-[24px] transition-all" style={{ borderColor: open ? "var(--color-border-strong)" : "var(--color-border)" }}>
-                  <DisclosureButton className="flex w-full items-center justify-between gap-4 px-5 py-4 text-start text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                    <span>{item.q}</span>
-                    <ChevronDown className="h-4 w-4 flex-shrink-0 transition-transform duration-200" style={{ transform: open ? "rotate(180deg)" : "none", color: "var(--color-text-muted)" }} />
-                  </DisclosureButton>
-                  <DisclosurePanel className="px-5 pb-4 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>{item.a}</DisclosurePanel>
-                </div>
-              )}
-            </Disclosure>
-          ))}
-        </section>
 
         <div className="dashboard-panel p-6">
           <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="mb-2 font-display text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>{t("contact.title")}</p>
               <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                {isAr ? "اكتب رسالتك بوضوح وسنساعدك في أقرب وقت ممكن." : "Send a clear message and the team can help you faster."}
+                {t("student.help.description")}
               </p>
-            </div>
-            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand)" }}>
-              <Sparkles className="h-3.5 w-3.5" />
-              {isAr ? "رسالة واضحة = دعم أسرع" : "Clear message = faster help"}
             </div>
           </div>
 
@@ -118,7 +63,7 @@ export const StudentHelp = () => {
             ) : null}
 
             <div>
-              <label className="ui-field-label">{isAr ? "الموضوع" : "Subject"}</label>
+              <label className="ui-field-label">{t("student.help.subjectLabel")}</label>
               <input
                 required
                 type="text"
@@ -126,7 +71,7 @@ export const StudentHelp = () => {
                 style={{ backgroundColor: "var(--color-page)", borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
                 value={form.subject}
                 onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                placeholder={isAr ? "مثال: مشكلة في تسجيل الدخول" : "Example: Login issue"}
+                placeholder={t("student.help.subjectPlaceholder")}
               />
             </div>
             <div>
@@ -144,7 +89,7 @@ export const StudentHelp = () => {
             <div className="ui-feedback">
               <div className="inline-flex items-start gap-2">
                 <ShieldCheck className="mt-0.5 h-4 w-4 text-brand-600" />
-                <p>{isAr ? "اذكر المشكلة، الصفحة التي كنت عليها، وما الذي كنت تحاول فعله." : "Mention the issue, the page you were on, and what you were trying to do."}</p>
+                <p>{t("student.help.tip")}</p>
               </div>
             </div>
 

@@ -30,7 +30,16 @@ const envSchema = z.object({
   SMTP_HOST: z.string().min(1),
   SMTP_PORT: z.coerce.number().int().positive(),
   SMTP_USER: z.string().min(1),
-  SMTP_PASS: z.string().min(1)
+  SMTP_PASS: z.string().min(1),
+  CACHE_TTL_DASHBOARD_SECONDS: z.coerce.number().int().positive().default(5 * 60),
+  CACHE_TTL_ENROLLMENT_SECONDS: z.coerce.number().int().positive().default(2 * 60),
+  CACHE_TTL_LESSON_METADATA_SECONDS: z.coerce.number().int().positive().default(2 * 60 * 60),
+  CACHE_TTL_PUBLISHED_LESSON_COUNT_SECONDS: z.coerce.number().int().positive().default(2 * 60 * 60),
+  CACHE_TTL_PAYMENTS_SECONDS: z.coerce.number().int().positive().default(60 * 60),
+  CACHE_TTL_VIDEO_TOKEN_SECONDS: z.coerce.number().int().positive().default(5 * 60),
+  CACHE_TTL_VIDEO_PREVIEW_SECONDS: z.coerce.number().int().positive().default(15 * 60),
+  CACHE_TTL_SEARCH_SECONDS: z.coerce.number().int().positive().default(300),
+  DEFAULT_COURSE_ID: z.string().default("primary")
 });
 
 export const env = envSchema.parse(process.env);

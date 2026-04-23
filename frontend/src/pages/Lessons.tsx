@@ -29,12 +29,11 @@ interface Section {
 
 export const Lessons = () => {
   const { locale } = useParams();
-  const currentLocale = resolveLocale(locale);
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const resolvedLocale = resolveLocale(i18n.language);
   const { statusQuery } = useEnrollment();
   const isEnrolled = statusQuery.data?.enrolled && statusQuery.data?.status === "ACTIVE";
-  const isAr = currentLocale === "ar";
 
   const lessonsQuery = useQuery({
     queryKey: ["all-lessons"],
@@ -94,7 +93,7 @@ export const Lessons = () => {
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("lessons.learningMode")}</p>
             <p className="mt-2 text-sm font-medium leading-6" style={{ color: "var(--color-text-secondary)" }}>
               {totalMinutes > 0
-                ? isAr ? `${t("lessons.learningModeValue")} حوالي ${totalMinutes} دقيقة من المحتوى المتاح الآن.` : `${t("lessons.learningModeValue")} About ${totalMinutes} minutes are currently available.`
+                ? `${t("lessons.learningModeValue")} ${t("lessons.minutesAvailable", { minutes: totalMinutes })}`
                 : t("lessons.learningModeValue")}
             </p>
           </div>
@@ -178,10 +177,10 @@ export const Lessons = () => {
                 <Sparkles className="mt-0.5 h-4 w-4 text-brand-600" />
                 <div>
                   <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                    {isAr ? "ابدأ من القسم المفتوح أمامك ثم تحرك بالترتيب." : "Start with the open section in front of you, then move in sequence."}
+                    {t("lessons.guidance.title")}
                   </p>
                   <p className="mt-1 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
-                    {isAr ? "تنظيم الدروس حسب المراحل يجعل كل خطوة تبني على التي قبلها، لذلك ستشعر بالخطة أوضح كلما تقدمت." : "The phase-based structure keeps each lesson building on the previous one, so the roadmap gets clearer as you move forward."}
+                    {t("lessons.guidance.body")}
                   </p>
                 </div>
               </div>
@@ -194,7 +193,7 @@ export const Lessons = () => {
                 sectionTitleEn={section.titleEn}
                 sectionTitleAr={section.titleAr}
                 lessons={section.lessons}
-                locale={currentLocale}
+                locale={resolvedLocale}
                 defaultExpanded={index === 0}
               />
             ))}

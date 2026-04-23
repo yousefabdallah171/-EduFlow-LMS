@@ -421,9 +421,8 @@ export const analyticsService = {
         });
         await sendEnrollmentActivatedEmail(student.email, student.fullName, `${env.FRONTEND_URL}/dashboard`);
       }
-    } catch (emailError) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to send payment/enrollment email:", emailError);
+    } catch {
+      // Ignore email failures - not critical to payment processing
     }
 
     return {

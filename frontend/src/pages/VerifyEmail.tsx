@@ -5,13 +5,14 @@ import { useTranslation } from "react-i18next";
 
 import { AuthShell } from "@/components/shared/AuthShell";
 import { api } from "@/lib/api";
+import { resolveLocale } from "@/lib/locale";
 
 export const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const isAr = resolveLocale(i18n.language) === "ar";
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
 

@@ -131,7 +131,7 @@ export const AdminStudentDetail = () => {
       )}
 
       {revoking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/50">
           <div className="mx-4 w-full max-w-sm rounded-[28px] border p-6 shadow-elevated" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
             <p className="mb-2 font-bold" style={{ color: "var(--color-text-primary)" }}>{t("actions.revokeAccess")}?</p>
             <p className="mb-4 text-sm" style={{ color: "var(--color-text-secondary)" }}>{isAr ? "سيؤدي هذا إلى إزالة وصول الطالب إلى كل محتوى الدورة." : "This will remove the student's access to all course content."}</p>

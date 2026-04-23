@@ -7,6 +7,7 @@ import { AuthShell } from "@/components/shared/AuthShell";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
+import { resolveLocale } from "@/lib/locale";
 import { useAuthStore } from "@/stores/auth.store";
 
 export const Login = () => {
@@ -16,7 +17,7 @@ export const Login = () => {
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const isAr = resolveLocale(i18n.language) === "ar";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");

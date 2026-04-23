@@ -18,8 +18,7 @@ const buildWhatsappUrl = (baseUrl: string, message: string) => {
 };
 
 export const LandingFaqSection = ({ prefix }: { prefix: string }) => {
-  const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const { t } = useTranslation();
 
   const items = t("landing.faq.items", { returnObjects: true }) as FaqItem[];
 
@@ -36,10 +35,10 @@ export const LandingFaqSection = ({ prefix }: { prefix: string }) => {
 
   const whatsappHref = useMemo(() => {
     const trimmed = question.trim();
-    const base = isAr ? "عندي سؤال:" : "I have a question:";
+    const base = t("landing.faq.whatsappMessagePrefix");
     const message = trimmed ? `${base}\n${trimmed}` : base;
     return buildWhatsappUrl(contactInfo.whatsappUrl, message);
-  }, [question, isAr]);
+  }, [question, t]);
 
   return (
     <section className="landing-section landing-faq" id="faq" data-landing-section>
@@ -89,7 +88,7 @@ export const LandingFaqSection = ({ prefix }: { prefix: string }) => {
       <div className="mt-6 flex flex-wrap justify-center gap-3 landing-reveal">
         <Link className="reference-button-secondary inline-flex items-center gap-2" to={`${prefix}/faq`}>
           <Search className="h-4 w-4" />
-          {isAr ? "كل الأسئلة" : "All questions"}
+          {t("landing.faq.allQuestionsLabel")}
         </Link>
         <a
           className="reference-button-secondary inline-flex items-center gap-2"
@@ -98,7 +97,7 @@ export const LandingFaqSection = ({ prefix }: { prefix: string }) => {
           target="_blank"
         >
           <ShieldCheck className="h-4 w-4" />
-          {isAr ? "كلمني واتساب" : "WhatsApp me"}
+          {t("landing.faq.whatsappMeLabel")}
         </a>
       </div>
 

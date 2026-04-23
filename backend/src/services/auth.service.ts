@@ -129,10 +129,8 @@ export const authService = {
       let emailDeliveryFailed = false;
       try {
         await sendVerificationEmail(user.email, user.fullName, verificationUrl(emailVerifyToken));
-      } catch (error) {
+      } catch {
         emailDeliveryFailed = true;
-        // eslint-disable-next-line no-console
-        console.error("Verification email send failed:", error);
       }
 
       if (emailDeliveryFailed) {
@@ -301,9 +299,8 @@ export const authService = {
 
     try {
       await sendWelcomeEmail(user.email, user.fullName, `${env.FRONTEND_URL}/dashboard`);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Welcome email send failed:", error);
+    } catch {
+      // Ignore email failures - not critical to verification flow
     }
 
     return { message: "Email verified. You can now log in." };

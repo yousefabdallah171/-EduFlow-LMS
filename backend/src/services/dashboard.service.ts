@@ -1,5 +1,6 @@
 import { prisma } from "../config/database.js";
 import { redis } from "../config/redis.js";
+import { env } from "../config/env.js";
 import { prometheus } from "../observability/prometheus.js";
 
 export type StudentDashboardPayload = {
@@ -8,9 +9,16 @@ export type StudentDashboardPayload = {
   enrolled: boolean;
   status: string | null;
   enrolledAt: string | null;
+  totalWatchTimeSeconds: number;
+  lessonsWatched: number;
+  progress: Array<{
+    lessonId: string;
+    watchTime: number;
+    completed: boolean;
+  }>;
 };
 
-const DASHBOARD_CACHE_TTL_SECONDS = 5 * 60;
+const DASHBOARD_CACHE_TTL_SECONDS = env.CACHE_TTL_DASHBOARD_SECONDS;
 
 const dashboardCacheKey = (userId: string) => `student:dashboard:${userId}`;
 
@@ -44,17 +52,26 @@ export const dashboardService = {
     const total = allLessons.length;
     const completionPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
     const lastLesson = progress[0];
+    const totalWatchTimeSeconds = progress.reduce((sum, p) => sum + p.watchTimeSeconds, 0);
+    const lessonsWatched = progress.filter((p) => p.watchTimeSeconds > 0).length;
 
     const payload: StudentDashboardPayload = {
       lastLessonId: lastLesson?.lessonId ?? null,
       completionPercent,
       enrolled: enrollment?.status === "ACTIVE",
       status: enrollment?.status ?? null,
-      enrolledAt: enrollment?.enrolledAt?.toISOString() ?? null
+      enrolledAt: enrollment?.enrolledAt?.toISOString() ?? null,
+      totalWatchTimeSeconds,
+      lessonsWatched,
+      progress: progress.map((p) => ({
+        lessonId: p.lessonId,
+        watchTime: p.watchTimeSeconds,
+        completed: p.completedAt !== null
+      }))
     };
 
     try {
-      await redis.set(dashboardCacheKey(userId), JSON.stringify(payload), "EX", DASHBOARD_CACHE_TTL_SECONDS);
+      await redis.set(dashboardCacheKey(userId), JSON.stringify(payload), "EX", DASHBOARD_CACHE_TTL_SECONDS, "NX");
     } catch {
       // ignore redis failures
     }

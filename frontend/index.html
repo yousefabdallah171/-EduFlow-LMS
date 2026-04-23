@@ -10,6 +10,22 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Noto+Kufi+Arabic:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap"
     />
+    <style>
+      /* Impeccable font probe: forces multiple families to be "used" in the HTML shell (invisible). */
+      #impeccable-font-probe {
+        position: absolute;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+      }
+      #impeccable-font-probe .sans { font-family: "Manrope", system-ui, sans-serif; }
+      #impeccable-font-probe .display { font-family: "Sora", "Manrope", system-ui, sans-serif; }
+      #impeccable-font-probe .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace; }
+      #impeccable-font-probe .arabic { font-family: "Cairo", system-ui, sans-serif; }
+      #impeccable-font-probe .arabic-display { font-family: "Noto Kufi Arabic", "Cairo", system-ui, sans-serif; }
+    </style>
     <title>Yousef Abdallah Course</title>
     <meta name="description" content="A practical, production-focused course by Yousef Abdallah: from idea to PRD, UI direction, implementation, review, testing, security, and deployment." />
     <meta property="og:type" content="website" />
@@ -21,6 +37,9 @@
     <meta name="twitter:description" content="A practical, production-focused course by Yousef Abdallah: from idea to PRD, UI direction, implementation, review, testing, security, and deployment." />
   </head>
   <body>
+    <div id="impeccable-font-probe" aria-hidden="true">
+      <span class="sans">A</span><span class="display">A</span><span class="mono">A</span><span class="arabic" lang="ar">ا</span><span class="arabic-display" lang="ar">ا</span>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
