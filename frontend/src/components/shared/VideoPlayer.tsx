@@ -327,7 +327,7 @@ export const VideoPlayer = ({
           className={cn("aspect-video w-full")}
           style={{ backgroundColor: "var(--color-invert)" }}
           controls
-          controlsList="nodownload noremoteplayback nofullscreen"
+          controlsList="nodownload noremoteplayback"
           disablePictureInPicture
           crossOrigin="use-credentials"
           playsInline

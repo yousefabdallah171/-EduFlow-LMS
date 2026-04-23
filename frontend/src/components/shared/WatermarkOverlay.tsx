@@ -38,7 +38,7 @@ export const WatermarkOverlay = ({ name, maskedEmail }: WatermarkOverlayProps) =
   return (
     <div
       className={cn(
-        "pointer-events-none absolute z-20 rounded-full border border-white/20 bg-slate-950/45 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-lg transition-all duration-700 user-select-none",
+        "pointer-events-none absolute z-20 select-none rounded-full border border-white/20 bg-slate-950/45 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-lg transition-all duration-700",
         positions[positionIndex],
         opacity
       )}

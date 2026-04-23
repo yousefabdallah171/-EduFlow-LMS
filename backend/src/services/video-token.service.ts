@@ -9,6 +9,7 @@ import { refreshTokenRepository } from "../repositories/refresh-token.repository
 import { videoTokenRepository } from "../repositories/video-token.repository.js";
 import { hashVideoToken, signPreviewToken, signVideoToken, verifyVideoToken } from "../utils/video-token.js";
 import { verifyRefreshToken } from "../utils/jwt.js";
+import { videoSecurityEventRepository } from "../repositories/video-security-event.repository.js";
 
 const TOKEN_TTL_SECONDS = 5 * 60;
 const PREVIEW_TTL_SECONDS = 15 * 60;
@@ -20,6 +21,8 @@ const videoTokenCacheKey = (tokenHash: string) => `video-token:${tokenHash}`;
 const videoTokenContextKey = (tokenHash: string) => `video-token-ctx:${tokenHash}`;
 const hashToken = (token: string): string => crypto.createHash("sha256").update(token).digest("hex");
 const sha256 = (value: string): string => crypto.createHash("sha256").update(value).digest("hex");
+// Safe correlatable trace ID — never log raw sessionId (OWASP WSTG recommendation)
+const sessionTraceId = (sessionId: string): string => sha256(`trace:${sessionId}`).slice(0, 16);
 
 const ipPrefix = (ip: string | undefined): string | null => {
   const value = (ip ?? "").trim();
@@ -137,11 +140,30 @@ export const videoTokenService = {
 
       const currentIpPrefix = ipPrefix(input.ip);
       const currentUaHash = input.userAgent ? sha256(input.userAgent) : null;
-      if (session.ipPrefix !== null && currentIpPrefix !== session.ipPrefix) {
-        throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
-      }
-      if (session.uaHash !== null && currentUaHash !== session.uaHash) {
-        throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
+
+      // Preview: UA mismatch = +1 (downgraded — anonymous context, UA reduction in browsers),
+      // IP mismatch alone = allow (short 15-min TTL is the protection for preview tokens).
+      const previewSignals = {
+        uaMismatch: session.uaHash !== null && currentUaHash !== null && currentUaHash !== session.uaHash,
+        ipMismatch: session.ipPrefix !== null && currentIpPrefix !== null && currentIpPrefix !== session.ipPrefix
+      };
+      const previewRisk = (previewSignals.uaMismatch ? 1 : 0) + (previewSignals.ipMismatch ? 1 : 0);
+
+      if (previewRisk > 0) {
+        const rejected = previewRisk >= 2;
+        void videoSecurityEventRepository.create({
+          lessonId: previewPayload.lessonId,
+          previewSessionId: previewPayload.previewSessionId,
+          eventType: rejected ? "VIDEO_TOKEN_REJECTED_RISK" : "VIDEO_TOKEN_RISK_SCORE",
+          severity: rejected ? "HIGH" : "WARN",
+          ip: input.ip ?? null,
+          userAgent: input.userAgent ?? null,
+          metadata: { riskScore: previewRisk, signals: previewSignals, action: rejected ? "rejected" : "allowed", isPreview: true }
+        }).catch(() => undefined);
+
+        if (rejected) {
+          throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
+        }
       }
 
       return payload;
@@ -199,11 +221,39 @@ export const videoTokenService = {
         const context = JSON.parse(contextRaw) as { ipPrefix: string | null; uaHash: string | null };
         const currentIpPrefix = ipPrefix(input.ip);
         const currentUaHash = input.userAgent ? sha256(input.userAgent) : null;
-        if (context.ipPrefix !== null && currentIpPrefix !== context.ipPrefix) {
-          throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
-        }
-        if (context.uaHash !== null && currentUaHash !== context.uaHash) {
-          throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
+
+        const signals = {
+          uaMismatch: context.uaHash !== null && currentUaHash !== null && currentUaHash !== context.uaHash,
+          uaMissing: context.uaHash !== null && currentUaHash === null,
+          ipMismatch: context.ipPrefix !== null && currentIpPrefix !== null && currentIpPrefix !== context.ipPrefix,
+          ipMissing: context.ipPrefix !== null && currentIpPrefix === null
+        };
+
+        let riskScore = 0;
+        // UA mismatch = +2: authenticated sessions have stable UA; mismatch = likely different browser.
+        // IP mismatch alone = +1: intentional tradeoff — mobile/proxy users change IP legitimately.
+        if (signals.uaMismatch) riskScore += 2;
+        if (signals.uaMissing) riskScore += 1;
+        if (signals.ipMismatch) riskScore += 1;
+        if (signals.ipMissing) riskScore += 1;
+
+        if (riskScore > 0) {
+          const rejected = riskScore >= 2;
+          void videoSecurityEventRepository.create({
+            userId: fullPayload.userId,
+            // sessionTraceId: safe correlatable hash — never log raw session token (OWASP)
+            sessionId: sessionTraceId(fullPayload.sessionId),
+            lessonId: fullPayload.lessonId,
+            eventType: rejected ? "VIDEO_TOKEN_REJECTED_RISK" : "VIDEO_TOKEN_RISK_SCORE",
+            severity: rejected ? "HIGH" : "WARN",
+            ip: input.ip ?? null,
+            userAgent: input.userAgent ?? null,
+            metadata: { riskScore, signals, action: rejected ? "rejected" : "allowed" }
+          }).catch(() => undefined);
+
+          if (rejected) {
+            throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
+          }
         }
       } catch (error) {
         if (error instanceof VideoTokenError) throw error;
