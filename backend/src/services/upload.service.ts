@@ -66,6 +66,33 @@ const ensureStorage = async () => {
   await fs.mkdir(rawUploadDir(), { recursive: true });
 };
 
+const getDurationSeconds = async (inputPath: string): Promise<number> => {
+  return new Promise<number>((resolve) => {
+    let durationOutput = '';
+    const child = spawn("ffmpeg", ["-i", inputPath]);
+
+    child.stderr?.on("data", (data) => {
+      durationOutput += data.toString();
+    });
+
+    child.on("exit", () => {
+      const match = durationOutput.match(/Duration: (\d+):(\d+):(\d+(\.\d+)?)/);
+      if (match) {
+        const hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        const seconds = parseFloat(match[3]);
+        resolve(hours * 3600 + minutes * 60 + Math.ceil(seconds));
+      } else {
+        resolve(10);
+      }
+    });
+
+    child.on("error", () => {
+      resolve(10);
+    });
+  });
+};
+
 const runFfmpeg = async (lessonId: string, inputPath: string) => {
   const outputDir = hlsDir(lessonId);
   await fs.rm(outputDir, { recursive: true, force: true });
@@ -78,10 +105,12 @@ const runFfmpeg = async (lessonId: string, inputPath: string) => {
   // The URI is rewritten by lesson.controller.ts to an authenticated /key endpoint.
   await fs.writeFile(keyInfoPath, ["enc.key", keyPath, ""].join("\n"));
 
+  const durationSeconds = await getDurationSeconds(inputPath);
+
   if (process.env.NODE_ENV === "test") {
     await fs.writeFile(
       outputPlaylist,
-      ['#EXTM3U', '#EXT-X-KEY:METHOD=AES-128,URI="enc.key"', "#EXTINF:10.0,", "segment-000.ts", "#EXT-X-ENDLIST"].join(
+      ['#EXTM3U', '#EXT-X-KEY:METHOD=AES-128,URI="enc.key"', `#EXTINF:${durationSeconds}.0,`, "segment-000.ts", "#EXT-X-ENDLIST"].join(
         "\n"
       )
     );
@@ -89,7 +118,7 @@ const runFfmpeg = async (lessonId: string, inputPath: string) => {
 
     return {
       playlistRelativePath: path.relative(storageRoot(), outputPlaylist),
-      durationSeconds: 10
+      durationSeconds
     };
   }
 
@@ -142,7 +171,7 @@ const runFfmpeg = async (lessonId: string, inputPath: string) => {
       if (code === 0) {
         resolve({
           playlistRelativePath: path.relative(storageRoot(), outputPlaylist),
-          durationSeconds: 10
+          durationSeconds
         });
         return;
       }
