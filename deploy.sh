@@ -21,7 +21,7 @@ npx prisma migrate deploy >> "$LOG_FILE" 2>&1
 
 # Kill old backend process
 echo "Stopping old backend process..." >> "$LOG_FILE"
-pkill -f "node.*backend" || true
+pkill -f "node.*backend" 2>/dev/null || true
 sleep 2
 
 # Start backend
