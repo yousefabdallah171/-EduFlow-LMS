@@ -25,7 +25,7 @@ export const LandingHero = ({ prefix, isAr }: { prefix: string; isAr: boolean })
     <section className="landing-hero landing-section" data-landing-section>
       <div className="landing-hero-grid">
         <div className="landing-hero-copy">
-          <span className="landing-eyebrow">
+          <span className="landing-eyebrow landing-reveal landing-reveal--hero-eyebrow">
             <span className="landing-eyebrow-dot" aria-hidden="true" />
             <span className="landing-eyebrow-text">{badge}</span>
             <span className="landing-eyebrow-sep" aria-hidden="true">
@@ -34,7 +34,7 @@ export const LandingHero = ({ prefix, isAr }: { prefix: string; isAr: boolean })
             <span className="landing-eyebrow-meta">{badgeMeta}</span>
           </span>
 
-          <h1 className="landing-hero-title">
+          <h1 className="landing-hero-title landing-reveal landing-reveal--hero-title">
             {title[0]} <span className="landing-typed">{title[1]}</span> {title[2]}
             <span className="block">
               {title[3]} <span className="landing-typed">{title[4]}</span>
@@ -44,9 +44,9 @@ export const LandingHero = ({ prefix, isAr }: { prefix: string; isAr: boolean })
             </span>
           </h1>
 
-          <p className="landing-hero-subtitle">{subtitle}</p>
+          <p className="landing-hero-subtitle landing-reveal landing-reveal--hero-subtitle">{subtitle}</p>
 
-          <div className="landing-tech-pills" dir="ltr">
+          <div className="landing-tech-pills landing-reveal landing-reveal--hero-tech" dir="ltr">
             {tech.map((pill, index) => (
               <span className={`landing-tech-pill ${techPillVariants[index] ?? "cursor"}`} key={pill}>
                 {pill}
@@ -54,7 +54,7 @@ export const LandingHero = ({ prefix, isAr }: { prefix: string; isAr: boolean })
             ))}
           </div>
 
-          <div className="landing-hero-actions">
+          <div className="landing-hero-actions landing-reveal landing-reveal--hero-actions">
             <Link className="reference-button" to={`${prefix}/register`}>
               {ctaPrimary}
               <ArrowLeft className="icon-dir h-4 w-4" />
@@ -64,7 +64,7 @@ export const LandingHero = ({ prefix, isAr }: { prefix: string; isAr: boolean })
             </Link>
           </div>
 
-          <div className="landing-trust-row">
+          <div className="landing-trust-row landing-reveal landing-reveal--hero-trust">
             {trust.map((item, index) => (
               <span key={item} className="landing-trust-item">
                 {item}
@@ -73,7 +73,7 @@ export const LandingHero = ({ prefix, isAr }: { prefix: string; isAr: boolean })
             ))}
           </div>
 
-          <div className="landing-stats-compact">
+          <div className="landing-stats-compact landing-reveal landing-reveal--hero-stats">
             <div className="landing-stats-topline" aria-hidden="true" />
             <div className="landing-stats-grid">
               {stats.map((stat) => (
@@ -86,7 +86,7 @@ export const LandingHero = ({ prefix, isAr }: { prefix: string; isAr: boolean })
           </div>
         </div>
 
-        <div className="landing-mockup-wrap">
+        <div className="landing-mockup-wrap landing-reveal landing-reveal--hero-mockup">
           <div className="landing-mockup">
             <div className="landing-window-bar">
               <div className="landing-window-dots" aria-hidden="true">

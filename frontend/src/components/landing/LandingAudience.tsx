@@ -16,19 +16,19 @@ export const LandingAudience = ({ isAr }: { isAr: boolean }) => {
   return (
     <section className="landing-section" data-landing-section>
       <div className="section-header section-header--left">
-        <div className="landing-eyebrow">
+        <div className="landing-eyebrow landing-reveal landing-reveal--audience-eyebrow">
           <span className="landing-eyebrow-dot" aria-hidden="true" />
           <span className="landing-eyebrow-text">{eyebrow}</span>
         </div>
-        <h2 className="landing-section-title">
+        <h2 className="landing-section-title landing-reveal landing-reveal--audience-title">
           {title} <span className="landing-typed">{accent}</span>
         </h2>
-        <p className="landing-section-subtitle">{subtitle}</p>
+        <p className="landing-section-subtitle landing-reveal landing-reveal--audience-subtitle">{subtitle}</p>
       </div>
 
-      <div className="landing-audience-grid">
+      <div className="landing-audience-grid asymmetric">
         {cards.map((item, index) => (
-          <article className="landing-audience-card" key={item.title}>
+          <article className="landing-audience-card landing-reveal" key={item.title} style={{ ["--audience-index" as never]: index }}>
             <div className="landing-audience-kicker">{String(index + 1).padStart(2, "0")}</div>
             <h3 className="landing-audience-title">{item.title}</h3>
             <p className="landing-audience-copy">{item.body}</p>
