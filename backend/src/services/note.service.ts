@@ -49,8 +49,8 @@ export const noteService = {
     }
     return notes;
   },
-  async upsert(userId: string, lessonId: string, content: string) {
-    const note = await noteRepository.upsert(userId, lessonId, content);
+  async create(userId: string, lessonId: string, content: string, positionSeconds: number = 0) {
+    const note = await noteRepository.create(userId, lessonId, content, positionSeconds);
     await noteService.invalidateNotesCache(userId);
     return note;
   },
@@ -77,7 +77,7 @@ export const noteService = {
   async exportText(userId: string): Promise<string> {
     const notes = await noteService.list(userId);
     return notes
-      .map((n) => `Lesson: ${n.lesson.titleEn}\n${n.content}`)
+      .map((n) => `Lesson: ${n.lesson.titleEn} (${Math.floor(n.positionSeconds / 60)}:${String(n.positionSeconds % 60).padStart(2, "0")})\n${n.content}`)
       .join("\n\n---\n\n");
   }
 };

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, FileText, Save, Sparkles, Trash2 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { Download, FileText, Save, Sparkles, Trash2, ExternalLink } from "lucide-react";
+import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -15,6 +15,7 @@ import { pickLocalizedText, resolveLocale } from "@/lib/locale";
 type Note = {
   id: string;
   content: string;
+  positionSeconds: number;
   updatedAt: string;
   lesson: { id: string; titleEn: string; titleAr: string; sortOrder: number };
 };
@@ -114,14 +115,26 @@ export const StudentNotes = () => {
               return (
                 <div key={note.id} className="dashboard-panel p-5">
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-                        {pickLocalizedText(currentLocale, note.lesson.titleEn, note.lesson.titleAr)}
-                      </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                          {pickLocalizedText(currentLocale, note.lesson.titleEn, note.lesson.titleAr)}
+                        </p>
+                        <span className="text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
+                          {Math.floor(note.positionSeconds / 60)}:{String(note.positionSeconds % 60).padStart(2, "0")}
+                        </span>
+                      </div>
                       <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
                         {isAr ? "حرر الملاحظة ثم احفظها لتظل مرتبطة بالدرس." : "Edit your note here and save it to keep it attached to this lesson."}
                       </p>
                     </div>
+                    <Link
+                      to={`/${locale}/lessons/${note.lesson.id}?notePosition=${note.positionSeconds}`}
+                      className="flex-shrink-0 inline-flex min-h-10 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium no-underline transition-colors hover:bg-surface2"
+                      style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-secondary)" }}
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </Link>
                   </div>
 
                   <textarea

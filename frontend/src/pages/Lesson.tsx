@@ -1,8 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { ArrowLeft, ArrowRight, Check, LockKeyhole, TriangleAlert } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { ArrowLeft, ArrowRight, Check, LockKeyhole, TriangleAlert, Plus } from "lucide-react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useState, useEffect, useRef } from "react";
 
 import { VideoPlayer } from "@/components/shared/VideoPlayer";
 import { ResourcesList } from "@/components/student/ResourcesList";
@@ -49,8 +50,22 @@ type LessonNavItem = {
   index: number;
 };
 
+type Note = {
+  id: string;
+  content: string;
+  positionSeconds: number;
+  createdAt: string;
+  updatedAt: string;
+  lesson: {
+    id: string;
+    titleEn: string;
+    titleAr: string | null;
+  };
+};
+
 export const Lesson = () => {
   const { lessonId, locale } = useParams();
+  const [searchParams] = useSearchParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const currentLocale = resolveLocale(locale);
   const { t } = useTranslation();
@@ -59,6 +74,32 @@ export const Lesson = () => {
   const { statusQuery } = useEnrollment();
   const isEnrolled = statusQuery.data?.enrolled && statusQuery.data?.status === "ACTIVE";
   const { lessonQuery, renewToken } = useVideoToken(lessonId, Boolean(isEnrolled));
+  const [currentPosition, setCurrentPosition] = useState(0);
+  const [noteInput, setNoteInput] = useState("");
+  const notePositionParam = searchParams.get("notePosition");
+  const targetPosition = notePositionParam ? parseInt(notePositionParam, 10) : undefined;
+  const notesQuery = useQuery({
+    queryKey: ["lesson-notes", lessonId],
+    enabled: Boolean(isEnrolled && lessonId && !demo),
+    retry: false,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      const response = await api.get<{ notes: Note[] }>("/student/notes");
+      return response.data.notes.filter((note) => note.lesson.id === lessonId);
+    }
+  });
+
+  const createNoteMutation = useMutation({
+    mutationFn: async (payload: { content: string; positionSeconds: number }) => {
+      if (!lessonId) throw new Error("No lesson ID");
+      return api.post("/student/notes", { lessonId, ...payload });
+    },
+    onSuccess: () => {
+      setNoteInput("");
+      void queryClient.invalidateQueries({ queryKey: ["lesson-notes", lessonId] });
+    }
+  });
+
   const lessonsQuery = useQuery({
     queryKey: ["course-lessons"],
     enabled: Boolean(isEnrolled),
@@ -356,11 +397,12 @@ export const Lesson = () => {
               lessonTitle={currentLessonTitle}
               sourceUrl={lessonQuery.data.hlsUrl}
               watermark={lessonQuery.data.watermark}
-              initialPositionSeconds={lessonProgress.lastPositionSeconds}
+              initialPositionSeconds={targetPosition ?? lessonProgress.lastPositionSeconds}
               playbackExpiresAt={lessonQuery.data.expiresAt ?? null}
               onProgress={(payload) => {
                 void progressMutation.mutateAsync(payload);
               }}
+              onCurrentPositionChange={setCurrentPosition}
               onTokenExpired={() => {
                 void renewToken();
               }}
@@ -373,16 +415,80 @@ export const Lesson = () => {
                 borderColor: "var(--color-border)"
               }}
             >
-              <div className="flex flex-wrap items-start justify-between gap-5">
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                    {t("lesson.notes")}
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-                    {currentLessonDescription || t("lesson.titleFallback")}
-                  </p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                {t("lesson.notes")}
+              </p>
+
+              <div className="mt-4 space-y-3">
+                <div className="flex items-end gap-3">
+                  <div className="flex-1">
+                    <textarea
+                      value={noteInput}
+                      onChange={(e) => setNoteInput(e.target.value)}
+                      placeholder={t("lesson.notePlaceholder") || "Add a note..."}
+                      className="w-full resize-none rounded-xl border p-3 text-sm"
+                      style={{
+                        borderColor: "var(--color-border-strong)",
+                        backgroundColor: "var(--color-surface)",
+                        color: "var(--color-text-primary)"
+                      }}
+                      rows={2}
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (noteInput.trim()) {
+                        void createNoteMutation.mutateAsync({
+                          content: noteInput,
+                          positionSeconds: currentPosition
+                        });
+                      }
+                    }}
+                    disabled={createNoteMutation.isPending || !noteInput.trim()}
+                    className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-4 font-medium text-white transition-all disabled:opacity-50"
+                    style={{ background: createNoteMutation.isPending ? "var(--color-text-muted)" : "var(--gradient-brand)" }}
+                    type="button"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="text-sm font-semibold">{t("common.add") || "Add"}</span>
+                  </button>
                 </div>
 
+                <div className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                  {isAr ? "الموضع الحالي:" : "Current position:"} <span style={{ color: "var(--color-text-primary)" }}>{Math.floor(currentPosition / 60)}:{String(currentPosition % 60).padStart(2, "0")}</span>
+                </div>
+              </div>
+
+              {notesQuery.data && notesQuery.data.length > 0 ? (
+                <div className="mt-4 space-y-2 border-t pt-4" style={{ borderColor: "var(--color-border)" }}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                    {isAr ? "ملاحظاتك" : "Your notes"} ({notesQuery.data.length})
+                  </p>
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {notesQuery.data.map((note) => (
+                      <div
+                        key={note.id}
+                        className="rounded-lg border p-3 text-sm"
+                        style={{
+                          borderColor: "var(--color-border-strong)",
+                          backgroundColor: "var(--color-surface-2)"
+                        }}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p style={{ color: "var(--color-text-primary)" }}>{note.content}</p>
+                          </div>
+                          <span className="flex-shrink-0 text-xs font-semibold whitespace-nowrap" style={{ color: "var(--color-text-muted)" }}>
+                            {Math.floor(note.positionSeconds / 60)}:{String(note.positionSeconds % 60).padStart(2, "0")}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-5 border-t pt-4" style={{ borderColor: "var(--color-border)" }}>
                 <div className="flex flex-shrink-0 flex-wrap items-center gap-2.5">
                   {previousLesson ? (
                     <Link

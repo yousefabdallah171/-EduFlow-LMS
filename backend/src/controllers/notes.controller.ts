@@ -4,7 +4,7 @@ import { NoteError, noteService } from "../services/note.service.js";
 
 const getParam = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
-const noteSchema = z.object({ lessonId: z.string().min(1), content: z.string().min(1) });
+const noteSchema = z.object({ lessonId: z.string().min(1), content: z.string().min(1), positionSeconds: z.number().int().min(0).optional() });
 const updateSchema = z.object({ content: z.string().min(1) });
 const handleNoteError = (error: unknown, res: Response, next: NextFunction) => {
   if (error instanceof z.ZodError) {
@@ -32,8 +32,8 @@ export const notesController = {
   },
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const { lessonId, content } = noteSchema.parse(req.body);
-      const note = await noteService.upsert(req.user!.userId, lessonId, content);
+      const { lessonId, content, positionSeconds } = noteSchema.parse(req.body);
+      const note = await noteService.create(req.user!.userId, lessonId, content, positionSeconds ?? 0);
       res.status(201).json(note);
     } catch (e) { handleNoteError(e, res, next); }
   },

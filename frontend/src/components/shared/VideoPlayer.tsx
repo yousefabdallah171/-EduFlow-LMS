@@ -23,6 +23,7 @@ type VideoPlayerProps = {
   } | null;
   initialPositionSeconds?: number;
   onProgress?: (payload: { lastPositionSeconds: number; watchTimeSeconds: number; completed: boolean }) => void;
+  onCurrentPositionChange?: (seconds: number) => void;
   onTokenExpired?: () => void;
   playbackExpiresAt?: string | null;
 };
@@ -76,6 +77,7 @@ export const VideoPlayer = ({
   watermark,
   initialPositionSeconds = 0,
   onProgress,
+  onCurrentPositionChange,
   onTokenExpired,
   playbackExpiresAt
 }: VideoPlayerProps) => {
@@ -358,6 +360,8 @@ export const VideoPlayer = ({
           onTimeUpdate={(event) => {
             const video = event.currentTarget;
             const currentTime = Math.floor(video.currentTime);
+
+            onCurrentPositionChange?.(currentTime);
 
             if (currentTime - lastReportedPositionRef.current < 5) {
               return;
