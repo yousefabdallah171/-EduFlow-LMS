@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, Clock3, PlayCircle } from "lucide-react";
@@ -14,7 +15,7 @@ interface LessonCardProps {
   locale?: string;
 }
 
-export const LessonCard = ({
+export const LessonCard = memo(({
   id,
   titleEn,
   titleAr,
@@ -114,4 +115,4 @@ export const LessonCard = ({
       </div>
     </Link>
   );
-};
+});

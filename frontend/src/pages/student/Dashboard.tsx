@@ -3,10 +3,10 @@ import { ArrowRight, BookOpenCheck, Download, FileText, Gauge, PlayCircle, Recei
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { SkeletonDashboard } from "@/components/skeletons";
 import { api } from "@/lib/api";
 import { formatDate, resolveLocale } from "@/lib/locale";
 
@@ -71,13 +71,7 @@ export const StudentDashboard = () => {
         />
 
         {isLoading ? (
-          <>
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.95fr)]">
-              <Skeleton className="h-56 rounded-[28px]" />
-              <Skeleton className="h-56 rounded-[28px]" />
-            </div>
-            <Skeleton className="h-36 rounded-[28px]" />
-          </>
+          <SkeletonDashboard />
         ) : (
           <>
             <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.95fr)]">

@@ -6,7 +6,8 @@ services:
       target: dev
     command: sh -c "cd /app/frontend && pnpm dev --host 0.0.0.0 --port 5173"
     depends_on:
-      - backend
+      backend:
+        condition: service_started
     environment:
       CHOKIDAR_USEPOLLING: "true"
       CHOKIDAR_INTERVAL: "300"
@@ -25,10 +26,12 @@ services:
       context: .
       dockerfile: docker/backend.Dockerfile
       target: dev
-    command: sh -c "pnpm prisma:generate && until pnpm exec prisma migrate deploy; do echo 'Waiting for database...'; sleep 2; done; pnpm exec prisma db seed && pnpm dev"
+    command: sh -c "cd /app && pnpm --filter backend prisma:generate && until (pnpm --filter backend exec prisma migrate deploy || pnpm --filter backend exec prisma db push --skip-generate); do echo 'Waiting for database...'; sleep 2; done; pnpm --filter backend prisma:seed && pnpm --filter backend dev"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     env_file:
       - .env
     environment:
@@ -40,8 +43,11 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
       NODE_ENV: ${NODE_ENV}
+      BACKEND_PORT: ${BACKEND_PORT}
     networks:
       - eduflow_net
+    ports:
+      - "3000:3000"
     volumes:
       - .:/app
       - backend_workspace_node_modules:/app/node_modules
@@ -58,6 +64,12 @@ services:
       - eduflow_net
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   redis:
     image: redis:7-alpine
