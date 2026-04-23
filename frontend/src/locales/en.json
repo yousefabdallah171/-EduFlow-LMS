@@ -204,6 +204,77 @@
     { "title": "Average time saved", "subtitle": "+75% per project", "highlight": true },
     { "title": "Repeatable workflow", "subtitle": "For any project and any stack" }
   ],
+  "landing.pricing.eyebrow": "💳 Early Access — limited price",
+  "landing.pricing.titleLines": ["Invest in a", "workflow that gives you", "your time back"],
+  "landing.pricing.subtitle": "The Early Access price is available for the first 30 reservations only—then it returns to the original price.",
+  "landing.pricing.guarantee.badge": "Refund guarantee",
+  "landing.pricing.guarantee.title": "If you follow the steps and apply the workflow seriously, but still can’t ship the app idea in your head—you get your money back.",
+  "landing.pricing.guarantee.body": "This guarantee is for people who actually execute (not quick skimming). The goal is a real result on your project—not theoretical content.",
+  "landing.pricing.cards": [
+    {
+      "id": "core-course",
+      "variant": "starter",
+      "kicker": "STARTER",
+      "title": "The full course",
+      "description": "All 7 phases. Learn the workflow and apply it yourself.",
+      "oldPrice": "4000 EGP",
+      "price": "999",
+      "currency": "EGP",
+      "savePill": "75% off — save 3000 EGP",
+      "features": [
+        "All 7 phases recorded",
+        "PRD + Spec Kit templates",
+        "Ready CLAUDE.md template",
+        "Lifetime access",
+        "Future updates"
+      ],
+      "cta": "Reserve — 999 EGP"
+    },
+    {
+      "id": "course-review-session",
+      "variant": "featured",
+      "featuredBadge": "🔥 Most popular (90% choose this)",
+      "kicker": "RECOMMENDED",
+      "title": "Course + review session",
+      "description": "The full workflow + one 1:1 review session with me for your real project. If you work alone you may waste time—this cuts the path.",
+      "oldPrice": "5000 EGP",
+      "price": "1999",
+      "currency": "EGP",
+      "savePill": "60% off — save 3000 EGP",
+      "priceNote": "One session can save you months of confusion",
+      "features": [
+        "Everything in Starter",
+        "45-minute personal session",
+        "Review your real project",
+        "A custom execution plan",
+        "Full session recording",
+        "Unlimited questions during the session"
+      ],
+      "cta": "⚡ Reserve — 1999 EGP"
+    },
+    {
+      "id": "course-month-followup",
+      "variant": "vip",
+      "kicker": "VIP",
+      "title": "Course + 1 month follow-up",
+      "soldOutBadge": "0 seats available this month",
+      "soldOutBody": "This package is closed for this month.\nFull course + weekly sessions for a month. It opens again when a new cohort is available.",
+      "oldPrice": "12500 EGP",
+      "price": "8000",
+      "currency": "EGP",
+      "savePill": "36% off — save 4500 EGP",
+      "features": [
+        "Everything in Recommended",
+        "4 weekly sessions × 45 minutes",
+        "Daily WhatsApp follow-up",
+        "Review all code you write",
+        "A complete project plan with you from day one",
+        "Priority support all month"
+      ],
+      "ctaDisabled": "Closed this month — no seats"
+    }
+  ],
+  "landing.pricing.trust": ["🔒 Secure Paymob payment", "↩ Direct contact with me", "⚡ Confirmation within an hour"],
   "actions.apply": "Apply",
   "actions.cancel": "Cancel",
   "actions.confirm": "Confirm",

@@ -647,5 +647,76 @@
     { "title": "متوسط توفير الوقت", "subtitle": "+75% لكل مشروع", "highlight": true },
     { "title": "workflow قابل للتكرار", "subtitle": "على أي مشروع وأي stack" }
   ],
+  "landing.pricing.eyebrow": "💳 Early Access — سعر محدود",
+  "landing.pricing.titleLines": ["استثمر في", "workflow بيرجعلك", "وقتك"],
+  "landing.pricing.subtitle": "سعر الـ Early Access متاح لأول 30 حاجز بس، وبعدها بيرجع للسعر الأصلي.",
+  "landing.pricing.guarantee.badge": "ضمان استرجاع",
+  "landing.pricing.guarantee.title": "لو مشيت ورا الخطوات وطبقت الـ workflow بجد، ومع ذلك ماقدرتش تطلع فكرة الأبلكيشن اللي في دماغك، ترجع فلوسك.",
+  "landing.pricing.guarantee.body": "الضمان ده للناس اللي فعلاً تمشي على الخطوات وتنفذ، مش مجرد مشاهدة سريعة. الفكرة هنا إنك تدخل وأنت عارف إن الهدف نتيجة حقيقية على مشروعك، مش مجرد محتوى نظري.",
+  "landing.pricing.cards": [
+    {
+      "id": "core-course",
+      "variant": "starter",
+      "kicker": "STARTER",
+      "title": "الكورس كامل",
+      "description": "الـ 7 مراحل كاملة، تتعلم الـ workflow وتطبقه على مشروعك بنفسك.",
+      "oldPrice": "4000 جنيه",
+      "price": "999",
+      "currency": "جنيه",
+      "savePill": "خصم 75% — وفّر 3000 جنيه",
+      "features": [
+        "الـ 7 مراحل كاملة مسجلة",
+        "PRD + Spec Kit templates",
+        "CLAUDE.md template جاهز",
+        "وصول مدى الحياة",
+        "أي تحديثات جاية"
+      ],
+      "cta": "احجز مكانك — 999 جنيه"
+    },
+    {
+      "id": "course-review-session",
+      "variant": "featured",
+      "featuredBadge": "🔥 الأكثر طلبًا (90% من الطلاب بيختاروه)",
+      "kicker": "RECOMMENDED",
+      "title": "الكورس + جلسة مراجعة",
+      "description": "الـ workflow كامل + جلسة واحدة معايا شخصياً تراجع فيها مشروعك الحقيقي. لو اشتغلت لوحدك ممكن تضيع وقت كتير — هنا بتختصر الطريق.",
+      "oldPrice": "5000 جنيه",
+      "price": "1999",
+      "currency": "جنيه",
+      "savePill": "خصم 60% — وفّر 3000 جنيه",
+      "priceNote": "جلسة واحدة بس ممكن توفر عليك شهور من التخبيط",
+      "features": [
+        "كل حاجة في الـ Starter",
+        "جلسة 45 دقيقة معايا شخصياً",
+        "مراجعة مشروعك الحقيقي",
+        "خطة تنفيذ مخصوصة ليك",
+        "تسجيل الجلسة كاملة",
+        "أسئلة غير محدودة في الجلسة"
+      ],
+      "cta": "⚡ احجز مكانك — 1999 جنيه"
+    },
+    {
+      "id": "course-month-followup",
+      "variant": "vip",
+      "kicker": "VIP",
+      "title": "الكورس + شهر متابعة",
+      "soldOutBadge": "0 مقاعد متاحة هذا الشهر",
+      "soldOutBody": "الباقة دي مقفولة حاليًا لهذا الشهر.\nالكورس كامل + جلسة أسبوعية معايا لمدة شهر كامل، وبتفتح مرة تانية لما يتاح وقت لمتابعة دفعة جديدة.",
+      "oldPrice": "12500 جنيه",
+      "price": "8000",
+      "currency": "جنيه",
+      "savePill": "خصم 36% — وفّر 4500 جنيه",
+      "features": [
+        "كل حاجة في الـ Recommended",
+        "4 جلسات أسبوعية × 45 دقيقة",
+        "متابعة يومية على الواتساب",
+        "مراجعة كل الكود اللي بتكتبه",
+        "خطة مشروع كاملة معك من الأول",
+        "priority support طول الشهر"
+      ],
+      "ctaDisabled": "مقفول هذا الشهر — لا توجد مقاعد"
+    }
+  ],
+  "landing.pricing.trust": ["🔒 دفع آمن عبر Paymob", "↩ تواصل مباشر معايا", "⚡ تأكيد الحجز خلال ساعة"],
   "video.unsupported": "هذا المتصفح لا يستطيع تشغيل HLS المحمي في هذه البيئة. جرّب Chrome أو Firefox أو Safari مع دعم HLS."
 }
