@@ -23,6 +23,28 @@
     { "title": "Developer عايز يسرّع شغله", "body": "لو أنت Developer وعايز تشتغل أسرع، بوضوح أكتر، ومن غير ما تضيع وقتك في إعادة الشرح والتصحيح، فالكورس ده هيغير طريقة شغلك اليومية مع الـ AI." },
     { "title": "عندك أساس وعايز نظام", "body": "لو مش مبتدئ كامل، وعندك أساس برمجي أو خبرة عملية بسيطة، لكن محتاج workflow واضح من أول الفكرة لحد الـ production، فده بالضبط اللي هتتعلمه هنا." }
   ],
+  "landing.workflow.eyebrow": "ليه الـ AI مش بيشتغل معاك؟",
+  "landing.workflow.title": ["مش المشكلة فيك", "المشكلة في الـ", "workflow"],
+  "landing.workflow.subtitle": "مش لازم تبقى خبير في الـ AI، بس محتاج تعرف الـ workflow الصح",
+  "landing.workflow.before": "قبل",
+  "landing.workflow.after": "بعد",
+  "landing.workflow.items": [
+    {
+      "before": "بتشرحله المشروع كل مرة من الأول وبعد شوية بيبدأ يكتب كود مختلف ومش متسق ومش فاكر اللي اتفقتوا عليه.",
+      "after": "الـ CLAUDE.md والـ Spec Kit بيخلي الـ AI فاكر كل حاجة: هيكل المشروع، قراراته، والـ conventions من أول سطر لآخر سطر.",
+      "pills": ["CLAUDE.md", "Spec Kit", "context: persistent"]
+    },
+    {
+      "before": "بتقوله اعمللي UI وبيطلعلك حاجة تقليدية ومش بتعبر عن اللي في دماغك خالص وبتقعد تصحح فيها ساعات.",
+      "after": "Stitch بيحول الـ Spec بتاعك لـ UI احترافي في ثواني، وبعدها Cursor بيحوله لكود شغال على طول من غير ما تلمس Figma.",
+      "pills": ["Stitch", "Cursor", "design ← code: <30s"]
+    },
+    {
+      "before": "لما المشروع يكبر الـ AI يبدأ يغلط أكتر وانت تتعب أكتر، وفي النهاية بتكتب الكود بإيدك أحسن.",
+      "after": "الـ Spec Kit بيقسم أي مشروع لـ tasks صغيرة، وكل task الـ AI بيخلصها صح من أول مرة من غير ما يتوه أو يتناقض مع نفسه.",
+      "pills": ["Spec Kit", "Composer", "task size: focused"]
+    }
+  ],
   "actions.apply": "تطبيق",
   "actions.cancel": "إلغاء",
   "actions.confirm": "تأكيد",

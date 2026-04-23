@@ -23,6 +23,28 @@
     { "title": "A developer who wants speed", "body": "Work faster with more clarity, without wasting time re-explaining and fixing basics. This course upgrades how you build day-to-day with AI." },
     { "title": "You know the basics and want a system", "body": "If you are not a complete beginner but need a clear workflow from idea to production, this is exactly what you will learn." }
   ],
+  "landing.workflow.eyebrow": "Why AI doesn't work for you",
+  "landing.workflow.title": ["It's not you,", "it's the", "workflow"],
+  "landing.workflow.subtitle": "You don't need to be an AI expert — you need the right workflow.",
+  "landing.workflow.before": "Before",
+  "landing.workflow.after": "After",
+  "landing.workflow.items": [
+    {
+      "before": "You explain the project from scratch every time. After a while it produces inconsistent code and forgets the decisions you agreed on.",
+      "after": "CLAUDE.md + Spec Kit make context persistent: structure, decisions, and conventions from the first line to the last.",
+      "pills": ["CLAUDE.md", "Spec Kit", "context: persistent"]
+    },
+    {
+      "before": "You ask for UI and it gives you something generic that doesn't match what you see in your head, then you spend hours correcting it.",
+      "after": "Stitch turns your spec into a polished UI in seconds, then Cursor turns it into working code — without touching Figma.",
+      "pills": ["Stitch", "Cursor", "design ← code: <30s"]
+    },
+    {
+      "before": "As the project grows, AI makes more mistakes and you waste more time — until writing by hand feels faster.",
+      "after": "Spec Kit breaks any project into focused tasks, so the AI completes each task cleanly without drifting or contradicting itself.",
+      "pills": ["Spec Kit", "Composer", "task size: focused"]
+    }
+  ],
   "actions.apply": "Apply",
   "actions.cancel": "Cancel",
   "actions.confirm": "Confirm",

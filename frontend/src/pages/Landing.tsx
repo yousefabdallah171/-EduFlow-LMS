@@ -18,6 +18,7 @@ import { getPublicTrustCopy } from "@/lib/public-trust-copy";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import { LandingHero } from "@/components/landing/LandingHero";
 import { LandingAudience } from "@/components/landing/LandingAudience";
+import { LandingWorkflowSection } from "@/components/landing/LandingWorkflowSection";
 
 const phaseIcons = [FileText, Layers3, Cpu, TestTube2, ShieldCheck, Search, Rocket] as const;
 
@@ -158,24 +159,7 @@ export const Landing = () => {
       <div className="reference-shell">
         <LandingHero prefix={prefix} isAr={isAr} />
         <LandingAudience isAr={isAr} />
-
-        <section className="reference-card reference-card--lime mt-12 p-8 md:p-10">
-          <span className="reference-badge">
-            <span className="reference-dot" aria-hidden="true" />
-            {copy.problemBadge}
-          </span>
-          <h2 className="mt-5 font-display text-3xl font-black tracking-tight">
-            {copy.problemTitle} <span className="accent-word">{copy.problemAccent}</span>
-          </h2>
-          <div className="mt-7 grid gap-3 md:grid-cols-2">
-            {copy.problems.map((item) => (
-              <div className="reference-card p-6" key={item.title}>
-                <p className="text-sm font-black" style={{ color: "var(--color-text-primary)" }}>{item.title}</p>
-                <p className="mt-2 text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>{item.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <LandingWorkflowSection />
 
         <section className="mt-12">
           <header className="text-center">
