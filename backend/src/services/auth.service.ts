@@ -35,6 +35,7 @@ export type AuthUser = {
   locale: "en" | "ar";
   theme: "light" | "dark";
   avatarUrl: string | null;
+  oauthProvider: "email" | "google";
 };
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
@@ -50,7 +51,8 @@ const toAuthUser = (user: User): AuthUser => ({
   role: user.role,
   locale: user.locale,
   theme: user.theme,
-  avatarUrl: user.avatarUrl
+  avatarUrl: user.avatarUrl,
+  oauthProvider: user.oauthProvider
 });
 
 const getRefreshExpiry = () => new Date(Date.now() + REFRESH_SESSION_WINDOW_MS);

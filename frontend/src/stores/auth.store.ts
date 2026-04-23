@@ -8,6 +8,7 @@ export type AuthUser = {
   locale?: "en" | "ar";
   theme?: "light" | "dark";
   avatarUrl?: string | null;
+  oauthProvider?: "email" | "google";
 };
 
 type AuthState = {

@@ -17,6 +17,7 @@ type ProfileData = {
   avatarUrl: string | null;
   role: string;
   emailVerified: boolean;
+  oauthProvider: "email" | "google";
 };
 
 export const StudentProfile = () => {
@@ -175,76 +176,82 @@ export const StudentProfile = () => {
             <h2 className="text-xs font-bold uppercase tracking-[0.16em]">{t("student.profile.security")}</h2>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            <label className="block">
-              <span className="ui-field-label">
-                {t("student.profile.currentPassword")}
-              </span>
-              <input
-                type="password"
-                className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
-                style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-page)", color: "var(--color-text-primary)" }}
-                value={passwords.currentPassword}
-                onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
-              />
-            </label>
+          {data?.oauthProvider === "google" ? (
+            <div className="ui-feedback">
+              <p>
+                {isAr
+                  ? "هذا الحساب يستخدم تسجيل الدخول عبر Google. تغيير كلمة المرور من داخل الموقع غير متاح."
+                  : "This account uses Google sign-in. Password changes are disabled for Google accounts."}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <label className="block">
+                  <span className="ui-field-label">{t("student.profile.currentPassword")}</span>
+                  <input
+                    type="password"
+                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+                    style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-page)", color: "var(--color-text-primary)" }}
+                    value={passwords.currentPassword}
+                    onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
+                  />
+                </label>
 
-            <label className="block">
-              <span className="ui-field-label">
-                {t("common.newPassword")}
-              </span>
-              <input
-                type="password"
-                className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
-                style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-page)", color: "var(--color-text-primary)" }}
-                value={passwords.newPassword}
-                onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
-              />
-            </label>
+                <label className="block">
+                  <span className="ui-field-label">{t("common.newPassword")}</span>
+                  <input
+                    type="password"
+                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+                    style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-page)", color: "var(--color-text-primary)" }}
+                    value={passwords.newPassword}
+                    onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
+                  />
+                </label>
 
-            <label className="block">
-              <span className="ui-field-label">
-                {t("student.profile.confirmPassword")}
-              </span>
-              <input
-                type="password"
-                className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
-                style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-page)", color: "var(--color-text-primary)" }}
-                value={passwords.confirmNewPassword}
-                onChange={(e) => setPasswords({ ...passwords, confirmNewPassword: e.target.value })}
-              />
-            </label>
-          </div>
+                <label className="block">
+                  <span className="ui-field-label">{t("student.profile.confirmPassword")}</span>
+                  <input
+                    type="password"
+                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
+                    style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-page)", color: "var(--color-text-primary)" }}
+                    value={passwords.confirmNewPassword}
+                    onChange={(e) => setPasswords({ ...passwords, confirmNewPassword: e.target.value })}
+                  />
+                </label>
+              </div>
 
-          <div className="mt-4 ui-feedback">
-            <p>{t("auth.resetPassword.subtitle")}</p>
-          </div>
+              <div className="mt-4 ui-feedback">
+                <p>{t("auth.resetPassword.subtitle")}</p>
+              </div>
 
-          <button
-            className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:opacity-95 disabled:opacity-50 sm:w-auto"
-            style={{ background: "var(--gradient-brand)" }}
-            onClick={() => {
-              if (!passwords.currentPassword) {
-                toast.error(isAr ? "كلمة المرور الحالية مطلوبة" : "Current password is required");
-                return;
-              }
-              const pwdError = validatePassword(passwords.newPassword);
-              if (pwdError) {
-                toast.error(pwdError);
-                return;
-              }
-              if (passwords.newPassword !== passwords.confirmNewPassword) {
-                toast.error(t("student.profile.passwordMismatch"));
-                return;
-              }
-              void passwordMut.mutateAsync();
-            }}
-            disabled={passwordMut.isPending}
-            type="button"
-          >
-            <KeyRound className="h-4 w-4" />
-            {passwordMut.isPending ? t("student.profile.updating") : t("actions.updatePassword")}
-          </button>
+              <button
+                className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:opacity-95 disabled:opacity-50 sm:w-auto"
+                style={{ background: "var(--gradient-brand)" }}
+                onClick={() => {
+                  if (!passwords.currentPassword) {
+                    toast.error(isAr ? "كلمة المرور الحالية مطلوبة" : "Current password is required");
+                    return;
+                  }
+                  const pwdError = validatePassword(passwords.newPassword);
+                  if (pwdError) {
+                    toast.error(pwdError);
+                    return;
+                  }
+                  if (passwords.newPassword !== passwords.confirmNewPassword) {
+                    toast.error(t("student.profile.passwordMismatch"));
+                    return;
+                  }
+                  void passwordMut.mutateAsync();
+                }}
+                disabled={passwordMut.isPending}
+                type="button"
+              >
+                <KeyRound className="h-4 w-4" />
+                {passwordMut.isPending ? t("student.profile.updating") : t("actions.updatePassword")}
+              </button>
+            </>
+          )}
         </section>
       </div>
     </StudentShell>
