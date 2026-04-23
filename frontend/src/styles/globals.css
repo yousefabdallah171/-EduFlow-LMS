@@ -99,7 +99,8 @@
 
   --color-brand:         oklch(0.86 0.22 128);
   --color-brand-hover:   oklch(0.91 0.2 128);
-  --color-brand-muted:   color-mix(in oklab, var(--color-brand) 14%, transparent);
+  /* Give active states a visible "brand wash" on near-black surfaces. */
+  --color-brand-muted:   color-mix(in oklab, var(--color-brand) 18%, var(--color-surface));
   --color-brand-text:    oklch(0.83 0.18 128);
   --color-brand-accent:  oklch(0.78 0.15 205);
   --gradient-brand:      linear-gradient(135deg, var(--color-brand) 0%, oklch(0.77 0.2 128) 100%);

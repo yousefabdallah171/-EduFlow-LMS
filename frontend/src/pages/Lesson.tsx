@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { ArrowLeft, ArrowRight, Check, LockKeyhole, TriangleAlert } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -169,6 +170,44 @@ export const Lesson = () => {
 
   if (!lessonQuery.data) {
     if (lessonQuery.isError) {
+      const errorStatus = axios.isAxiosError(lessonQuery.error) ? lessonQuery.error.response?.status : undefined;
+      const errorPayload = axios.isAxiosError(lessonQuery.error) ? lessonQuery.error.response?.data : undefined;
+      const errorCode =
+        errorPayload && typeof errorPayload === "object" && "error" in errorPayload
+          ? String((errorPayload as { error?: unknown }).error ?? "")
+          : "";
+      const unlocksAtRaw =
+        errorPayload && typeof errorPayload === "object" && "unlocksAt" in errorPayload
+          ? (errorPayload as { unlocksAt?: unknown }).unlocksAt
+          : undefined;
+      const unlocksAtDate = typeof unlocksAtRaw === "string" ? new Date(unlocksAtRaw) : null;
+      const formattedUnlockDate =
+        unlocksAtDate && !Number.isNaN(unlocksAtDate.getTime())
+          ? new Intl.DateTimeFormat(isAr ? "ar-EG" : "en", { dateStyle: "medium", timeStyle: "short" }).format(unlocksAtDate)
+          : null;
+
+      const notEnrolled = errorStatus === 401 || (errorStatus === 403 && errorCode === "NOT_ENROLLED");
+      const locked = errorStatus === 403 && errorCode === "LESSON_LOCKED";
+      const notFound = errorStatus === 404 || errorCode === "LESSON_NOT_FOUND";
+
+      const errorTitle = notEnrolled
+        ? t("lesson.enrollmentRequired")
+        : locked
+          ? t("lesson.lockedTitle")
+          : notFound
+            ? t("lesson.notFoundTitle")
+            : t("lesson.titleFallback");
+
+      const errorDescription = notEnrolled
+        ? t("lesson.enrollmentRequiredDesc")
+        : locked
+          ? formattedUnlockDate
+            ? t("lesson.lockedDesc", { date: formattedUnlockDate })
+            : t("lesson.lockedDescNoDate")
+          : notFound
+            ? t("lesson.notFoundDesc")
+            : t("lesson.errorGenericDesc");
+
       return (
         <div className="flex min-h-dvh items-center justify-center px-6 py-12" style={{ backgroundColor: "var(--color-page)" }}>
           <div
@@ -180,12 +219,21 @@ export const Lesson = () => {
             </div>
             <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-brand-600">{t("lesson.error")}</p>
             <h1 className="font-display mt-3 text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
-              {t("lesson.titleFallback")}
+              {errorTitle}
             </h1>
             <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-              {t("lesson.enrollmentRequiredDesc")}
+              {errorDescription}
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
+              {notEnrolled ? (
+                <Link
+                  className="rounded-xl px-4 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                  style={{ background: "var(--gradient-brand)" }}
+                  to={`${prefix}/checkout`}
+                >
+                  {t("lesson.goToCheckout")}
+                </Link>
+              ) : null}
               <Link
                 className="rounded-xl px-4 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
                 style={{ background: "var(--gradient-brand)" }}
