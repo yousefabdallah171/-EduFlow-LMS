@@ -1,14 +1,8 @@
-import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
-import {
-  ArrowLeft,
-  Search,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
 import { resolveLocale } from "@/lib/locale";
 import { contactInfo } from "@/lib/public-page-content";
-import { getPublicTrustCopy } from "@/lib/public-trust-copy";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import { LandingHero } from "@/components/landing/LandingHero";
 import { LandingAudience } from "@/components/landing/LandingAudience";
@@ -17,6 +11,7 @@ import { LandingCourseContentSection } from "@/components/landing/LandingCourseC
 import { LandingTimelineSection } from "@/components/landing/LandingTimelineSection";
 import { LandingNumbersSection } from "@/components/landing/LandingNumbersSection";
 import { LandingPricingSection } from "@/components/landing/LandingPricingSection";
+import { LandingFaqSection } from "@/components/landing/LandingFaqSection";
 
 const landingCopy = {
   ar: {
@@ -144,7 +139,6 @@ export const Landing = () => {
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const isAr = resolved === "ar";
   const copy = landingCopy[resolved];
-  const faq = getPublicTrustCopy(resolved).faq;
 
   useRevealOnScroll({ selector: "[data-landing-section]" });
 
@@ -160,54 +154,7 @@ export const Landing = () => {
         <LandingNumbersSection />
         <LandingPricingSection prefix={prefix} />
 
-        <section className="mt-12">
-          <header className="text-center">
-            <span className="reference-badge">
-              <span className="reference-dot" aria-hidden="true" />
-              {copy.faqBadge}
-            </span>
-            <h2 className="mt-5 font-display text-3xl font-black tracking-tight">
-              {faq.title} <span className="accent-word">{faq.accent}</span>
-            </h2>
-            <p className="mx-auto mt-3 max-w-2xl leading-8" style={{ color: "var(--color-text-secondary)" }}>
-              {faq.subtitle}
-            </p>
-          </header>
-
-          <div className="mt-7 space-y-3">
-            {faq.items.slice(0, 4).map((item, index) => (
-              <Disclosure defaultOpen={index === 0} key={item.q}>
-                {({ open }) => (
-                  <article className="reference-card faq-item-reference">
-                    <DisclosureButton className="faq-question-reference">
-                      <span>{item.q}</span>
-                      <span className="faq-toggle-reference">{open ? "x" : "+"}</span>
-                    </DisclosureButton>
-                    <DisclosurePanel className="faq-answer-reference">
-                      <p className="m-0">{item.a}</p>
-                      <div className="faq-pills-reference">
-                        {item.pills.map((pill) => (
-                          <span className="reference-chip" key={pill}>{pill}</span>
-                        ))}
-                      </div>
-                    </DisclosurePanel>
-                  </article>
-                )}
-              </Disclosure>
-            ))}
-          </div>
-
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <Link className="reference-button-secondary inline-flex items-center gap-2" to={`${prefix}/faq`}>
-              <Search className="h-4 w-4" />
-              {isAr ? "كل الأسئلة" : "All questions"}
-            </Link>
-            <a className="reference-button-secondary inline-flex items-center gap-2" href={contactInfo.whatsappUrl} target="_blank" rel="noreferrer">
-              <ShieldCheck className="h-4 w-4" />
-              {isAr ? "اسأل على واتساب" : "Ask on WhatsApp"}
-            </a>
-          </div>
-        </section>
+        <LandingFaqSection prefix={prefix} />
 
         <section className="reference-card reference-card--amber mt-12 p-8 text-center md:p-10">
           <span className="reference-badge">

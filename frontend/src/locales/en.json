@@ -275,6 +275,41 @@
     }
   ],
   "landing.pricing.trust": ["🔒 Secure Paymob payment", "↩ Direct contact with me", "⚡ Confirmation within an hour"],
+  "landing.faq.eyebrow": "❓ Questions we see a lot",
+  "landing.faq.titleLines": ["Have a question?", "Find the answer", "here"],
+  "landing.faq.subtitle": "If you can’t find your answer, message me directly on WhatsApp.",
+  "landing.faq.earlyAccessNote": "⏰ Early Access closes soon",
+  "landing.faq.items": [
+    {
+      "q": "Is this workflow good for me if I’m non-technical?",
+      "a": "Yes—100%. The course starts from zero and explains everything even if you don’t know what Git is. Anytime you feel stuck, you can message me on WhatsApp directly.",
+      "bullets": ["✓ Direct WhatsApp support"]
+    },
+    {
+      "q": "I’m a frontend developer—will it help me?",
+      "a": "Yes. You’ll learn a workflow that makes UI direction, task breakdown, review, testing, and production steps consistent—so you ship faster with fewer rewrites."
+    },
+    {
+      "q": "I’m just starting to learn programming—should I take it?",
+      "a": "If you’re a complete beginner, you can still take it—but you’ll get the best results if you have basic fundamentals (HTML/CSS/JS and simple Git)."
+    },
+    {
+      "q": "I own a business and have a SaaS/app idea—will it help?",
+      "a": "Yes. The workflow is designed to turn your idea into a clear PRD + executable tasks, so you can validate and ship a real version instead of staying in “planning forever”."
+    },
+    {
+      "q": "When does the course start and where is the content?",
+      "a": "Access is online. After successful payment, your access is activated inside your account and you can start immediately."
+    },
+    {
+      "q": "If I don’t like it—do you have a guarantee?",
+      "a": "Yes. If you follow the steps seriously and still can’t get a real result, contact me and we’ll review your case fairly."
+    }
+  ],
+  "landing.faq.form.title": "Ask your question on WhatsApp",
+  "landing.faq.form.hint": "Write your question here and it will open WhatsApp with the message ready to send.",
+  "landing.faq.form.placeholder": "Type your question…",
+  "landing.faq.form.cta": "Send on WhatsApp",
   "actions.apply": "Apply",
   "actions.cancel": "Cancel",
   "actions.confirm": "Confirm",
