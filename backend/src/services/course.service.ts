@@ -41,8 +41,8 @@ const COURSE_SETTINGS_CACHE_KEY = "course:settings:v1";
 const COURSE_PACKAGES_CACHE_TTL_SECONDS = 60 * 60;
 const COURSE_SETTINGS_CACHE_TTL_SECONDS = 2 * 60 * 60;
 
-const DEFAULT_TITLE_EN = "AI Workflow: From Idea to Production";
-const DEFAULT_TITLE_AR = "AI Workflow: من الفكرة إلى الـ Production";
+const DEFAULT_TITLE_EN = "Yousef Abdallah Course: From Idea to Production";
+const DEFAULT_TITLE_AR = "كورس يوسف عبدالله: من الفكرة إلى الـ Production";
 
 export const courseService = {
   async getCourseSettingsCached() {

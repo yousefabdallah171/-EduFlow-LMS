@@ -22,7 +22,7 @@ export const privacyPolicyAr: PolicySection[] = [
   {
     title: "١. مقدمة",
     paragraphs: [
-      "AI Workflow ملتزم بحماية خصوصيتك. هذه السياسة بتوضح إيه البيانات اللي بنجمعها، وليه، وإزاي بنستخدمها.",
+      "كورس يوسف عبدالله ملتزم بحماية خصوصيتك. هذه السياسة بتوضح إيه البيانات اللي بنجمعها، وليه، وإزاي بنستخدمها.",
       "باستخدامك للموقع أو شرائك أي باقة، بتوافق على الشروط دي."
     ]
   },
@@ -89,13 +89,13 @@ export const termsAr: PolicySection[] = [
   {
     title: "١. القبول بالشروط",
     paragraphs: [
-      "بمجرد شرائك لأي باقة من AI Workflow أو استخدامك للموقع، بتوافق على الشروط والأحكام دي كاملة.",
+      "بمجرد شرائك لأي باقة من كورس يوسف عبدالله أو استخدامك للموقع، بتوافق على الشروط والأحكام دي كاملة.",
       "لو مش موافق على أي بند، الرجاء عدم الاشتراك والتواصل معنا أولاً."
     ]
   },
   {
     title: "٢. وصف الخدمة",
-    paragraphs: ["AI Workflow كورس تعليمي رقمي بيعلم:"],
+    paragraphs: ["كورس يوسف عبدالله كورس تعليمي رقمي بيعلم:"],
     bullets: [
       "منهجية بناء المشاريع باستخدام الذكاء الاصطناعي: PRD، Spec Kit، Claude Code، Codex.",
       "الـ workflow الكامل من الفكرة للـ production عبر ٧ مراحل مسجلة.",
@@ -104,7 +104,7 @@ export const termsAr: PolicySection[] = [
   },
   {
     title: "٣. الملكية الفكرية",
-    paragraphs: ["كل محتوى الكورس، الفيديوهات، الـ templates، والمواد التعليمية هي ملكية حصرية لـ AI Workflow."],
+    paragraphs: ["كل محتوى الكورس، الفيديوهات، الـ templates، والمواد التعليمية هي ملكية حصرية لكورس يوسف عبدالله."],
     bullets: [
       "الوصول للمحتوى للاستخدام الشخصي فقط.",
       "ممنوع مشاركة أو إعادة نشر أو بيع أي جزء من المحتوى.",
@@ -145,8 +145,8 @@ export const termsAr: PolicySection[] = [
       "الكورس تعليمي ومش ضمان نتائج مالية أو مهنية محددة. النتائج بتختلف حسب المجهود والتطبيق."
     ],
     bullets: [
-      "AI Workflow غير مسؤول عن قرارات تجارية تتخذها بناءً على المحتوى.",
-      "AI Workflow غير مسؤول عن مشاكل الأدوات الخارجية مثل Claude أو GitHub أو مزودي الاستضافة."
+      "كورس يوسف عبدالله غير مسؤول عن قرارات تجارية تتخذها بناءً على المحتوى.",
+      "كورس يوسف عبدالله غير مسؤول عن مشاكل الأدوات الخارجية مثل Claude أو GitHub أو مزودي الاستضافة."
     ]
   },
   {
@@ -266,11 +266,11 @@ export const testimonialsAr = [
 ];
 
 export const innerPageCopyEn = {
-  privacyIntro: "A transparent view of how we handle your personal data while you use AI Workflow.",
-  termsIntro: "The agreement that governs your access to AI Workflow content and support.",
+  privacyIntro: "A transparent view of how we handle your personal data while you use Yousef Abdallah Course.",
+  termsIntro: "The agreement that governs your access to Yousef Abdallah Course content and support.",
   refundIntro: "A practical guarantee for serious learners who apply the workflow and need a fair resolution.",
   contactIntro: "Have a question before joining? Message us on WhatsApp or send a request here.",
-  faqIntro: "The most common questions before reserving an AI Workflow seat.",
-  aboutIntro: "Meet the practical system behind AI Workflow.",
+  faqIntro: "The most common questions before reserving your seat.",
+  aboutIntro: "Meet the practical system behind the course.",
   testimonialsIntro: "Real outcomes from learners using the workflow to move faster."
 };

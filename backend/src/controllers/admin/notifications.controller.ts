@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../../config/database.js";
-import { transporter } from "../../utils/email.js";
+import { sendBrandedEmail } from "../../utils/email.js";
 
 const updateSchema = z.object({ subject: z.string().min(1), bodyHtml: z.string().min(1) });
 
@@ -34,17 +34,18 @@ export const adminNotificationsController = {
         include: { user: { select: { email: true, fullName: true } } }
       });
 
-      const subject = template?.subject ?? "Message from AI Workflow";
-      const html = template?.bodyHtml ?? "<p>Hello from AI Workflow!</p>";
+      const subject = template?.subject ?? "Message from Yousef Abdallah Course";
+      const html = template?.bodyHtml ?? "<p>Hello!</p>";
 
       let sent = 0;
       for (const enrollment of enrollments) {
         try {
-          await transporter.sendMail({
-            to: enrollment.user.email,
+          await sendBrandedEmail(
+            enrollment.user.email,
             subject,
-            html: html.replace("{{name}}", enrollment.user.fullName)
-          });
+            subject,
+            html.replace("{{name}}", enrollment.user.fullName)
+          );
           sent++;
         } catch { /* skip failed */ }
       }

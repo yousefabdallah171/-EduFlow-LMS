@@ -83,9 +83,9 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
           <aside className="dashboard-panel dashboard-sidebar hidden p-3 md:block">
             <div className="mb-3 rounded-xl p-3 text-center" style={{ backgroundColor: "var(--color-brand-muted)" }}>
               <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl shadow-sm" style={{ background: "var(--gradient-brand)" }}>
-                <span className="font-mono text-sm font-black text-black">AI</span>
+                <span className="font-mono text-sm font-black text-black">YA</span>
               </div>
-              <p className="mt-2 text-xs font-bold text-brand-600">AI Workflow</p>
+              <p className="mt-2 text-xs font-bold text-brand-600">{t("app.title")}</p>
             </div>
 
             <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
@@ -130,7 +130,7 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
           <div className="space-y-5">
             <PageHeader
               hero
-              eyebrow="AI Workflow"
+              eyebrow={t("app.title")}
               title={courseTitle || (isAr ? "مكتبة الدروس المحمية" : "Protected lesson library")}
               description={t("course.public.unlockMessage")}
               actions={

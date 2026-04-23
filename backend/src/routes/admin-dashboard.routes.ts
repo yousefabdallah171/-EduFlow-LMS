@@ -33,13 +33,13 @@ router.get(
         },
         recentEnrollments: recentEnrollments.map((enrollment) => ({
           student: enrollment.user,
-          course: { id: "primary", title: "EduFlow" },
+          course: { id: "primary", title: "Yousef Abdallah Course" },
           date: enrollment.enrolledAt.toISOString()
         })),
         revenueChart: kpis.revenueTimeseries,
         topCourses: [
           {
-            course: { id: "primary", title: "EduFlow" },
+            course: { id: "primary", title: "Yousef Abdallah Course" },
             enrollments: kpis.kpis.enrolledStudents.active,
             revenue: kpis.kpis.totalRevenue.amountEgp
           }

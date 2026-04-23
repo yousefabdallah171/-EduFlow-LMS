@@ -2,6 +2,10 @@ import nodemailer from "nodemailer";
 
 import { env } from "../config/env.js";
 
+const BRAND_NAME = process.env.BRAND_NAME || "Yousef Abdallah Course";
+const BRAND_PRIMARY = "#a3e635";
+const BRAND_ACCENT = "#38bdf8";
+
 const getTransporter = () => {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || env.SMTP_HOST,
@@ -26,17 +30,17 @@ const getEmailTemplate = (title: string, content: string): string => {
         <style>
           body { font-family: "Cairo", "Manrope", -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #e5e5e5; background: #020202; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #a3e635 0%, #38bdf8 100%); color: #050505; padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0; box-shadow: 0 4px 20px rgba(163, 230, 53, 0.18); }
+          .header { background: linear-gradient(135deg, ${BRAND_PRIMARY} 0%, ${BRAND_ACCENT} 100%); color: #050505; padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0; box-shadow: 0 4px 20px rgba(163, 230, 53, 0.18); }
           .header h1 { margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; }
           .header p { margin: 8px 0 0 0; font-size: 14px; opacity: 0.95; }
           .content { background: #080808; padding: 40px 30px; border: 1px solid rgba(163, 230, 53, 0.14); border-radius: 0 0 12px 12px; }
           .content h2 { margin: 0 0 15px 0; color: #f5f5f5; font-size: 22px; font-weight: 600; }
           .content p { margin: 15px 0; color: #b8b8b8; line-height: 1.7; }
-          .cta-button { display: inline-block; background: #a3e635; color: #050505; padding: 14px 36px; text-decoration: none; border-radius: 8px; margin: 24px 0; font-weight: 700; font-size: 16px; transition: all 0.2s; border: 2px solid #a3e635; }
+          .cta-button { display: inline-block; background: ${BRAND_PRIMARY}; color: #050505; padding: 14px 36px; text-decoration: none; border-radius: 8px; margin: 24px 0; font-weight: 700; font-size: 16px; transition: all 0.2s; border: 2px solid ${BRAND_PRIMARY}; }
           .cta-button:hover { background: #b5f53f; transform: translateY(-1px); box-shadow: 0 4px 18px rgba(163, 230, 53, 0.25); }
           .footer { text-align: center; padding: 20px; color: #a1a1aa; font-size: 12px; }
           .divider { border-top: 1px solid rgba(0, 0, 0, 0.08); margin: 24px 0; }
-          .highlight { background: #0d0d0d; padding: 16px 20px; border-left: 4px solid #a3e635; border-radius: 6px; margin: 20px 0; }
+          .highlight { background: #0d0d0d; padding: 16px 20px; border-left: 4px solid ${BRAND_PRIMARY}; border-radius: 6px; margin: 20px 0; }
           .highlight p { margin: 0; color: #cfcfcf; font-size: 14px; }
           ul { color: #cfcfcf; line-height: 1.8; }
           ul li { margin: 8px 0; }
@@ -46,7 +50,7 @@ const getEmailTemplate = (title: string, content: string): string => {
       <body>
         <div class="container">
           <div class="header">
-            <h1>AI Workflow</h1>
+            <h1>${BRAND_NAME}</h1>
             <p>${title}</p>
           </div>
           <div class="content">
@@ -57,7 +61,7 @@ const getEmailTemplate = (title: string, content: string): string => {
             </p>
           </div>
           <div class="footer">
-            <p style="margin: 8px 0;">&copy; 2026 AI Workflow. All rights reserved.</p>
+            <p style="margin: 8px 0;">&copy; 2026 ${BRAND_NAME}. All rights reserved.</p>
             <p style="margin: 4px 0;">This is an automated message, please do not reply to this email.</p>
           </div>
         </div>
@@ -66,16 +70,16 @@ const getEmailTemplate = (title: string, content: string): string => {
   `;
 };
 
-const sendTemplate = async (to: string, subject: string, content: string) => {
+export const sendBrandedEmail = async (to: string, subject: string, title: string, bodyHtml: string) => {
   try {
     const currentTransporter = getTransporter();
     const fromUser = process.env.SMTP_USER || env.SMTP_USER;
-    const from = process.env.SMTP_FROM || `AI Workflow <${fromUser}>`;
+    const from = process.env.SMTP_FROM || `${BRAND_NAME} <${fromUser}>`;
     const result = await currentTransporter.sendMail({
       from,
       to,
       subject,
-      html: content
+      html: getEmailTemplate(title, bodyHtml)
     });
     if (env.NODE_ENV !== "production") {
       // eslint-disable-next-line no-console
@@ -94,7 +98,7 @@ export const sendVerificationEmail = async (
   verificationUrl: string
 ): Promise<void> => {
   const content = `
-    <h2>Welcome to AI Workflow, ${fullName}! &#128075;</h2>
+    <h2>Welcome to ${BRAND_NAME}, ${fullName}!</h2>
     <p>Thank you for signing up! To get started, please verify your email address by clicking the button below.</p>
     <div style="text-align: center;">
       <a href="${verificationUrl}" class="cta-button">Verify Email Address</a>
@@ -106,11 +110,7 @@ export const sendVerificationEmail = async (
     <p><strong>Note:</strong> This link will expire in 24 hours. If you did not create this account, please disregard this email.</p>
   `;
 
-  await sendTemplate(
-    to,
-    "Verify your AI Workflow account - Welcome!",
-    getEmailTemplate("Verify Your Account", content)
-  );
+  await sendBrandedEmail(to, `Verify your ${BRAND_NAME} account`, "Verify Your Account", content);
 };
 
 export const sendPasswordResetEmail = async (
@@ -137,11 +137,7 @@ export const sendPasswordResetEmail = async (
     </ul>
   `;
 
-  await sendTemplate(
-    to,
-    "Reset your AI Workflow password",
-    getEmailTemplate("Reset Password", content)
-  );
+  await sendBrandedEmail(to, `Reset your ${BRAND_NAME} password`, "Reset Password", content);
 };
 
 export const sendTicketReplyEmail = async (
@@ -161,9 +157,5 @@ export const sendTicketReplyEmail = async (
     <p>If you have any additional questions, feel free to reply directly to this email or visit your support tickets.</p>
   `;
 
-  await sendTemplate(
-    to,
-    "Your support ticket has been updated",
-    getEmailTemplate("Support Ticket Reply", content)
-  );
+  await sendBrandedEmail(to, "Your support ticket has been updated", "Support Ticket Reply", content);
 };

@@ -8,7 +8,7 @@ const en = {
     accent: "A complete execution system",
     subtitle: "Yousef Abdallah teaches the practical route from raw idea to launched product: planning, UI direction, AI-assisted implementation, review, security, SEO, Docker, and production deployment.",
     portraitName: "Yousef Abdallah",
-    portraitRole: "AI Workflow Builder",
+    portraitRole: "Course Builder",
     philosophyTitle: "The philosophy is simple: AI gets powerful when the workflow is clear.",
     body: "Instead of starting with a random prompt and hoping for luck, the course gives you a repeatable system: understand the problem, write a PRD, shape the UI, implement with AI, review and test, harden security and performance, then ship with confidence.",
     bullets: [
@@ -105,7 +105,7 @@ const en = {
     terms: {
       title: "Terms",
       accent: "of Service",
-      intro: "These terms explain the relationship between you and AI Workflow in simple, practical language.",
+      intro: "These terms explain the relationship between you and Yousef Abdallah Course in simple, practical language.",
       sections: [
         { title: "1. Access", paragraphs: ["Your account gives you access to the course materials included in your purchased plan."] },
         { title: "2. Fair use", bullets: ["Do not share your account.", "Do not redistribute course videos or resources.", "Use the material for your own learning and projects."] },
@@ -142,7 +142,7 @@ const ar: typeof en = {
     accent: "نظام تنفيذ كامل",
     subtitle: "يوسف عبد الله يشرح المسار العملي لتحويل فكرة خام إلى تطبيق منشور: تخطيط، اتجاه UI، تنفيذ بمساعدة الذكاء الاصطناعي، مراجعة، أمان، SEO، Docker، ونشر production.",
     portraitName: "Yousef Abdallah",
-    portraitRole: "AI Workflow Builder",
+    portraitRole: "Course Builder",
     philosophyTitle: "الفلسفة بسيطة: الذكاء الاصطناعي يصبح قويا عندما يكون الـ workflow واضحا.",
     body: "بدلا من أن تبدأ بـ prompt عشوائي وتنتظر الحظ، الكورس يعطيك نظاما قابلا للتكرار: تفهم المشكلة، تكتب PRD، تحدد اتجاه الواجهة، تنفذ بالـ AI، تراجع وتختبر، تقوي الأمان والأداء، ثم تنشر بثقة.",
     bullets: [
@@ -239,7 +239,7 @@ const ar: typeof en = {
     terms: {
       title: "الشروط",
       accent: "والأحكام",
-      intro: "هذه الشروط تشرح العلاقة بينك وبين AI Workflow بلغة بسيطة وعملية.",
+      intro: "هذه الشروط تشرح العلاقة بينك وبين كورس يوسف عبدالله بلغة بسيطة وعملية.",
       sections: [
         { title: "١. الوصول", paragraphs: ["حسابك يمنحك الوصول إلى مواد الكورس الموجودة في الخطة التي اشتريتها."] },
         { title: "٢. الاستخدام العادل", bullets: ["لا تشارك حسابك.", "لا تعيد نشر فيديوهات أو موارد الكورس.", "استخدم المحتوى لتعلمك ومشاريعك الخاصة."] },
