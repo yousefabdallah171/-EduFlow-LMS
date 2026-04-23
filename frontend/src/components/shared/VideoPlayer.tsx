@@ -1,17 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  FloatingPortal,
-  offset,
-  shift,
-  useFloating,
-  useFocus,
-  useHover,
-  useInteractions,
-  useRole
-} from "@floating-ui/react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { WatermarkOverlay } from "@/components/shared/WatermarkOverlay";
 import { cn } from "@/lib/utils";
 
 type VideoPlayerProps = {
@@ -26,49 +15,6 @@ type VideoPlayerProps = {
   onCurrentPositionChange?: (seconds: number) => void;
   onTokenExpired?: () => void;
   playbackExpiresAt?: string | null;
-};
-
-type TooltipButtonProps = {
-  label: string;
-  description: string;
-};
-
-const TooltipButton = ({ label, description }: TooltipButtonProps) => {
-  const [open, setOpen] = useState(false);
-  const { refs, floatingStyles, context } = useFloating({
-    open,
-    onOpenChange: setOpen,
-    middleware: [offset(10), shift()]
-  });
-  const hover = useHover(context);
-  const focus = useFocus(context);
-  const role = useRole(context, { role: "tooltip" });
-  const { getReferenceProps, getFloatingProps } = useInteractions([hover, focus, role]);
-
-  return (
-    <>
-      <button
-        ref={refs.setReference}
-        className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white backdrop-blur"
-        type="button"
-        {...getReferenceProps()}
-      >
-        {label}
-      </button>
-      {open ? (
-        <FloatingPortal>
-          <div
-            ref={refs.setFloating}
-            style={floatingStyles}
-            className="z-30 max-w-48 rounded-xl bg-slate-950 px-3 py-2 text-xs text-white shadow-2xl dark:bg-zinc-800"
-            {...getFloatingProps()}
-          >
-            {description}
-          </div>
-        </FloatingPortal>
-      ) : null}
-    </>
-  );
 };
 
 export const VideoPlayer = ({
@@ -269,11 +215,6 @@ export const VideoPlayer = ({
     };
   }, [onTokenExpired, playbackExpiresAt, sourceUrl]);
 
-  const progressLabel = useMemo(
-    () => (watermark ? `${watermark.name} - ${watermark.maskedEmail}` : t("preview.freePreview")),
-    [t, watermark]
-  );
-
   return (
     <section
       className="rounded-[2rem] border p-4 backdrop-blur"
@@ -290,12 +231,6 @@ export const VideoPlayer = ({
             {t("lesson.secureStream")}
           </p>
           <h2 className="mt-2 text-2xl font-semibold" style={{ color: "var(--color-text-primary)" }}>{lessonTitle}</h2>
-          <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>{status}</p>
-        </div>
-        <div className="flex flex-wrap justify-end gap-2">
-          <TooltipButton label="WM" description={t("video.watermarkTooltip", { label: progressLabel })} />
-          <TooltipButton label="JWT" description={t("video.jwtTooltip")} />
-          <TooltipButton label="AES" description={t("video.aesTooltip")} />
         </div>
       </div>
 
@@ -320,7 +255,7 @@ export const VideoPlayer = ({
               }}
               type="button"
             >
-              {isAttaching ? t("video.preparing") : t("video.playProtected")}
+              {isAttaching ? t("video.preparing") : t("video.play")}
             </button>
           </div>
         ) : null}
@@ -381,7 +316,6 @@ export const VideoPlayer = ({
             });
           }}
         />
-        {watermark ? <WatermarkOverlay name={watermark.name} maskedEmail={watermark.maskedEmail} /> : null}
       </div>
     </section>
   );

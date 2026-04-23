@@ -476,6 +476,7 @@
   "video.aesTooltip": "ملف HLS يطلب مفتاح فك التشفير من خلال نقطة وصول محمية.",
   "video.preparing": "جار تجهيز البث...",
   "video.playProtected": "شغل الفيديو المحمي",
+  "video.play": "شغل الفيديو",
   "video.streaming": "جار بث HLS المحمي",
   "video.paused": "تم إيقاف التشغيل مؤقتاً",
   "video.ended": "انتهى التشغيل",

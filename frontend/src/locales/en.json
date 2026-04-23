@@ -664,6 +664,7 @@
   "video.aesTooltip": "The HLS manifest requests the decryption key through a protected endpoint.",
   "video.preparing": "Preparing stream...",
   "video.playProtected": "Play protected video",
+  "video.play": "Play video",
   "video.streaming": "Streaming protected HLS",
   "video.paused": "Playback paused",
   "video.ended": "Playback ended",
