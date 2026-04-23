@@ -15,6 +15,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { MobileDrawer } from "@/components/layout/MobileDrawer";
+import { Avatar } from "@/components/Avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { resolveLocale } from "@/lib/locale";
@@ -66,11 +67,13 @@ export const StudentShell = ({ children }: StudentShellProps) => {
                   className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl text-sm font-bold text-white"
                   style={{ background: "var(--gradient-brand)" }}
                 >
-                  {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
-                  ) : (
-                    user.fullName.charAt(0).toUpperCase()
-                  )}
+                  <Avatar
+                    alt={user.fullName}
+                    className="h-full w-full rounded-2xl text-sm font-bold text-white"
+                    fallback={user.fullName.charAt(0).toUpperCase()}
+                    src={user.avatarUrl}
+                    style={{ background: "var(--gradient-brand)" }}
+                  />
                 </div>
                 <div className="min-w-0">
                   <p className="font-display truncate text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>

@@ -8,6 +8,7 @@ import App from "./App";
 import { queryClient } from "@/lib/api";
 import i18n from "@/lib/i18n";
 import { initFrontendSentry } from "./observability/sentry";
+import { registerServiceWorker } from "./service-worker";
 import "@/styles/globals.css";
 
 initFrontendSentry();
@@ -22,3 +23,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </I18nextProvider>
   </React.StrictMode>
 );
+
+registerServiceWorker();

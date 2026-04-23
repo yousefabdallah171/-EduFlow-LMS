@@ -1,10 +1,10 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 
+import { SkeletonFullPage } from "@/components/skeletons";
 import { isAccessTokenExpiringSoon, refreshAccessToken } from "@/lib/api";
 import { isDemoMode } from "@/lib/demo";
 import { hasStoredRefreshFlag, useAuthStore } from "@/stores/auth.store";
-import { SkeletonFullPage } from "@/components/skeletons";
 
 const Landing = lazy(async () => import("@/pages/Landing").then((module) => ({ default: module.Landing })));
 const Register = lazy(async () => import("@/pages/Register").then((module) => ({ default: module.Register })));
@@ -239,8 +239,26 @@ export const AppRoutes = () => (
       <Route element={<Checkout />} path="/checkout" />
       <Route element={<Preview />} path="/preview" />
       <Route element={<Course />} path="/course" />
-      <Route element={<RequireRole role="STUDENT"><Lesson /></RequireRole>} path="/lessons/:lessonId" />
-      <Route element={<RequireRole role="STUDENT"><Lessons /></RequireRole>} path="/lessons" />
+      <Route
+        element={
+          <RequireRole role="STUDENT">
+            <Suspense fallback={<SkeletonFullPage />}>
+              <Lesson />
+            </Suspense>
+          </RequireRole>
+        }
+        path="/lessons/:lessonId"
+      />
+      <Route
+        element={
+          <RequireRole role="STUDENT">
+            <Suspense fallback={<SkeletonFullPage />}>
+              <Lessons />
+            </Suspense>
+          </RequireRole>
+        }
+        path="/lessons"
+      />
       <Route element={<ForgotPassword />} path="/forgot-password" />
       <Route element={<ResetPasswordPage />} path="/reset-password" />
       <Route element={<VerifyEmailPage />} path="/verify-email" />
@@ -254,7 +272,16 @@ export const AppRoutes = () => (
       <Route element={<PrivacyPolicy />} path="/privacy" />
       <Route element={<Terms />} path="/terms" />
       <Route element={<RefundPolicy />} path="/refund" />
-      <Route element={<RequireRole role="STUDENT"><StudentDashboard /></RequireRole>} path="/dashboard" />
+      <Route
+        element={
+          <RequireRole role="STUDENT">
+            <Suspense fallback={<SkeletonFullPage />}>
+              <StudentDashboard />
+            </Suspense>
+          </RequireRole>
+        }
+        path="/dashboard"
+      />
       <Route element={<RequireRole role="STUDENT"><StudentProgress /></RequireRole>} path="/progress" />
       <Route element={<RequireRole role="STUDENT"><StudentNotes /></RequireRole>} path="/notes" />
       <Route element={<RequireRole role="STUDENT"><StudentDownloads /></RequireRole>} path="/downloads" />
@@ -262,7 +289,16 @@ export const AppRoutes = () => (
       <Route element={<RequireRole role="STUDENT"><StudentProfile /></RequireRole>} path="/profile" />
       <Route element={<RequireRole role="STUDENT"><StudentHelp /></RequireRole>} path="/help" />
       <Route element={<AdminHome />} path="/admin" />
-      <Route element={<RequireRole role="ADMIN"><AdminDashboard /></RequireRole>} path="/admin/dashboard" />
+      <Route
+        element={
+          <RequireRole role="ADMIN">
+            <Suspense fallback={<SkeletonFullPage />}>
+              <AdminDashboard />
+            </Suspense>
+          </RequireRole>
+        }
+        path="/admin/dashboard"
+      />
       <Route element={<RequireRole role="ADMIN"><AdminLessons /></RequireRole>} path="/admin/lessons" />
       <Route element={<RequireRole role="ADMIN"><AdminStudents /></RequireRole>} path="/admin/students" />
       <Route element={<RequireRole role="ADMIN"><AdminPricing /></RequireRole>} path="/admin/pricing" />
@@ -281,8 +317,26 @@ export const AppRoutes = () => (
       <Route element={<Checkout />} path="/:locale/checkout" />
       <Route element={<Preview />} path="/:locale/preview" />
       <Route element={<Course />} path="/:locale/course" />
-      <Route element={<RequireRole role="STUDENT"><Lesson /></RequireRole>} path="/:locale/lessons/:lessonId" />
-      <Route element={<RequireRole role="STUDENT"><Lessons /></RequireRole>} path="/:locale/lessons" />
+      <Route
+        element={
+          <RequireRole role="STUDENT">
+            <Suspense fallback={<SkeletonFullPage />}>
+              <Lesson />
+            </Suspense>
+          </RequireRole>
+        }
+        path="/:locale/lessons/:lessonId"
+      />
+      <Route
+        element={
+          <RequireRole role="STUDENT">
+            <Suspense fallback={<SkeletonFullPage />}>
+              <Lessons />
+            </Suspense>
+          </RequireRole>
+        }
+        path="/:locale/lessons"
+      />
       <Route element={<ForgotPassword />} path="/:locale/forgot-password" />
       <Route element={<ResetPasswordPage />} path="/:locale/reset-password" />
       <Route element={<VerifyEmailPage />} path="/:locale/verify-email" />
@@ -296,7 +350,16 @@ export const AppRoutes = () => (
       <Route element={<PrivacyPolicy />} path="/:locale/privacy" />
       <Route element={<Terms />} path="/:locale/terms" />
       <Route element={<RefundPolicy />} path="/:locale/refund" />
-      <Route element={<RequireRole role="STUDENT"><StudentDashboard /></RequireRole>} path="/:locale/dashboard" />
+      <Route
+        element={
+          <RequireRole role="STUDENT">
+            <Suspense fallback={<SkeletonFullPage />}>
+              <StudentDashboard />
+            </Suspense>
+          </RequireRole>
+        }
+        path="/:locale/dashboard"
+      />
       <Route element={<RequireRole role="STUDENT"><StudentProgress /></RequireRole>} path="/:locale/progress" />
       <Route element={<RequireRole role="STUDENT"><StudentNotes /></RequireRole>} path="/:locale/notes" />
       <Route element={<RequireRole role="STUDENT"><StudentDownloads /></RequireRole>} path="/:locale/downloads" />
@@ -304,7 +367,16 @@ export const AppRoutes = () => (
       <Route element={<RequireRole role="STUDENT"><StudentProfile /></RequireRole>} path="/:locale/profile" />
       <Route element={<RequireRole role="STUDENT"><StudentHelp /></RequireRole>} path="/:locale/help" />
       <Route element={<AdminHome />} path="/:locale/admin" />
-      <Route element={<RequireRole role="ADMIN"><AdminDashboard /></RequireRole>} path="/:locale/admin/dashboard" />
+      <Route
+        element={
+          <RequireRole role="ADMIN">
+            <Suspense fallback={<SkeletonFullPage />}>
+              <AdminDashboard />
+            </Suspense>
+          </RequireRole>
+        }
+        path="/:locale/admin/dashboard"
+      />
       <Route element={<RequireRole role="ADMIN"><AdminLessons /></RequireRole>} path="/:locale/admin/lessons" />
       <Route element={<RequireRole role="ADMIN"><AdminStudents /></RequireRole>} path="/:locale/admin/students" />
       <Route element={<RequireRole role="ADMIN"><AdminPricing /></RequireRole>} path="/:locale/admin/pricing" />
