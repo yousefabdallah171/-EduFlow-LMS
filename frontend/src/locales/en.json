@@ -17,11 +17,11 @@
   "landing.audience.eyebrow": "Who is this for?",
   "landing.audience.title": "If you are one of these,",
   "landing.audience.accent": "you are in the right place",
-  "landing.audience.subtitle": "Before the technical details: you need clarity and a repeatable system.",
+  "landing.audience.subtitle": "Before the technical details, make sure this course is actually built for your situation.",
   "landing.audience.cards": [
-    { "title": "Non-technical with an idea", "body": "Turn your idea into an executable plan without waiting for a full team." },
-    { "title": "A developer who wants speed", "body": "Ship faster with clearer steps and a real review/testing loop." },
-    { "title": "You know the basics and want a system", "body": "A clear workflow from idea → execution → deployment." }
+    { "title": "Non-technical with an idea", "body": "If you have a SaaS idea, a landing page, or a small product and want to start without waiting for a full team, this workflow gets you to a first working version fast and in a structured way." },
+    { "title": "A developer who wants speed", "body": "Work faster with more clarity, without wasting time re-explaining and fixing basics. This course upgrades how you build day-to-day with AI." },
+    { "title": "You know the basics and want a system", "body": "If you are not a complete beginner but need a clear workflow from idea to production, this is exactly what you will learn." }
   ],
   "actions.apply": "Apply",
   "actions.cancel": "Cancel",
