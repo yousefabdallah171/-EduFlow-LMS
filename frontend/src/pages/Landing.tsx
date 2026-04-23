@@ -14,6 +14,7 @@ import { LandingHero } from "@/components/landing/LandingHero";
 import { LandingAudience } from "@/components/landing/LandingAudience";
 import { LandingWorkflowSection } from "@/components/landing/LandingWorkflowSection";
 import { LandingCourseContentSection } from "@/components/landing/LandingCourseContentSection";
+import { LandingTimelineSection } from "@/components/landing/LandingTimelineSection";
 
 const landingCopy = {
   ar: {
@@ -153,6 +154,7 @@ export const Landing = () => {
         <LandingAudience isAr={isAr} />
         <LandingWorkflowSection />
         <LandingCourseContentSection />
+        <LandingTimelineSection />
 
         <section className="mt-12">
           <header className="text-center">

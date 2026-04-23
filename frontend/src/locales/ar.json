@@ -561,5 +561,68 @@
   "admin.pricing.desc": "أدر سعر الدورة والقسائم وتابع تحويلها إلى تسجيلات مدفوعة.",
   "admin.analytics.desc": "راجع أداء الدروس والمدفوعات ونقاط توقف الطلاب.",
   "admin.analytics.filters.title": "الفلاتر",
+  "landing.timeline.eyebrow": "⚡ الـ workflow خطوة بخطوة",
+  "landing.timeline.titleLines": ["من الفكرة", "للـ", "production"],
+  "landing.timeline.subtitle": "٧ مراحل متسلسلة، كل مرحلة بتبني على اللي قبلها وبتطلع بـ output حقيقي.",
+  "landing.timeline.phases": [
+    {
+      "number": "01",
+      "tool": "Claude",
+      "title": "التفكير قبل الكود",
+      "body": "قبل ما تكتب سطر كود، الـ AI بيساعدك تبني PRD كامل بكل تفاصيل المشروع: المستخدمين، الـ features، الـ scope، والقرارات التقنية.",
+      "output": "PRD.md كامل",
+      "rgb": "167 139 250"
+    },
+    {
+      "number": "02",
+      "tool": "Claude Code",
+      "title": "قسّم مشروعك لخطوات",
+      "body": "Claude Code بيشتغل كـ project manager، يقسم المشروع لـ sprints وtasks منظمة على أوامر بسيطة جاهزة للتنفيذ مباشرة.",
+      "output": "ملفات Spec Kit + أوامر جاهزة",
+      "rgb": "56 189 248"
+    },
+    {
+      "number": "03",
+      "tool": "Claude Code",
+      "title": "Testing كل مرحلة",
+      "body": "بعد كل مرحلة، بتتأكد إن الـ features شغالة فعلاً قبل ما تكمل، عشان ما تلاقيش مفاجآت في الآخر.",
+      "output": "features شغالة ومختبرة",
+      "rgb": "52 211 153"
+    },
+    {
+      "number": "04",
+      "tool": "Claude Code",
+      "title": "تأكد إن كل حاجة صح",
+      "body": "Claude Code بيراجع الكود بتاعك وبيطلعلك المشاكل والـ improvements قبل ما يتبني على حاجة غلط.",
+      "output": "كود نظيف وموثق",
+      "rgb": "163 230 53"
+    },
+    {
+      "number": "05",
+      "tool": "Codex",
+      "title": "تطبيقك بيتحدث لوحده",
+      "body": "Codex بيأتمت الـ testing والـ deployment وبيتأكد إن كل حاجة شغالة من غير ما تعمل حاجة بإيدك.",
+      "output": "CI/CD شغال أوتوماتيك",
+      "rgb": "251 191 36"
+    },
+    {
+      "number": "06",
+      "tool": "Claude Code",
+      "title": "مشروعك آمن ومحمي",
+      "body": "Claude Code بيعمل security audit شامل، يكتشف الثغرات ويسكرها قبل ما المشروع يطلع للـ production.",
+      "output": "تقرير Security صفر ثغرات",
+      "rgb": "248 113 113"
+    },
+    {
+      "number": "07",
+      "tool": "Claude Code",
+      "title": "SEO + Production",
+      "body": "تجهيز المشروع للـ SEO، ربط الدومين والهوست، ورفع المشروع على السيرفر عشان يبقى live وشغال.",
+      "output": "مشروع live على الإنترنت",
+      "rgb": "251 146 60"
+    }
+  ],
+  "landing.timeline.completion.emoji": "🚀",
+  "landing.timeline.completion.text": "المشروع على الإنترنت",
   "video.unsupported": "هذا المتصفح لا يستطيع تشغيل HLS المحمي في هذه البيئة. جرّب Chrome أو Firefox أو Safari مع دعم HLS."
 }

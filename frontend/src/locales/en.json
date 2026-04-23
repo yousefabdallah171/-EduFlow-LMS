@@ -118,6 +118,69 @@
     }
   ],
   "landing.curriculum.footerMicro": "Not just an AI course. A complete workflow you can reuse on every project.",
+  "landing.timeline.eyebrow": "⚡ The workflow, step by step",
+  "landing.timeline.titleLines": ["From idea", "to", "production"],
+  "landing.timeline.subtitle": "7 sequential stages. Each stage builds on the previous one and ends with a real output.",
+  "landing.timeline.phases": [
+    {
+      "number": "01",
+      "tool": "Claude",
+      "title": "Think before you code",
+      "body": "Before you write a line of code, AI helps you build a full PRD with the details: users, features, scope, and technical decisions.",
+      "output": "A complete PRD.md",
+      "rgb": "167 139 250"
+    },
+    {
+      "number": "02",
+      "tool": "Claude Code",
+      "title": "Break the project into steps",
+      "body": "Claude Code works like a project manager: turns the project into sprints and structured tasks with simple commands ready to run.",
+      "output": "Spec Kit files + ready commands",
+      "rgb": "56 189 248"
+    },
+    {
+      "number": "03",
+      "tool": "Claude Code",
+      "title": "Test every stage",
+      "body": "After each stage, validate that features actually work before moving on—so you don't get surprises at the end.",
+      "output": "Working, tested features",
+      "rgb": "52 211 153"
+    },
+    {
+      "number": "04",
+      "tool": "Claude Code",
+      "title": "Make sure everything is correct",
+      "body": "Claude Code reviews your code and surfaces issues and improvements before you build on the wrong foundation.",
+      "output": "Clean, documented code",
+      "rgb": "163 230 53"
+    },
+    {
+      "number": "05",
+      "tool": "Codex",
+      "title": "Your app updates itself",
+      "body": "Codex automates testing and deployment and ensures everything works—without you doing it by hand.",
+      "output": "Automated CI/CD running",
+      "rgb": "251 191 36"
+    },
+    {
+      "number": "06",
+      "tool": "Claude Code",
+      "title": "Secure and protected",
+      "body": "Claude Code runs a full security audit, finds vulnerabilities, and closes them before the project goes to production.",
+      "output": "Security report (0 critical issues)",
+      "rgb": "248 113 113"
+    },
+    {
+      "number": "07",
+      "tool": "Claude Code",
+      "title": "SEO + Production",
+      "body": "Prepare the project for SEO, connect domain/hosting, and deploy it to the server so it's live and running.",
+      "output": "A live project on the internet",
+      "rgb": "251 146 60"
+    }
+  ],
+  "landing.timeline.completion.emoji": "🚀",
+  "landing.timeline.completion.text": "Live on the internet",
   "actions.apply": "Apply",
   "actions.cancel": "Cancel",
   "actions.confirm": "Confirm",
