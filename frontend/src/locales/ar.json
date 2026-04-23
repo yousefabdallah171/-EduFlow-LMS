@@ -624,5 +624,28 @@
   ],
   "landing.timeline.completion.emoji": "🚀",
   "landing.timeline.completion.text": "المشروع على الإنترنت",
+  "landing.numbers.eyebrow": "📊 بالأرقام الحقيقية",
+  "landing.numbers.titleLines": ["مش كلام", "أرقام من", "الواقع"],
+  "landing.numbers.subtitle": "الـ workflow ده اتجرب مع أكتر من 30 developer على أكتر من 50 مشروع حقيقي.",
+  "landing.numbers.cards.developers.kicker": "DEVELOPERS",
+  "landing.numbers.cards.developers.desc": "جربوا الـ workflow وغيروا طريقة شغلهم كاملة.",
+  "landing.numbers.cards.developers.micro": "+27 developer",
+  "landing.numbers.cards.projects.kicker": "PROJECTS",
+  "landing.numbers.cards.projects.desc": "مشروع حقيقي على أنواع مختلفة، من landing pages لـ SaaS كامل.",
+  "landing.numbers.cards.bugs.kicker": "BUG REDUCTION",
+  "landing.numbers.cards.bugs.desc": "أقل bugs في الكود بسبب الـ Code Review والـ Testing المدمجين في الـ workflow.",
+  "landing.numbers.cards.bugs.after": "بعد",
+  "landing.numbers.cards.bugs.before": "قبل",
+  "landing.numbers.cards.delivery.kicker": "DELIVERY SPEED",
+  "landing.numbers.cards.delivery.desc": "نفس المشروع، نفس الجودة، بس الـ workflow بيوفر أكتر من 75% من الوقت.",
+  "landing.numbers.cards.delivery.old": "شهر",
+  "landing.numbers.cards.delivery.new": "أسبوع",
+  "landing.numbers.cards.delivery.labels.before": "قبل الـ workflow",
+  "landing.numbers.cards.delivery.labels.now": "الآن",
+  "landing.numbers.credibility.items": [
+    { "title": "workflow مجرب فعلاً", "subtitle": "مش نظري" },
+    { "title": "متوسط توفير الوقت", "subtitle": "+75% لكل مشروع", "highlight": true },
+    { "title": "workflow قابل للتكرار", "subtitle": "على أي مشروع وأي stack" }
+  ],
   "video.unsupported": "هذا المتصفح لا يستطيع تشغيل HLS المحمي في هذه البيئة. جرّب Chrome أو Firefox أو Safari مع دعم HLS."
 }
