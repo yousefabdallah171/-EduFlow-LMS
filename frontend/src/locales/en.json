@@ -2,7 +2,7 @@
   "app.title": "AI Workflow",
   "app.subtitle": "Build real products with AI, from idea to production",
   "landing.hero.badge": "EARLY ACCESS",
-  "landing.hero.badgeMeta": "Only 902 seats",
+  "landing.hero.badgeMeta": "Only 90 seats",
   "landing.hero.title": ["The  ", "AI", "ships products", "while you still", "watch."],
   "landing.hero.subtitle": "Learn a practical workflow to turn ideas into production-ready apps: PRD, Spec Kit, UI direction, implementation, review, testing, security, SEO, Docker, and deployment.",
   "landing.hero.ctaPrimary": "Get started",
