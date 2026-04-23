@@ -56,7 +56,10 @@ router.get(
         return;
       }
 
-      const token = await videoTokenService.issueToken(user, lesson.id, req.user!.sessionId);
+      const token = await videoTokenService.issueToken(user, lesson.id, req.user!.sessionId, {
+        ip: req.ip,
+        userAgent: req.get("user-agent")
+      });
 
       const [metadata, notes, enrollmentStatus] = await Promise.all([
         lessonService.getLessonMetadata(lessonId),
@@ -118,6 +121,68 @@ router.get(
           status: enrollmentStatus.status ?? null,
           accessUntil: null as string | null
         }
+      });
+    } catch (error) {
+      if (error instanceof VideoTokenError) {
+        res.status(error.status).json({ error: error.code, message: error.message });
+        return;
+      }
+      next(error);
+    }
+  }
+);
+
+router.post(
+  "/refresh-token",
+  deduplicationMiddleware({
+    key: (req) => `${req.user?.userId ?? "anon"}:video-token-refresh:${getParam((req.params as Record<string, unknown>).id) ?? ""}`
+  }),
+  async (req, res, next) => {
+    try {
+      const lessonId = getParam((req.params as Record<string, unknown>).id);
+      if (!lessonId) {
+        res.status(400).json({ error: "LESSON_ID_REQUIRED" });
+        return;
+      }
+
+      const userId = req.user!.userId;
+
+      const enrollment = await enrollmentRepository.findByUserId(userId);
+      if (!enrollment || enrollment.status !== "ACTIVE") {
+        res.status(403).json({ error: "NOT_ENROLLED" });
+        return;
+      }
+
+      const lesson = await lessonRepository.findPublishedForStudent(lessonId, userId);
+      if (!lesson) {
+        res.status(404).json({ error: "LESSON_NOT_FOUND" });
+        return;
+      }
+
+      const unlocksAt =
+        typeof lesson.dripDays === "number"
+          ? new Date(enrollment.enrolledAt.getTime() + lesson.dripDays * 24 * 60 * 60 * 1000)
+          : null;
+      if (unlocksAt && unlocksAt > new Date()) {
+        res.status(403).json({ error: "LESSON_LOCKED", unlocksAt: unlocksAt.toISOString() });
+        return;
+      }
+
+      const user = await userRepository.findById(userId);
+      if (!user) {
+        res.status(401).json({ error: "UNAUTHORIZED" });
+        return;
+      }
+
+      const token = await videoTokenService.issueToken(user, lesson.id, req.user!.sessionId, {
+        ip: req.ip,
+        userAgent: req.get("user-agent")
+      });
+
+      res.json({
+        videoToken: token.videoToken,
+        hlsUrl: token.hlsUrl,
+        expiresAt: token.expiresAt.toISOString()
       });
     } catch (error) {
       if (error instanceof VideoTokenError) {

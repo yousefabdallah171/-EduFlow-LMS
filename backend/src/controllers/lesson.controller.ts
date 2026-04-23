@@ -318,7 +318,10 @@ export const lessonController = {
         return;
       }
 
-      const token = await videoTokenService.issueToken(user, access.lesson.id, req.user!.sessionId);
+      const token = await videoTokenService.issueToken(user, access.lesson.id, req.user!.sessionId, {
+        ip: req.ip,
+        userAgent: req.get("user-agent")
+      });
       const progress = access.lesson.progress[0];
 
       res.json({

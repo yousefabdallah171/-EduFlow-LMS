@@ -17,6 +17,7 @@ const authSessionCacheKey = (userId: string, sessionId: string) => `session:${us
 const refreshCurrentCacheKey = (userId: string, sessionId: string) => `refresh-current:${userId}:${sessionId}`;
 const previewSessionCacheKey = (previewSessionId: string) => `video-preview:${previewSessionId}`;
 const videoTokenCacheKey = (tokenHash: string) => `video-token:${tokenHash}`;
+const videoTokenContextKey = (tokenHash: string) => `video-token-ctx:${tokenHash}`;
 const hashToken = (token: string): string => crypto.createHash("sha256").update(token).digest("hex");
 const sha256 = (value: string): string => crypto.createHash("sha256").update(value).digest("hex");
 
@@ -54,7 +55,7 @@ export type VideoTokenValidationInput = {
 };
 
 export const videoTokenService = {
-  async issueToken(user: User, lessonId: string, sessionId: string) {
+  async issueToken(user: User, lessonId: string, sessionId: string, input?: { ip?: string; userAgent?: string }) {
     const lesson = await lessonRepository.findById(lessonId);
     if (!lesson?.isPublished) {
       throw new VideoTokenError("LESSON_NOT_FOUND", 404, "Lesson not found.");
@@ -81,6 +82,12 @@ export const videoTokenService = {
     });
 
     await redis.set(videoTokenCacheKey(tokenHash), "1", "EX", TOKEN_TTL_SECONDS + 30);
+
+    const context = {
+      ipPrefix: ipPrefix(input?.ip),
+      uaHash: input?.userAgent ? sha256(input.userAgent) : null
+    };
+    await redis.set(videoTokenContextKey(tokenHash), JSON.stringify(context), "EX", TOKEN_TTL_SECONDS + 30);
 
     return {
       videoToken: rawToken,
@@ -130,10 +137,10 @@ export const videoTokenService = {
 
       const currentIpPrefix = ipPrefix(input.ip);
       const currentUaHash = input.userAgent ? sha256(input.userAgent) : null;
-      if (session.ipPrefix && currentIpPrefix && session.ipPrefix !== currentIpPrefix) {
+      if (session.ipPrefix !== null && currentIpPrefix !== session.ipPrefix) {
         throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
       }
-      if (session.uaHash && currentUaHash && session.uaHash !== currentUaHash) {
+      if (session.uaHash !== null && currentUaHash !== session.uaHash) {
         throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
       }
 
@@ -184,6 +191,23 @@ export const videoTokenService = {
     const authSession = await redis.get(authSessionCacheKey(fullPayload.userId, fullPayload.sessionId));
     if (!authSession) {
       throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Inactive session.");
+    }
+
+    const contextRaw = await redis.get(videoTokenContextKey(incomingHash));
+    if (contextRaw) {
+      try {
+        const context = JSON.parse(contextRaw) as { ipPrefix: string | null; uaHash: string | null };
+        const currentIpPrefix = ipPrefix(input.ip);
+        const currentUaHash = input.userAgent ? sha256(input.userAgent) : null;
+        if (context.ipPrefix !== null && currentIpPrefix !== context.ipPrefix) {
+          throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
+        }
+        if (context.uaHash !== null && currentUaHash !== context.uaHash) {
+          throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
+        }
+      } catch (error) {
+        if (error instanceof VideoTokenError) throw error;
+      }
     }
 
     const enrollmentStatus = await enrollmentService.getStatus(fullPayload.userId);

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { api } from "@/lib/api";
 import { demoLessonPlayback, isDemoMode } from "@/lib/demo";
@@ -70,6 +70,12 @@ const normalizeLessonPlayback = (payload: LessonPlaybackApiResponse): LessonPlay
   };
 };
 
+type RefreshTokenResponse = {
+  videoToken: string;
+  hlsUrl: string;
+  expiresAt: string;
+};
+
 export const useVideoToken = (lessonId: string | undefined, enabled = true) => {
   const demo = isDemoMode();
   const lessonQuery = useQuery({
@@ -86,8 +92,34 @@ export const useVideoToken = (lessonId: string | undefined, enabled = true) => {
     }
   });
 
+  const refreshMutation = useMutation({
+    mutationFn: async () => {
+      if (!lessonId) throw new Error("Lesson ID is required");
+      if (demo) return demoLessonPlayback(lessonId);
+      const response = await api.post<RefreshTokenResponse>(`/lessons/${lessonId}/refresh-token`);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      if (!lessonQuery.data) return;
+      lessonQuery.setQueryData(
+        ["lesson-playback", lessonId],
+        {
+          ...lessonQuery.data,
+          videoToken: data.videoToken,
+          hlsUrl: data.hlsUrl,
+          expiresAt: data.expiresAt
+        }
+      );
+    }
+  });
+
   return {
     lessonQuery,
-    renewToken: () => lessonQuery.refetch()
+    renewToken: () => {
+      if (demo) {
+        return lessonQuery.refetch();
+      }
+      return refreshMutation.mutateAsync();
+    }
   };
 };

@@ -110,19 +110,19 @@ export const videoAbuseService = {
   }) {
     const ttlSeconds = options.ttlSeconds ?? 90;
     const fingerprint = options.client.fingerprint;
-    if (!fingerprint) return;
 
     const key =
       options.previewSessionId ? previewLeaseKey(options.previewSessionId) : options.userId && options.sessionId ? leaseKey(options.userId, options.sessionId) : null;
     if (!key) return;
 
+    const leaseValue = fingerprint || "no-fingerprint";
     const existing = await redis.get(key);
     if (!existing) {
-      await redis.set(key, fingerprint, "EX", ttlSeconds, "NX");
+      await redis.set(key, leaseValue, "EX", ttlSeconds, "NX");
       return;
     }
 
-    if (existing === fingerprint) {
+    if (existing === leaseValue) {
       await redis.expire(key, ttlSeconds);
       return;
     }
@@ -138,7 +138,7 @@ export const videoAbuseService = {
         ip: options.client.ip,
         userAgent: options.client.userAgent,
         fingerprint,
-        metadata: { existingFingerprint: existing }
+        metadata: { existingLeaseValue: existing }
       })
       .catch(() => undefined);
 

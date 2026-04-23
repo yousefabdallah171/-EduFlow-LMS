@@ -148,7 +148,9 @@
       "Bash(sudo chmod *)",
       "Bash(git config *)",
       "Bash(git rm *)",
-      "Bash(rm -rf .git/modules/lesson-management)"
+      "Bash(rm -rf .git/modules/lesson-management)",
+      "Bash(gh run *)",
+      "Bash(xargs ls *)"
     ]
   }
 }
