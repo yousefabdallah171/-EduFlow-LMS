@@ -156,7 +156,20 @@
       "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
       "Bash(npm test *)",
       "Bash(npm ls *)",
-      "Bash(npx playwright *)"
+      "Bash(npx playwright *)",
+      "Bash(git merge *)",
+      "Bash(cp -r '/c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/.claude/worktrees/musing-hofstadter-163f58/backend/src/jobs/*' /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/backend/src/jobs/)",
+      "Bash(cp /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/.claude/worktrees/musing-hofstadter-163f58/backend/src/services/payment-recovery.service.ts /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/backend/src/services/)",
+      "Bash(cp /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/.claude/worktrees/musing-hofstadter-163f58/backend/src/services/queue-monitoring.service.ts /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/backend/src/services/)",
+      "Bash(cp /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/.claude/worktrees/musing-hofstadter-163f58/backend/src/services/error-logging.service.ts /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/backend/src/services/)",
+      "Bash(cp /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/.claude/worktrees/musing-hofstadter-163f58/backend/src/controllers/admin-recovery.controller.ts /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/backend/src/controllers/)",
+      "Bash(mkdir -p /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/backend/src/jobs)",
+      "Bash(cp '/c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/.claude/worktrees/musing-hofstadter-163f58/backend/src/jobs/*.ts' /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/backend/src/jobs/)",
+      "Read(//c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/backend/src/**)",
+      "Bash(cp /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/.claude/worktrees/musing-hofstadter-163f58/backend/prisma/schema.prisma /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/backend/prisma/schema.prisma)",
+      "Bash(cp /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/.claude/worktrees/musing-hofstadter-163f58/backend/src/services/payment.service.ts /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/backend/src/services/payment.service.ts)",
+      "Bash(cp /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/.claude/worktrees/musing-hofstadter-163f58/backend/src/types/payment.types.ts /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/backend/src/types/payment.types.ts)",
+      "Bash(cp /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/.claude/worktrees/musing-hofstadter-163f58/backend/tests/unit/payment.service.test.ts /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/backend/tests/unit/payment.service.test.ts)"
     ]
   }
 }
