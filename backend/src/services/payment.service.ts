@@ -273,6 +273,33 @@ export const paymentService = {
     }
   },
 
+  async createPaymobOrderWithRetry(userId: string, couponCode?: string, packageId?: string) {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+
+    const isRetryableError = (error: unknown): boolean => {
+      if (!(error instanceof PaymentError)) return false;
+      const retryableCodes = ["PAYMOB_SERVER_ERROR", "PAYMOB_TIMEOUT", "PAYMOB_RATE_LIMITED"];
+      return retryableCodes.includes(error.code);
+    };
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        return await this.createPaymobOrder(userId, couponCode, packageId);
+      } catch (error) {
+        const isRetryable = isRetryableError(error);
+        const isLastAttempt = attempt === MAX_RETRIES;
+
+        if (!isRetryable || isLastAttempt) {
+          throw error;
+        }
+
+        const delay = RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  },
+
   async processWebhook(payload: PaymobWebhookPayload, hmac: string) {
     const transaction = payload.obj;
     if (!transaction) {

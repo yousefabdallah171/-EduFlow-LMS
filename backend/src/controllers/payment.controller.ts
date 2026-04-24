@@ -33,7 +33,7 @@ export const paymentController = {
   async checkout(req: Request, res: Response, next: NextFunction) {
     try {
       const body = couponSchema.parse(req.body ?? {});
-      const result = await paymentService.createPaymobOrder(req.user!.userId, body.couponCode, body.packageId);
+      const result = await paymentService.createPaymobOrderWithRetry(req.user!.userId, body.couponCode, body.packageId);
       res.json(result);
     } catch (error) {
       handlePaymentError(error, res, next);
