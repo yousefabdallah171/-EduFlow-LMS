@@ -66,9 +66,8 @@ const StatusBadge = ({ status, label }: { status: EnrollmentStatus; label: strin
 const formatDate = (value: string | null) => (value ? new Date(value).toLocaleDateString() : "-");
 
 export const AdminStudents = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { locale } = useParams();
-  const isAr = i18n.language === "ar";
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");

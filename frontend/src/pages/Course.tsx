@@ -208,7 +208,7 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
                             className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
                             style={{
                               backgroundColor: isFirst ? "var(--color-brand-muted)" : "var(--color-surface-2)",
-                              color: isFirst ? "var(--color-brand)" : "var(--color-text-muted)"
+                              color: isFirst ? "var(--color-brand)" : "var(--color-text-secondary)"
                             }}
                           >
                             {isFirst ? <PlayCircle className="h-4 w-4" /> : <LockKeyhole className="h-4 w-4" />}
@@ -470,12 +470,12 @@ export const Course = () => {
                         className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
                         style={{
                           backgroundColor: lesson.completedAt
-                            ? "rgba(34,197,94,0.12)"
+                            ? "color-mix(in oklab, var(--color-brand-muted) 100%, transparent)"
                             : lesson.isUnlocked
                               ? "var(--color-brand-muted)"
                               : "var(--color-surface-2)",
                           color: lesson.completedAt
-                            ? "rgb(21,128,61)"
+                            ? "var(--color-brand)"
                             : lesson.isUnlocked
                               ? "var(--color-brand)"
                               : "var(--color-text-muted)"

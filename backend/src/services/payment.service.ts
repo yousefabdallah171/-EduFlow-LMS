@@ -26,21 +26,101 @@ class PaymentError extends Error {
 const PAYMOB_BASE_URL = "https://accept.paymob.com/api";
 const PAYMENTS_CACHE_TTL_SECONDS = 60 * 60;
 const paymentsCacheKey = (userId: string) => `student:payments:${userId}`;
+const CONCURRENT_CHECKOUT_TIMEOUT_MINUTES = 30;
+const PAYMOB_REQUEST_TIMEOUT_MS = 10000;
 
-const paymobRequest = async <T>(path: string, body: Record<string, unknown>) => {
-  const response = await fetch(`${PAYMOB_BASE_URL}${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
+type RetryableErrorCode = "PAYMOB_SERVER_ERROR" | "PAYMOB_RATE_LIMITED" | "PAYMOB_TIMEOUT";
 
-  if (!response.ok) {
-    throw new PaymentError("PAYMOB_REQUEST_FAILED", 502, "Paymob request failed.");
+const isRetryableError = (code: string): code is RetryableErrorCode => {
+  return ["PAYMOB_SERVER_ERROR", "PAYMOB_RATE_LIMITED", "PAYMOB_TIMEOUT"].includes(code);
+};
+
+const paymobRequest = async <T>(
+  path: string,
+  body: Record<string, unknown>,
+  timeoutMs = PAYMOB_REQUEST_TIMEOUT_MS
+): Promise<T> => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(`${PAYMOB_BASE_URL}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      const status = response.status;
+      let errorCode = "PAYMOB_API_ERROR";
+      let errorMessage = "Paymob API request failed";
+
+      if (status === 401) {
+        errorCode = "PAYMOB_AUTH_FAILED";
+        errorMessage = "Paymob authentication failed. Check API key.";
+      } else if (status === 429) {
+        errorCode = "PAYMOB_RATE_LIMITED";
+        errorMessage = "Paymob API rate limit exceeded. Please try again later.";
+      } else if (status >= 500) {
+        errorCode = "PAYMOB_SERVER_ERROR";
+        errorMessage = "Paymob server error. Please try again.";
+      }
+
+      throw new PaymentError(errorCode, status, errorMessage);
+    }
+
+    return (await response.json()) as T;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new PaymentError(
+        "PAYMOB_TIMEOUT",
+        504,
+        "Paymob request timeout. Please try again."
+      );
+    }
+
+    if (error instanceof PaymentError) {
+      throw error;
+    }
+
+    throw new PaymentError(
+      "PAYMOB_REQUEST_FAILED",
+      502,
+      "Paymob request failed. Please try again."
+    );
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+const retryWithBackoff = async <T>(
+  fn: () => Promise<T>,
+  maxRetries = 3,
+  initialDelayMs = 1000
+): Promise<T> => {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+
+      if (error instanceof PaymentError && !isRetryableError(error.code)) {
+        throw error;
+      }
+
+      if (attempt === maxRetries - 1) {
+        throw error;
+      }
+
+      const delayMs = initialDelayMs * Math.pow(2, attempt);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
   }
 
-  return (await response.json()) as T;
+  throw lastError;
 };
 
 export const paymentService = {
@@ -137,6 +217,21 @@ export const paymentService = {
       throw new PaymentError("ALREADY_ENROLLED", 409, "Student is already enrolled.");
     }
 
+    // Check for concurrent checkout attempts
+    const pendingPayments = await paymentRepository.findPendingByUserId(userId);
+    if (pendingPayments.length > 0) {
+      const newestPending = pendingPayments[0];
+      const ageMinutes = (Date.now() - newestPending.createdAt.getTime()) / 60000;
+      if (ageMinutes < CONCURRENT_CHECKOUT_TIMEOUT_MINUTES) {
+        const waitMinutes = Math.ceil(CONCURRENT_CHECKOUT_TIMEOUT_MINUTES - ageMinutes);
+        throw new PaymentError(
+          "CHECKOUT_IN_PROGRESS",
+          409,
+          `You have a checkout in progress. Please try again in ${waitMinutes} minute${waitMinutes > 1 ? "s" : ""}.`
+        );
+      }
+    }
+
     const coursePackage = await this.getCheckoutPackage(packageId);
 
     const payment = await prisma.$transaction(async (db) => {
@@ -168,55 +263,73 @@ export const paymentService = {
 
     await paymentService.invalidatePaymentHistoryCache(userId);
 
-    const auth = await paymobRequest<{ token: string }>("/auth/tokens", {
-      api_key: env.PAYMOB_API_KEY
-    });
+    try {
+      const auth = await retryWithBackoff(
+        () => paymobRequest<{ token: string }>("/auth/tokens", {
+          api_key: env.PAYMOB_API_KEY
+        })
+      );
 
-    const order = await paymobRequest<{ id: number }>("/ecommerce/orders", {
-      auth_token: auth.token,
-      delivery_needed: false,
-      amount_cents: payment.amountPiasters,
-      currency: payment.currency,
-      merchant_order_id: payment.id,
-      items: []
-    });
+      const order = await retryWithBackoff(
+        () => paymobRequest<{ id: number }>("/ecommerce/orders", {
+          auth_token: auth.token,
+          delivery_needed: false,
+          amount_cents: payment.amountPiasters,
+          currency: payment.currency,
+          merchant_order_id: payment.id,
+          items: []
+        })
+      );
 
-    await paymentRepository.update(payment.id, {
-      paymobOrderId: String(order.id)
-    });
+      await paymentRepository.update(payment.id, {
+        paymobOrderId: String(order.id)
+      });
 
-    const paymentKey = await paymobRequest<{ token: string }>("/acceptance/payment_keys", {
-      auth_token: auth.token,
-      amount_cents: payment.amountPiasters,
-      expiration: 3600,
-      order_id: order.id,
-      billing_data: {
-        apartment: "NA",
-        email: student.email,
-        floor: "NA",
-        first_name: student.fullName.split(" ")[0] ?? student.fullName,
-        street: "NA",
-        building: "NA",
-        phone_number: "NA",
-        shipping_method: "NA",
-        postal_code: "NA",
-        city: "Cairo",
-        country: "EG",
-        last_name: student.fullName.split(" ").slice(1).join(" ") || student.fullName,
-        state: "Cairo"
-      },
-      currency: payment.currency,
-      integration_id: Number(env.PAYMOB_INTEGRATION_ID)
-    });
+      const paymentKey = await retryWithBackoff(
+        () => paymobRequest<{ token: string }>("/acceptance/payment_keys", {
+          auth_token: auth.token,
+          amount_cents: payment.amountPiasters,
+          expiration: 3600,
+          order_id: order.id,
+          billing_data: {
+            apartment: "NA",
+            email: student.email,
+            floor: "NA",
+            first_name: student.fullName.split(" ")[0] ?? student.fullName,
+            street: "NA",
+            building: "NA",
+            phone_number: "NA",
+            shipping_method: "NA",
+            postal_code: "NA",
+            city: "Cairo",
+            country: "EG",
+            last_name: student.fullName.split(" ").slice(1).join(" ") || student.fullName,
+            state: "Cairo"
+          },
+          currency: payment.currency,
+          integration_id: Number(env.PAYMOB_INTEGRATION_ID)
+        })
+      );
 
-    return {
-      paymentKey: paymentKey.token,
-      orderId: payment.id,
-      amount: payment.amountPiasters,
-      currency: payment.currency,
-      discountApplied: payment.discountPiasters,
-      iframeId: env.PAYMOB_IFRAME_ID
-    };
+      return {
+        paymentKey: paymentKey.token,
+        orderId: payment.id,
+        amount: payment.amountPiasters,
+        currency: payment.currency,
+        discountApplied: payment.discountPiasters,
+        iframeId: env.PAYMOB_IFRAME_ID
+      };
+    } catch (error) {
+      if (error instanceof PaymentError) {
+        await paymentRepository.update(payment.id, {
+          status: "FAILED",
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorDetails: { originalError: error.toString() } as any
+        });
+      }
+      throw error;
+    }
   },
 
   async processWebhook(payload: PaymobWebhookPayload, hmac: string) {
