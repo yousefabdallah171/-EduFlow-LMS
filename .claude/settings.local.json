@@ -156,7 +156,11 @@
       "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
       "Bash(npm test *)",
       "Bash(tee /tmp/test-output.log)",
-      "Bash(docker exec *)"
+      "Bash(docker exec *)",
+      "Bash(grep -E \"\\\\.\\(ts|prisma\\)$\")",
+      "Bash(awk '{print $9, \"-\", $5}')",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm --filter frontend lint)"
     ]
   }
 }

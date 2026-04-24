@@ -1,0 +1,266 @@
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { PaymentEventService } from "@/services/payment-event.service";
+import { prisma } from "@/config/database";
+import { PaymentEventType, PaymentStatus } from "@prisma/client";
+
+vi.mock("@/config/database");
+vi.mock("@/observability/logger");
+
+describe("PaymentEventService", () => {
+  let service: PaymentEventService;
+
+  const mockEvent = {
+    id: "event-123",
+    paymentId: "payment-123",
+    eventType: "STATUS_CHANGED" as PaymentEventType,
+    previousStatus: "INITIATED" as PaymentStatus,
+    newStatus: "AWAITING_PAYMENT" as PaymentStatus,
+    errorCode: null,
+    errorMessage: null,
+    metadata: {},
+    createdAt: new Date(),
+  };
+
+  beforeEach(() => {
+    service = new PaymentEventService();
+    vi.clearAllMocks();
+  });
+
+  describe("logEvent", () => {
+    it("should create a payment event", async () => {
+      vi.spyOn(prisma.paymentEvent, "create").mockResolvedValueOnce(
+        mockEvent
+      );
+
+      await service.logEvent("payment-123", "STATUS_CHANGED", {
+        previousStatus: "INITIATED",
+        newStatus: "AWAITING_PAYMENT",
+      });
+
+      expect(prisma.paymentEvent.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            paymentId: "payment-123",
+            eventType: "STATUS_CHANGED",
+          }),
+        })
+      );
+    });
+
+    it("should include metadata in event", async () => {
+      vi.spyOn(prisma.paymentEvent, "create").mockResolvedValueOnce(
+        mockEvent
+      );
+
+      const metadata = { orderId: "order-123", amount: 50000 };
+
+      await service.logEvent("payment-123", "INITIATED", {
+        metadata,
+      });
+
+      expect(prisma.paymentEvent.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            metadata,
+          }),
+        })
+      );
+    });
+  });
+
+  describe("logStatusChange", () => {
+    it("should log status change event", async () => {
+      vi.spyOn(prisma.paymentEvent, "create").mockResolvedValueOnce(
+        mockEvent
+      );
+
+      await service.logStatusChange(
+        "payment-123",
+        "INITIATED",
+        "AWAITING_PAYMENT"
+      );
+
+      expect(prisma.paymentEvent.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            previousStatus: "INITIATED",
+            newStatus: "AWAITING_PAYMENT",
+            eventType: "STATUS_CHANGED",
+          }),
+        })
+      );
+    });
+  });
+
+  describe("logError", () => {
+    it("should log error event with error details", async () => {
+      vi.spyOn(prisma.paymentEvent, "create").mockResolvedValueOnce(
+        mockEvent
+      );
+
+      await service.logError(
+        "payment-123",
+        "PAYMOB_API_ERROR",
+        "PAYMOB_API_ERROR",
+        "API returned 500 error"
+      );
+
+      expect(prisma.paymentEvent.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            eventType: "PAYMOB_API_ERROR",
+            errorCode: "PAYMOB_API_ERROR",
+            errorMessage: "API returned 500 error",
+          }),
+        })
+      );
+    });
+  });
+
+  describe("getPaymentHistory", () => {
+    it("should retrieve payment events in chronological order", async () => {
+      const events = [
+        { ...mockEvent, id: "event-1", createdAt: new Date("2026-04-24T10:00:00") },
+        { ...mockEvent, id: "event-2", createdAt: new Date("2026-04-24T10:05:00") },
+      ];
+
+      vi.spyOn(prisma.paymentEvent, "findMany").mockResolvedValueOnce(
+        events
+      );
+
+      const result = await service.getPaymentHistory("payment-123");
+
+      expect(result).toHaveLength(2);
+      expect(result[0].createdAt.getTime()).toBeLessThan(
+        result[1].createdAt.getTime()
+      );
+      expect(prisma.paymentEvent.findMany).toHaveBeenCalledWith({
+        where: { paymentId: "payment-123" },
+        orderBy: { createdAt: "asc" },
+      });
+    });
+
+    it("should return empty array if no events found", async () => {
+      vi.spyOn(prisma.paymentEvent, "findMany").mockResolvedValueOnce([]);
+
+      const result = await service.getPaymentHistory("payment-456");
+
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  describe("getLastEventOfType", () => {
+    it("should return most recent event of specific type", async () => {
+      vi.spyOn(prisma.paymentEvent, "findFirst").mockResolvedValueOnce(
+        mockEvent
+      );
+
+      const result = await service.getLastEventOfType(
+        "payment-123",
+        "STATUS_CHANGED"
+      );
+
+      expect(result).toEqual(mockEvent);
+      expect(prisma.paymentEvent.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            paymentId: "payment-123",
+            eventType: "STATUS_CHANGED",
+          },
+          orderBy: { createdAt: "desc" },
+        })
+      );
+    });
+
+    it("should return null if event type not found", async () => {
+      vi.spyOn(prisma.paymentEvent, "findFirst").mockResolvedValueOnce(null);
+
+      const result = await service.getLastEventOfType(
+        "payment-123",
+        "UNKNOWN_EVENT"
+      );
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("reconstructStatus", () => {
+    it("should reconstruct current status from events", async () => {
+      const lastStatusChange = {
+        ...mockEvent,
+        newStatus: "COMPLETED" as PaymentStatus,
+      };
+
+      vi.spyOn(prisma.paymentEvent, "findFirst").mockResolvedValueOnce(
+        lastStatusChange
+      );
+
+      const result = await service.reconstructStatus("payment-123");
+
+      expect(result).toBe("COMPLETED");
+    });
+
+    it("should return null if no status change events", async () => {
+      vi.spyOn(prisma.paymentEvent, "findFirst").mockResolvedValueOnce(null);
+
+      const result = await service.reconstructStatus("payment-456");
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("getEventsInRange", () => {
+    it("should retrieve events within time range", async () => {
+      const startDate = new Date("2026-04-24T10:00:00");
+      const endDate = new Date("2026-04-24T11:00:00");
+      const events = [mockEvent];
+
+      vi.spyOn(prisma.paymentEvent, "findMany").mockResolvedValueOnce(
+        events
+      );
+
+      const result = await service.getEventsInRange(
+        "payment-123",
+        startDate,
+        endDate
+      );
+
+      expect(result).toHaveLength(1);
+      expect(prisma.paymentEvent.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            paymentId: "payment-123",
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          }),
+        })
+      );
+    });
+
+    it("should return events in chronological order", async () => {
+      const startDate = new Date("2026-04-24T10:00:00");
+      const endDate = new Date("2026-04-24T11:00:00");
+      const events = [
+        { ...mockEvent, id: "event-1", createdAt: new Date("2026-04-24T10:10:00") },
+        { ...mockEvent, id: "event-2", createdAt: new Date("2026-04-24T10:20:00") },
+      ];
+
+      vi.spyOn(prisma.paymentEvent, "findMany").mockResolvedValueOnce(
+        events
+      );
+
+      const result = await service.getEventsInRange(
+        "payment-123",
+        startDate,
+        endDate
+      );
+
+      expect(result).toHaveLength(2);
+      expect(result[0].createdAt.getTime()).toBeLessThan(
+        result[1].createdAt.getTime()
+      );
+    });
+  });
+});
