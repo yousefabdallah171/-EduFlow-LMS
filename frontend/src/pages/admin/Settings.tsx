@@ -16,11 +16,10 @@ type CourseSettings = {
   descriptionAr?: string;
 };
 
-type SystemSettings = {
-  smtpHost?: string;
-  smtpUser?: string;
-  smtpPass?: string;
-  paymobKey?: string;
+type SystemStatus = {
+  smtpConfigured: boolean;
+  paymobConfigured: boolean;
+  storageConfigured: boolean;
 };
 
 const fieldClass =
@@ -38,36 +37,25 @@ export const AdminSettings = () => {
   const copy = getAdminUiCopy(locale);
   const isAr = locale === "ar";
   const [course, setCourse] = useState<CourseSettings>({});
-  const [system, setSystem] = useState<SystemSettings>({});
 
   const { data: courseData, isLoading: courseLoading } = useQuery({
     queryKey: ["admin-settings-course"],
     queryFn: () => api.get<CourseSettings>("/admin/settings/course").then((response) => response.data)
   });
 
-  const { data: systemData, isLoading: systemLoading } = useQuery({
+  const { data: systemStatus, isLoading: systemLoading } = useQuery({
     queryKey: ["admin-settings-system"],
-    queryFn: () => api.get<SystemSettings>("/admin/settings/system").then((response) => response.data)
+    queryFn: () => api.get<SystemStatus>("/admin/settings/system").then((response) => response.data)
   });
 
   useEffect(() => {
     if (courseData) setCourse(courseData);
   }, [courseData]);
 
-  useEffect(() => {
-    if (systemData) setSystem(systemData);
-  }, [systemData]);
-
   const courseMutation = useMutation({
     mutationFn: () => api.patch("/admin/settings/course", course),
     onSuccess: () => toast.success(t("admin.settings.saved")),
     onError: () => toast.error(isAr ? "تعذر حفظ إعدادات الدورة." : "Failed to save course settings.")
-  });
-
-  const systemMutation = useMutation({
-    mutationFn: () => api.patch("/admin/settings/system", system),
-    onSuccess: () => toast.success(t("admin.settings.saved")),
-    onError: () => toast.error(isAr ? "تعذر حفظ إعدادات النظام." : "Failed to save system settings.")
   });
 
   return (
@@ -166,90 +154,69 @@ export const AdminSettings = () => {
             )}
           </div>
 
-          <div className="space-y-5">
-            <div className="dashboard-panel p-6 space-y-5">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                  {copy.settings.emailDelivery}
-                </p>
-                <h3 className="mt-2 text-xl font-black tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-                  {copy.settings.smtpConfig}
-                </h3>
-              </div>
-
-              {systemLoading ? (
-                <div className="space-y-3">{Array.from({ length: 2 }).map((_, index) => <Skeleton key={index} className="h-12 rounded-xl" />)}</div>
-              ) : (
-                <>
-                  {[
-                    { label: copy.settings.smtpHost, field: "smtpHost" as const, type: "text" },
-                    { label: copy.settings.smtpUser, field: "smtpUser" as const, type: "text" }
-                  ].map(({ label, field, type }) => (
-                    <div key={field}>
-                      <label className="mb-2 block text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                        {label}
-                      </label>
-                      <input
-                        type={type}
-                        className={fieldClass}
-                        style={fieldStyle}
-                        value={system[field] ?? ""}
-                        onChange={(event) => setSystem({ ...system, [field]: event.target.value })}
-                      />
-                    </div>
-                  ))}
-                </>
-              )}
+          <div className="dashboard-panel p-6 space-y-5">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                {copy.settings.emailDelivery}
+              </p>
+              <h3 className="mt-2 text-xl font-black tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+                {copy.settings.smtpConfig}
+              </h3>
+              <p className="mt-2 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
+                Configure email delivery via environment variables. No direct editing available in admin panel.
+              </p>
             </div>
 
-            <div className="dashboard-panel p-6 space-y-5">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                  {copy.settings.sensitiveCredentials}
-                </p>
-                <h3 className="mt-2 text-xl font-black tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-                  {copy.settings.secretKeys}
-                </h3>
-                <p className="mt-2 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
-                  {copy.settings.secretDesc}
-                </p>
+            {systemLoading ? (
+              <div className="space-y-3">{Array.from({ length: 2 }).map((_, index) => <Skeleton key={index} className="h-12 rounded-xl" />)}</div>
+            ) : (
+              <div className="space-y-4">
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--color-border)" }}>
+                  <div className="flex items-center justify-between">
+                    <span style={{ color: "var(--color-text-primary)" }}>Email (SMTP)</span>
+                    <span
+                      className="inline-block rounded-full px-3 py-1 text-xs font-bold"
+                      style={{
+                        backgroundColor: systemStatus?.smtpConfigured ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                        color: systemStatus?.smtpConfigured ? "#22c55e" : "#ef4444"
+                      }}
+                    >
+                      {systemStatus?.smtpConfigured ? "✓ Configured" : "✗ Not Configured"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--color-border)" }}>
+                  <div className="flex items-center justify-between">
+                    <span style={{ color: "var(--color-text-primary)" }}>Payment Processing (Paymob)</span>
+                    <span
+                      className="inline-block rounded-full px-3 py-1 text-xs font-bold"
+                      style={{
+                        backgroundColor: systemStatus?.paymobConfigured ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                        color: systemStatus?.paymobConfigured ? "#22c55e" : "#ef4444"
+                      }}
+                    >
+                      {systemStatus?.paymobConfigured ? "✓ Configured" : "✗ Not Configured"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border p-4" style={{ borderColor: "var(--color-border)" }}>
+                  <div className="flex items-center justify-between">
+                    <span style={{ color: "var(--color-text-primary)" }}>Media Storage</span>
+                    <span
+                      className="inline-block rounded-full px-3 py-1 text-xs font-bold"
+                      style={{
+                        backgroundColor: systemStatus?.storageConfigured ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                        color: systemStatus?.storageConfigured ? "#22c55e" : "#ef4444"
+                      }}
+                    >
+                      {systemStatus?.storageConfigured ? "✓ Configured" : "✗ Not Configured"}
+                    </span>
+                  </div>
+                </div>
               </div>
-
-              {systemLoading ? (
-                <div className="space-y-3">{Array.from({ length: 2 }).map((_, index) => <Skeleton key={index} className="h-12 rounded-xl" />)}</div>
-              ) : (
-                <>
-                  {[
-                    { label: copy.settings.smtpPassword, field: "smtpPass" as const },
-                    { label: copy.settings.paymobKey, field: "paymobKey" as const }
-                  ].map(({ label, field }) => (
-                    <div key={field}>
-                      <label className="mb-2 block text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                        {label}
-                      </label>
-                      <input
-                        type="password"
-                        className={fieldClass}
-                        placeholder="••••••••••"
-                        style={fieldStyle}
-                        value={system[field] ?? ""}
-                        onChange={(event) => setSystem({ ...system, [field]: event.target.value })}
-                      />
-                    </div>
-                  ))}
-
-                  <button
-                    className="rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95 disabled:opacity-60"
-                    style={{ background: "var(--gradient-brand)" }}
-                    disabled={systemMutation.isPending}
-                    onClick={() => void systemMutation.mutateAsync()}
-                    type="button"
-                  >
-                    {systemMutation.isPending ? copy.settings.saving : t("actions.save")}
-                  </button>
-                </>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </section>
