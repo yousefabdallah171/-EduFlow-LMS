@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 
 import { AdminShell } from "@/components/layout/AdminShell";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { Pagination } from "@/components/shared/Pagination";
 import {
   Dialog,
   DialogContent,
@@ -69,6 +70,7 @@ export const AdminStudents = () => {
   const { t } = useTranslation();
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
+  const [page, setPage] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedSearchStudent, setSelectedSearchStudent] = useState<StudentSearchResult | null>(null);
@@ -81,10 +83,10 @@ export const AdminStudents = () => {
   }, [searchValue]);
 
   const studentsQuery = useQuery({
-    queryKey: ["admin-students"],
+    queryKey: ["admin-students", page],
     queryFn: async () => {
       const response = await api.get<{ data: Student[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
-        "/admin/students", { params: { limit: 20 } }
+        "/admin/students", { params: { page, limit: 20 } }
       );
       return response.data;
     }
@@ -388,6 +390,15 @@ export const AdminStudents = () => {
               />
             </div>
           ) : null}
+
+          {students.length > 0 && (
+            <Pagination
+              currentPage={studentsQuery.data?.pagination.page ?? 1}
+              totalPages={studentsQuery.data?.pagination.totalPages ?? 1}
+              onPageChange={setPage}
+              isLoading={studentsQuery.isLoading}
+            />
+          )}
         </div>
       </section>
 
