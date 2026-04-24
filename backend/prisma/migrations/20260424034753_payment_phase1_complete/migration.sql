@@ -1,3 +1,15 @@
+-- First, update the PaymentStatus enum to include new values
+ALTER TYPE "PaymentStatus" ADD VALUE 'INITIATED' BEFORE 'PENDING';
+ALTER TYPE "PaymentStatus" ADD VALUE 'AWAITING_PAYMENT' AFTER 'INITIATED';
+ALTER TYPE "PaymentStatus" ADD VALUE 'WEBHOOK_PENDING' AFTER 'AWAITING_PAYMENT';
+ALTER TYPE "PaymentStatus" ADD VALUE 'CANCELLED' AFTER 'FAILED';
+ALTER TYPE "PaymentStatus" ADD VALUE 'ENROLLMENT_FAILED' AFTER 'CANCELLED';
+ALTER TYPE "PaymentStatus" ADD VALUE 'EMAIL_FAILED' AFTER 'ENROLLMENT_FAILED';
+ALTER TYPE "PaymentStatus" ADD VALUE 'REFUND_REQUESTED' AFTER 'EMAIL_FAILED';
+ALTER TYPE "PaymentStatus" ADD VALUE 'REFUND_FAILED' AFTER 'REFUNDED';
+ALTER TYPE "PaymentStatus" ADD VALUE 'DISPUTED' AFTER 'REFUND_FAILED';
+ALTER TYPE "PaymentStatus" ADD VALUE 'MANUAL_OVERRIDE' AFTER 'DISPUTED';
+
 -- Add new columns to Payment table
 ALTER TABLE "Payment" ADD COLUMN "paymobIdempotencyKey" TEXT UNIQUE;
 ALTER TABLE "Payment" ADD COLUMN "webhookPayload" JSONB;
@@ -18,7 +30,7 @@ ALTER TABLE "Payment" ADD COLUMN "ipAddress" TEXT;
 ALTER TABLE "Payment" ADD COLUMN "userAgent" TEXT;
 
 -- Update status column default
-ALTER TABLE "Payment" ALTER COLUMN "status" SET DEFAULT 'INITIATED'::"PaymentStatus";
+ALTER TABLE "Payment" ALTER COLUMN "status" SET DEFAULT 'COMPLETED'::"PaymentStatus";
 
 -- Create PaymentEvent table
 CREATE TABLE "PaymentEvent" (
