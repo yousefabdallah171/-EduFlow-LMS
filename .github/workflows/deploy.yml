@@ -42,6 +42,11 @@ jobs:
             exit 1
           fi
 
+          # Auto-fix permissions for any new/existing files
+          if [ -f $DEPLOY_PATH/fix-permissions.sh ]; then
+            bash $DEPLOY_PATH/fix-permissions.sh
+          fi
+
           # Ensure directories exist
           mkdir -p $DEPLOY_PATH/public_html
           mkdir -p $DEPLOY_PATH/backend
