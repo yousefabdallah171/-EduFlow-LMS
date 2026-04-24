@@ -7,6 +7,7 @@ import { z } from "zod";
 import { prisma } from "../../config/database.js";
 import { env } from "../../config/env.js";
 import { redis } from "../../config/redis.js";
+import { ENROLLMENT_STATUS, ENROLLMENT_STATUS_VALUES } from "../../constants/index.js";
 import { refreshTokenRepository } from "../../repositories/refresh-token.repository.js";
 import { enrollmentService } from "../../services/enrollment.service.js";
 import { lessonService } from "../../services/lesson.service.js";
@@ -18,7 +19,7 @@ const getFirstValue = (value: string | string[] | undefined) => (Array.isArray(v
 const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
-  status: z.enum(["ACTIVE", "REVOKED", "NONE"]).optional(),
+  status: z.enum(ENROLLMENT_STATUS_VALUES as [string, ...string[]]).optional(),
   sort: z.enum(["name_asc", "name_desc", "enrolled_at_desc"]).default("enrolled_at_desc")
 });
 
@@ -79,7 +80,7 @@ const buildStudentPayload = (student: StudentWithRelations, totalPublishedLesson
     email: student.email,
     fullName: student.fullName,
     avatarUrl: student.avatarUrl,
-    enrollmentStatus: enrollment?.status ?? "NONE",
+    enrollmentStatus: enrollment?.status ?? ENROLLMENT_STATUS.NONE,
     enrollmentType: enrollment?.enrollmentType ?? null,
     enrolledAt: enrollment?.enrolledAt ?? null,
     courseCompletion: totalPublishedLessons > 0 ? Math.round((completedLessons / totalPublishedLessons) * 1000) / 10 : 0,
@@ -111,8 +112,8 @@ const verifyAdminCanAccessStudent = async (req: Request, res: Response, next: Ne
   }
 };
 
-const statusWhere = (status: "ACTIVE" | "REVOKED" | "NONE" | undefined) => {
-  if (status === "NONE") {
+const statusWhere = (status: string | undefined) => {
+  if (status === ENROLLMENT_STATUS.NONE) {
     return { enrollments: { none: {} } };
   }
 
@@ -313,7 +314,7 @@ export const adminStudentsController = {
           id: student.id,
           email: student.email,
           fullName: student.fullName,
-          enrollmentStatus: student.enrollments[0]?.status ?? "NONE"
+          enrollmentStatus: student.enrollments[0]?.status ?? ENROLLMENT_STATUS.NONE
         }))
       };
 
@@ -410,7 +411,7 @@ export const adminStudentsController = {
         return;
       }
 
-      if (student.enrollments[0]?.status === "ACTIVE") {
+      if (student.enrollments[0]?.status === ENROLLMENT_STATUS.ACTIVE) {
         res.status(409).json({
           error: "ALREADY_ENROLLED",
           message: "Student already has an active enrollment."
@@ -450,7 +451,7 @@ export const adminStudentsController = {
         return;
       }
 
-      if (student.enrollments[0]?.status !== "ACTIVE") {
+      if (student.enrollments[0]?.status !== ENROLLMENT_STATUS.ACTIVE) {
         res.status(404).json({ error: "NO_ACTIVE_ENROLLMENT" });
         return;
       }
