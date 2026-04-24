@@ -39,9 +39,9 @@ if (process.env.NODE_ENV !== "production") {
 
 export function createPaymentLogger(paymentId: string, userId: string) {
   return {
-    info: (msg: string, data?: any) =>
+    info: (msg: string, data?: Record<string, unknown>) =>
       logger.info(msg, { paymentId, userId, ...data }),
-    error: (msg: string, error: Error, data?: any) =>
+    error: (msg: string, error: Error, data?: Record<string, unknown>) =>
       logger.error(msg, {
         paymentId,
         userId,
@@ -49,9 +49,9 @@ export function createPaymentLogger(paymentId: string, userId: string) {
         stack: error.stack,
         ...data,
       }),
-    debug: (msg: string, data?: any) =>
+    debug: (msg: string, data?: Record<string, unknown>) =>
       logger.debug(msg, { paymentId, userId, ...data }),
-    warn: (msg: string, data?: any) =>
+    warn: (msg: string, data?: Record<string, unknown>) =>
       logger.warn(msg, { paymentId, userId, ...data }),
   };
 }

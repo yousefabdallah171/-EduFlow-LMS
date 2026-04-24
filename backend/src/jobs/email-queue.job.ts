@@ -16,7 +16,7 @@ interface EmailQueueJobData {
 // Register email queue job processor
 export function setupEmailQueueProcessor() {
   emailQueue.process(10, async (job: Job<EmailQueueJobData>) => {
-    const { emailId, recipient, emailType, subject, template, context, retryCount } = job.data;
+    const { emailId, recipient, subject, template, context, retryCount } = job.data;
 
     try {
       console.log(`[Email Queue] Processing email ${emailId} to ${recipient}, attempt ${retryCount + 1}`);
@@ -123,7 +123,7 @@ export function setupEmailQueueProcessor() {
 }
 
 // Detect permanent email failures (bounce, invalid address, etc.)
-function isPermanentEmailError(errorMessage: string, error: unknown): boolean {
+function isPermanentEmailError(errorMessage: string): boolean {
   const permanentErrorPatterns = [
     /invalid.*email/i,
     /malformed.*email/i,
