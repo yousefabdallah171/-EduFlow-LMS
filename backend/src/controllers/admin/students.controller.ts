@@ -9,6 +9,7 @@ import { env } from "../../config/env.js";
 import { redis } from "../../config/redis.js";
 import { ENROLLMENT_STATUS, ENROLLMENT_STATUS_VALUES } from "../../constants/index.js";
 import { refreshTokenRepository } from "../../repositories/refresh-token.repository.js";
+import { auditService } from "../../services/audit.service.js";
 import { enrollmentService } from "../../services/enrollment.service.js";
 import { lessonService } from "../../services/lesson.service.js";
 import { videoTokenService } from "../../services/video-token.service.js";
@@ -421,6 +422,7 @@ export const adminStudentsController = {
 
       const enrollment = await enrollmentService.enroll(student.id, "ADMIN_ENROLLED");
       await bumpSearchCacheVersion();
+      await auditService.logEnrollmentChange(req.user!.userId, student.id, "ENROLL_STUDENT", null, enrollment.status);
 
       try {
         await sendEnrollmentActivatedEmail(student.email, student.fullName, `${env.FRONTEND_URL}/dashboard`);
@@ -457,6 +459,7 @@ export const adminStudentsController = {
       }
 
       const activeSessions = await refreshTokenRepository.findActiveByUser(student.id);
+      const previousStatus = student.enrollments[0]?.status ?? null;
       const enrollment = await enrollmentService.revoke(student.id, req.user!.userId);
       await refreshTokenRepository.revokeByUser(student.id);
       if (activeSessions.length > 0) {
@@ -464,6 +467,7 @@ export const adminStudentsController = {
       }
       await videoTokenService.revokeUser(student.id);
       await bumpSearchCacheVersion();
+      await auditService.logEnrollmentChange(req.user!.userId, student.id, "REVOKE_STUDENT", previousStatus, enrollment.status);
 
       try {
         await sendEnrollmentRevokedEmail(student.email, student.fullName, `${env.FRONTEND_URL}/help`);

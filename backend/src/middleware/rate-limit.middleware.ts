@@ -46,11 +46,12 @@ export const passwordChangeRateLimit = rateLimit({
 });
 
 export const adminSearchRateLimit = rateLimit({
-  windowMs: 10 * 60 * 1000,
-  max: process.env.NODE_ENV === "production" ? 100 : 10000,
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === "production" ? 50 : 10000,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.user?.userId || req.ip || "unknown"
+  keyGenerator: (req) => req.user?.userId || req.ip || "unknown",
+  message: { error: "TOO_MANY_SEARCH_REQUESTS", message: "Too many search requests. Please try again after 15 minutes." }
 });
 
 export const videoPreviewRateLimit = rateLimit({

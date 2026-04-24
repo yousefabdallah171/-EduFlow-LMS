@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { PaymentStatus, type Prisma } from "@prisma/client";
 
 import { prisma } from "../../config/database.js";
+import { auditService } from "../../services/audit.service.js";
 import { analyticsService } from "../../services/analytics.service.js";
 
 const firstQueryValue = (value: unknown) => (Array.isArray(value) ? value[0] : value);
@@ -83,6 +84,9 @@ export const adminOrdersController = {
 
   async exportCsv(req: Request, res: Response, next: NextFunction) {
     try {
+      const totalRecords = await prisma.payment.count();
+      await auditService.logDataExport(req.user!.userId, "orders_csv", totalRecords);
+
       // PERFORMANCE: Stream CSV instead of loading all payments into memory
       // Previous: loaded all payments, built entire CSV string → OOM for 100k+ records
       // Now: streams chunks as rows are fetched, constant memory usage

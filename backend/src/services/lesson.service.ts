@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import type { VideoStatus } from "@prisma/client";
 import type { Request } from "express";
 
@@ -6,35 +5,17 @@ import { redis } from "../config/redis.js";
 import { env } from "../config/env.js";
 import { prisma } from "../config/database.js";
 import { prometheus } from "../observability/prometheus.js";
+import { cacheVersioningService } from "./cache-versioning.service.js";
 
 const publishedLessonsCacheKey = "lessons:published:v1";
 const publishedGroupedCacheKey = "lessons:published-grouped:v1";
 const adminLessonsCacheKey = "lessons:admin:v1";
-const cacheVersionKey = "lessons:cache-version:v1";
 const lessonMetadataCacheKey = (lessonId: string) => `lesson:metadata:${lessonId}`;
 const publishedLessonCountCacheKey = "lesson:published-count";
 
 const LESSONS_CACHE_TTL_SECONDS = env.CACHE_TTL_LESSON_METADATA_SECONDS;
 const LESSON_METADATA_CACHE_TTL_SECONDS = env.CACHE_TTL_LESSON_METADATA_SECONDS;
 
-const getCacheVersion = async () => {
-  try {
-    return (await redis.get(cacheVersionKey)) ?? "0";
-  } catch {
-    return "0";
-  }
-};
-
-const bumpCacheVersion = async () => {
-  try {
-    await redis.set(cacheVersionKey, String(Date.now()), "EX", LESSONS_CACHE_TTL_SECONDS);
-  } catch {
-    // ignore redis failures
-  }
-};
-
-const hashKey = (base: string, version: string) =>
-  `${base}:${crypto.createHash("sha256").update(version).digest("hex")}`;
 
 export type PublishedLessonSummary = {
   id: string;
@@ -89,7 +70,7 @@ export type LessonMetadata = {
 
 export const lessonService = {
   async invalidatePublishedLessonsCache() {
-    await bumpCacheVersion();
+    await cacheVersioningService.bumpVersion("lessons");
     try {
       await redis.del(publishedLessonCountCacheKey, adminLessonsCacheKey);
     } catch {
@@ -227,8 +208,8 @@ export const lessonService = {
   },
 
   async getPublishedLessons(): Promise<PublishedLessonSummary[]> {
-    const version = await getCacheVersion();
-    const key = hashKey(publishedLessonsCacheKey, version);
+    const version = await cacheVersioningService.getVersion("lessons");
+    const key = cacheVersioningService.createVersionedKey(publishedLessonsCacheKey, version);
     try {
       const cached = await redis.get(key);
       if (cached) {
@@ -263,8 +244,8 @@ export const lessonService = {
   },
 
   async getPublishedLessonsGrouped(): Promise<PublishedSectionWithLessons[]> {
-    const version = await getCacheVersion();
-    const key = hashKey(publishedGroupedCacheKey, version);
+    const version = await cacheVersioningService.getVersion("lessons");
+    const key = cacheVersioningService.createVersionedKey(publishedGroupedCacheKey, version);
     try {
       const cached = await redis.get(key);
       if (cached) {

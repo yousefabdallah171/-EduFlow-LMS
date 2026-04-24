@@ -649,65 +649,14 @@ export const lessonController = {
       }
 
       const trimmed = segment.trim();
-      const lower = trimmed.toLowerCase();
 
-      if (!trimmed) {
+      if (!trimmed || trimmed.length > 255) {
         res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
         return;
       }
 
-      if (trimmed.length > 255) {
-        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
-        return;
-      }
-
-      if (trimmed.includes("..")) {
-        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
-        return;
-      }
-
-      if (trimmed.includes("/")) {
-        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
-        return;
-      }
-
-      if (trimmed.includes("\\")) {
-        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
-        return;
-      }
-
-      if (trimmed.includes(":")) {
-        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
-        return;
-      }
-
-      if (trimmed.startsWith(".")) {
-        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
-        return;
-      }
-
-      if (trimmed.includes("~")) {
-        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
-        return;
-      }
-
-      if (lower.includes("%2e")) {
-        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
-        return;
-      }
-
-      if (lower.includes("%2f")) {
-        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
-        return;
-      }
-
-      if (lower.includes("%5c")) {
-        res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
-        return;
-      }
-
-      const allowedExts = new Set([".ts", ".m4s", ".aac"]);
-      if (!allowedExts.has(path.extname(trimmed).toLowerCase())) {
+      const allowlistPattern = /^(segment-\d{3}(\.ts|\.m4s)|segment\.aac|enc\.key|init\.mp4|[a-zA-Z0-9_-]+\.m3u8)$/;
+      if (!allowlistPattern.test(trimmed)) {
         res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
         return;
       }

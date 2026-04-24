@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { AlertCircle } from "lucide-react";
 
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,6 +23,17 @@ type SystemStatus = {
   storageConfigured: boolean;
 };
 
+const validateCourseSettings = (settings: CourseSettings): Record<string, string> => {
+  const errors: Record<string, string> = {};
+  if (!settings.titleEn?.trim()) errors.titleEn = "English title is required";
+  if (settings.titleEn && settings.titleEn.length > 200) errors.titleEn = "English title must be 200 characters or less";
+  if (!settings.titleAr?.trim()) errors.titleAr = "Arabic title is required";
+  if (settings.titleAr && settings.titleAr.length > 200) errors.titleAr = "Arabic title must be 200 characters or less";
+  if (settings.descriptionEn && settings.descriptionEn.length > 5000) errors.descriptionEn = "English description must be 5000 characters or less";
+  if (settings.descriptionAr && settings.descriptionAr.length > 5000) errors.descriptionAr = "Arabic description must be 5000 characters or less";
+  return errors;
+};
+
 const fieldClass =
   "w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all focus:border-brand-600";
 
@@ -37,6 +49,7 @@ export const AdminSettings = () => {
   const copy = getAdminUiCopy(locale);
   const isAr = locale === "ar";
   const [course, setCourse] = useState<CourseSettings>({});
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const { data: courseData, isLoading: courseLoading } = useQuery({
     queryKey: ["admin-settings-course"],
@@ -126,17 +139,23 @@ export const AdminSettings = () => {
                       <textarea
                         rows={4}
                         className={fieldClass}
-                        style={{ ...fieldStyle, resize: "vertical" }}
+                        style={{ ...fieldStyle, resize: "vertical", borderColor: validationErrors[field] ? "#ef4444" : "var(--color-border-strong)" }}
                         value={course[field] ?? ""}
                         onChange={(event) => setCourse({ ...course, [field]: event.target.value })}
                       />
                     ) : (
                       <input
                         className={fieldClass}
-                        style={fieldStyle}
+                        style={{ ...fieldStyle, borderColor: validationErrors[field] ? "#ef4444" : "var(--color-border-strong)" }}
                         value={course[field] ?? ""}
                         onChange={(event) => setCourse({ ...course, [field]: event.target.value })}
                       />
+                    )}
+                    {validationErrors[field] && (
+                      <div className="mt-1 flex items-center gap-2 text-xs" style={{ color: "#ef4444" }}>
+                        <AlertCircle className="h-3 w-3" />
+                        {validationErrors[field]}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -145,7 +164,15 @@ export const AdminSettings = () => {
                   className="rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95 disabled:opacity-60"
                   style={{ background: "var(--gradient-brand)" }}
                   disabled={courseMutation.isPending}
-                  onClick={() => void courseMutation.mutateAsync()}
+                  onClick={() => {
+                    const errors = validateCourseSettings(course);
+                    if (Object.keys(errors).length > 0) {
+                      setValidationErrors(errors);
+                      return;
+                    }
+                    setValidationErrors({});
+                    void courseMutation.mutateAsync();
+                  }}
                   type="button"
                 >
                   {courseMutation.isPending ? copy.settings.saving : t("actions.save")}

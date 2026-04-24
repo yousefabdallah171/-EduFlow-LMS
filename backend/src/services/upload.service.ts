@@ -8,6 +8,7 @@ import { prisma } from "../config/database.js";
 import { redis } from "../config/redis.js";
 import { lessonRepository } from "../repositories/lesson.repository.js";
 import { videoUploadRepository } from "../repositories/video-upload.repository.js";
+import { malwareScanService } from "./malware-scan.service.js";
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024 * 1024; // 4 GB
 const ALLOWED_MIME_PREFIXES = ["video/"];
@@ -335,6 +336,11 @@ export const uploadService = {
     });
 
     try {
+      const scanResult = await malwareScanService.scanFile(upload.storagePath);
+      if (scanResult.isInfected) {
+        throw new Error("Malware detected in uploaded video. Upload rejected.");
+      }
+
       const processed = await runFfmpeg(upload.lessonId, upload.storagePath);
 
       await prisma.lesson.update({

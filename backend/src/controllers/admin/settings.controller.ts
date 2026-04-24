@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../../config/database.js";
+import { auditService } from "../../services/audit.service.js";
 import { courseService } from "../../services/course.service.js";
 
 /**
@@ -36,6 +37,7 @@ export const adminSettingsController = {
   async updateCourse(req: Request, res: Response, next: NextFunction) {
     try {
       const data = courseSchema.parse(req.body);
+      const oldSettings = await prisma.courseSettings.findUnique({ where: { id: 1 } });
       const settings = await prisma.courseSettings.upsert({
         where: { id: 1 },
         update: data,
@@ -47,6 +49,25 @@ export const adminSettingsController = {
           ...data
         }
       });
+
+      const changes: Record<string, { oldValue: unknown; newValue: unknown }> = {};
+      if (data.titleEn !== undefined && oldSettings?.titleEn !== data.titleEn) {
+        changes.titleEn = { oldValue: oldSettings?.titleEn, newValue: data.titleEn };
+      }
+      if (data.titleAr !== undefined && oldSettings?.titleAr !== data.titleAr) {
+        changes.titleAr = { oldValue: oldSettings?.titleAr, newValue: data.titleAr };
+      }
+      if (data.descriptionEn !== undefined && oldSettings?.descriptionEn !== data.descriptionEn) {
+        changes.descriptionEn = { oldValue: oldSettings?.descriptionEn, newValue: data.descriptionEn };
+      }
+      if (data.descriptionAr !== undefined && oldSettings?.descriptionAr !== data.descriptionAr) {
+        changes.descriptionAr = { oldValue: oldSettings?.descriptionAr, newValue: data.descriptionAr };
+      }
+
+      if (Object.keys(changes).length > 0) {
+        await auditService.logSettingsUpdate(req.user!.userId, changes);
+      }
+
       await courseService.invalidatePublicCourseCache();
       res.json(settings);
     } catch (e) { next(e); }
