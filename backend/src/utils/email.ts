@@ -1,12 +1,13 @@
 import nodemailer from "nodemailer";
 
 import { env } from "../config/env.js";
+import { BRAND_CONSTANTS } from "../constants/branding.js";
 import { createSafeEmailOptions } from "./email-validation.js";
 
-const BRAND_NAME = process.env.BRAND_NAME || "Yousef Abdallah Course";
-const BRAND_PRIMARY = "#a3e635";
-const BRAND_ACCENT = "#38bdf8";
-const BRAND_SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || process.env.SMTP_FROM || process.env.SMTP_USER || env.SMTP_USER;
+const BRAND_NAME = BRAND_CONSTANTS.COURSE_NAME;
+const BRAND_PRIMARY = BRAND_CONSTANTS.PRIMARY_COLOR;
+const BRAND_ACCENT = BRAND_CONSTANTS.ACCENT_COLOR;
+const BRAND_SUPPORT_EMAIL = BRAND_CONSTANTS.SUPPORT_EMAIL;
 
 const escapeHtml = (value: string): string =>
   value

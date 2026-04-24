@@ -6,10 +6,13 @@ import helmet from "helmet";
 import passport from "passport";
 
 import { env } from "./config/env.js";
+import { corsConfig, helmetConfig } from "./config/security.js";
 import "./config/passport.js";
 import { authenticate } from "./middleware/auth.middleware.js";
 import { requireRole } from "./middleware/rbac.middleware.js";
 import { requestCacheMiddleware } from "./middleware/request-context.middleware.js";
+import { apiVersioningMiddleware, getVersionInfo } from "./middleware/api-versioning.middleware.js";
+import { requestLoggingMiddleware } from "./middleware/request-logging.middleware.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import { debugRoutes } from "./routes/debug.routes.js";
@@ -64,13 +67,10 @@ export const createApp = () => {
     });
   }
 
-  app.use(
-    cors({
-      origin: env.FRONTEND_URL,
-      credentials: true
-    })
-  );
-  app.use(helmet());
+  app.use(cors(corsConfig));
+  app.use(helmet(helmetConfig));
+  app.use(apiVersioningMiddleware);
+  app.use(requestLoggingMiddleware);
   app.use(
     compression({
       filter: (req, res) => {
@@ -97,6 +97,10 @@ export const createApp = () => {
 
   app.get("/api/v1/health", (_req, res) => {
     res.json({ status: "ok" });
+  });
+
+  app.get("/api/v1/version", (_req, res) => {
+    res.json(getVersionInfo());
   });
 
   app.get("/health/metrics", (_req, res) => {

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../../config/database.js";
 import { auditService } from "../../services/audit.service.js";
 import { courseService } from "../../services/course.service.js";
+import { BRAND_CONSTANTS } from "../../constants/branding.js";
 
 /**
  * SECURITY CONFIGURATION POLICY
@@ -43,8 +44,8 @@ export const adminSettingsController = {
         update: data,
         create: {
           id: 1,
-          titleEn: data.titleEn ?? "Yousef Abdallah Course: From Idea to Production",
-          titleAr: data.titleAr ?? "كورس يوسف عبدالله: من الفكرة إلى الـ Production",
+          titleEn: data.titleEn ?? BRAND_CONSTANTS.COURSE_NAME_FULL,
+          titleAr: data.titleAr ?? BRAND_CONSTANTS.COURSE_NAME_AR,
           pricePiasters: 0,
           ...data
         }
