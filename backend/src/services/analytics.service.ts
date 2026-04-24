@@ -104,7 +104,7 @@ export const analyticsService = {
       ? new Date(startDate.getTime() - (Date.now() - startDate.getTime()))
       : null;
 
-    const [payments, enrollments, allEnrollments, publishedLessons, previousRevenueAggregate] = await Promise.all([
+    const [payments, enrollments, publishedLessons, previousRevenueAggregate, activeCount, revokedCount, totalCount] = await Promise.all([
       prisma.payment.findMany({
         where: paymentWhere,
         orderBy: { createdAt: "asc" }
@@ -113,7 +113,6 @@ export const analyticsService = {
         where: enrollmentWhere,
         orderBy: { enrolledAt: "asc" }
       }),
-      prisma.enrollment.findMany(),
       prisma.lesson.findMany({
         where: {
           isPublished: true
@@ -140,7 +139,10 @@ export const analyticsService = {
               amountPiasters: true
             }
           })
-        : Promise.resolve(null)
+        : Promise.resolve(null),
+      prisma.enrollment.count({ where: { status: "ACTIVE" } }),
+      prisma.enrollment.count({ where: { status: "REVOKED" } }),
+      prisma.enrollment.count()
     ]);
 
     const totalRevenuePiasters = payments.reduce((sum, payment) => sum + payment.amountPiasters, 0);
@@ -151,9 +153,6 @@ export const analyticsService = {
 
     const revenueChangePercent =
       previousRevenuePiasters === 0 ? (totalRevenuePiasters > 0 ? 100 : 0) : ((totalRevenuePiasters - previousRevenuePiasters) / previousRevenuePiasters) * 100;
-
-    const activeEnrollments = allEnrollments.filter((entry) => entry.status === "ACTIVE").length;
-    const revokedEnrollments = allEnrollments.filter((entry) => entry.status === "REVOKED").length;
 
     const publishedLessonIds = publishedLessons.map((lesson) => lesson.id);
     const progressForPublishedLessons = publishedLessonIds.length
@@ -248,9 +247,9 @@ export const analyticsService = {
           changePercent: Math.round(revenueChangePercent * 10) / 10
         },
         enrolledStudents: {
-          total: allEnrollments.length,
-          active: activeEnrollments,
-          revoked: revokedEnrollments,
+          total: totalCount,
+          active: activeCount,
+          revoked: revokedCount,
           newThisPeriod: enrollments.length
         },
         courseCompletion: {
