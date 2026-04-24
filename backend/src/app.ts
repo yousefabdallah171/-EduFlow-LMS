@@ -11,6 +11,7 @@ import { authenticate } from "./middleware/auth.middleware.js";
 import { requireRole } from "./middleware/rbac.middleware.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
+import { debugRoutes } from "./routes/debug.routes.js";
 import { publicRoutes } from "./routes/public.routes.js";
 import { studentRoutes } from "./routes/student.routes.js";
 import { prometheus } from "./observability/prometheus.js";
@@ -100,6 +101,10 @@ export const createApp = () => {
   app.use("/api/v1", publicRoutes);
   app.use("/api/v1", studentRoutes);
   app.use("/api/v1/admin", authenticate, requireRole("ADMIN"), adminRoutes);
+
+  if (env.NODE_ENV === "development") {
+    app.use("/api/v1/dev", debugRoutes);
+  }
 
   app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     void next;
