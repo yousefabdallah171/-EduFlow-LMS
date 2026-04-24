@@ -15,6 +15,7 @@ import * as sectionsController from "../controllers/admin/sections.controller.js
 import { resourcesController as adminResourcesController } from "../controllers/resources.controller.js";
 import { ticketsController } from "../controllers/tickets.controller.js";
 import { auditMiddleware } from "../middleware/audit.middleware.js";
+import { requireRole } from "../middleware/rbac.middleware.js";
 import { adminSearchRateLimit } from "../middleware/rate-limit.middleware.js";
 import { adminDashboardRoutes } from "./admin-dashboard.routes.js";
 import { courseAnalyticsRoutes } from "./course-analytics.routes.js";
@@ -82,10 +83,10 @@ router.get("/audit", adminAuditController.list);
 // Video security
 router.get("/video-security/events", adminVideoSecurityController.list);
 
-// Support tickets
-router.get("/tickets", ticketsController.listAll);
-router.patch("/tickets/:id/status", ticketsController.updateStatus);
-router.post("/tickets/:id/reply", ticketsController.reply);
+// Support tickets (admin only)
+router.get("/tickets", requireRole("ADMIN"), ticketsController.listAll);
+router.patch("/tickets/:id/status", requireRole("ADMIN"), ticketsController.updateStatus);
+router.post("/tickets/:id/reply", requireRole("ADMIN"), ticketsController.reply);
 
 // Settings
 router.get("/settings/course", adminSettingsController.getCourse);

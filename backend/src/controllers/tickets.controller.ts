@@ -91,6 +91,11 @@ export const ticketsController = {
 
   async listAll(req: Request, res: Response, next: NextFunction) {
     try {
+      // Security: Verify admin role (defense in depth)
+      if (req.user?.role !== "ADMIN") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
       const status = req.query.status as string | undefined;
       const where = status ? { status: status as "OPEN" | "RESOLVED" } : {};
 
@@ -114,6 +119,11 @@ export const ticketsController = {
 
   async updateStatus(req: Request, res: Response, next: NextFunction) {
     try {
+      // Security: Verify admin role (defense in depth)
+      if (req.user?.role !== "ADMIN") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
       const result = updateStatusSchema.safeParse(req.body);
       if (!result.success) {
         res.status(422).json(validationError(result.error));
@@ -150,6 +160,11 @@ export const ticketsController = {
 
   async reply(req: Request, res: Response, next: NextFunction) {
     try {
+      // Security: Verify admin role (defense in depth)
+      if (req.user?.role !== "ADMIN") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
       const result = replySchema.safeParse(req.body);
       if (!result.success) {
         res.status(422).json(validationError(result.error));
