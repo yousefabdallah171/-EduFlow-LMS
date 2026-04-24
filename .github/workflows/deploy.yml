@@ -37,17 +37,33 @@ jobs:
         env:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
+          if [ -z "$DEPLOY_PATH" ]; then
+            echo "❌ DEPLOY_PATH secret is not set"
+            exit 1
+          fi
+
+          # Ensure directories exist
+          mkdir -p $DEPLOY_PATH/public_html
+          mkdir -p $DEPLOY_PATH/backend
+
           # Copy frontend build
           cp -r frontend/dist/* $DEPLOY_PATH/public_html/
+          echo "✅ Frontend deployed"
 
           # Copy backend files
           cp -r backend/src $DEPLOY_PATH/backend/
           cp backend/package.json $DEPLOY_PATH/backend/
           cp backend/tsconfig.json $DEPLOY_PATH/backend/
           cp -r backend/prisma $DEPLOY_PATH/backend/
+          echo "✅ Backend files copied"
 
-          # Run deployment script on server
-          bash $DEPLOY_PATH/deploy.sh
+          # Run deployment script if it exists
+          if [ -f $DEPLOY_PATH/deploy.sh ]; then
+            bash $DEPLOY_PATH/deploy.sh
+            echo "✅ Deployment script executed"
+          else
+            echo "⚠️ Deploy script not found at $DEPLOY_PATH/deploy.sh"
+          fi
       
       - name: Notify deployment
         if: success()
