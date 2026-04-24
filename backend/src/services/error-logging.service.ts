@@ -378,7 +378,6 @@ function describeEventType(eventType: string): string {
     "RECOVERY_INITIATED": "Recovery initiated",
     "PAYMENT_OVERRIDDEN": "Payment status overridden by admin",
     "PAYMENT_RETRY_INITIATED": "Payment retry initiated",
-    "PAYMENT_CANCELLED": "Payment cancelled",
     "ERROR_LOGGED": "Error logged"
   };
 

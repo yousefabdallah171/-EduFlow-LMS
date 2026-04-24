@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { paymentRepository } from "@/repositories/payment.repository";
-import { prisma } from "@/config/database";
+import { paymentRepository } from "../../src/repositories/payment.repository.js";
+import { prisma } from "../../src/config/database.js";
 import { PaymentStatus } from "@prisma/client";
 
 vi.mock("@/config/database");

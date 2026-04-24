@@ -2,7 +2,22 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { adminPaymentService } from "../../../src/services/admin-payment.service.js";
 import { prisma } from "../../../src/config/database.js";
 
-vi.mock("../../../src/config/database.js");
+vi.mock("../../../src/config/database.js", () => ({
+  prisma: {
+    payment: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+      groupBy: vi.fn(),
+      aggregate: vi.fn()
+    },
+    enrollment: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      groupBy: vi.fn()
+    }
+  }
+}));
 
 describe("Admin Payment Service", () => {
   beforeEach(() => {

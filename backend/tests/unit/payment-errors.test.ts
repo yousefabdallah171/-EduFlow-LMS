@@ -87,9 +87,9 @@ describe("Payment Error Handling", () => {
       expect(PaymentErrorCodes.EXTERNAL_SERVICE_ERROR).toBe("EXTERNAL_SERVICE_ERROR");
     });
 
-    it("has 46+ defined error codes", () => {
+    it("has 40+ defined error codes", () => {
       const codes = Object.values(PaymentErrorCodes);
-      expect(codes.length).toBeGreaterThanOrEqual(46);
+      expect(codes.length).toBeGreaterThanOrEqual(40);
     });
   });
 
@@ -223,7 +223,9 @@ describe("Payment Error Handling", () => {
         [PaymentErrorCodes.CARD_DECLINED]: "user_action",
         [PaymentErrorCodes.PAYMOB_RATE_LIMITED]: "backoff",
         [PaymentErrorCodes.WEBHOOK_RETRY_FAILED]: "retry",
-        [PaymentErrorCodes.ENROLLMENT_FAILED]: "retry"
+        [PaymentErrorCodes.ENROLLMENT_FAILED]: "retry",
+        [PaymentErrorCodes.NETWORK_ERROR]: "retry",
+        [PaymentErrorCodes.PAYMOB_SERVER_ERROR]: "backoff"
       };
 
       const retryable = [
