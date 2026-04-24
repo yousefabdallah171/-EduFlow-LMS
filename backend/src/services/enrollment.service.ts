@@ -4,6 +4,7 @@ import { redis } from "../config/redis.js";
 import { env } from "../config/env.js";
 import { enrollmentRepository } from "../repositories/enrollment.repository.js";
 import { dashboardService } from "./dashboard.service.js";
+import { metricsService } from "./metrics.service.js";
 import { prometheus } from "../observability/prometheus.js";
 
 const DEFAULT_COURSE_ID = env.DEFAULT_COURSE_ID;
@@ -43,6 +44,7 @@ export const enrollmentService = {
           payment: paymentId ? { connect: { id: paymentId } } : undefined
         });
 
+    metricsService.recordEnrollment("create", "success");
     const payload = { enrolled: true, status: enrollment.status };
     try {
       await redis.set(enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
@@ -55,6 +57,7 @@ export const enrollmentService = {
 
   async revoke(userId: string, revokedById?: string) {
     const enrollment = await enrollmentRepository.revoke(userId, revokedById);
+    metricsService.recordEnrollment("revoke", "success");
     const payload = { enrolled: false, status: enrollment.status };
     try {
       await redis.set(enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);

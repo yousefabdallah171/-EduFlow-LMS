@@ -10,6 +10,7 @@ import { prisma } from "../config/database.js";
 import { couponService } from "./coupon.service.js";
 import { courseService } from "./course.service.js";
 import { enrollmentService } from "./enrollment.service.js";
+import { metricsService } from "./metrics.service.js";
 import { prometheus } from "../observability/prometheus.js";
 import { sendEnrollmentActivatedEmail, sendPaymentReceiptEmail } from "../utils/email.js";
 
@@ -30,6 +31,7 @@ const paymentsCacheKey = (userId: string) => `student:payments:${userId}`;
 const paymobRequest = async <T>(path: string, body: Record<string, unknown>) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
+  const startTime = Date.now();
 
   try {
     const response = await fetch(`${PAYMOB_BASE_URL}${path}`, {
@@ -40,6 +42,9 @@ const paymobRequest = async <T>(path: string, body: Record<string, unknown>) => 
       body: JSON.stringify(body),
       signal: controller.signal
     });
+
+    const elapsedMs = Date.now() - startTime;
+    metricsService.recordPaymobApiCall(path, response.status, elapsedMs);
 
     if (response.status === 401) {
       throw new PaymentError("PAYMOB_AUTH_FAILED", 502, "Payment service authentication failed. Please try again later.");
@@ -209,6 +214,7 @@ export const paymentService = {
       });
     });
 
+    metricsService.recordPaymentOperation("pending", "paymob", 0, payment.amountPiasters);
     await paymentService.invalidatePaymentHistoryCache(userId);
 
     try {
@@ -263,6 +269,7 @@ export const paymentService = {
       };
     } catch (error) {
       if (error instanceof PaymentError) {
+        metricsService.recordPaymentOperation("failure", "paymob", 0, payment.amountPiasters, error.code);
         await paymentRepository.update(payment.id, {
           status: "FAILED",
           errorCode: error.code,
@@ -324,11 +331,19 @@ export const paymentService = {
     }
 
     const nextStatus: Payment["status"] = transaction.success ? "COMPLETED" : "FAILED";
+    const startTime = Date.now();
     const updatedPayment = await paymentRepository.updateStatus(payment.id, nextStatus, {
       paymobTransactionId,
       webhookReceivedAt: new Date(),
       webhookHmac: hmac
     });
+    const processingTimeMs = Date.now() - startTime;
+
+    if (updatedPayment.status === "COMPLETED") {
+      metricsService.recordPaymentOperation("success", "paymob", processingTimeMs, updatedPayment.amountPiasters);
+    } else if (updatedPayment.status === "FAILED") {
+      metricsService.recordPaymentOperation("failure", "paymob", processingTimeMs, updatedPayment.amountPiasters);
+    }
 
     await paymentService.invalidatePaymentHistoryCache(payment.userId);
 

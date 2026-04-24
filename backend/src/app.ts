@@ -8,6 +8,7 @@ import passport from "passport";
 import { env } from "./config/env.js";
 import "./config/passport.js";
 import { authenticate } from "./middleware/auth.middleware.js";
+import { metricsMiddleware } from "./middleware/metrics.middleware.js";
 import { requireRole } from "./middleware/rbac.middleware.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
@@ -37,6 +38,7 @@ export const createApp = () => {
   });
 
   app.use(prometheus.middleware);
+  app.use(metricsMiddleware);
 
   if (env.NODE_ENV !== "production") {
     app.use((req, res, next) => {

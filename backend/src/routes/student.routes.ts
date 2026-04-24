@@ -3,6 +3,7 @@
 import { lessonController } from "../controllers/lesson.controller.js";
 import { notesController } from "../controllers/notes.controller.js";
 import { paymentController } from "../controllers/payment.controller.js";
+import { checkoutController } from "../controllers/checkout.controller.js";
 import { profileController } from "../controllers/profile.controller.js";
 import { resourcesController } from "../controllers/resources.controller.js";
 import { studentController } from "../controllers/student.controller.js";
@@ -34,6 +35,7 @@ router.get("/course", async (_req, res, next) => {
 router.post("/webhooks/paymob", validatePaymobHmac, webhookController.paymob);
 router.get("/enrollment", authenticate, requireRole("STUDENT"), paymentController.getEnrollmentStatus);
 router.post("/checkout", authenticate, requireRole("STUDENT"), paymentRateLimit, paymentController.checkout);
+router.get("/checkout/status/:orderId", authenticate, requireRole("STUDENT"), checkoutController.getPaymentStatus);
 router.get("/lessons/preview", videoPreviewRateLimit, lessonController.preview);
 router.get("/lessons/grouped", authenticate, requireRole("STUDENT"), lessonController.getAllLessonsGrouped);
 router.get("/lessons", authenticate, requireRole("STUDENT"), lessonController.list);
