@@ -17,6 +17,12 @@ import { studentRoutes } from "./routes/student.routes.js";
 import { prometheus } from "./observability/prometheus.js";
 import { sentry } from "./observability/sentry.js";
 import { telemetryService } from "./services/telemetry.service.js";
+import {
+  setupQueueErrorHandlers,
+  setupWebhookRetryProcessor,
+  setupEmailQueueProcessor,
+  setupFailedPaymentRecoveryProcessor
+} from "./jobs/index.js";
 
 export const createApp = () => {
   const app = express();
@@ -105,6 +111,13 @@ export const createApp = () => {
   if (env.NODE_ENV === "development") {
     app.use("/api/v1/dev", debugRoutes);
   }
+
+  // Initialize job queue processors
+  setupQueueErrorHandlers();
+  setupWebhookRetryProcessor();
+  setupEmailQueueProcessor();
+  setupFailedPaymentRecoveryProcessor();
+  console.log("[App] Job queue processors initialized");
 
   app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     void next;
