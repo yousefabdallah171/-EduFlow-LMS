@@ -97,7 +97,7 @@ export const AdminMediaLibrary = () => {
       </div>
 
       {deletingId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/50">
           <div className="mx-4 w-full max-w-sm rounded-[28px] border p-6" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}>
             <p className="mb-4 font-bold" style={{ color: "var(--color-text-primary)" }}>{isAr ? "حذف هذا الملف؟" : "Delete this upload?"}</p>
             <div className="flex gap-2">

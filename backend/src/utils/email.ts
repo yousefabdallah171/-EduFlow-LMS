@@ -117,26 +117,16 @@ export const sendBrandedEmail = async (
   bodyHtml: string,
   options?: { preheader?: string; replyTo?: string }
 ) => {
-  try {
-    const currentTransporter = getTransporter();
-    const fromUser = process.env.SMTP_USER || env.SMTP_USER;
-    const from = process.env.SMTP_FROM || `${BRAND_NAME} <${fromUser}>`;
-    const result = await currentTransporter.sendMail({
-      from,
-      replyTo: options?.replyTo,
-      to,
-      subject,
-      html: getEmailTemplate(title, bodyHtml, options?.preheader)
-    });
-    if (env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.log(`Email sent successfully: ${result.messageId}`);
-    }
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("Email send failed:", error);
-    throw error;
-  }
+  const currentTransporter = getTransporter();
+  const fromUser = process.env.SMTP_USER || env.SMTP_USER;
+  const from = process.env.SMTP_FROM || `${BRAND_NAME} <${fromUser}>`;
+  await currentTransporter.sendMail({
+    from,
+    replyTo: options?.replyTo,
+    to,
+    subject,
+    html: getEmailTemplate(title, bodyHtml, options?.preheader)
+  });
 };
 
 export const sendVerificationEmail = async (

@@ -8,13 +8,14 @@ import { adminNotificationsController } from "../controllers/admin/notifications
 import { adminOrdersController } from "../controllers/admin/orders.controller.js";
 import { adminPricingController } from "../controllers/admin/pricing.controller.js";
 import { adminSettingsController } from "../controllers/admin/settings.controller.js";
-import { adminStudentsController } from "../controllers/admin/students.controller.js";
+import { adminStudentsController, verifyAdminCanAccessStudent } from "../controllers/admin/students.controller.js";
 import { adminUploadsController } from "../controllers/admin/uploads.controller.js";
 import { adminVideoSecurityController } from "../controllers/admin/video-security.controller.js";
 import * as sectionsController from "../controllers/admin/sections.controller.js";
 import { resourcesController as adminResourcesController } from "../controllers/resources.controller.js";
 import { ticketsController } from "../controllers/tickets.controller.js";
 import { auditMiddleware } from "../middleware/audit.middleware.js";
+import { adminSearchRateLimit } from "../middleware/rate-limit.middleware.js";
 import { adminDashboardRoutes } from "./admin-dashboard.routes.js";
 import { courseAnalyticsRoutes } from "./course-analytics.routes.js";
 
@@ -28,10 +29,10 @@ router.get("/health", (_req, res) => {
   res.json({ scope: "admin" });
 });
 router.get("/students", adminStudentsController.list);
-router.get("/students/search", adminStudentsController.search);
-router.get("/students/:studentId", adminStudentsController.detail);
-router.post("/students/:studentId/enroll", adminStudentsController.enroll);
-router.post("/students/:studentId/revoke", adminStudentsController.revoke);
+router.get("/students/search", adminSearchRateLimit, adminStudentsController.search);
+router.get("/students/:studentId", verifyAdminCanAccessStudent, adminStudentsController.detail);
+router.post("/students/:studentId/enroll", verifyAdminCanAccessStudent, adminStudentsController.enroll);
+router.post("/students/:studentId/revoke", verifyAdminCanAccessStudent, adminStudentsController.revoke);
 router.get("/coupons", adminCouponsController.list);
 router.post("/coupons", adminCouponsController.create);
 router.patch("/coupons/:couponId", adminCouponsController.update);

@@ -24,10 +24,9 @@ type LessonItem = {
 
 export const StudentProgress = () => {
   const { locale } = useParams();
-  const { t } = useTranslation();
-  const currentLocale = resolveLocale(locale);
+  const { t, i18n } = useTranslation();
+  const resolvedLocale = resolveLocale(i18n.language);
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const isAr = currentLocale === "ar";
 
   const { data, isLoading } = useQuery({
     queryKey: ["student-lessons"],
@@ -47,11 +46,7 @@ export const StudentProgress = () => {
           hero
           eyebrow={t("student.dashboard.yourJourney")}
           title={t("student.progress.title")}
-          description={
-            isAr
-              ? "راجع تقدمك بوضوح: ما الذي أنهيته، أين توقفت، وما هو أفضل درس تفتحه الآن."
-              : "See your learning clearly: what is finished, where you paused, and which lesson is best to open next."
-          }
+          description={t("student.progress.description")}
           actions={
             nextLesson ? (
               <Link
@@ -80,9 +75,9 @@ export const StudentProgress = () => {
               <CheckCircle2 className="h-4 w-4" />
               <span className="text-xs font-bold uppercase tracking-[0.16em]">{t("student.progress.completed")}</span>
             </div>
-            <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{formatNumber(completed, currentLocale)}</p>
+            <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{formatNumber(completed, resolvedLocale)}</p>
             <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
-              {t("student.progress.summary", { completed: formatNumber(completed, currentLocale), total: formatNumber(lessons.length, currentLocale) })}
+              {t("student.progress.summary", { completed: formatNumber(completed, resolvedLocale), total: formatNumber(lessons.length, resolvedLocale) })}
             </p>
           </div>
           <div className="dashboard-panel p-5">
@@ -90,9 +85,9 @@ export const StudentProgress = () => {
               <Gauge className="h-4 w-4" />
               <span className="text-xs font-bold uppercase tracking-[0.16em]">{t("student.progress.inProgress")}</span>
             </div>
-            <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{formatNumber(inProgress, currentLocale)}</p>
+            <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{formatNumber(inProgress, resolvedLocale)}</p>
             <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
-              {isAr ? "دروس بدأت فيها ولم تنهِها بعد" : "Lessons you started but have not finished yet"}
+              {t("student.progress.inProgressHint")}
             </p>
           </div>
         </div>
@@ -118,15 +113,15 @@ export const StudentProgress = () => {
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                      {pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
+                      {pickLocalizedText(resolvedLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
                       <span className="inline-flex items-center gap-1.5">
                         <Clock3 className="h-3.5 w-3.5 text-brand-600" />
-                        {formatMinutesShort(lesson.lastPositionSeconds, currentLocale)}
+                        {formatMinutesShort(lesson.lastPositionSeconds, resolvedLocale)}
                       </span>
                       {lesson.durationSeconds ? (
-                        <span>{isAr ? `مدة الدرس ${formatMinutesShort(lesson.durationSeconds, currentLocale)}` : `Lesson length ${formatMinutesShort(lesson.durationSeconds, currentLocale)}`}</span>
+                        <span>{t("student.progress.lessonLength", { length: formatMinutesShort(lesson.durationSeconds, resolvedLocale) })}</span>
                       ) : null}
                     </div>
                   </div>

@@ -32,11 +32,9 @@ export const lessonRepository = {
     });
   },
 
-  getLessonsByAdmin() {
-    return prisma.lesson.findMany({
-      include: adminLessonInclude,
-      orderBy: [{ sectionId: "asc" }, { sortOrder: "asc" }]
-    });
+  async getLessonsByAdmin() {
+    const { lessonService } = await import("../services/lesson.service.js");
+    return lessonService.getAdminLessons();
   },
 
   getLessonsBySection(sectionId: string) {

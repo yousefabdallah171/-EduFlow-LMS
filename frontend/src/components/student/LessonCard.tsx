@@ -91,7 +91,7 @@ export const LessonCard = memo(({
             </p>
           ) : (
             <p className="text-sm leading-6" style={{ color: "var(--color-text-muted)" }}>
-              {isAr ? "ابدأ هذا الدرس لمتابعة المرحلة التالية من المسار." : "Open this lesson to continue the next part of the workflow."}
+              {t("lesson.openHint")}
             </p>
           )}
         </div>

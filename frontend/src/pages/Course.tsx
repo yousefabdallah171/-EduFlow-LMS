@@ -83,7 +83,7 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
           <aside className="dashboard-panel dashboard-sidebar hidden p-3 md:block">
             <div className="mb-3 rounded-xl p-3 text-center" style={{ backgroundColor: "var(--color-brand-muted)" }}>
               <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl shadow-sm" style={{ background: "var(--gradient-brand)" }}>
-                <span className="font-mono text-sm font-black text-black">YA</span>
+                <span className="font-mono text-sm font-black text-white">YA</span>
               </div>
               <p className="mt-2 text-xs font-bold text-brand-600">{t("app.title")}</p>
             </div>
@@ -131,7 +131,7 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
             <PageHeader
               hero
               eyebrow={t("app.title")}
-              title={courseTitle || (isAr ? "مكتبة الدروس المحمية" : "Protected lesson library")}
+              title={courseTitle || t("course.public.titleFallback")}
               description={t("course.public.unlockMessage")}
               actions={
                 <div className="flex flex-wrap gap-3">
@@ -248,10 +248,10 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
 
 export const Course = () => {
   const { locale } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const currentLocale = resolveLocale(locale);
-  const isAr = currentLocale === "ar";
+  const resolvedLocale = resolveLocale(i18n.language);
+  const isAr = resolvedLocale === "ar";
   const demo = isDemoMode();
   const { user } = useAuth();
   const { statusQuery } = useEnrollment();
@@ -292,7 +292,7 @@ export const Course = () => {
         <PageHeader
           hero
           eyebrow={isEnrolled ? t("course.welcomeBack") : t("course.title")}
-          title={user ? user.fullName : (isAr ? "مكتبة الدروس" : "Course library")}
+          title={user ? user.fullName : t("course.titleFallback")}
           description={isEnrolled ? t("course.active") : t("course.notEnrolled")}
           actions={
             isEnrolled ? (
@@ -357,14 +357,14 @@ export const Course = () => {
             </div>
             <div className="dashboard-panel p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                {isAr ? "وتيرة التعلم" : "Learning rhythm"}
+                {t("course.learningRhythm")}
               </p>
               <p className="mt-2 text-sm font-semibold leading-6" style={{ color: "var(--color-text-primary)" }}>
                 {completionPct >= 75
-                  ? (isAr ? "أنت قريب من إنهاء المسار بالكامل." : "You are close to finishing the whole workflow.")
+                  ? t("course.learningRhythmHigh")
                   : completionPct >= 35
-                    ? (isAr ? "أنت في منتصف الطريق تقريبًا." : "You are building through the middle of the course.")
-                    : (isAr ? "ابدأ أو أكمل الدرس التالي للحفاظ على الزخم." : "Start or resume the next lesson to keep your momentum up.")}
+                    ? t("course.learningRhythmMid")
+                    : t("course.learningRhythmLow")}
               </p>
             </div>
           </div>
@@ -407,17 +407,17 @@ export const Course = () => {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-                  {resumeLesson ? t("course.continueLearning") : (isAr ? "الدرس المقترح التالي" : "Recommended next lesson")}
+                  {resumeLesson ? t("course.continueLearning") : t("course.recommendedNextLesson")}
                 </p>
                 <p className="mt-2 text-lg font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                  {pickLocalizedText(currentLocale, featuredLesson.titleEn ?? featuredLesson.title, featuredLesson.titleAr)}
+                  {pickLocalizedText(resolvedLocale, featuredLesson.titleEn ?? featuredLesson.title, featuredLesson.titleAr)}
                 </p>
                 <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
                   {resumeLesson
-                    ? (isAr ? `متابعة من ${featuredLesson.lastPositionSeconds} ثانية` : `Resume from ${featuredLesson.lastPositionSeconds}s`)
+                    ? t("course.resumeFromSecondsFull", { seconds: featuredLesson.lastPositionSeconds })
                     : featuredLesson.durationSeconds
                       ? `${formatDuration(featuredLesson.durationSeconds)}`
-                      : (isAr ? "جاهز للبدء" : "Ready to start")}
+                      : t("course.readyToStart")}
                 </p>
               </div>
               <Link
@@ -437,10 +437,10 @@ export const Course = () => {
             <div className="flex items-center justify-between p-5" style={{ borderBottom: "1px solid var(--color-border)" }}>
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-                  {isAr ? "الدروس" : "Lessons"}
+                  {t("course.lessonsLabel")}
                 </p>
                 <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                  {isAr ? "كل درس يوضح لك حالته بوضوح: مكتمل، متابعة، أو لم يبدأ بعد." : "Each lesson makes its state clear: completed, resume, or not started yet."}
+                  {t("course.lessonStatesHint")}
                 </p>
               </div>
               {lessonsQuery.isLoading ? (
@@ -448,11 +448,11 @@ export const Course = () => {
               ) : null}
             </div>
 
-            {lessonsQuery.isError ? (
-              <p className="p-5 text-sm text-red-500">
-                {isAr ? "تعذّر تحميل الدروس." : "Unable to load lessons."}
-              </p>
-            ) : null}
+              {lessonsQuery.isError ? (
+                <p className="p-5 text-sm text-red-500">
+                  {t("course.unableToLoadLessons")}
+                </p>
+              ) : null}
 
             <div className="divide-y" style={{ borderColor: "var(--color-border)" }}>
               {lessonsQuery.data?.map((lesson, idx) => {
@@ -485,18 +485,19 @@ export const Course = () => {
                       </span>
                       <div>
                         <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                          {pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
+                          {pickLocalizedText(resolvedLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
                         </p>
                         <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                          {lesson.completedAt
-                            ? t("common.completed")
-                            : isResume
-                              ? (isAr ? `متابعة من ${lesson.lastPositionSeconds}ث` : `Resume from ${lesson.lastPositionSeconds}s`)
-                              : !lesson.isUnlocked
-                                ? (isAr
-                                    ? `يُفتح ${lesson.unlocksAt ? formatDate(lesson.unlocksAt, currentLocale) : "قريبًا"}`
-                                    : `Unlocks ${lesson.unlocksAt ? formatDate(lesson.unlocksAt, currentLocale) : "soon"}`)
-                                : t("course.notStarted")}
+                          {(() => {
+                            if (lesson.completedAt) return t("common.completed");
+                            if (isResume) return t("course.resumeFromSeconds", { seconds: lesson.lastPositionSeconds });
+                            if (!lesson.isUnlocked) {
+                              return lesson.unlocksAt
+                                ? t("course.unlocksAtDate", { date: formatDate(lesson.unlocksAt, resolvedLocale) })
+                                : t("course.unlocksAtSoon");
+                            }
+                            return t("course.notStarted");
+                          })()}
                           {lesson.durationSeconds ? ` - ${formatDuration(lesson.durationSeconds)}` : ""}
                         </p>
                       </div>

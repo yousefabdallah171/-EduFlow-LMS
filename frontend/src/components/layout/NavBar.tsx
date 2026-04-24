@@ -109,7 +109,7 @@ export const NavBar = () => {
         >
           <div className="flex min-w-0 items-center gap-3">
             <DisclosureButton
-              aria-label={segment === "ar" ? "فتح القائمة" : "Open navigation"}
+              aria-label={t("nav.openNavigation")}
               className="flex h-11 w-11 items-center justify-center rounded-2xl border md:hidden"
               style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
             >
@@ -118,7 +118,7 @@ export const NavBar = () => {
 
             <Link className="flex min-w-0 items-center gap-3 no-underline" to={`${prefix}/`}>
                 <span
-                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl font-mono text-sm font-black text-black"
+                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl font-mono text-sm font-black text-white"
                 style={{
                   background: "var(--gradient-brand)",
                   boxShadow: "0 10px 24px rgba(163,230,53,0.22)"

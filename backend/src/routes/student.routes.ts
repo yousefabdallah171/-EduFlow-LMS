@@ -10,7 +10,7 @@ import { ticketsController } from "../controllers/tickets.controller.js";
 import { webhookController } from "../controllers/webhook.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 import { validatePaymobHmac } from "../middleware/hmac.middleware.js";
-import { paymentRateLimit, videoIpRateLimit } from "../middleware/rate-limit.middleware.js";
+import { paymentRateLimit, videoIpRateLimit, passwordChangeRateLimit, videoPreviewRateLimit } from "../middleware/rate-limit.middleware.js";
 import { requireRole } from "../middleware/rbac.middleware.js";
 import { courseService } from "../services/course.service.js";
 import { studentDashboardRoutes } from "./student-dashboard.routes.js";
@@ -34,7 +34,7 @@ router.get("/course", async (_req, res, next) => {
 router.post("/webhooks/paymob", validatePaymobHmac, webhookController.paymob);
 router.get("/enrollment", authenticate, requireRole("STUDENT"), paymentController.getEnrollmentStatus);
 router.post("/checkout", authenticate, requireRole("STUDENT"), paymentRateLimit, paymentController.checkout);
-router.get("/lessons/preview", lessonController.preview);
+router.get("/lessons/preview", videoPreviewRateLimit, lessonController.preview);
 router.get("/lessons/grouped", authenticate, requireRole("STUDENT"), lessonController.getAllLessonsGrouped);
 router.get("/lessons", authenticate, requireRole("STUDENT"), lessonController.list);
 router.use("/lessons/:id", authenticate, requireRole("STUDENT"), lessonDetailRoutes);
@@ -69,7 +69,7 @@ router.get("/lessons/:id/resources", authenticate, requireRole("STUDENT"), resou
 // Profile routes
 router.get("/student/profile", authenticate, requireRole("STUDENT"), profileController.get);
 router.patch("/student/profile", authenticate, requireRole("STUDENT"), profileController.update);
-router.patch("/student/profile/password", authenticate, requireRole("STUDENT"), profileController.updatePassword);
+router.patch("/student/profile/password", authenticate, requireRole("STUDENT"), passwordChangeRateLimit, profileController.updatePassword);
 
 // Orders route
 router.get("/student/orders", authenticate, requireRole("STUDENT"), async (req, res, next) => {

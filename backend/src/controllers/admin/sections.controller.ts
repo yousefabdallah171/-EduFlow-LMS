@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../../config/database.js";
 import { sectionRepository } from "../../repositories/section.repository.js";
@@ -6,17 +6,16 @@ import { lessonService } from "../../services/lesson.service.js";
 
 const getFirstValue = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
-export const getAllSections = async (req: Request, res: Response): Promise<void> => {
+export const getAllSections = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const sections = await sectionRepository.getAllSections();
     res.json({ sections });
   } catch (error) {
-    console.error("Error fetching sections:", error);
-    res.status(500).json({ message: "Failed to fetch sections" });
+    next(error);
   }
 };
 
-export const getSectionById = async (req: Request, res: Response): Promise<void> => {
+export const getSectionById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const sectionId = getFirstValue(req.params.sectionId);
     const section = await sectionRepository.getSectionById(sectionId as string);
@@ -26,12 +25,11 @@ export const getSectionById = async (req: Request, res: Response): Promise<void>
     }
     res.json({ section });
   } catch (error) {
-    console.error("Error fetching section:", error);
-    res.status(500).json({ message: "Failed to fetch section" });
+    next(error);
   }
 };
 
-export const createSection = async (req: Request, res: Response): Promise<void> => {
+export const createSection = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { titleEn, titleAr, descriptionEn, descriptionAr } = req.body as Prisma.SectionCreateInput;
 
@@ -49,12 +47,11 @@ export const createSection = async (req: Request, res: Response): Promise<void> 
     await lessonService.invalidatePublishedLessonsCache();
     res.status(201).json({ section });
   } catch (error) {
-    console.error("Error creating section:", error);
-    res.status(500).json({ message: "Failed to create section" });
+    next(error);
   }
 };
 
-export const updateSection = async (req: Request, res: Response): Promise<void> => {
+export const updateSection = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const sectionId = getFirstValue(req.params.sectionId);
     const { titleEn, titleAr, descriptionEn, descriptionAr, sortOrder } = req.body as Prisma.SectionUpdateInput;
@@ -76,12 +73,11 @@ export const updateSection = async (req: Request, res: Response): Promise<void> 
     }
     res.json({ section });
   } catch (error) {
-    console.error("Error updating section:", error);
-    res.status(500).json({ message: "Failed to update section" });
+    next(error);
   }
 };
 
-export const deleteSection = async (req: Request, res: Response): Promise<void> => {
+export const deleteSection = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const sectionId = getFirstValue(req.params.sectionId);
     if (sectionId) {
@@ -95,12 +91,11 @@ export const deleteSection = async (req: Request, res: Response): Promise<void> 
     await lessonService.invalidatePublishedLessonsCache();
     res.json({ message: "Section deleted successfully" });
   } catch (error) {
-    console.error("Error deleting section:", error);
-    res.status(500).json({ message: "Failed to delete section" });
+    next(error);
   }
 };
 
-export const reorderSections = async (req: Request, res: Response): Promise<void> => {
+export const reorderSections = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { sections } = req.body as { sections: Array<{ id: string; sortOrder: number }> };
 
@@ -120,7 +115,6 @@ export const reorderSections = async (req: Request, res: Response): Promise<void
     await lessonService.invalidateLessonMetadataCache(lessonIds.map((entry) => entry.id));
     res.json({ message: "Sections reordered successfully" });
   } catch (error) {
-    console.error("Error reordering sections:", error);
-    res.status(500).json({ message: "Failed to reorder sections" });
+    next(error);
   }
 };

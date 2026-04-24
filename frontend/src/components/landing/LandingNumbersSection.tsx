@@ -29,6 +29,8 @@ export const LandingNumbersSection = () => {
 
   const titleLines = t("landing.numbers.titleLines", { returnObjects: true }) as string[];
   const credibility = t("landing.numbers.credibility.items", { returnObjects: true }) as CredibilityItem[];
+  const developerAvatars = t("landing.numbers.cards.developers.avatars", { returnObjects: true }) as string[];
+  const projectPills = t("landing.numbers.cards.projects.pills", { returnObjects: true }) as string[];
 
   const prefersReducedMotion = useMemo(() => {
     if (typeof window === "undefined") return true;
@@ -102,9 +104,11 @@ export const LandingNumbersSection = () => {
           <p className="landing-stat-desc">{t("landing.numbers.cards.developers.desc")}</p>
           <div className="landing-stat-strip">
             <div className="landing-avatars" aria-hidden="true">
-              <span className="landing-avatar">أح</span>
-              <span className="landing-avatar">مح</span>
-              <span className="landing-avatar">عم</span>
+              {developerAvatars.slice(0, 3).map((avatar) => (
+                <span className="landing-avatar" key={avatar}>
+                  {avatar}
+                </span>
+              ))}
             </div>
             <span className="landing-stat-micro">{t("landing.numbers.cards.developers.micro")}</span>
           </div>
@@ -123,10 +127,18 @@ export const LandingNumbersSection = () => {
           </div>
           <p className="landing-stat-desc">{t("landing.numbers.cards.projects.desc")}</p>
           <div className="landing-stat-strip landing-stat-strip--block">
-            <div className="landing-project-pills" dir="ltr">
-              <span className="landing-project-pill landing-project-pill--purple">Landing Page</span>
-              <span className="landing-project-pill landing-project-pill--blue">SaaS</span>
-              <span className="landing-project-pill landing-project-pill--teal">E-commerce</span>
+            <div className="landing-project-pills" dir="auto">
+              {projectPills.slice(0, 3).map((pill, index) => (
+                <span
+                  className={[
+                    "landing-project-pill",
+                    index === 0 ? "landing-project-pill--purple" : index === 1 ? "landing-project-pill--blue" : "landing-project-pill--teal"
+                  ].join(" ")}
+                  key={pill}
+                >
+                  {pill}
+                </span>
+              ))}
             </div>
           </div>
         </article>

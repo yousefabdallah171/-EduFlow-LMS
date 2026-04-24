@@ -79,9 +79,8 @@ export const ticketsController = {
             `${env.FRONTEND_URL}/help`
           );
         }
-      } catch (emailError) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to send ticket created email:", emailError);
+      } catch {
+        // Ignore email failures - not critical to ticket creation
       }
 
       res.status(201).json(ticket);
@@ -197,9 +196,8 @@ export const ticketsController = {
           admin?.fullName ?? "Support Team",
           message
         );
-      } catch (emailError) {
-        // Log but don't fail the request if email fails
-        console.error("Failed to send ticket reply email:", emailError);
+      } catch {
+        // Ignore email failures - not critical to message processing
       }
 
       res.json(newMessage);

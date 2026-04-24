@@ -2489,5 +2489,13 @@ SELECT * FROM pg_stat_user_indexes WHERE schemaname = 'public';
 
 **Document Version**: 1.0  
 **Total Effort**: 75 developer-hours across 4 weeks  
-**Status**: Ready for implementation  
-**Last Updated**: 2026-04-21
+**Status**: ✅ Engineering Implemented (Validation Pending)  
+**Last Updated**: 2026-04-23
+
+## IMPLEMENTATION UPDATE (APRIL 23, 2026)
+
+Core engineering remediation is implemented on `main`. Remaining items are **validation and human sign-off**:
+
+- Run staging/prod-like load tests to 100k concurrent and attach evidence under `docs/evidence/YYYY-MM-DD/`.
+- Enable and verify production monitoring (Sentry DSNs, Prometheus scrape, Grafana dashboards, alert rules).
+- Human QC run: `docs/QC_SECURITY_CHECKLIST.md` and attach screenshots/outputs.

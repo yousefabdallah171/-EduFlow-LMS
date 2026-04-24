@@ -56,9 +56,8 @@ async function submit(req: Request, res: Response, next: NextFunction) {
 
     try {
       await sendTicketCreatedEmail(user.email, user.fullName, ticket.id, ticket.subject, message, `${env.FRONTEND_URL}/help`);
-    } catch (emailError) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to send contact ticket email:", emailError);
+    } catch {
+      // Ignore email failures - not critical to ticket submission
     }
 
     res.json({ ok: true, ticketId: ticket.id });

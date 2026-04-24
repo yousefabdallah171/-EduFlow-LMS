@@ -62,8 +62,6 @@ export const adminOrdersController = {
       const result = await analyticsService.markPaymentPaid(id);
       res.json({ message: "Payment marked as completed", payment: result.payment, enrollment: result.enrollment });
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error("Error marking payment as paid:", e);
       if (e instanceof analyticsService.AnalyticsError) {
         res.status(e.status).json({ error: e.code, message: e.message });
         return;

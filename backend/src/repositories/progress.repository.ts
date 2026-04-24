@@ -1,6 +1,7 @@
 import type { LessonProgress, Prisma } from "@prisma/client";
 
 import { prisma } from "../config/database.js";
+import { lessonService } from "../services/lesson.service.js";
 
 export const progressRepository = {
   upsert(userId: string, lessonId: string, data: Prisma.LessonProgressUncheckedUpdateInput): Promise<LessonProgress> {
@@ -35,9 +36,7 @@ export const progressRepository = {
 
   async findCourseCompletion(userId: string) {
     const [totalLessons, completedLessons] = await Promise.all([
-      prisma.lesson.count({
-        where: { isPublished: true }
-      }),
+      lessonService.getPublishedLessonCount(),
       prisma.lessonProgress.count({
         where: {
           userId,

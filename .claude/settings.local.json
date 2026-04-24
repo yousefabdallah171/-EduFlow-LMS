@@ -150,7 +150,17 @@
       "Bash(git rm *)",
       "Bash(rm -rf .git/modules/lesson-management)",
       "Bash(gh run *)",
-      "Bash(xargs ls *)"
+      "Bash(xargs ls *)",
+      "Bash(grep -n \"console\\\\\\\\.error\" backend/src/services/payment.service.ts backend/src/services/analytics.service.ts backend/src/controllers/tickets.controller.ts backend/src/controllers/contact.controller.ts backend/src/controllers/admin/orders.controller.ts)",
+      "Bash(grep -r \"console\\\\\\\\.error\\\\|console\\\\\\\\.log\" backend/src --include=\"*.ts\")",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(npm test *)",
+      "Bash(tee /tmp/test-output.log)",
+      "Bash(docker exec *)",
+      "Bash(grep -E \"\\\\.\\(ts|prisma\\)$\")",
+      "Bash(awk '{print $9, \"-\", $5}')",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm --filter frontend lint)"
     ]
   }
 }

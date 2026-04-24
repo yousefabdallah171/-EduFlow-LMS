@@ -35,3 +35,28 @@ export const videoIpRateLimit = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => req.ip || String(req.headers["x-forwarded-for"] || "unknown")
 });
+
+export const passwordChangeRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: process.env.NODE_ENV === "production" ? 3 : 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.user?.userId || req.ip || "unknown",
+  message: { error: "TOO_MANY_PASSWORD_CHANGE_ATTEMPTS", message: "Too many password change attempts. Please try again later." }
+});
+
+export const adminSearchRateLimit = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: process.env.NODE_ENV === "production" ? 100 : 10000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.user?.userId || req.ip || "unknown"
+});
+
+export const videoPreviewRateLimit = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: process.env.NODE_ENV === "production" ? 30 : 10000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip || String(req.headers["x-forwarded-for"] || "unknown")
+});

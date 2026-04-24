@@ -7,13 +7,14 @@ import { AxiosError } from "axios";
 import { AuthShell } from "@/components/shared/AuthShell";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
+import { resolveLocale } from "@/lib/locale";
 
 export const ResetPassword = () => {
   const [searchParams] = useSearchParams();
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const isAr = resolveLocale(i18n.language) === "ar";
   const token = searchParams.get("token");
   const [form, setForm] = useState({ newPassword: "", confirmPassword: "" });
   const [message, setMessage] = useState("");
@@ -130,7 +131,14 @@ export const ResetPassword = () => {
     >
       {!token ? (
         <div className="content-stack gap-4 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300">
+          <div
+            className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
+            style={{
+              backgroundColor: "color-mix(in oklab, var(--color-brand) 12%, var(--color-surface))",
+              border: "1px solid color-mix(in oklab, var(--color-brand) 22%, transparent)",
+              color: "var(--color-brand-text)",
+            }}
+          >
             <TriangleAlert className="h-7 w-7" />
           </div>
           <div className="content-stack gap-2">
@@ -144,7 +152,14 @@ export const ResetPassword = () => {
         </div>
       ) : isSuccess ? (
         <div className="content-stack gap-5 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+          <div
+            className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
+            style={{
+              backgroundColor: "color-mix(in oklab, var(--color-brand) 12%, var(--color-surface))",
+              border: "1px solid color-mix(in oklab, var(--color-brand) 22%, transparent)",
+              color: "var(--color-brand-text)",
+            }}
+          >
             <CheckCircle2 className="h-7 w-7" />
           </div>
           <div className="content-stack gap-2">

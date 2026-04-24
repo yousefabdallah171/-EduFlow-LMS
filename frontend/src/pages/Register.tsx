@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { AuthShell } from "@/components/shared/AuthShell";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
+import { resolveLocale } from "@/lib/locale";
 import { useAuthStore } from "@/stores/auth.store";
 
 type FieldErrors = Partial<Record<"fullName" | "email" | "password", string>>;
@@ -17,7 +18,7 @@ export const Register = () => {
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const isAr = resolveLocale(i18n.language) === "ar";
   const [values, setValues] = useState({ fullName: "", email: "", password: "" });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState("");
@@ -120,7 +121,14 @@ export const Register = () => {
     >
       {isSuccess ? (
         <div className="content-stack gap-5 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+          <div
+            className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
+            style={{
+              backgroundColor: "color-mix(in oklab, var(--color-brand) 12%, var(--color-surface))",
+              border: "1px solid color-mix(in oklab, var(--color-brand) 22%, transparent)",
+              color: "var(--color-brand-text)",
+            }}
+          >
             <CheckCircle2 className="h-7 w-7" />
           </div>
           <div className="content-stack gap-2">

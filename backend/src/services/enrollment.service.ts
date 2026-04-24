@@ -1,14 +1,14 @@
 import type { EnrollmentType } from "@prisma/client";
 
 import { redis } from "../config/redis.js";
+import { env } from "../config/env.js";
 import { enrollmentRepository } from "../repositories/enrollment.repository.js";
 import { dashboardService } from "./dashboard.service.js";
 import { prometheus } from "../observability/prometheus.js";
 
-const DEFAULT_COURSE_ID = "primary";
-const enrollmentCacheKeyLegacy = (userId: string) => `enrollment:${userId}`;
+const DEFAULT_COURSE_ID = env.DEFAULT_COURSE_ID;
 const enrollmentStatusCacheKey = (userId: string, courseId: string) => `enrollment:status:${userId}:${courseId}`;
-const ENROLLMENT_CACHE_TTL_SECONDS = 2 * 60;
+const ENROLLMENT_CACHE_TTL_SECONDS = env.CACHE_TTL_ENROLLMENT_SECONDS;
 
 export type EnrollmentStatusResponse =
   | {
@@ -45,7 +45,6 @@ export const enrollmentService = {
 
     const payload = { enrolled: true, status: enrollment.status };
     try {
-      await redis.set(enrollmentCacheKeyLegacy(userId), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
       await redis.set(enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
     } catch {
       // ignore redis failures
@@ -58,7 +57,6 @@ export const enrollmentService = {
     const enrollment = await enrollmentRepository.revoke(userId, revokedById);
     const payload = { enrolled: false, status: enrollment.status };
     try {
-      await redis.set(enrollmentCacheKeyLegacy(userId), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
       await redis.set(enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
     } catch {
       // ignore redis failures
@@ -79,15 +77,6 @@ export const enrollmentService = {
     }
     prometheus.recordCacheMiss("enrollment_status");
 
-    try {
-      const cachedLegacy = await redis.get(enrollmentCacheKeyLegacy(userId));
-      if (cachedLegacy) {
-        return JSON.parse(cachedLegacy) as EnrollmentStatusResponse;
-      }
-    } catch {
-      // ignore redis failures
-    }
-
     const enrollment = await enrollmentRepository.findByUserId(userId);
     const value: EnrollmentStatusResponse = enrollment
       ? {
@@ -99,7 +88,6 @@ export const enrollmentService = {
       : { enrolled: false };
 
     try {
-      await redis.set(enrollmentCacheKeyLegacy(userId), JSON.stringify(value), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
       await redis.set(
         enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID),
         JSON.stringify(value),
