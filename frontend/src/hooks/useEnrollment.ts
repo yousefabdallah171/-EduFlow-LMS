@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { demoEnrollment, isDemoMode } from "@/lib/demo";
 import { api } from "@/lib/api";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { useAuthStore } from "@/stores/auth.store";
 import { useQueryInvalidation } from "./useQueryInvalidation";
 
@@ -49,7 +50,9 @@ export const useEnrollment = () => {
       }
       const response = await api.get<EnrollmentStatus>("/enrollment");
       return response.data;
-    }
+    },
+    staleTime: CACHE_TIME.SHORT,
+    gcTime: getGCTime(CACHE_TIME.SHORT)
   });
 
   const validateCoupon = useMutation({

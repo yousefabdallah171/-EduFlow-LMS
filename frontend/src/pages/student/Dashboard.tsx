@@ -8,6 +8,7 @@ import { StudentShell } from "@/components/layout/StudentShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SkeletonDashboard } from "@/components/skeletons";
 import { api } from "@/lib/api";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { formatDate, resolveLocale } from "@/lib/locale";
 
 type DashboardData = {
@@ -26,7 +27,9 @@ export const StudentDashboard = () => {
 
   const { data, isLoading } = useQuery({
     queryKey: ["student-dashboard"],
-    queryFn: () => api.get<DashboardData>("/student/dashboard").then((r) => r.data)
+    queryFn: () => api.get<DashboardData>("/student/dashboard").then((r) => r.data),
+    staleTime: CACHE_TIME.MEDIUM,
+    gcTime: getGCTime(CACHE_TIME.MEDIUM)
   });
 
   const progress = data?.completionPercent ?? 0;
