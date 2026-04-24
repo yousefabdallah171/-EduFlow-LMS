@@ -39,10 +39,49 @@ enum EnrollmentType {
 }
 
 enum PaymentStatus {
-  PENDING
+  INITIATED
+  AWAITING_PAYMENT
+  WEBHOOK_PENDING
   COMPLETED
   FAILED
+  CANCELLED
+  ENROLLMENT_FAILED
+  EMAIL_FAILED
+  REFUND_REQUESTED
   REFUNDED
+  REFUND_FAILED
+  DISPUTED
+  MANUAL_OVERRIDE
+}
+
+enum PaymentEventType {
+  INITIATED
+  PAYMENT_KEY_GENERATED
+  PAYMOB_API_ERROR
+  WEBHOOK_RECEIVED
+  WEBHOOK_VERIFIED
+  WEBHOOK_DUPLICATE
+  STATUS_CHANGED
+  ENROLLMENT_TRIGGERED
+  ENROLLMENT_SUCCEEDED
+  ENROLLMENT_FAILED
+  EMAIL_QUEUED
+  EMAIL_SENT
+  EMAIL_FAILED
+  COUPON_INCREMENTED
+  REFUND_INITIATED
+  REFUND_API_CALL
+  REFUND_SUCCEEDED
+  REFUND_FAILED
+  DISPUTE_RECEIVED
+  MANUAL_OVERRIDE_APPLIED
+  PAYMENT_POLLED
+}
+
+enum PaymentMethod {
+  CARD
+  MOBILE_WALLET
+  BANK_TRANSFER
 }
 
 enum CouponDiscountType {
@@ -135,27 +174,108 @@ model Enrollment {
 }
 
 model Payment {
-  id                  String         @id @default(uuid())
-  userId              String
-  user                User           @relation(fields: [userId], references: [id], onDelete: Restrict)
-  packageId           String?
-  package             CoursePackage? @relation(fields: [packageId], references: [id])
-  amountPiasters      Int
-  currency            String         @default("EGP")
-  paymobOrderId       String?
-  paymobTransactionId String?        @unique
-  couponId            String?
-  coupon              Coupon?        @relation(fields: [couponId], references: [id])
-  discountPiasters    Int            @default(0)
-  status              PaymentStatus  @default(PENDING)
-  webhookReceivedAt   DateTime?
-  webhookHmac         String?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
-  enrollment          Enrollment?
+  id                      String         @id @default(uuid())
+  userId                  String
+  user                    User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  packageId               String?
+  package                 CoursePackage? @relation(fields: [packageId], references: [id])
+  amountPiasters          Int
+  currency                String         @default("EGP")
+  couponId                String?
+  coupon                  Coupon?        @relation(fields: [couponId], references: [id])
+  discountPiasters        Int            @default(0)
 
+  status                  PaymentStatus  @default(INITIATED)
+  paymentMethod           PaymentMethod?
+
+  paymobOrderId           String?        @unique
+  paymobTransactionId     String?        @unique
+  paymobIdempotencyKey    String?        @unique
+
+  webhookReceivedAt       DateTime?
+  webhookHmac             String?
+  webhookPayload          Json?
+  webhookRetryCount       Int            @default(0)
+
+  errorCode               String?
+  errorMessage            String?
+  errorDetails            Json?
+
+  refundInitiatedAt       DateTime?
+  refundInitiatedBy       String?
+  refundAmount            Int?
+  paymobRefundId          String?        @unique
+  refundCompletedAt       DateTime?
+
+  disputedAt              DateTime?
+  disputeReason           String?
+  resolvedAt              DateTime?
+  resolvedBy              String?
+
+  ipAddress               String?
+  userAgent               String?
+
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  enrollment              Enrollment?
+  events                  PaymentEvent[]
+  reconciliations         PaymentReconciliation[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
   @@index([userId, createdAt])
   @@index([status, createdAt])
+  @@index([paymobOrderId])
+  @@index([paymobTransactionId])
+  @@index([paymobIdempotencyKey])
+}
+
+model PaymentEvent {
+  id              String            @id @default(uuid())
+  paymentId       String
+  payment         Payment           @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  eventType       PaymentEventType
+  status          PaymentStatus?
+  previousStatus  PaymentStatus?
+
+  errorCode       String?
+  errorMessage    String?
+
+  metadata        Json?
+
+  createdAt       DateTime          @default(now())
+
+  @@index([paymentId])
+  @@index([paymentId, createdAt])
+  @@index([eventType])
+  @@index([eventType, createdAt])
+  @@index([createdAt])
+}
+
+model PaymentReconciliation {
+  id              String    @id @default(uuid())
+  paymentId       String
+  payment         Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  paymobStatus    String?
+  localStatus     String
+
+  paymobAmount    Int?
+  localAmount     Int
+  amountMismatch  Boolean   @default(false)
+
+  isReconciled    Boolean   @default(false)
+  reconciliedAt   DateTime?
+  reconciliedBy   String?
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([paymentId])
+  @@index([isReconciled])
 }
 
 model CoursePackage {
