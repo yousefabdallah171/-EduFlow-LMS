@@ -47,7 +47,18 @@ export const adminOrdersController = {
 
       const payment = await prisma.payment.findUnique({
         where: { id },
-        include: { user: true, coupon: true, enrollment: true }
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true
+              // SECURITY: Do NOT expose: passwordHash, emailVerified, oauthProvider, createdAt, updatedAt
+            }
+          },
+          coupon: true,
+          enrollment: true
+        }
       });
       if (!payment) { res.status(404).json({ error: "NOT_FOUND" }); return; }
       res.json(payment);
