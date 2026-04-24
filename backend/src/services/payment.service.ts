@@ -28,19 +28,49 @@ const PAYMENTS_CACHE_TTL_SECONDS = 60 * 60;
 const paymentsCacheKey = (userId: string) => `student:payments:${userId}`;
 
 const paymobRequest = async <T>(path: string, body: Record<string, unknown>) => {
-  const response = await fetch(`${PAYMOB_BASE_URL}${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
 
-  if (!response.ok) {
-    throw new PaymentError("PAYMOB_REQUEST_FAILED", 502, "Paymob request failed.");
+  try {
+    const response = await fetch(`${PAYMOB_BASE_URL}${path}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+
+    if (response.status === 401) {
+      throw new PaymentError("PAYMOB_AUTH_FAILED", 502, "Payment service authentication failed. Please try again later.");
+    }
+
+    if (response.status === 429) {
+      throw new PaymentError("PAYMOB_RATE_LIMITED", 503, "Payment service is busy. Please try again in a few seconds.");
+    }
+
+    if (response.status >= 500) {
+      throw new PaymentError("PAYMOB_SERVER_ERROR", 502, "Payment service is temporarily unavailable. Please try again later.");
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({})) as Record<string, unknown>;
+      throw new PaymentError(
+        "PAYMOB_API_ERROR",
+        400,
+        (errorData.message as string) || "Invalid payment request. Please check your details."
+      );
+    }
+
+    return (await response.json()) as T;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new PaymentError("PAYMOB_TIMEOUT", 503, "Payment service request timeout. Please try again.");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  return (await response.json()) as T;
 };
 
 export const paymentService = {
@@ -181,55 +211,66 @@ export const paymentService = {
 
     await paymentService.invalidatePaymentHistoryCache(userId);
 
-    const auth = await paymobRequest<{ token: string }>("/auth/tokens", {
-      api_key: env.PAYMOB_API_KEY
-    });
+    try {
+      const auth = await paymobRequest<{ token: string }>("/auth/tokens", {
+        api_key: env.PAYMOB_API_KEY
+      });
 
-    const order = await paymobRequest<{ id: number }>("/ecommerce/orders", {
-      auth_token: auth.token,
-      delivery_needed: false,
-      amount_cents: payment.amountPiasters,
-      currency: payment.currency,
-      merchant_order_id: payment.id,
-      items: []
-    });
+      const order = await paymobRequest<{ id: number }>("/ecommerce/orders", {
+        auth_token: auth.token,
+        delivery_needed: false,
+        amount_cents: payment.amountPiasters,
+        currency: payment.currency,
+        merchant_order_id: payment.id,
+        items: []
+      });
 
-    await paymentRepository.update(payment.id, {
-      paymobOrderId: String(order.id)
-    });
+      await paymentRepository.update(payment.id, {
+        paymobOrderId: String(order.id)
+      });
 
-    const paymentKey = await paymobRequest<{ token: string }>("/acceptance/payment_keys", {
-      auth_token: auth.token,
-      amount_cents: payment.amountPiasters,
-      expiration: 3600,
-      order_id: order.id,
-      billing_data: {
-        apartment: "NA",
-        email: student.email,
-        floor: "NA",
-        first_name: student.fullName.split(" ")[0] ?? student.fullName,
-        street: "NA",
-        building: "NA",
-        phone_number: "NA",
-        shipping_method: "NA",
-        postal_code: "NA",
-        city: "Cairo",
-        country: "EG",
-        last_name: student.fullName.split(" ").slice(1).join(" ") || student.fullName,
-        state: "Cairo"
-      },
-      currency: payment.currency,
-      integration_id: Number(env.PAYMOB_INTEGRATION_ID)
-    });
+      const paymentKey = await paymobRequest<{ token: string }>("/acceptance/payment_keys", {
+        auth_token: auth.token,
+        amount_cents: payment.amountPiasters,
+        expiration: 3600,
+        order_id: order.id,
+        billing_data: {
+          apartment: "NA",
+          email: student.email,
+          floor: "NA",
+          first_name: student.fullName.split(" ")[0] ?? student.fullName,
+          street: "NA",
+          building: "NA",
+          phone_number: "NA",
+          shipping_method: "NA",
+          postal_code: "NA",
+          city: "Cairo",
+          country: "EG",
+          last_name: student.fullName.split(" ").slice(1).join(" ") || student.fullName,
+          state: "Cairo"
+        },
+        currency: payment.currency,
+        integration_id: Number(env.PAYMOB_INTEGRATION_ID)
+      });
 
-    return {
-      paymentKey: paymentKey.token,
-      orderId: payment.id,
-      amount: payment.amountPiasters,
-      currency: payment.currency,
-      discountApplied: payment.discountPiasters,
-      iframeId: env.PAYMOB_IFRAME_ID
-    };
+      return {
+        paymentKey: paymentKey.token,
+        orderId: payment.id,
+        amount: payment.amountPiasters,
+        currency: payment.currency,
+        discountApplied: payment.discountPiasters,
+        iframeId: env.PAYMOB_IFRAME_ID
+      };
+    } catch (error) {
+      if (error instanceof PaymentError) {
+        await paymentRepository.update(payment.id, {
+          status: "FAILED",
+          errorCode: error.code,
+          errorMessage: error.message
+        });
+      }
+      throw error;
+    }
   },
 
   async processWebhook(payload: PaymobWebhookPayload, hmac: string) {
