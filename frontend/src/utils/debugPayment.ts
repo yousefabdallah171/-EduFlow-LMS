@@ -29,7 +29,7 @@ class PaymentDebugger {
   constructor() {
     if (this.isEnabled) {
       this.setupNetworkInterception();
-      this.log("debug", "Payment debugger initialized");
+      this.log("state", "Payment debugger initialized");
     }
   }
 
@@ -269,34 +269,34 @@ class PaymentDebugger {
 }
 
 // Create global instance
-const debugger = new PaymentDebugger();
+const paymentDebugger = new PaymentDebugger();
 
 // Export to window in development
 if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
   (window as any).__debugPayment = {
     // State
     get currentPayment() {
-      return debugger.getCurrentPayment();
+      return paymentDebugger.getCurrentPayment();
     },
-    setCurrentPayment: (payment: any) => debugger.setCurrentPayment(payment),
+    setCurrentPayment: (payment: any) => paymentDebugger.setCurrentPayment(payment),
 
     // Logging
-    getLogs: () => debugger.getLogs(),
-    clearLogs: () => debugger.clearLogs(),
-    exportLogs: () => debugger.exportLogs(),
-    downloadLogs: () => debugger.downloadLogs(),
+    getLogs: () => paymentDebugger.getLogs(),
+    clearLogs: () => paymentDebugger.clearLogs(),
+    exportLogs: () => paymentDebugger.exportLogs(),
+    downloadLogs: () => paymentDebugger.downloadLogs(),
 
     // Simulation
-    simulateSuccess: (orderId?: string) => debugger.simulateSuccess(orderId),
-    simulateFailure: (orderId?: string, error?: string) => debugger.simulateFailure(orderId, error),
-    simulatePending: (orderId?: string) => debugger.simulatePending(orderId),
+    simulateSuccess: (orderId?: string) => paymentDebugger.simulateSuccess(orderId),
+    simulateFailure: (orderId?: string, error?: string) => paymentDebugger.simulateFailure(orderId, error),
+    simulatePending: (orderId?: string) => paymentDebugger.simulatePending(orderId),
 
     // Network
-    getNetworkRequests: () => debugger.getNetworkRequests(),
+    getNetworkRequests: () => paymentDebugger.getNetworkRequests(),
 
     // Metrics
-    getMetrics: () => debugger.getMetrics(),
-    printSummary: () => debugger.printSummary(),
+    getMetrics: () => paymentDebugger.getMetrics(),
+    printSummary: () => paymentDebugger.printSummary(),
 
     // Help
     help: () => {
@@ -322,4 +322,4 @@ Usage:
   console.log("💡 Payment debugging tools available. Type window.__debugPayment.help() for usage.");
 }
 
-export { PaymentDebugger, debugger };
+export { PaymentDebugger, paymentDebugger };
