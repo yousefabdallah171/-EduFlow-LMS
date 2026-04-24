@@ -136,6 +136,7 @@ model User {
   videoSecurityEvents  VideoSecurityEvent[]
   tickets              SupportTicket[]  @relation("TicketUser")
   ticketMessages       TicketMessage[]  @relation("MessageSender")
+  adminAuditLogs       AdminAuditLog[]
 }
 
 model RefreshToken {
@@ -196,6 +197,14 @@ model Payment {
   webhookHmac             String?
   webhookPayload          Json?
   webhookRetryCount       Int            @default(0)
+  webhookLastRetryAt      DateTime?
+  webhookNextRetryAt      DateTime?
+
+  enrollmentRetryCount    Int            @default(0)
+  enrollmentLastRetryAt   DateTime?
+  enrollmentNextRetryAt   DateTime?
+
+  recoveryAttempts        Json?
 
   errorCode               String?
   errorMessage            String?
@@ -220,6 +229,9 @@ model Payment {
   enrollment              Enrollment?
   events                  PaymentEvent[]
   reconciliations         PaymentReconciliation[]
+  failedPaymentQueue      FailedPaymentQueue? @relation("FailedPaymentQueue")
+  emailQueue              EmailQueue[] @relation("EmailQueue")
+  webhookRetryQueue       WebhookRetryQueue? @relation("WebhookRetryQueue")
 
   @@index([userId])
   @@index([status])
@@ -276,6 +288,113 @@ model PaymentReconciliation {
 
   @@index([paymentId])
   @@index([isReconciled])
+}
+
+model FailedPaymentQueue {
+  id            String    @id @default(uuid())
+  paymentId     String    @unique
+  payment       Payment   @relation("FailedPaymentQueue", fields: [paymentId], references: [id], onDelete: Cascade)
+
+  failureType   String    // TRANSIENT, USER_ERROR, SYSTEM_ERROR
+  failureCode   String    // PAYMOB_TIMEOUT, INVALID_COUPON, etc.
+  failureReason String
+
+  retryCount    Int       @default(0)
+  maxRetries    Int       @default(3)
+
+  firstAttempt  DateTime  @default(now())
+  lastAttempt   DateTime  @updatedAt
+  nextRetry     DateTime?
+
+  resolvedAt    DateTime?
+  resolvedBy    String?   // Admin user ID
+  resolution    String?   // MANUAL_OVERRIDE, AUTO_RETRY, REFUND
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([resolvedAt])
+  @@index([nextRetry])
+  @@index([failureType])
+}
+
+model EmailQueue {
+  id          String    @id @default(uuid())
+  paymentId   String?
+  payment     Payment?  @relation("EmailQueue", fields: [paymentId], references: [id], onDelete: SetNull)
+
+  recipient   String
+  emailType   String    // PAYMENT_RECEIPT, ENROLLMENT_ACTIVATED, REFUND_NOTICE
+  subject     String
+  template    String
+  context     Json
+
+  retryCount  Int       @default(0)
+  maxRetries  Int       @default(5)
+
+  status      String    // PENDING, SENT, FAILED_PERMANENT, BOUNCED, DLQ
+  lastError   String?
+  errorCode   String?   // SMTP error code if applicable
+
+  firstAttempt DateTime  @default(now())
+  lastAttempt  DateTime  @updatedAt
+  nextRetry    DateTime?
+
+  sentAt      DateTime?
+  movedToDlqAt DateTime?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([nextRetry])
+  @@index([paymentId])
+  @@index([status, createdAt])
+}
+
+model WebhookRetryQueue {
+  id          String    @id @default(uuid())
+  paymentId   String    @unique
+  payment     Payment   @relation("WebhookRetryQueue", fields: [paymentId], references: [id], onDelete: Cascade)
+
+  payload     Json
+  errorDetails Json?
+
+  retryCount  Int       @default(0)
+  maxRetries  Int       @default(3)
+
+  firstAttempt DateTime  @default(now())
+  lastAttempt  DateTime  @updatedAt
+  nextRetry    DateTime?
+
+  resolvedAt  DateTime?
+  resolution  String?   // SUCCESS, FAILED, LATE_WEBHOOK
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([nextRetry])
+  @@index([resolvedAt])
+}
+
+model AdminAuditLog {
+  id          String    @id @default(uuid())
+  adminId     String
+  admin       User      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+
+  action      String    // OVERRIDE_PAYMENT, CANCEL_PAYMENT, RETRY_PAYMENT, MARK_PAID
+  paymentId   String?
+  targetId    String?   // ID of affected resource
+
+  reason      String
+  metadata    Json?
+
+  createdAt   DateTime  @default(now())
+
+  @@index([adminId])
+  @@index([paymentId])
+  @@index([createdAt])
+  @@index([action, createdAt])
 }
 
 model CoursePackage {
