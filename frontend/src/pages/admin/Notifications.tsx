@@ -27,6 +27,41 @@ type Template = {
 
 const variableHints = ["{{studentName}}", "{{courseName}}", "{{orderNumber}}", "{{supportEmail}}"];
 
+const sanitizeHtml = (html: string): string => {
+  const temp = document.createElement("div");
+  temp.innerHTML = html;
+
+  const dangerousTags = ["script", "iframe", "style", "embed", "object"];
+  const dangerousAttributes = [
+    "onload", "onerror", "onclick", "onmouseover", "onchange", "onsubmit",
+    "onkeydown", "onkeyup", "ondblclick", "oncontextmenu"
+  ];
+
+  const walk = (node: Node) => {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const element = node as Element;
+
+      if (dangerousTags.includes(element.tagName.toLowerCase())) {
+        element.remove();
+        return;
+      }
+
+      for (const attr of Array.from(element.attributes)) {
+        if (dangerousAttributes.some(dangerous => attr.name.toLowerCase().startsWith(dangerous))) {
+          element.removeAttribute(attr.name);
+        }
+      }
+    }
+
+    for (const child of Array.from(node.childNodes)) {
+      walk(child);
+    }
+  };
+
+  walk(temp);
+  return temp.innerHTML;
+};
+
 export const AdminNotifications = () => {
   const { t, i18n } = useTranslation();
   const copy = getAdminUiCopy(resolveLocale(i18n.language));
@@ -236,7 +271,7 @@ export const AdminNotifications = () => {
                     <div
                       className="rounded-2xl border p-4 text-sm leading-7"
                       style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-surface-2)", color: "var(--color-text-primary)" }}
-                      dangerouslySetInnerHTML={{ __html: previewText || copy.notifications.emptyBody }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(previewText) || copy.notifications.emptyBody }}
                     />
                   </div>
                 </div>
