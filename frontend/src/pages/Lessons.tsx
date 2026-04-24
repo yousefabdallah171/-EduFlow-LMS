@@ -9,6 +9,7 @@ import { StudentShell } from "@/components/layout/StudentShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionGroup } from "@/components/student/SectionGroup";
 import { api } from "@/lib/api";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { resolveLocale } from "@/lib/locale";
 import { useEnrollment } from "@/hooks/useEnrollment";
 
@@ -36,13 +37,15 @@ export const Lessons = () => {
   const isEnrolled = statusQuery.data?.enrolled && statusQuery.data?.status === "ACTIVE";
 
   const lessonsQuery = useQuery({
-    queryKey: ["all-lessons"],
+    queryKey: ["lessons-grouped"],
     enabled: Boolean(isEnrolled),
     retry: false,
     queryFn: async () => {
       const response = await api.get<{ sections?: Section[] }>("/lessons/grouped");
       return response.data.sections ?? [];
-    }
+    },
+    staleTime: CACHE_TIME.MEDIUM,
+    gcTime: getGCTime(CACHE_TIME.MEDIUM)
   });
 
   const sections = lessonsQuery.data ?? [];
