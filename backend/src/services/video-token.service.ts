@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import type { User } from "@prisma/client";
 
 import { redis } from "../config/redis.js";
+import { ENROLLMENT_STATUS } from "../constants/index.js";
 import { enrollmentService } from "./enrollment.service.js";
 import { lessonRepository } from "../repositories/lesson.repository.js";
 import { refreshTokenRepository } from "../repositories/refresh-token.repository.js";
@@ -261,7 +262,7 @@ export const videoTokenService = {
     }
 
     const enrollmentStatus = await enrollmentService.getStatus(fullPayload.userId);
-    if (!enrollmentStatus.enrolled || enrollmentStatus.status !== "ACTIVE") {
+    if (!enrollmentStatus.enrolled || enrollmentStatus.status !== ENROLLMENT_STATUS.ACTIVE) {
       throw new VideoTokenError("INVALID_VIDEO_TOKEN", 401, "Invalid video token.");
     }
 

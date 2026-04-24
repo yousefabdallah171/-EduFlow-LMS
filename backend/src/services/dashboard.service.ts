@@ -1,6 +1,7 @@
 import { prisma } from "../config/database.js";
 import { redis } from "../config/redis.js";
 import { env } from "../config/env.js";
+import { ENROLLMENT_STATUS } from "../constants/index.js";
 import { prometheus } from "../observability/prometheus.js";
 
 export type StudentDashboardPayload = {
@@ -58,7 +59,7 @@ export const dashboardService = {
     const payload: StudentDashboardPayload = {
       lastLessonId: lastLesson?.lessonId ?? null,
       completionPercent,
-      enrolled: enrollment?.status === "ACTIVE",
+      enrolled: enrollment?.status === ENROLLMENT_STATUS.ACTIVE,
       status: enrollment?.status ?? null,
       enrolledAt: enrollment?.enrolledAt?.toISOString() ?? null,
       totalWatchTimeSeconds,

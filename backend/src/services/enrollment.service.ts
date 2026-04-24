@@ -2,6 +2,7 @@ import type { EnrollmentType } from "@prisma/client";
 
 import { redis } from "../config/redis.js";
 import { env } from "../config/env.js";
+import { ENROLLMENT_STATUS } from "../constants/index.js";
 import { enrollmentRepository } from "../repositories/enrollment.repository.js";
 import { dashboardService } from "./dashboard.service.js";
 import { prometheus } from "../observability/prometheus.js";
@@ -30,7 +31,7 @@ export const enrollmentService = {
 
     const enrollment = existing
       ? await enrollmentRepository.updateStatus(userId, {
-          status: "ACTIVE",
+          status: ENROLLMENT_STATUS.ACTIVE,
           enrollmentType,
           payment: paymentId ? { connect: { id: paymentId } } : { disconnect: true },
           revokedAt: null,
@@ -80,7 +81,7 @@ export const enrollmentService = {
     const enrollment = await enrollmentRepository.findByUserId(userId);
     const value: EnrollmentStatusResponse = enrollment
       ? {
-          enrolled: enrollment.status === "ACTIVE",
+          enrolled: enrollment.status === ENROLLMENT_STATUS.ACTIVE,
           status: enrollment.status,
           enrollmentType: enrollment.enrollmentType,
           enrolledAt: enrollment.enrolledAt
