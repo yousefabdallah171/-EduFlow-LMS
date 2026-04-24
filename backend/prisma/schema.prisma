@@ -84,6 +84,14 @@ enum PaymentMethod {
   BANK_TRANSFER
 }
 
+enum RefundStatus {
+  REQUESTED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
 enum CouponDiscountType {
   PERCENTAGE
   FIXED
@@ -213,6 +221,10 @@ model Payment {
   refundInitiatedAt       DateTime?
   refundInitiatedBy       String?
   refundAmount            Int?
+  refundStatus            RefundStatus?
+  refundRetryCount        Int            @default(0)
+  refundLastRetryAt       DateTime?
+  refundNextRetryAt       DateTime?
   paymobRefundId          String?        @unique
   refundCompletedAt       DateTime?
 
@@ -232,6 +244,7 @@ model Payment {
   failedPaymentQueue      FailedPaymentQueue? @relation("FailedPaymentQueue")
   emailQueue              EmailQueue[] @relation("EmailQueue")
   webhookRetryQueue       WebhookRetryQueue? @relation("WebhookRetryQueue")
+  refundQueue             RefundQueue?
 
   @@index([userId])
   @@index([status])
@@ -241,6 +254,37 @@ model Payment {
   @@index([paymobOrderId])
   @@index([paymobTransactionId])
   @@index([paymobIdempotencyKey])
+  @@index([refundStatus])
+  @@index([paymobRefundId])
+}
+
+model RefundQueue {
+  id                  String            @id @default(uuid())
+  paymentId           String            @unique
+  payment             Payment           @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  refundType          String            // "FULL" or "PARTIAL"
+  refundAmount        Int
+  reason              String?
+
+  retryCount          Int               @default(0)
+  maxRetries          Int               @default(3)
+
+  firstAttempt        DateTime          @default(now())
+  lastAttempt         DateTime?
+  nextRetry           DateTime?
+
+  resolvedAt          DateTime?
+  resolution          String?           // "COMPLETED", "FAILED", "CANCELLED"
+
+  errorDetails        Json?
+
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([paymentId])
+  @@index([nextRetry])
+  @@index([resolution])
 }
 
 model PaymentEvent {

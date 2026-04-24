@@ -26,9 +26,17 @@ export const failedPaymentRecoveryQueue = new Queue("failed-payment-recovery", {
   }
 });
 
+export const refundQueue = new Queue("refund-processing", {
+  redis: {
+    host: env.REDIS_HOST || "localhost",
+    port: env.REDIS_PORT ? parseInt(env.REDIS_PORT) : 6379,
+    password: env.REDIS_PASSWORD
+  }
+});
+
 // Event handlers for all queues
 export function setupQueueErrorHandlers() {
-  const queues = [webhookRetryQueue, emailQueue, failedPaymentRecoveryQueue];
+  const queues = [webhookRetryQueue, emailQueue, failedPaymentRecoveryQueue, refundQueue];
 
   queues.forEach((queue) => {
     queue.on("error", (err) => {
@@ -51,7 +59,7 @@ export function setupQueueErrorHandlers() {
 
 // Graceful shutdown of all queues
 export async function closeAllQueues() {
-  const queues = [webhookRetryQueue, emailQueue, failedPaymentRecoveryQueue];
+  const queues = [webhookRetryQueue, emailQueue, failedPaymentRecoveryQueue, refundQueue];
 
   for (const queue of queues) {
     try {
@@ -80,6 +88,11 @@ export async function getQueueMetrics() {
       name: failedPaymentRecoveryQueue.name,
       counts: await failedPaymentRecoveryQueue.getJobCounts(),
       paused: await failedPaymentRecoveryQueue.isPaused()
+    },
+    refund: {
+      name: refundQueue.name,
+      counts: await refundQueue.getJobCounts(),
+      paused: await refundQueue.isPaused()
     }
   };
 }
@@ -88,6 +101,7 @@ export default {
   webhookRetryQueue,
   emailQueue,
   failedPaymentRecoveryQueue,
+  refundQueue,
   setupQueueErrorHandlers,
   closeAllQueues,
   getQueueMetrics

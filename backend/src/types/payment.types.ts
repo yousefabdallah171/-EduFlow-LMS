@@ -150,6 +150,53 @@ export interface ManualOverrideRequest {
 }
 
 /**
+ * Refund types (Phase 5)
+ */
+
+export interface InitiateRefundRequest {
+  paymentId: string;
+  amount?: number; // undefined = full refund, number = partial
+  reason: string;
+}
+
+export interface RefundResponse {
+  paymentId: string;
+  refundId: string;
+  status: string; // REQUESTED, PROCESSING, COMPLETED, FAILED
+  amount: number;
+  refundType: "FULL" | "PARTIAL";
+  initiatedAt: Date;
+  enrollmentRevoked: boolean;
+}
+
+export interface RefundStatusResponse {
+  paymentId: string;
+  refundId: string;
+  status: string;
+  amount: number;
+  paymobRefundId?: string;
+  initiatedAt: Date;
+  completedAt?: Date;
+  reason?: string;
+}
+
+export interface RefundHistoryItem {
+  refundId: string;
+  paymentId: string;
+  amount: number;
+  status: string;
+  refundType: "FULL" | "PARTIAL";
+  initiatedAt: Date;
+  completedAt?: Date;
+  reason?: string;
+}
+
+export interface RefundHistoryResponse {
+  paymentId: string;
+  refunds: RefundHistoryItem[];
+}
+
+/**
  * Error types
  */
 
@@ -209,8 +256,17 @@ export const PaymentErrorCodes = {
   EMAIL_QUEUE_FULL: "EMAIL_QUEUE_FULL",
   EMAIL_BOUNCE_DETECTED: "EMAIL_BOUNCE_DETECTED",
 
-  // Recovery errors
+  // Refund errors (Phase 5)
   REFUND_FAILED: "REFUND_FAILED",
+  REFUND_INVALID_AMOUNT: "REFUND_INVALID_AMOUNT",
+  REFUND_ALREADY_PROCESSED: "REFUND_ALREADY_PROCESSED",
+  REFUND_PAYMOB_ERROR: "REFUND_PAYMOB_ERROR",
+  REFUND_INSUFFICIENT_FUNDS: "REFUND_INSUFFICIENT_FUNDS",
+  REFUND_TIMEOUT: "REFUND_TIMEOUT",
+  REFUND_RETRY_FAILED: "REFUND_RETRY_FAILED",
+  REFUND_ENROLLMENT_REVOCATION_FAILED: "REFUND_ENROLLMENT_REVOCATION_FAILED",
+
+  // Recovery errors
   RECONCILIATION_FAILED: "RECONCILIATION_FAILED",
   RECOVERY_FAILED: "RECOVERY_FAILED",
 
