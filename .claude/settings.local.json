@@ -160,7 +160,8 @@
       "Bash(grep -E \"\\\\.\\(ts|prisma\\)$\")",
       "Bash(awk '{print $9, \"-\", $5}')",
       "Bash(pnpm lint *)",
-      "Bash(pnpm --filter frontend lint)"
+      "Bash(pnpm --filter frontend lint)",
+      "Read(//tmp/**)"
     ]
   }
 }
