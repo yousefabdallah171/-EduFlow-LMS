@@ -1,6 +1,7 @@
 import { prisma } from "../config/database.js";
 import { enrollmentService } from "./enrollment.service.js";
 import { errorLoggingService } from "./error-logging.service.js";
+import { metricsService } from "./metrics.service.js";
 import { queueRefundForProcessing } from "../jobs/refund-processing.job.js";
 import { PaymentError, PaymentErrorCodes } from "../types/payment.types.js";
 import type { InitiateRefundRequest, RefundResponse, RefundStatusResponse } from "../types/payment.types.js";
@@ -17,6 +18,7 @@ export const refundService = {
   // Initiate a refund (full or partial)
   async initiateRefund(request: InitiateRefundRequest, adminId?: string): Promise<RefundResponse> {
     const { paymentId, amount, reason } = request;
+    const startTime = Date.now();
 
     try {
       // Get payment
@@ -83,6 +85,8 @@ export const refundService = {
         refundAmount,
         reason
       );
+
+      metricsService.recordRefund(isFullRefund ? "full" : "partial", "requested", 0, refundAmount);
 
       // Log refund initiation
       await errorLoggingService.logPaymentError(
@@ -286,6 +290,7 @@ export const refundService = {
 
   // Handle successful refund (from webhook)
   async completeRefund(paymentId: string, paymobRefundId: string): Promise<boolean> {
+    const startTime = Date.now();
     try {
       const payment = await prisma.payment.findUnique({
         where: { id: paymentId },
@@ -342,6 +347,9 @@ export const refundService = {
         }
       }
 
+      const durationMs = Date.now() - startTime;
+      metricsService.recordRefund(isFullRefund ? "full" : "partial", "completed", durationMs, payment.refundAmount || 0);
+
       // Log completion
       await prisma.paymentEvent.create({
         data: {
@@ -382,6 +390,9 @@ export const refundService = {
           refundLastRetryAt: new Date()
         }
       });
+
+      const isFullRefund = payment.refundAmount === payment.amountPiasters;
+      metricsService.recordRefund(isFullRefund ? "full" : "partial", "failed", 0, payment.refundAmount || 0);
 
       // Log failure
       await prisma.paymentEvent.create({

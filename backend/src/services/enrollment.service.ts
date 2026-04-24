@@ -5,6 +5,7 @@ import { env } from "../config/env.js";
 import { ENROLLMENT_STATUS } from "../constants/index.js";
 import { enrollmentRepository } from "../repositories/enrollment.repository.js";
 import { dashboardService } from "./dashboard.service.js";
+import { metricsService } from "./metrics.service.js";
 import { prometheus } from "../observability/prometheus.js";
 
 const DEFAULT_COURSE_ID = env.DEFAULT_COURSE_ID;
@@ -27,43 +28,64 @@ export type EnrollmentStatusResponse =
 
 export const enrollmentService = {
   async enroll(userId: string, enrollmentType: EnrollmentType, paymentId?: string | null) {
+    const startTime = Date.now();
     const existing = await enrollmentRepository.findByUserId(userId);
 
-    const enrollment = existing
-      ? await enrollmentRepository.updateStatus(userId, {
-          status: ENROLLMENT_STATUS.ACTIVE,
-          enrollmentType,
-          payment: paymentId ? { connect: { id: paymentId } } : { disconnect: true },
-          revokedAt: null,
-          revokedBy: { disconnect: true },
-          enrolledAt: new Date()
-        })
-      : await enrollmentRepository.create({
-          user: { connect: { id: userId } },
-          enrollmentType,
-          payment: paymentId ? { connect: { id: paymentId } } : undefined
-        });
-
-    const payload = { enrolled: true, status: enrollment.status };
     try {
-      await redis.set(enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
-    } catch {
-      // ignore redis failures
+      const enrollment = existing
+        ? await enrollmentRepository.updateStatus(userId, {
+            status: ENROLLMENT_STATUS.ACTIVE,
+            enrollmentType,
+            payment: paymentId ? { connect: { id: paymentId } } : { disconnect: true },
+            revokedAt: null,
+            revokedBy: { disconnect: true },
+            enrolledAt: new Date()
+          })
+        : await enrollmentRepository.create({
+            user: { connect: { id: userId } },
+            enrollmentType,
+            payment: paymentId ? { connect: { id: paymentId } } : undefined
+          });
+
+      const durationMs = Date.now() - startTime;
+      const operation = existing ? "activate" : "create";
+      metricsService.recordEnrollment(operation, "success", durationMs);
+
+      const payload = { enrolled: true, status: enrollment.status };
+      try {
+        await redis.set(enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
+      } catch {
+        // ignore redis failures
+      }
+      await dashboardService.invalidateStudentDashboard(userId);
+      return enrollment;
+    } catch (error) {
+      const durationMs = Date.now() - startTime;
+      metricsService.recordEnrollment("create", "failure", durationMs);
+      throw error;
     }
-    await dashboardService.invalidateStudentDashboard(userId);
-    return enrollment;
   },
 
   async revoke(userId: string, revokedById?: string) {
-    const enrollment = await enrollmentRepository.revoke(userId, revokedById);
-    const payload = { enrolled: false, status: enrollment.status };
+    const startTime = Date.now();
     try {
-      await redis.set(enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
-    } catch {
-      // ignore redis failures
+      const enrollment = await enrollmentRepository.revoke(userId, revokedById);
+      const durationMs = Date.now() - startTime;
+      metricsService.recordEnrollment("revoke", "success", durationMs);
+
+      const payload = { enrolled: false, status: enrollment.status };
+      try {
+        await redis.set(enrollmentStatusCacheKey(userId, DEFAULT_COURSE_ID), JSON.stringify(payload), "EX", ENROLLMENT_CACHE_TTL_SECONDS);
+      } catch {
+        // ignore redis failures
+      }
+      await dashboardService.invalidateStudentDashboard(userId);
+      return enrollment;
+    } catch (error) {
+      const durationMs = Date.now() - startTime;
+      metricsService.recordEnrollment("revoke", "failure", durationMs);
+      throw error;
     }
-    await dashboardService.invalidateStudentDashboard(userId);
-    return enrollment;
   },
 
   async getStatus(userId: string): Promise<EnrollmentStatusResponse> {

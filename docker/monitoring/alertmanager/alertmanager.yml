@@ -1,0 +1,66 @@
+global:
+  resolve_timeout: 5m
+  # IMPORTANT: Configure these for your environment
+  # smtp_smarthost: 'smtp.gmail.com:587'
+  # smtp_auth_username: 'your-email@gmail.com'
+  # smtp_auth_password: 'your-app-password'
+  # smtp_from: 'alerts@eduflow.com'
+
+# The root route with all parameters, which are inherited by the child
+# routes and repeated for each incoming alert.
+route:
+  receiver: 'default'
+  group_by: ['alertname', 'cluster']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  routes:
+    # Critical payment alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical'
+      group_wait: 0s
+      repeat_interval: 1h
+
+    # Warning alerts - regular notification
+    - match:
+        severity: warning
+      receiver: 'warning'
+      group_wait: 30s
+      repeat_interval: 4h
+
+receivers:
+  # Default receiver - logs to console
+  - name: 'default'
+
+  # Critical alerts - email + slack
+  - name: 'critical'
+    email_configs:
+      - to: 'ops@eduflow.com'
+        headers:
+          Subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#alerts-critical'
+        title: '🚨 Critical Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+
+  # Warning alerts - slack only
+  - name: 'warning'
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#alerts-warning'
+        title: '⚠️ Warning Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+
+# Inhibition rules to suppress certain alerts
+inhibit_rules:
+  # Don't alert on high memory if the host is down
+  - source_match:
+      severity: 'critical'
+      alertname: 'ServiceDown'
+    target_match:
+      severity: 'warning'
+    equal: ['instance']

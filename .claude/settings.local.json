@@ -161,7 +161,9 @@
       "Bash(awk '{print $9, \"-\", $5}')",
       "Bash(pnpm lint *)",
       "Bash(pnpm --filter frontend lint)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(npx eslint *)",
+      "Bash(awk '{print $NF}')"
     ]
   }
 }

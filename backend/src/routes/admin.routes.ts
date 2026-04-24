@@ -6,6 +6,7 @@ import { adminCouponsController } from "../controllers/admin/coupons.controller.
 import { adminLessonsController } from "../controllers/admin/lessons.controller.js";
 import { adminNotificationsController } from "../controllers/admin/notifications.controller.js";
 import { adminOrdersController } from "../controllers/admin/orders.controller.js";
+import { adminPaymentsController } from "../controllers/admin/payments.controller.js";
 import { adminPricingController } from "../controllers/admin/pricing.controller.js";
 import { adminSettingsController } from "../controllers/admin/settings.controller.js";
 import { adminStudentsController, verifyAdminCanAccessStudent } from "../controllers/admin/students.controller.js";
@@ -15,6 +16,7 @@ import * as sectionsController from "../controllers/admin/sections.controller.js
 import { resourcesController as adminResourcesController } from "../controllers/resources.controller.js";
 import { ticketsController } from "../controllers/tickets.controller.js";
 import { adminRecoveryController } from "../controllers/admin-recovery.controller.js";
+import { refundController } from "../controllers/refund.controller.js";
 import { auditMiddleware } from "../middleware/audit.middleware.js";
 import { requireRole } from "../middleware/rbac.middleware.js";
 import { adminSearchRateLimit } from "../middleware/rate-limit.middleware.js";
@@ -72,6 +74,15 @@ router.get("/analytics", adminAnalyticsController.analytics);
 router.get("/payments", adminAnalyticsController.payments);
 router.post("/payments/:paymentId/mark-paid", adminAnalyticsController.markPaid);
 
+// Payment Management (admin)
+router.get("/payments/search", requireRole("ADMIN"), adminPaymentsController.searchPayments);
+router.get("/payments/stats", requireRole("ADMIN"), adminPaymentsController.getPaymentStats);
+router.get("/payments/status/:status", requireRole("ADMIN"), adminPaymentsController.getPaymentsByStatus);
+router.get("/payments/:paymentId", requireRole("ADMIN"), adminPaymentsController.getPaymentDetail);
+router.post("/payments/manual", requireRole("ADMIN"), adminPaymentsController.createManualPayment);
+router.post("/payments/:paymentId/override", requireRole("ADMIN"), adminPaymentsController.overridePaymentStatus);
+router.post("/payments/:paymentId/revoke", requireRole("ADMIN"), adminPaymentsController.revokePayment);
+
 // Orders
 router.get("/orders/export-csv", adminOrdersController.exportCsv);
 router.get("/orders", adminOrdersController.list);
@@ -108,5 +119,10 @@ router.get("/settings/system", adminSettingsController.getSystem);
 router.get("/notifications/templates", adminNotificationsController.list);
 router.patch("/notifications/templates/:id", adminNotificationsController.update);
 router.post("/notifications/broadcast", adminNotificationsController.broadcast);
+
+// Refund management
+router.post("/refunds/initiate", requireRole("ADMIN"), refundController.adminInitiateRefund);
+router.get("/refunds/:paymentId/history", requireRole("ADMIN"), refundController.adminGetRefundHistory);
+router.get("/refunds", requireRole("ADMIN"), refundController.adminListRefunds);
 
 export { router as adminRoutes };

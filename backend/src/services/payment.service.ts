@@ -10,6 +10,7 @@ import { prisma } from "../config/database.js";
 import { couponService } from "./coupon.service.js";
 import { courseService } from "./course.service.js";
 import { enrollmentService } from "./enrollment.service.js";
+import { metricsService } from "./metrics.service.js";
 import { prometheus } from "../observability/prometheus.js";
 import { sendEnrollmentActivatedEmail, sendPaymentReceiptEmail } from "../utils/email.js";
 
@@ -30,6 +31,7 @@ const paymentsCacheKey = (userId: string) => `student:payments:${userId}`;
 const paymobRequest = async <T>(path: string, body: Record<string, unknown>) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
+  const startTime = Date.now();
 
   try {
     const response = await fetch(`${PAYMOB_BASE_URL}${path}`, {
@@ -40,6 +42,9 @@ const paymobRequest = async <T>(path: string, body: Record<string, unknown>) => 
       body: JSON.stringify(body),
       signal: controller.signal
     });
+
+    const durationMs = Date.now() - startTime;
+    metricsService.recordPaymobApiCall(path, response.status, durationMs);
 
     if (response.status === 401) {
       throw new PaymentError("PAYMOB_AUTH_FAILED", 502, "Payment service authentication failed. Please try again later.");
@@ -157,6 +162,7 @@ export const paymentService = {
   },
 
   async createPaymobOrder(userId: string, couponCode?: string, packageId?: string) {
+    const startTime = Date.now();
     const student = await userRepository.findById(userId);
     if (!student) {
       throw new PaymentError("USER_NOT_FOUND", 404, "Student not found.");
@@ -208,6 +214,9 @@ export const paymentService = {
         }
       });
     });
+
+    metricsService.recordPaymentOperation("pending", "paymob", 0, payment.amountPiasters);
+    metricsService.updateActivePayments("pending", 1);
 
     await paymentService.invalidatePaymentHistoryCache(userId);
 
@@ -262,7 +271,10 @@ export const paymentService = {
         iframeId: env.PAYMOB_IFRAME_ID
       };
     } catch (error) {
+      const durationMs = Date.now() - startTime;
       if (error instanceof PaymentError) {
+        metricsService.recordPaymentOperation("failure", "paymob", durationMs, payment.amountPiasters);
+        metricsService.updateActivePayments("pending", -1);
         await paymentRepository.update(payment.id, {
           status: "FAILED",
           errorCode: error.code,
@@ -301,6 +313,7 @@ export const paymentService = {
   },
 
   async processWebhook(payload: PaymobWebhookPayload, hmac: string) {
+    const startTime = Date.now();
     const transaction = payload.obj;
     if (!transaction) {
       throw new PaymentError("INVALID_WEBHOOK_PAYLOAD", 400, "Webhook payload is missing transaction details.");
@@ -315,11 +328,15 @@ export const paymentService = {
 
     const existingTx = await paymentRepository.findByPaymobTxId(paymobTransactionId);
     if (existingTx) {
+      const durationMs = Date.now() - startTime;
+      metricsService.recordWebhookProcessing("paymob", "success", durationMs);
       return existingTx;
     }
 
     const payment = await paymentRepository.findById(merchantOrderId);
     if (!payment) {
+      const durationMs = Date.now() - startTime;
+      metricsService.recordWebhookProcessing("paymob", "failure", durationMs, "PAYMENT_NOT_FOUND");
       throw new PaymentError("PAYMENT_NOT_FOUND", 404, "Payment record not found.");
     }
 
@@ -329,6 +346,10 @@ export const paymentService = {
       webhookReceivedAt: new Date(),
       webhookHmac: hmac
     });
+
+    metricsService.updateActivePayments("pending", -1);
+    const statusMetric = updatedPayment.status === "COMPLETED" ? "success" : "failure";
+    metricsService.recordPaymentOperation(statusMetric, "paymob", Date.now() - startTime, payment.amountPiasters);
 
     await paymentService.invalidatePaymentHistoryCache(payment.userId);
 
@@ -357,6 +378,9 @@ export const paymentService = {
         // Ignore email failures - not critical to payment processing
       }
     }
+
+    const durationMs = Date.now() - startTime;
+    metricsService.recordWebhookProcessing("paymob", statusMetric as any, durationMs);
 
     return updatedPayment;
   },
