@@ -78,6 +78,12 @@ enum PaymentEventType {
   PAYMENT_POLLED
 }
 
+enum PaymentMethod {
+  CARD
+  MOBILE_WALLET
+  BANK_TRANSFER
+}
+
 enum CouponDiscountType {
   PERCENTAGE
   FIXED
@@ -130,6 +136,7 @@ model User {
   videoSecurityEvents  VideoSecurityEvent[]
   tickets              SupportTicket[]  @relation("TicketUser")
   ticketMessages       TicketMessage[]  @relation("MessageSender")
+  adminAuditLogs       AdminAuditLog[]
 }
 
 model RefreshToken {
@@ -168,92 +175,226 @@ model Enrollment {
 }
 
 model Payment {
-  id                      String           @id @default(uuid())
+  id                      String         @id @default(uuid())
   userId                  String
-  user                    User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user                    User           @relation(fields: [userId], references: [id], onDelete: Restrict)
   packageId               String?
-  package                 CoursePackage?   @relation(fields: [packageId], references: [id])
+  package                 CoursePackage? @relation(fields: [packageId], references: [id])
   amountPiasters          Int
-  currency                String           @default("EGP")
-  paymobOrderId           String?          @unique
-  paymobTransactionId     String?          @unique
-  paymobIdempotencyKey    String?          @unique
+  currency                String         @default("EGP")
   couponId                String?
-  coupon                  Coupon?          @relation(fields: [couponId], references: [id])
-  discountPiasters        Int              @default(0)
-  status                  PaymentStatus    @default(INITIATED)
+  coupon                  Coupon?        @relation(fields: [couponId], references: [id])
+  discountPiasters        Int            @default(0)
+
+  status                  PaymentStatus  @default(INITIATED)
+  paymentMethod           PaymentMethod?
+
+  paymobOrderId           String?        @unique
+  paymobTransactionId     String?        @unique
+  paymobIdempotencyKey    String?        @unique
+
   webhookReceivedAt       DateTime?
   webhookHmac             String?
   webhookPayload          Json?
-  webhookRetryCount       Int              @default(0)
+  webhookRetryCount       Int            @default(0)
+  webhookLastRetryAt      DateTime?
+  webhookNextRetryAt      DateTime?
+
+  enrollmentRetryCount    Int            @default(0)
+  enrollmentLastRetryAt   DateTime?
+  enrollmentNextRetryAt   DateTime?
+
+  recoveryAttempts        Json?
+
   errorCode               String?
   errorMessage            String?
   errorDetails            Json?
+
   refundInitiatedAt       DateTime?
   refundInitiatedBy       String?
   refundAmount            Int?
-  paymobRefundId          String?          @unique
+  paymobRefundId          String?        @unique
   refundCompletedAt       DateTime?
+
   disputedAt              DateTime?
   disputeReason           String?
   resolvedAt              DateTime?
   resolvedBy              String?
+
   ipAddress               String?
   userAgent               String?
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
+
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
   enrollment              Enrollment?
   events                  PaymentEvent[]
-  reconciliation          PaymentReconciliation? @relation("PaymentReconciliation")
+  reconciliations         PaymentReconciliation[]
+  failedPaymentQueue      FailedPaymentQueue? @relation("FailedPaymentQueue")
+  emailQueue              EmailQueue[] @relation("EmailQueue")
+  webhookRetryQueue       WebhookRetryQueue? @relation("WebhookRetryQueue")
 
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
   @@index([userId, createdAt])
   @@index([status, createdAt])
   @@index([paymobOrderId])
   @@index([paymobTransactionId])
   @@index([paymobIdempotencyKey])
-  @@index([status])
-  @@index([errorCode])
-  @@index([refundInitiatedAt])
-  @@index([disputedAt])
-  @@index([createdAt])
-  @@index([userId, status])
-  @@index([paymobOrderId, status])
 }
 
 model PaymentEvent {
   id              String            @id @default(uuid())
   paymentId       String
   payment         Payment           @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
   eventType       PaymentEventType
+  status          PaymentStatus?
   previousStatus  PaymentStatus?
-  newStatus       PaymentStatus?
+
   errorCode       String?
   errorMessage    String?
-  metadata        Json              @default("{}")
+
+  metadata        Json?
+
   createdAt       DateTime          @default(now())
 
+  @@index([paymentId])
   @@index([paymentId, createdAt])
   @@index([eventType])
+  @@index([eventType, createdAt])
   @@index([createdAt])
 }
 
 model PaymentReconciliation {
-  id                      String   @id @default(uuid())
-  paymentId               String   @unique
-  payment                 Payment  @relation("PaymentReconciliation", fields: [paymentId], references: [id], onDelete: Cascade)
-  paymobOrderId           String?  @unique
-  localAmount             Int
-  paymobAmount            Int?
-  localStatus             String
-  paymobStatus            String?
-  isReconciled            Boolean  @default(false)
-  reconciliationNotes     String?
-  lastCheckedAt           DateTime?
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  id              String    @id @default(uuid())
+  paymentId       String
+  payment         Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
 
+  paymobStatus    String?
+  localStatus     String
+
+  paymobAmount    Int?
+  localAmount     Int
+  amountMismatch  Boolean   @default(false)
+
+  isReconciled    Boolean   @default(false)
+  reconciliedAt   DateTime?
+  reconciliedBy   String?
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([paymentId])
   @@index([isReconciled])
-  @@index([updatedAt])
+}
+
+model FailedPaymentQueue {
+  id            String    @id @default(uuid())
+  paymentId     String    @unique
+  payment       Payment   @relation("FailedPaymentQueue", fields: [paymentId], references: [id], onDelete: Cascade)
+
+  failureType   String    // TRANSIENT, USER_ERROR, SYSTEM_ERROR
+  failureCode   String    // PAYMOB_TIMEOUT, INVALID_COUPON, etc.
+  failureReason String
+
+  retryCount    Int       @default(0)
+  maxRetries    Int       @default(3)
+
+  firstAttempt  DateTime  @default(now())
+  lastAttempt   DateTime  @updatedAt
+  nextRetry     DateTime?
+
+  resolvedAt    DateTime?
+  resolvedBy    String?   // Admin user ID
+  resolution    String?   // MANUAL_OVERRIDE, AUTO_RETRY, REFUND
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([resolvedAt])
+  @@index([nextRetry])
+  @@index([failureType])
+}
+
+model EmailQueue {
+  id          String    @id @default(uuid())
+  paymentId   String?
+  payment     Payment?  @relation("EmailQueue", fields: [paymentId], references: [id], onDelete: SetNull)
+
+  recipient   String
+  emailType   String    // PAYMENT_RECEIPT, ENROLLMENT_ACTIVATED, REFUND_NOTICE
+  subject     String
+  template    String
+  context     Json
+
+  retryCount  Int       @default(0)
+  maxRetries  Int       @default(5)
+
+  status      String    // PENDING, SENT, FAILED_PERMANENT, BOUNCED, DLQ
+  lastError   String?
+  errorCode   String?   // SMTP error code if applicable
+
+  firstAttempt DateTime  @default(now())
+  lastAttempt  DateTime  @updatedAt
+  nextRetry    DateTime?
+
+  sentAt      DateTime?
+  movedToDlqAt DateTime?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([nextRetry])
+  @@index([paymentId])
+  @@index([status, createdAt])
+}
+
+model WebhookRetryQueue {
+  id          String    @id @default(uuid())
+  paymentId   String    @unique
+  payment     Payment   @relation("WebhookRetryQueue", fields: [paymentId], references: [id], onDelete: Cascade)
+
+  payload     Json
+  errorDetails Json?
+
+  retryCount  Int       @default(0)
+  maxRetries  Int       @default(3)
+
+  firstAttempt DateTime  @default(now())
+  lastAttempt  DateTime  @updatedAt
+  nextRetry    DateTime?
+
+  resolvedAt  DateTime?
+  resolution  String?   // SUCCESS, FAILED, LATE_WEBHOOK
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([nextRetry])
+  @@index([resolvedAt])
+}
+
+model AdminAuditLog {
+  id          String    @id @default(uuid())
+  adminId     String
+  admin       User      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+
+  action      String    // OVERRIDE_PAYMENT, CANCEL_PAYMENT, RETRY_PAYMENT, MARK_PAID
+  paymentId   String?
+  targetId    String?   // ID of affected resource
+
+  reason      String
+  metadata    Json?
+
+  createdAt   DateTime  @default(now())
+
+  @@index([adminId])
+  @@index([paymentId])
+  @@index([createdAt])
+  @@index([action, createdAt])
 }
 
 model CoursePackage {

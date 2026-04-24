@@ -26,101 +26,51 @@ class PaymentError extends Error {
 const PAYMOB_BASE_URL = "https://accept.paymob.com/api";
 const PAYMENTS_CACHE_TTL_SECONDS = 60 * 60;
 const paymentsCacheKey = (userId: string) => `student:payments:${userId}`;
-const CONCURRENT_CHECKOUT_TIMEOUT_MINUTES = 30;
-const PAYMOB_REQUEST_TIMEOUT_MS = 10000;
 
-type RetryableErrorCode = "PAYMOB_SERVER_ERROR" | "PAYMOB_RATE_LIMITED" | "PAYMOB_TIMEOUT";
-
-const isRetryableError = (code: string): code is RetryableErrorCode => {
-  return ["PAYMOB_SERVER_ERROR", "PAYMOB_RATE_LIMITED", "PAYMOB_TIMEOUT"].includes(code);
-};
-
-const paymobRequest = async <T>(
-  path: string,
-  body: Record<string, unknown>,
-  timeoutMs = PAYMOB_REQUEST_TIMEOUT_MS
-): Promise<T> => {
+const paymobRequest = async <T>(path: string, body: Record<string, unknown>) => {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const timeout = setTimeout(() => controller.abort(), 10000);
 
   try {
     const response = await fetch(`${PAYMOB_BASE_URL}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify(body),
       signal: controller.signal
     });
 
+    if (response.status === 401) {
+      throw new PaymentError("PAYMOB_AUTH_FAILED", 502, "Payment service authentication failed. Please try again later.");
+    }
+
+    if (response.status === 429) {
+      throw new PaymentError("PAYMOB_RATE_LIMITED", 503, "Payment service is busy. Please try again in a few seconds.");
+    }
+
+    if (response.status >= 500) {
+      throw new PaymentError("PAYMOB_SERVER_ERROR", 502, "Payment service is temporarily unavailable. Please try again later.");
+    }
+
     if (!response.ok) {
-      const status = response.status;
-      let errorCode = "PAYMOB_API_ERROR";
-      let errorMessage = "Paymob API request failed";
-
-      if (status === 401) {
-        errorCode = "PAYMOB_AUTH_FAILED";
-        errorMessage = "Paymob authentication failed. Check API key.";
-      } else if (status === 429) {
-        errorCode = "PAYMOB_RATE_LIMITED";
-        errorMessage = "Paymob API rate limit exceeded. Please try again later.";
-      } else if (status >= 500) {
-        errorCode = "PAYMOB_SERVER_ERROR";
-        errorMessage = "Paymob server error. Please try again.";
-      }
-
-      throw new PaymentError(errorCode, status, errorMessage);
+      const errorData = await response.json().catch(() => ({})) as Record<string, unknown>;
+      throw new PaymentError(
+        "PAYMOB_API_ERROR",
+        400,
+        (errorData.message as string) || "Invalid payment request. Please check your details."
+      );
     }
 
     return (await response.json()) as T;
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
-      throw new PaymentError(
-        "PAYMOB_TIMEOUT",
-        504,
-        "Paymob request timeout. Please try again."
-      );
+      throw new PaymentError("PAYMOB_TIMEOUT", 503, "Payment service request timeout. Please try again.");
     }
-
-    if (error instanceof PaymentError) {
-      throw error;
-    }
-
-    throw new PaymentError(
-      "PAYMOB_REQUEST_FAILED",
-      502,
-      "Paymob request failed. Please try again."
-    );
+    throw error;
   } finally {
     clearTimeout(timeout);
   }
-};
-
-const retryWithBackoff = async <T>(
-  fn: () => Promise<T>,
-  maxRetries = 3,
-  initialDelayMs = 1000
-): Promise<T> => {
-  let lastError: unknown;
-
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (error) {
-      lastError = error;
-
-      if (error instanceof PaymentError && !isRetryableError(error.code)) {
-        throw error;
-      }
-
-      if (attempt === maxRetries - 1) {
-        throw error;
-      }
-
-      const delayMs = initialDelayMs * Math.pow(2, attempt);
-      await new Promise(resolve => setTimeout(resolve, delayMs));
-    }
-  }
-
-  throw lastError;
 };
 
 export const paymentService = {
@@ -217,17 +167,15 @@ export const paymentService = {
       throw new PaymentError("ALREADY_ENROLLED", 409, "Student is already enrolled.");
     }
 
-    // Check for concurrent checkout attempts
-    const pendingPayments = await paymentRepository.findPendingByUserId(userId);
-    if (pendingPayments.length > 0) {
-      const newestPending = pendingPayments[0];
-      const ageMinutes = (Date.now() - newestPending.createdAt.getTime()) / 60000;
-      if (ageMinutes < CONCURRENT_CHECKOUT_TIMEOUT_MINUTES) {
-        const waitMinutes = Math.ceil(CONCURRENT_CHECKOUT_TIMEOUT_MINUTES - ageMinutes);
+    const pendingPayment = await paymentRepository.findPendingByUserId(userId);
+    if (pendingPayment.length > 0) {
+      const oldestPending = pendingPayment[0];
+      const minutesOld = (Date.now() - oldestPending.createdAt.getTime()) / 1000 / 60;
+      if (minutesOld < 30) {
         throw new PaymentError(
           "CHECKOUT_IN_PROGRESS",
           409,
-          `You have a checkout in progress. Please try again in ${waitMinutes} minute${waitMinutes > 1 ? "s" : ""}.`
+          "You already have a pending checkout. Please wait 30 minutes or complete that payment first."
         );
       }
     }
@@ -264,52 +212,46 @@ export const paymentService = {
     await paymentService.invalidatePaymentHistoryCache(userId);
 
     try {
-      const auth = await retryWithBackoff(
-        () => paymobRequest<{ token: string }>("/auth/tokens", {
-          api_key: env.PAYMOB_API_KEY
-        })
-      );
+      const auth = await paymobRequest<{ token: string }>("/auth/tokens", {
+        api_key: env.PAYMOB_API_KEY
+      });
 
-      const order = await retryWithBackoff(
-        () => paymobRequest<{ id: number }>("/ecommerce/orders", {
-          auth_token: auth.token,
-          delivery_needed: false,
-          amount_cents: payment.amountPiasters,
-          currency: payment.currency,
-          merchant_order_id: payment.id,
-          items: []
-        })
-      );
+      const order = await paymobRequest<{ id: number }>("/ecommerce/orders", {
+        auth_token: auth.token,
+        delivery_needed: false,
+        amount_cents: payment.amountPiasters,
+        currency: payment.currency,
+        merchant_order_id: payment.id,
+        items: []
+      });
 
       await paymentRepository.update(payment.id, {
         paymobOrderId: String(order.id)
       });
 
-      const paymentKey = await retryWithBackoff(
-        () => paymobRequest<{ token: string }>("/acceptance/payment_keys", {
-          auth_token: auth.token,
-          amount_cents: payment.amountPiasters,
-          expiration: 3600,
-          order_id: order.id,
-          billing_data: {
-            apartment: "NA",
-            email: student.email,
-            floor: "NA",
-            first_name: student.fullName.split(" ")[0] ?? student.fullName,
-            street: "NA",
-            building: "NA",
-            phone_number: "NA",
-            shipping_method: "NA",
-            postal_code: "NA",
-            city: "Cairo",
-            country: "EG",
-            last_name: student.fullName.split(" ").slice(1).join(" ") || student.fullName,
-            state: "Cairo"
-          },
-          currency: payment.currency,
-          integration_id: Number(env.PAYMOB_INTEGRATION_ID)
-        })
-      );
+      const paymentKey = await paymobRequest<{ token: string }>("/acceptance/payment_keys", {
+        auth_token: auth.token,
+        amount_cents: payment.amountPiasters,
+        expiration: 3600,
+        order_id: order.id,
+        billing_data: {
+          apartment: "NA",
+          email: student.email,
+          floor: "NA",
+          first_name: student.fullName.split(" ")[0] ?? student.fullName,
+          street: "NA",
+          building: "NA",
+          phone_number: "NA",
+          shipping_method: "NA",
+          postal_code: "NA",
+          city: "Cairo",
+          country: "EG",
+          last_name: student.fullName.split(" ").slice(1).join(" ") || student.fullName,
+          state: "Cairo"
+        },
+        currency: payment.currency,
+        integration_id: Number(env.PAYMOB_INTEGRATION_ID)
+      });
 
       return {
         paymentKey: paymentKey.token,
@@ -324,11 +266,37 @@ export const paymentService = {
         await paymentRepository.update(payment.id, {
           status: "FAILED",
           errorCode: error.code,
-          errorMessage: error.message,
-          errorDetails: { originalError: error.toString() } as any
+          errorMessage: error.message
         });
       }
       throw error;
+    }
+  },
+
+  async createPaymobOrderWithRetry(userId: string, couponCode?: string, packageId?: string) {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+
+    const isRetryableError = (error: unknown): boolean => {
+      if (!(error instanceof PaymentError)) return false;
+      const retryableCodes = ["PAYMOB_SERVER_ERROR", "PAYMOB_TIMEOUT", "PAYMOB_RATE_LIMITED"];
+      return retryableCodes.includes(error.code);
+    };
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        return await this.createPaymobOrder(userId, couponCode, packageId);
+      } catch (error) {
+        const isRetryable = isRetryableError(error);
+        const isLastAttempt = attempt === MAX_RETRIES;
+
+        if (!isRetryable || isLastAttempt) {
+          throw error;
+        }
+
+        const delay = RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
     }
   },
 
