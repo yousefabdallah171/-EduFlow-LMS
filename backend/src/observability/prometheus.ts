@@ -5,7 +5,7 @@ import { env } from "../config/env.js";
 
 const enabled = env.PROMETHEUS_METRICS_ENABLED;
 
-const registry = new client.Registry();
+export const registry = new client.Registry();
 client.collectDefaultMetrics({ register: registry });
 
 const httpDurationMs = new client.Histogram({
