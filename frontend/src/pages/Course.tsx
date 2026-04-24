@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { demoLessons, isDemoMode } from "@/lib/demo";
 import { formatDate, pickLocalizedText, resolveLocale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
@@ -58,13 +59,15 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
   const navigate = useNavigate();
 
   const courseQuery = useQuery({
-    queryKey: ["course-summary"],
+    queryKey: ["course"],
     retry: false,
     refetchOnWindowFocus: false,
     queryFn: async () => {
       const response = await api.get<CourseInfo>("/course");
       return response.data;
-    }
+    },
+    staleTime: CACHE_TIME.MEDIUM,
+    gcTime: getGCTime(CACHE_TIME.MEDIUM)
   });
 
   const course = courseQuery.data;

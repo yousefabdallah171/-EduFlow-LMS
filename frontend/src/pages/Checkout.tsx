@@ -34,7 +34,7 @@ export const Checkout = () => {
   const [couponOpen, setCouponOpen] = useState(false);
 
   const courseQuery = useQuery({
-    queryKey: ["course-summary"],
+    queryKey: ["course"],
     queryFn: async () => {
       const response = await api.get<{
         priceEgp: number;

@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { formatClockDuration, pickLocalizedText, resolveLocale } from "@/lib/locale";
 
 type PreviewLesson = {
@@ -65,13 +66,15 @@ export const Preview = () => {
   });
 
   const courseQuery = useQuery({
-    queryKey: ["course-summary-public"],
+    queryKey: ["course"],
     retry: false,
     refetchOnWindowFocus: false,
     queryFn: async () => {
       const response = await api.get<CourseInfo>("/course");
       return response.data;
-    }
+    },
+    staleTime: CACHE_TIME.MEDIUM,
+    gcTime: getGCTime(CACHE_TIME.MEDIUM)
   });
 
   useEffect(() => {

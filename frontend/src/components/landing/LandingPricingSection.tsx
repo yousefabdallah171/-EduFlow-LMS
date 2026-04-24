@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/lib/api";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { resolveLocale } from "@/lib/locale";
 
 type PricingCard = {
@@ -44,12 +45,13 @@ export const LandingPricingSection = ({
   const trust = t("landing.pricing.trust", { returnObjects: true }) as string[];
 
   const courseQuery = useQuery({
-    queryKey: ["course-public"],
+    queryKey: ["course"],
     queryFn: async () => {
       const response = await api.get<{ packages?: CoursePackage[] }>("/course");
       return response.data;
     },
-    staleTime: 60_000
+    staleTime: CACHE_TIME.MEDIUM,
+    gcTime: getGCTime(CACHE_TIME.MEDIUM)
   });
 
   const packages = courseQuery.data?.packages ?? [];
