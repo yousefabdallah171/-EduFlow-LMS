@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { resolveLocale } from "@/lib/locale";
 
@@ -49,7 +50,9 @@ export const Checkout = () => {
         }>;
       }>("/course");
       return response.data;
-    }
+    },
+    staleTime: CACHE_TIME.MEDIUM,
+    gcTime: getGCTime(CACHE_TIME.MEDIUM)
   });
 
   const couponPreview = validateCoupon.data;
