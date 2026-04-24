@@ -1,4 +1,4 @@
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useMemo, useEffect, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -10,19 +10,22 @@ import {
   Sparkles,
   TimerReset
 } from "lucide-react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { useEnrollment } from "@/hooks/useEnrollment";
+import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { resolveLocale } from "@/lib/locale";
 
 export const Checkout = () => {
   const { locale } = useParams();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user, isAuthReady } = useAuth();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const { t, i18n } = useTranslation();
   const isAr = resolveLocale(i18n.language) === "ar";
@@ -31,6 +34,12 @@ export const Checkout = () => {
   const [couponInput, setCouponInput] = useState("");
   const [message, setMessage] = useState("");
   const [couponOpen, setCouponOpen] = useState(false);
+
+  useEffect(() => {
+    if (isAuthReady && !user) {
+      navigate(`${prefix}/login?redirect=${prefix}/checkout`, { replace: true });
+    }
+  }, [isAuthReady, user, navigate, prefix]);
 
   const courseQuery = useQuery({
     queryKey: ["course-summary"],
@@ -110,6 +119,17 @@ export const Checkout = () => {
     t("checkout.decisionBullets.activation"),
     t("checkout.decisionBullets.questions")
   ];
+
+  if (!isAuthReady) {
+    return (
+      <div className="dashboard-page flex min-h-dvh items-center justify-center px-6 py-12" style={{ backgroundColor: "var(--color-page)" }}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500" />
+          <p style={{ color: "var(--color-text-secondary)" }}>{t("common.loading")}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isAlreadyEnrolled) {
     return (

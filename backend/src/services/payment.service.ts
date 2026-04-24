@@ -137,6 +137,19 @@ export const paymentService = {
       throw new PaymentError("ALREADY_ENROLLED", 409, "Student is already enrolled.");
     }
 
+    const pendingPayment = await paymentRepository.findPendingByUserId(userId);
+    if (pendingPayment.length > 0) {
+      const oldestPending = pendingPayment[0];
+      const minutesOld = (Date.now() - oldestPending.createdAt.getTime()) / 1000 / 60;
+      if (minutesOld < 30) {
+        throw new PaymentError(
+          "CHECKOUT_IN_PROGRESS",
+          409,
+          "You already have a pending checkout. Please wait 30 minutes or complete that payment first."
+        );
+      }
+    }
+
     const coursePackage = await this.getCheckoutPackage(packageId);
 
     const payment = await prisma.$transaction(async (db) => {
