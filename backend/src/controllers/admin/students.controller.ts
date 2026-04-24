@@ -266,7 +266,7 @@ export const adminStudentsController = {
               }
             }),
         prisma.user.count({ where }),
-        lessonService.getPublishedLessonCount()
+        lessonService.getPublishedLessonCount(req)
       ]);
 
       res.json({
@@ -357,7 +357,7 @@ export const adminStudentsController = {
             }
           }
         }),
-        lessonService.getPublishedLessonCount()
+        lessonService.getPublishedLessonCount(req)
       ]);
 
       if (!student) {

@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import type { VideoStatus } from "@prisma/client";
+import type { Request } from "express";
 
 import { redis } from "../config/redis.js";
 import { env } from "../config/env.js";
@@ -187,25 +188,40 @@ export const lessonService = {
     return payload;
   },
 
-  async getPublishedLessonCount(): Promise<number> {
+  async getPublishedLessonCount(req?: Request): Promise<number> {
+    const cacheKey = "publishedLessonCount";
+
+    // PERFORMANCE: Check request-level cache first (per-request memoization)
+    if (req?.cache?.has(cacheKey)) {
+      return req.cache.get(cacheKey);
+    }
+
+    // Check Redis cache
     try {
       const cached = await redis.get(publishedLessonCountCacheKey);
       if (cached !== null) {
+        const count = parseInt(cached, 10);
+        if (req?.cache) req.cache.set(cacheKey, count);
         prometheus.recordCacheHit("lesson_count");
-        return parseInt(cached, 10);
+        return count;
       }
     } catch {
       // ignore redis failures
     }
     prometheus.recordCacheMiss("lesson_count");
 
+    // Database query
     const count = await prisma.lesson.count({ where: { isPublished: true } });
 
+    // Cache in Redis
     try {
       await redis.set(publishedLessonCountCacheKey, String(count), "EX", LESSONS_CACHE_TTL_SECONDS);
     } catch {
       // ignore redis failures
     }
+
+    // Cache in request
+    if (req?.cache) req.cache.set(cacheKey, count);
 
     return count;
   },
