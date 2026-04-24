@@ -1,8 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
-import { prisma } from "../config/database.js";
 import { env } from "../config/env.js";
-import { sendTicketCreatedEmail } from "../utils/email.js";
+import { sendBrandedEmail } from "../utils/email.js";
 
 const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -25,42 +24,31 @@ async function submit(req: Request, res: Response, next: NextFunction) {
 
     const { name, email, message } = result.data;
 
-    // Find or create user by email
-    let user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email,
-          fullName: name,
-          passwordHash: "", // Contact form users don't have passwords initially
-          role: "STUDENT",
-          emailVerified: false
-        }
-      });
-    }
-
-    // Create support ticket
-    const ticket = await prisma.supportTicket.create({
-      data: {
-        userId: user.id,
-        subject: message.substring(0, 100), // First 100 chars as subject
-        messages: {
-          create: {
-            senderId: user.id,
-            body: message
-          }
-        }
-      },
-      include: { messages: true }
-    });
+    // SECURITY: Only send email to support team, don't create user account or database records
+    // Contact form is public-facing and should not auto-enroll users
+    const supportEmail = process.env.SUPPORT_EMAIL || process.env.SMTP_FROM || process.env.SMTP_USER || env.SMTP_USER;
 
     try {
-      await sendTicketCreatedEmail(user.email, user.fullName, ticket.id, ticket.subject, message, `${env.FRONTEND_URL}/help`);
+      await sendBrandedEmail(
+        supportEmail,
+        `New Contact Form Submission from ${name}`,
+        "New Contact Message",
+        `
+          <h2>Contact Form Submission</h2>
+          <p><strong>From:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Message:</strong></p>
+          <p>${message.replace(/\n/g, "<br>")}</p>
+          <div class="divider"></div>
+          <p class="muted">Reply directly to this email to contact the sender.</p>
+        `,
+        { replyTo: email }
+      );
     } catch {
-      // Ignore email failures - not critical to ticket submission
+      // Ignore email failures - non-critical
     }
 
-    res.json({ ok: true, ticketId: ticket.id });
+    res.json({ ok: true });
   } catch (error) {
     next(error);
   }
