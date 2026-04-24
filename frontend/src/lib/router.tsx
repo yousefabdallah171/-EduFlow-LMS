@@ -3,7 +3,6 @@ import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "re
 
 import { SkeletonFullPage } from "@/components/skeletons";
 import { isAccessTokenExpiringSoon, refreshAccessToken } from "@/lib/api";
-import { isDemoMode } from "@/lib/demo";
 import { hasStoredRefreshFlag, useAuthStore } from "@/stores/auth.store";
 
 const Landing = lazy(async () => import("@/pages/Landing").then((module) => ({ default: module.Landing })));
@@ -179,7 +178,6 @@ const RequireRole = ({ role, children }: { role: "ADMIN" | "STUDENT"; children: 
   const location = useLocation();
   const { isAuthReady, user } = useAuthStore();
   const prefix = getLocalePrefix(location.pathname);
-  const demo = isDemoMode();
   const [isRecoveringSession, setIsRecoveringSession] = useState(false);
   const recoveryPathRef = useRef<string | null>(null);
 
@@ -202,10 +200,6 @@ const RequireRole = ({ role, children }: { role: "ADMIN" | "STUDENT"; children: 
       setIsRecoveringSession(false);
     });
   }, [isAuthReady, location.pathname, user]);
-
-  if (demo && role === "STUDENT") {
-    return children;
-  }
 
   if (!isAuthReady || isRecoveringSession) {
     return (
