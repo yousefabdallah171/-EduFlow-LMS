@@ -6,6 +6,7 @@ import { adminCouponsController } from "../controllers/admin/coupons.controller.
 import { adminLessonsController } from "../controllers/admin/lessons.controller.js";
 import { adminNotificationsController } from "../controllers/admin/notifications.controller.js";
 import { adminOrdersController } from "../controllers/admin/orders.controller.js";
+import { adminPaymentsController } from "../controllers/admin/payments.controller.js";
 import { adminPricingController } from "../controllers/admin/pricing.controller.js";
 import { adminSettingsController } from "../controllers/admin/settings.controller.js";
 import { adminStudentsController, verifyAdminCanAccessStudent } from "../controllers/admin/students.controller.js";
@@ -69,6 +70,15 @@ router.delete("/uploads/:id", adminUploadsController.remove);
 router.get("/analytics", adminAnalyticsController.analytics);
 router.get("/payments", adminAnalyticsController.payments);
 router.post("/payments/:paymentId/mark-paid", adminAnalyticsController.markPaid);
+
+// Payment Management (admin)
+router.get("/payments/search", adminPaymentsController.searchPayments);
+router.get("/payments/stats", adminPaymentsController.getPaymentStats);
+router.get("/payments/status/:status", adminPaymentsController.getPaymentsByStatus);
+router.get("/payments/:paymentId", adminPaymentsController.getPaymentDetail);
+router.post("/payments/manual", adminPaymentsController.createManualPayment);
+router.post("/payments/:paymentId/override", adminPaymentsController.overridePaymentStatus);
+router.post("/payments/:paymentId/revoke", adminPaymentsController.revokePayment);
 
 // Orders
 router.get("/orders/export-csv", adminOrdersController.exportCsv);
