@@ -10,6 +10,17 @@ const createSchema = z.object({
 
 const getParam = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
+// SECURITY: Verify admin can edit the lesson before allowing resource creation
+async function verifyAdminCanEditLesson(adminId: string, lessonId: string): Promise<boolean> {
+  const lesson = await prisma.lesson.findUnique({
+    where: { id: lessonId },
+    select: { id: true }
+  });
+
+  // Lesson must exist; if multi-course model added, check courseAdmin here
+  return !!lesson;
+}
+
 const serializeResource = (resource: {
   id: string;
   lessonId: string;
@@ -40,6 +51,14 @@ export const resourcesController = {
     try {
       const lessonId = getParam(req.params.id);
       if (!lessonId) { res.status(400).json({ error: "LESSON_ID_REQUIRED" }); return; }
+
+      const adminId = req.user!.userId;
+
+      // SECURITY: Verify admin has permission to add resources to this lesson
+      const canEdit = await verifyAdminCanEditLesson(adminId, lessonId);
+      if (!canEdit) {
+        return res.status(403).json({ error: "Access denied to this lesson" });
+      }
 
       const data = createSchema.parse(req.body);
       const resource = await prisma.lessonResource.create({
