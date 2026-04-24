@@ -18,11 +18,13 @@ import { studentRoutes } from "./routes/student.routes.js";
 import { prometheus } from "./observability/prometheus.js";
 import { sentry } from "./observability/sentry.js";
 import { telemetryService } from "./services/telemetry.service.js";
+import { sendError } from "./utils/api-response.js";
 import {
   setupQueueErrorHandlers,
   setupWebhookRetryProcessor,
   setupEmailQueueProcessor,
-  setupFailedPaymentRecoveryProcessor
+  setupFailedPaymentRecoveryProcessor,
+  setupRefundProcessor
 } from "./jobs/index.js";
 
 export const createApp = () => {
@@ -119,6 +121,7 @@ export const createApp = () => {
   setupWebhookRetryProcessor();
   setupEmailQueueProcessor();
   setupFailedPaymentRecoveryProcessor();
+  setupRefundProcessor();
   console.log("[App] Job queue processors initialized");
 
   app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -128,10 +131,7 @@ export const createApp = () => {
       env.NODE_ENV === "production"
         ? "Something went wrong. Please try again."
         : err.message;
-    res.status(500).json({
-      error: "INTERNAL_SERVER_ERROR",
-      message
-    });
+    sendError(res, "INTERNAL_ERROR", message);
   });
 
   return app;

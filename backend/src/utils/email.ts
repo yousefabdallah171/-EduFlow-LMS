@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 
 import { env } from "../config/env.js";
+import { createSafeEmailOptions } from "./email-validation.js";
 
 const BRAND_NAME = process.env.BRAND_NAME || "Yousef Abdallah Course";
 const BRAND_PRIMARY = "#a3e635";
@@ -120,11 +121,14 @@ export const sendBrandedEmail = async (
   const currentTransporter = getTransporter();
   const fromUser = process.env.SMTP_USER || env.SMTP_USER;
   const from = process.env.SMTP_FROM || `${BRAND_NAME} <${fromUser}>`;
+
+  const safeOptions = createSafeEmailOptions(to, subject, { replyTo: options?.replyTo, from });
+
   await currentTransporter.sendMail({
-    from,
-    replyTo: options?.replyTo,
-    to,
-    subject,
+    from: safeOptions.from || from,
+    replyTo: safeOptions.replyTo,
+    to: safeOptions.to,
+    subject: safeOptions.subject,
     html: getEmailTemplate(title, bodyHtml, options?.preheader)
   });
 };

@@ -2,10 +2,13 @@ import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import { env } from "../config/env.js";
 import { sendBrandedEmail } from "../utils/email.js";
+import { validateEmail } from "../utils/email-validation.js";
+
+const emailSchema = z.string().max(255).refine(validateEmail, "Invalid email address");
 
 const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email address"),
+  email: emailSchema,
   message: z.string().min(1, "Message is required")
 });
 
