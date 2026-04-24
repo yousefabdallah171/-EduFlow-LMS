@@ -14,6 +14,7 @@ import { adminVideoSecurityController } from "../controllers/admin/video-securit
 import * as sectionsController from "../controllers/admin/sections.controller.js";
 import { resourcesController as adminResourcesController } from "../controllers/resources.controller.js";
 import { ticketsController } from "../controllers/tickets.controller.js";
+import { adminRecoveryController } from "../controllers/admin-recovery.controller.js";
 import { auditMiddleware } from "../middleware/audit.middleware.js";
 import { requireRole } from "../middleware/rbac.middleware.js";
 import { adminSearchRateLimit } from "../middleware/rate-limit.middleware.js";
@@ -88,11 +89,20 @@ router.get("/tickets", requireRole("ADMIN"), ticketsController.listAll);
 router.patch("/tickets/:id/status", requireRole("ADMIN"), ticketsController.updateStatus);
 router.post("/tickets/:id/reply", requireRole("ADMIN"), ticketsController.reply);
 
+// Payment recovery (admin only)
+router.get("/payments/:paymentId/recovery/status", requireRole("ADMIN"), adminRecoveryController.getRecoveryStatus);
+router.post("/payments/:paymentId/recovery/override", requireRole("ADMIN"), adminRecoveryController.overridePaymentStatus);
+router.post("/payments/:paymentId/recovery/retry", requireRole("ADMIN"), adminRecoveryController.retryPayment);
+router.post("/payments/:paymentId/recovery/cancel", requireRole("ADMIN"), adminRecoveryController.cancelPayment);
+router.post("/payments/:paymentId/recovery/reconcile", requireRole("ADMIN"), adminRecoveryController.reconcileWithPaymob);
+router.get("/payments/:paymentId/recovery/audit-log", requireRole("ADMIN"), adminRecoveryController.getAuditLog);
+
 // Settings
 router.get("/settings/course", adminSettingsController.getCourse);
 router.patch("/settings/course", adminSettingsController.updateCourse);
 router.get("/settings/system", adminSettingsController.getSystem);
-router.patch("/settings/system", adminSettingsController.updateSystem);
+// SECURITY: Dynamic system configuration disabled - use environment variables instead
+// router.patch("/settings/system", adminSettingsController.updateSystem);
 
 // Notification templates
 router.get("/notifications/templates", adminNotificationsController.list);
