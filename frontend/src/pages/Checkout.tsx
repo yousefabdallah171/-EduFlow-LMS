@@ -65,10 +65,30 @@ export const Checkout = () => {
   const isAlreadyEnrolled = statusQuery.data?.enrolled && statusQuery.data?.status === "ACTIVE";
 
   const packages = courseQuery.data?.packages ?? [];
-  const selectedPackageId = searchParams.get("package") ?? packages[0]?.id;
+  const selectedPackageId = useMemo(() => {
+    const urlPackage = searchParams.get("package");
+    if (urlPackage) return urlPackage;
+    try {
+      const savedPackage = localStorage.getItem("selectedPackage");
+      if (savedPackage && packages.some((p) => p.id === savedPackage)) return savedPackage;
+    } catch {
+      // ignore localStorage errors
+    }
+    return packages[0]?.id;
+  }, [searchParams, packages]);
+
   const selectedPackage = packages.find((coursePackage) => coursePackage.id === selectedPackageId) ?? packages[0];
   const basePrice = selectedPackage?.priceEgp ?? courseQuery.data?.priceEgp ?? 1000;
   const currency = selectedPackage?.currency ?? courseQuery.data?.currency ?? "EGP";
+
+  const handleSelectPackage = (packageId: string) => {
+    try {
+      localStorage.setItem("selectedPackage", packageId);
+    } catch {
+      // ignore localStorage errors
+    }
+    setSearchParams({ package: packageId });
+  };
 
   const priceLabel = useMemo(() => {
     if (couponPreview?.valid) return `${couponPreview.discountedAmountEgp.toFixed(2)} ${currency}`;
@@ -194,7 +214,7 @@ export const Checkout = () => {
                           backgroundColor: active ? "var(--color-brand-muted)" : "var(--color-surface-2)",
                           borderColor: active ? "var(--color-brand)" : "var(--color-border)"
                         }}
-                        onClick={() => setSearchParams({ package: coursePackage.id })}
+                        onClick={() => handleSelectPackage(coursePackage.id)}
                         type="button"
                       >
                         <p className="text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>
