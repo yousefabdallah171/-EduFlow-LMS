@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { prisma } from "../config/database.js";
+import { ROLES, ENROLLMENT_STATUS, PAYMENT_STATUS } from "../constants/index.js";
 import { analyticsService } from "../services/analytics.service.js";
 import { deduplicationMiddleware } from "../middleware/deduplication.middleware.js";
 
@@ -13,9 +14,9 @@ router.get(
     try {
       const [kpis, totalStudents, totalRevenue, activeEnrollments, recentEnrollments] = await Promise.all([
         analyticsService.calculateKPIs("30d"),
-        prisma.user.count({ where: { role: "STUDENT" } }),
-        prisma.payment.aggregate({ where: { status: "COMPLETED" }, _sum: { amountPiasters: true } }),
-        prisma.enrollment.count({ where: { status: "ACTIVE" } }),
+        prisma.user.count({ where: { role: ROLES.STUDENT } }),
+        prisma.payment.aggregate({ where: { status: PAYMENT_STATUS.COMPLETED }, _sum: { amountPiasters: true } }),
+        prisma.enrollment.count({ where: { status: ENROLLMENT_STATUS.ACTIVE } }),
         prisma.enrollment.findMany({
           orderBy: { enrolledAt: "desc" },
           take: 10,

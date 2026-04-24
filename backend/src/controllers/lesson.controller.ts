@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { env } from "../config/env.js";
 import { prisma } from "../config/database.js";
+import { ENROLLMENT_STATUS } from "../constants/index.js";
 import { enrollmentRepository } from "../repositories/enrollment.repository.js";
 import { lessonRepository } from "../repositories/lesson.repository.js";
 import { userRepository } from "../repositories/user.repository.js";
@@ -80,7 +81,7 @@ const rewritePlaylist = (playlist: string, lessonId: string, token: string) => {
 
 const resolveLessonAccess = async (userId: string, lessonId: string) => {
   const enrollment = await enrollmentRepository.findByUserId(userId);
-  if (!enrollment || enrollment.status !== "ACTIVE") {
+  if (!enrollment || enrollment.status !== ENROLLMENT_STATUS.ACTIVE) {
     throw new VideoTokenError("NOT_ENROLLED", 403, "Enrollment required.");
   }
 
@@ -149,7 +150,7 @@ export const lessonController = {
   async getAllLessonsGrouped(req: Request, res: Response, next: NextFunction) {
     try {
       const enrollment = await enrollmentRepository.findByUserId(req.user!.userId);
-      if (!enrollment || enrollment.status !== "ACTIVE") {
+      if (!enrollment || enrollment.status !== ENROLLMENT_STATUS.ACTIVE) {
         res.status(403).json({ error: "NOT_ENROLLED" });
         return;
       }
@@ -236,7 +237,7 @@ export const lessonController = {
   async list(req: Request, res: Response, next: NextFunction) {
     try {
       const enrollment = await enrollmentRepository.findByUserId(req.user!.userId);
-      if (!enrollment || enrollment.status !== "ACTIVE") {
+      if (!enrollment || enrollment.status !== ENROLLMENT_STATUS.ACTIVE) {
         res.status(403).json({ error: "NOT_ENROLLED" });
         return;
       }
