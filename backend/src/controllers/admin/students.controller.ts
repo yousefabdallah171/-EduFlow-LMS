@@ -332,7 +332,11 @@ export const adminStudentsController = {
         return;
       }
 
-      const [student, totalPublishedLessons] = await Promise.all([
+      const page = Math.max(0, parseInt(firstQueryValue(req.query.page) as string) || 0);
+      const limit = 50;
+      const skip = page * limit;
+
+      const [student, totalPublishedLessons, totalProgressCount] = await Promise.all([
         prisma.user.findFirst({
           where: {
             id: studentId,
@@ -344,6 +348,8 @@ export const adminStudentsController = {
             },
             lessonProgress: {
               orderBy: { updatedAt: "desc" },
+              take: limit,
+              skip,
               include: {
                 lesson: {
                   select: {
@@ -357,7 +363,8 @@ export const adminStudentsController = {
             }
           }
         }),
-        lessonService.getPublishedLessonCount(req)
+        lessonService.getPublishedLessonCount(req),
+        prisma.lessonProgress.count({ where: { userId: studentId } })
       ]);
 
       if (!student) {
@@ -376,7 +383,13 @@ export const adminStudentsController = {
           watchTimeSeconds: progress.watchTimeSeconds,
           completedAt: progress.completedAt,
           updatedAt: progress.updatedAt
-        }))
+        })),
+        progressPagination: {
+          page,
+          limit,
+          total: totalProgressCount,
+          pages: Math.ceil(totalProgressCount / limit)
+        }
       });
     } catch (error) {
       next(error);
