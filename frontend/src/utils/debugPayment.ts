@@ -69,9 +69,9 @@ class PaymentDebugger {
    */
   private setupNetworkInterception(): void {
     const originalFetch = window.fetch;
+    const self = this;
 
-    window.fetch = async (...args: any[]) => {
-      const [resource, config] = args;
+    const newFetch = async (resource: any, config?: any) => {
       const url = typeof resource === "string" ? resource : resource.url;
 
       // Only monitor API calls
@@ -79,18 +79,18 @@ class PaymentDebugger {
         const startTime = performance.now();
 
         try {
-          const response = await originalFetch.apply(window, args);
+          const response = await originalFetch(resource, config);
           const elapsed = performance.now() - startTime;
 
           // Log payment-related API calls
           if (url.includes("payment") || url.includes("checkout")) {
-            this.log("api", `${config?.method || "GET"} ${url}`, {
+            self.log("api", `${config?.method || "GET"} ${url}`, {
               status: response.status,
               duration: `${elapsed.toFixed(2)}ms`
             });
 
             // Store request info
-            this.state.networkRequests.set(url, {
+            self.state.networkRequests.set(url, {
               method: config?.method || "GET",
               status: response.status,
               duration: elapsed,
@@ -101,7 +101,7 @@ class PaymentDebugger {
           return response;
         } catch (error) {
           const elapsed = performance.now() - startTime;
-          this.log("error", `${config?.method || "GET"} ${url} failed`, {
+          self.log("error", `${config?.method || "GET"} ${url} failed`, {
             error: error instanceof Error ? error.message : String(error),
             duration: `${elapsed.toFixed(2)}ms`
           });
@@ -110,8 +110,10 @@ class PaymentDebugger {
         }
       }
 
-      return originalFetch.apply(window, args);
+      return originalFetch(resource, config);
     };
+
+    (window.fetch as any) = newFetch;
   }
 
   /**

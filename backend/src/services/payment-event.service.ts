@@ -1,11 +1,11 @@
-import { prisma } from "@/config/database";
+import { prisma } from "../config/database.js";
 import {
   PaymentEventDTO,
   PaymentStatus,
   PaymentEventType,
   PaymentLogContext,
-} from "@/types/payment.types";
-import { logger } from "@/observability/logger";
+} from "../types/payment.types.js";
+import { logger } from "../observability/logger.js";
 
 export class PaymentEventService {
   /**
