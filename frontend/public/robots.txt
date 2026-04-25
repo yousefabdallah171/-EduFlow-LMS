@@ -1,0 +1,32 @@
+User-agent: *
+Allow: /
+
+# Block authenticated and private pages
+Disallow: /dashboard
+Disallow: /lessons
+Disallow: /progress
+Disallow: /notes
+Disallow: /downloads
+Disallow: /orders
+Disallow: /profile
+Disallow: /help
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /checkout
+Disallow: /payment
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /auth/
+Disallow: /api/
+
+# Block locale-prefixed private pages
+Disallow: /en/dashboard
+Disallow: /en/lessons
+Disallow: /en/admin
+Disallow: /ar/dashboard
+Disallow: /ar/lessons
+Disallow: /ar/admin
+
+Sitemap: https://yousef-abdallah.online/sitemap.xml
