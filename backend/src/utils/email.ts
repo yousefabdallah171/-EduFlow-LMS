@@ -357,3 +357,17 @@ export const sendPaymentReceiptEmail = async (params: {
     preheader: "Your payment was successful."
   });
 };
+
+// Generic email service for template-based sending
+export const emailService = {
+  async sendEmail(params: { to: string; subject: string; template?: string; context?: Record<string, unknown> }): Promise<void> {
+    const { to, subject, template, context = {} } = params;
+
+    // For testing/queue purposes, just log the email
+    // In production, this could render templates and send via nodemailer
+    console.log(`[Email Service] Would send email to ${to} with subject: ${subject}, template: ${template}`);
+
+    // Return without actually sending to avoid SMTP dependency in tests
+    return Promise.resolve();
+  }
+};

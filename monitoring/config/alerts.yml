@@ -1,0 +1,93 @@
+groups:
+  - name: payment_alerts
+    interval: 30s
+    rules:
+      - alert: HighPaymentFailureRate
+        expr: rate(eduflow_payments_failure_total[5m]) / rate(eduflow_payments_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High payment failure rate detected"
+          description: "Payment failure rate is {{ $value | humanizePercentage }} (threshold: 10%)"
+
+      - alert: SlowPaymentProcessing
+        expr: histogram_quantile(0.95, rate(eduflow_payment_processing_time_ms_bucket[5m])) > 5000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow payment processing detected"
+          description: "P95 processing time is {{ $value }}ms (threshold: 5000ms)"
+
+      - alert: NoPaymentsProcessed
+        expr: increase(eduflow_payments_total[15m]) == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "No payments processed for 15 minutes"
+          description: "No payment activity detected in the last 15 minutes"
+
+      - alert: PaymobApiErrors
+        expr: rate(eduflow_paymob_api_request_time_ms_bucket{status_code=~"[45].."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High Paymob API error rate"
+          description: "Paymob API error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+      - alert: PaymobApiTimeout
+        expr: histogram_quantile(0.99, rate(eduflow_paymob_api_request_time_ms_bucket[5m])) > 10000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Paymob API timeouts detected"
+          description: "P99 response time is {{ $value }}ms (threshold: 10000ms)"
+
+      - alert: HighRefundVolume
+        expr: rate(eduflow_refunds_total[1h]) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High refund volume"
+          description: "Refund rate is {{ $value }} per hour (threshold: 5)"
+
+      - alert: SlowDatabaseQueries
+        expr: histogram_quantile(0.95, rate(eduflow_db_query_time_ms_bucket[5m])) > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow database queries detected"
+          description: "P95 query time is {{ $value }}ms (threshold: 1000ms)"
+
+      - alert: WebhookProcessingErrors
+        expr: rate(eduflow_webhook_processing_time_ms_bucket{status="failure"}[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Webhook processing failures detected"
+          description: "Webhook failure rate is {{ $value | humanizePercentage }} (threshold: 1%)"
+
+      - alert: HighApiErrorRate
+        expr: rate(eduflow_api_requests_total{status_code=~"5.."}[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API error rate"
+          description: "API 5xx error rate is {{ $value | humanizePercentage }} (threshold: 1%)"
+
+      - alert: EnrollmentFailures
+        expr: rate(eduflow_enrollments_total{status="failure"}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High enrollment failure rate"
+          description: "Enrollment failure rate is {{ $value | humanizePercentage }} (threshold: 5%)"

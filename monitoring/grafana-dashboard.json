@@ -1,0 +1,227 @@
+{
+  "dashboard": {
+    "title": "EduFlow Payment Monitoring",
+    "tags": ["payments", "monitoring", "production"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "title": "Payment Success Rate",
+        "targets": [
+          {
+            "expr": "rate(eduflow_payments_success_total[5m]) / rate(eduflow_payments_total[5m])",
+            "legendFormat": "Success Rate"
+          }
+        ],
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "title": "Payment Failure Rate",
+        "targets": [
+          {
+            "expr": "rate(eduflow_payments_failure_total[5m]) / rate(eduflow_payments_total[5m])",
+            "legendFormat": "Failure Rate"
+          }
+        ],
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "title": "Payments by Status (Last 24h)",
+        "targets": [
+          {
+            "expr": "sum(rate(eduflow_payments_total[1d])) by (status)",
+            "legendFormat": "{{ status }}"
+          }
+        ],
+        "type": "piechart",
+        "gridPos": {
+          "x": 0,
+          "y": 8,
+          "w": 8,
+          "h": 8
+        }
+      },
+      {
+        "title": "P95 Payment Processing Time",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(eduflow_payment_processing_time_ms_bucket[5m]))",
+            "legendFormat": "P95"
+          }
+        ],
+        "type": "stat",
+        "gridPos": {
+          "x": 8,
+          "y": 8,
+          "w": 8,
+          "h": 8
+        }
+      },
+      {
+        "title": "Total Payments (24h)",
+        "targets": [
+          {
+            "expr": "increase(eduflow_payments_total[24h])",
+            "legendFormat": "Payments"
+          }
+        ],
+        "type": "stat",
+        "gridPos": {
+          "x": 16,
+          "y": 8,
+          "w": 8,
+          "h": 8
+        }
+      },
+      {
+        "title": "Paymob API Response Time",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(eduflow_paymob_api_request_time_ms_bucket[5m]))",
+            "legendFormat": "P50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(eduflow_paymob_api_request_time_ms_bucket[5m]))",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(eduflow_paymob_api_request_time_ms_bucket[5m]))",
+            "legendFormat": "P99"
+          }
+        ],
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 16,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "title": "Active Payments by Status",
+        "targets": [
+          {
+            "expr": "eduflow_active_payments",
+            "legendFormat": "{{ status }}"
+          }
+        ],
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 16,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "title": "Webhook Processing Failures",
+        "targets": [
+          {
+            "expr": "rate(eduflow_webhook_processing_time_ms_bucket{status=\"failure\"}[5m])",
+            "legendFormat": "{{ webhook_type }}"
+          }
+        ],
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 24,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "title": "Refunds by Type",
+        "targets": [
+          {
+            "expr": "increase(eduflow_refunds_total[24h]) by (refund_type)",
+            "legendFormat": "{{ refund_type }}"
+          }
+        ],
+        "type": "piechart",
+        "gridPos": {
+          "x": 12,
+          "y": 24,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "title": "Database Query Performance",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(eduflow_db_query_time_ms_bucket[5m])) by (operation)",
+            "legendFormat": "{{ operation }}"
+          }
+        ],
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 32,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "title": "Enrollment Operations",
+        "targets": [
+          {
+            "expr": "rate(eduflow_enrollments_total[5m]) by (operation, status)",
+            "legendFormat": "{{ operation }} - {{ status }}"
+          }
+        ],
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 32,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "title": "API Requests (5m Rate)",
+        "targets": [
+          {
+            "expr": "rate(eduflow_api_requests_total[5m]) by (endpoint, status_code)",
+            "legendFormat": "{{ endpoint }} - {{ status_code }}"
+          }
+        ],
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 40,
+          "w": 24,
+          "h": 10
+        }
+      }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 35,
+    "style": "dark",
+    "templating": {
+      "list": [
+        {
+          "name": "time_window",
+          "type": "interval",
+          "options": ["5m", "15m", "1h", "6h", "24h"],
+          "current": {
+            "text": "5m",
+            "value": "5m"
+          }
+        }
+      ]
+    },
+    "uid": "eduflow-payment-monitoring",
+    "version": 1
+  }
+}

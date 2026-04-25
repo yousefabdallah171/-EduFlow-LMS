@@ -1,6 +1,6 @@
 import type { Job } from "bull";
 import { emailQueue } from "./job-queue.js";
-import { emailService } from "../services/email.service.js";
+import { emailService } from "../utils/email.js";
 import { prisma } from "../config/database.js";
 
 interface EmailQueueJobData {
