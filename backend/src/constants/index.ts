@@ -1,5 +1,5 @@
 // Export all constants from this directory
-export * from "./roles";
-export * from "./enrollment";
-export * from "./payment";
-export * from "./auth";
+export * from "./roles.js";
+export * from "./enrollment.js";
+export * from "./payment.js";
+export * from "./auth.js";
