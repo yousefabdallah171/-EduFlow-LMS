@@ -165,7 +165,7 @@ async function recoverFromPaymobError(paymentId: string, failureCode: string): P
         {
           type: "transaction.success",
           obj: paymobPayment
-        } as any,
+        } as Record<string, unknown>,
         "" // HMAC not needed for recovery
       );
 
@@ -193,7 +193,7 @@ async function attemptLateWebhookRecovery(paymentId: string): Promise<boolean> {
     }
 
     // Re-process the webhook payload
-    const result = await paymentService.processWebhook(webhookRetry.payload as any, "");
+    const result = await paymentService.processWebhook(webhookRetry.payload as Record<string, unknown>, "");
 
     if (result.success) {
       console.log(`[Failed Payment Recovery] Late webhook recovery succeeded for payment ${paymentId}`);

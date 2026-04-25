@@ -19,7 +19,7 @@ export function setupWebhookRetryProcessor() {
       console.log(`[Webhook Retry] Processing payment ${paymentId}, attempt ${retryCount + 1}`);
 
       // Attempt to process webhook
-      const result = await paymentService.processWebhook(payload as any, hmac);
+      const result = await paymentService.processWebhook(payload as Record<string, unknown>, hmac);
 
       // Mark as resolved in queue
       await prisma.webhookRetryQueue.update({

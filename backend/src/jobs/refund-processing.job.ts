@@ -14,7 +14,7 @@ interface RefundJobData {
 // Register refund processing job processor
 export function setupRefundProcessor() {
   refundQueue.process(5, async (job: Job<RefundJobData>) => {
-    const { paymentId, refundType, refundAmount, reason, retryCount } = job.data;
+    const { paymentId, retryCount } = job.data;
 
     try {
       console.log(`[Refund Queue] Processing refund ${paymentId}, attempt ${retryCount + 1}`);
