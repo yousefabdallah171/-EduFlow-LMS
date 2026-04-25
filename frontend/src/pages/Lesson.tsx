@@ -15,6 +15,8 @@ import { useVideoToken } from "@/hooks/useVideoToken";
 import { api, queryClient } from "@/lib/api";
 import { demoLessons, isDemoMode } from "@/lib/demo";
 import { pickLocalizedText, resolveLocale } from "@/lib/locale";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 type LessonSummary = {
   id: string;
@@ -342,14 +344,16 @@ export const Lesson = () => {
   );
 
   return (
-    <main
-      className="min-h-dvh px-4 py-6 sm:px-6"
-      style={{
-        backgroundColor: "var(--color-page)",
-        backgroundImage:
-          "radial-gradient(circle at 10% 0%, color-mix(in oklab, var(--color-brand) 12%, transparent), transparent 22rem), radial-gradient(circle at 100% 10%, color-mix(in oklab, var(--color-brand-accent) 12%, transparent), transparent 20rem)"
-      }}
-    >
+    <>
+      <SEO page={SEO_PAGES.lesson} />
+      <main
+        className="min-h-dvh px-4 py-6 sm:px-6"
+        style={{
+          backgroundColor: "var(--color-page)",
+          backgroundImage:
+            "radial-gradient(circle at 10% 0%, color-mix(in oklab, var(--color-brand) 12%, transparent), transparent 22rem), radial-gradient(circle at 100% 10%, color-mix(in oklab, var(--color-brand-accent) 12%, transparent), transparent 20rem)"
+        }}
+      >
       <section className="mx-auto max-w-6xl space-y-5">
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(19rem,0.7fr)]">
           <div className="space-y-5">
@@ -671,6 +675,7 @@ export const Lesson = () => {
           </aside>
         </div>
       </section>
-    </main>
+      </main>
+    </>
   );
 };

@@ -206,4 +206,28 @@ export const SEO_PAGES: Record<string, PageSEO> = {
     canonical: "/404",
     noIndex: true,
   },
+  preview: {
+    titleEn: "Free Preview — Watch Sample Lessons | Yousef Abdallah",
+    titleAr: "معاينة مجانية — شاهد دروساً تجريبية | يوسف عبدالله",
+    descriptionEn: "Watch free preview lessons before enrolling. See the teaching style and course quality first-hand.",
+    descriptionAr: "شاهد دروساً مجانية قبل التسجيل. تعرف على أسلوب التدريس وجودة المحتوى.",
+    canonical: "/preview",
+    ogImage: DEFAULT_OG_IMAGE,
+  },
+  lesson: {
+    titleEn: "Lesson | Yousef Abdallah",
+    titleAr: "الدرس | يوسف عبدالله",
+    descriptionEn: "Course lesson.",
+    descriptionAr: "درس من الدورة.",
+    canonical: "/lessons",
+    noIndex: true,
+  },
+  lessons: {
+    titleEn: "My Lessons | Yousef Abdallah",
+    titleAr: "دروسي | يوسف عبدالله",
+    descriptionEn: "Access your enrolled course lessons.",
+    descriptionAr: "الوصول إلى دروس الدورة المسجّل فيها.",
+    canonical: "/lessons",
+    noIndex: true,
+  },
 };
