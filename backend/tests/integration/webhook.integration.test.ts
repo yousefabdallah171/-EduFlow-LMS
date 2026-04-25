@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { User } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
 
 import { prisma } from "../../src/config/database";
 import { paymentService } from "../../src/services/payment.service";
@@ -279,10 +280,9 @@ describe("Webhook Integration Tests", () => {
       const coupon = await prisma.coupon.create({
         data: {
           code: "TEST_WEBHOOK_COUPON",
-          discountPercent: 10,
-          discountType: "PERCENT",
-          validFrom: new Date(),
-          validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+          discountValue: new Decimal("10.00"),
+          discountType: "PERCENTAGE",
+          expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
         }
       });
 
@@ -297,7 +297,7 @@ describe("Webhook Integration Tests", () => {
         }
       });
 
-      const initialUses = coupon.currentUses;
+      const initialUses = coupon.usesCount;
 
       const webhookPayload = {
         obj: {
@@ -316,7 +316,7 @@ describe("Webhook Integration Tests", () => {
         where: { id: coupon.id }
       });
 
-      expect(updatedCoupon?.currentUses).toBe(initialUses + 1);
+      expect(updatedCoupon?.usesCount).toBe(initialUses + 1);
     });
   });
 

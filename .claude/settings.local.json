@@ -163,7 +163,12 @@
       "Bash(pnpm --filter frontend lint)",
       "Read(//tmp/**)",
       "Bash(npx eslint *)",
-      "Bash(awk '{print $NF}')"
+      "Bash(awk '{print $NF}')",
+      "Skill(code-review:code-review)",
+      "Skill(code-review:code-review:*)",
+      "Bash(command -v gh)",
+      "Bash(npm list *)",
+      "Bash(grep -rn \"= ['\\\\\"][a-zA-Z0-9_]{20,}['\\\\\"]\" /c/Users/Yousef/Desktop/Projects/-EduFlow-LMS/backend/src --include=\"*.ts\")"
     ]
   }
 }
