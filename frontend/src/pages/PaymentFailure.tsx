@@ -2,6 +2,8 @@ import { AlertCircle, ArrowRight, RotateCcw } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { resolveLocale } from "@/lib/locale";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 import {
   getPaymentError,
   shouldShowRetryButton,
@@ -37,6 +39,7 @@ export const PaymentFailure = () => {
 
   return (
     <div className="dashboard-page min-h-dvh px-4 py-12 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
+      <SEO page={SEO_PAGES.paymentFailure} />
       <div className="mx-auto max-w-2xl">
         {/* Error Icon */}
         <div className="mb-8 flex justify-center">

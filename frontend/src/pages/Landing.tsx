@@ -12,6 +12,8 @@ import { LandingTimelineSection } from "@/components/landing/LandingTimelineSect
 import { LandingNumbersSection } from "@/components/landing/LandingNumbersSection";
 import { LandingPricingSection } from "@/components/landing/LandingPricingSection";
 import { LandingFaqSection } from "@/components/landing/LandingFaqSection";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 export const Landing = () => {
   const { locale } = useParams();
@@ -22,6 +24,7 @@ export const Landing = () => {
 
   return (
     <main className="reference-page landing-page">
+      <SEO page={SEO_PAGES.landing} />
       <div className="landing-noise" aria-hidden="true" />
       <div className="reference-shell">
         <LandingHero prefix={prefix} />

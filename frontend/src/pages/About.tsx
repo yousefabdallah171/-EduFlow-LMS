@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 
 import { resolveLocale } from "@/lib/locale";
 import { getPublicTrustCopy } from "@/lib/public-trust-copy";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 export const About = () => {
   const { locale } = useParams();
@@ -12,6 +14,7 @@ export const About = () => {
 
   return (
     <main className="reference-page">
+      <SEO page={SEO_PAGES.about} />
       <div className="reference-shell">
         <header className="reference-hero">
           <span className="reference-badge">

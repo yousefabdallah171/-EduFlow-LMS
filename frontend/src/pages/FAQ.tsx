@@ -6,6 +6,8 @@ import { MessageCircle } from "lucide-react";
 import { contactInfo } from "@/lib/public-page-content";
 import { resolveLocale } from "@/lib/locale";
 import { getPublicTrustCopy } from "@/lib/public-trust-copy";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 export const FAQ = () => {
   const { locale } = useParams();
@@ -21,6 +23,7 @@ export const FAQ = () => {
 
   return (
     <main className="reference-page">
+      <SEO page={SEO_PAGES.faq} />
       <div className="reference-shell reference-shell--narrow">
         <header className="reference-hero">
           <span className="reference-badge">

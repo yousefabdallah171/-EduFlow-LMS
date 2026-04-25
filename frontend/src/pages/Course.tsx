@@ -13,6 +13,8 @@ import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { demoLessons, isDemoMode } from "@/lib/demo";
 import { formatDate, pickLocalizedText, resolveLocale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 type LessonSummary = {
   id: string;
@@ -292,6 +294,7 @@ export const Course = () => {
   return (
     <StudentShell>
       <>
+        <SEO page={SEO_PAGES.course} />
         <PageHeader
           hero
           eyebrow={isEnrolled ? t("course.welcomeBack") : t("course.title")}

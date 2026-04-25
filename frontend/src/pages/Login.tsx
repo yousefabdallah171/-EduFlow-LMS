@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth.store";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 export const Login = () => {
   const { login } = useAuth();
@@ -68,10 +70,12 @@ export const Login = () => {
   };
 
   return (
-    <AuthShell
-      badge={t("auth.login.badge")}
-      title={t("auth.login.title")}
-      subtitle={t("auth.login.subtitle")}
+    <>
+      <SEO page={SEO_PAGES.login} />
+      <AuthShell
+        badge={t("auth.login.badge")}
+        title={t("auth.login.title")}
+        subtitle={t("auth.login.subtitle")}
       highlights={[
         {
           title: t("auth.login.highlight.continue.title"),
@@ -195,5 +199,6 @@ export const Login = () => {
         </a>
       </form>
     </AuthShell>
+    </>
   );
 };

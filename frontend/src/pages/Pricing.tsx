@@ -2,6 +2,8 @@ import { CheckCircle2, Sparkles } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
 import { LandingPricingSection } from "@/components/landing/LandingPricingSection";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 const copy = {
   ar: {
@@ -56,6 +58,7 @@ export const Pricing = () => {
 
   return (
     <main className="reference-page">
+      <SEO page={SEO_PAGES.pricing} />
       <div className="reference-shell">
         <header className="reference-hero">
           <span className="reference-badge">
