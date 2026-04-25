@@ -9,6 +9,33 @@ import { getPublicTrustCopy } from "@/lib/public-trust-copy";
 import { SEO } from "@/components/shared/SEO";
 import { SEO_PAGES } from "@/lib/seo-config";
 
+const staticFaqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What are the prerequisites for this course?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Basic programming knowledge is helpful but not required. The course is designed to be accessible to motivated learners." },
+    },
+    {
+      "@type": "Question",
+      "name": "Do I get lifetime access?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. One payment gives you lifetime access to all course content including future updates." },
+    },
+    {
+      "@type": "Question",
+      "name": "Is there a refund policy?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. We offer refunds as described in our refund policy at yousef-abdallah.online/refund." },
+    },
+    {
+      "@type": "Question",
+      "name": "Is the course available in Arabic?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. The course platform fully supports Arabic and all content is bilingual (English and Arabic)." },
+    },
+  ],
+};
+
 export const FAQ = () => {
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
@@ -23,7 +50,7 @@ export const FAQ = () => {
 
   return (
     <main className="reference-page">
-      <SEO page={SEO_PAGES.faq} />
+      <SEO page={SEO_PAGES.faq} structuredData={staticFaqSchema} />
       <div className="reference-shell reference-shell--narrow">
         <header className="reference-hero">
           <span className="reference-badge">

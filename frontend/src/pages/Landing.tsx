@@ -15,6 +15,35 @@ import { LandingFaqSection } from "@/components/landing/LandingFaqSection";
 import { SEO } from "@/components/shared/SEO";
 import { SEO_PAGES } from "@/lib/seo-config";
 
+const courseSchema = {
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": "Build a Full Production App with AI",
+  "description": "Practical hands-on course: from idea to PRD, design, implementation, security, testing, and deployment.",
+  "provider": {
+    "@type": "Person",
+    "name": "Yousef Abdallah",
+    "url": "https://yousef-abdallah.online/about",
+  },
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "EGP",
+    "availability": "https://schema.org/InStock",
+    "url": "https://yousef-abdallah.online/pricing",
+  },
+  "inLanguage": ["en", "ar"],
+  "educationalLevel": "Intermediate",
+  "url": "https://yousef-abdallah.online/",
+};
+
+const orgSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Yousef Abdallah",
+  "url": "https://yousef-abdallah.online",
+  "knowsAbout": ["Full-Stack Development", "AI-powered development", "React", "Node.js", "TypeScript"],
+};
+
 export const Landing = () => {
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
@@ -24,7 +53,7 @@ export const Landing = () => {
 
   return (
     <main className="reference-page landing-page">
-      <SEO page={SEO_PAGES.landing} />
+      <SEO page={SEO_PAGES.landing} structuredData={[courseSchema, orgSchema]} />
       <div className="landing-noise" aria-hidden="true" />
       <div className="reference-shell">
         <LandingHero prefix={prefix} />
