@@ -34,9 +34,17 @@ export const refundQueue = new Queue("refund-processing", {
   }
 });
 
+export const videoProcessingQueue = new Queue("video-processing", {
+  redis: {
+    host: env.REDIS_HOST || "localhost",
+    port: env.REDIS_PORT ? parseInt(env.REDIS_PORT) : 6379,
+    password: env.REDIS_PASSWORD
+  }
+});
+
 // Event handlers for all queues
 export function setupQueueErrorHandlers() {
-  const queues = [webhookRetryQueue, emailQueue, failedPaymentRecoveryQueue, refundQueue];
+  const queues = [webhookRetryQueue, emailQueue, failedPaymentRecoveryQueue, refundQueue, videoProcessingQueue];
 
   queues.forEach((queue) => {
     queue.on("error", (err) => {
@@ -59,7 +67,7 @@ export function setupQueueErrorHandlers() {
 
 // Graceful shutdown of all queues
 export async function closeAllQueues() {
-  const queues = [webhookRetryQueue, emailQueue, failedPaymentRecoveryQueue, refundQueue];
+  const queues = [webhookRetryQueue, emailQueue, failedPaymentRecoveryQueue, refundQueue, videoProcessingQueue];
 
   for (const queue of queues) {
     try {
@@ -93,6 +101,11 @@ export async function getQueueMetrics() {
       name: refundQueue.name,
       counts: await refundQueue.getJobCounts(),
       paused: await refundQueue.isPaused()
+    },
+    videoProcessing: {
+      name: videoProcessingQueue.name,
+      counts: await videoProcessingQueue.getJobCounts(),
+      paused: await videoProcessingQueue.isPaused()
     }
   };
 }

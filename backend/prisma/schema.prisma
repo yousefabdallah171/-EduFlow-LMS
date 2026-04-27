@@ -39,6 +39,7 @@ enum EnrollmentType {
 }
 
 enum PaymentStatus {
+  PENDING
   INITIATED
   AWAITING_PAYMENT
   WEBHOOK_PENDING
@@ -113,6 +114,21 @@ enum UploadStatus {
   ERROR
 }
 
+enum MediaType {
+  VIDEO
+  IMAGE
+  PDF
+  DOCUMENT
+  OTHER
+}
+
+enum MediaStatus {
+  UPLOADING
+  PROCESSING
+  READY
+  ERROR
+}
+
 model User {
   id                   String           @id @default(uuid())
   email                String           @unique
@@ -145,6 +161,8 @@ model User {
   tickets              SupportTicket[]  @relation("TicketUser")
   ticketMessages       TicketMessage[]  @relation("MessageSender")
   adminAuditLogs       AdminAuditLog[]
+  mediaFilesUploaded   MediaFile[]      @relation("MediaFileUploader")
+  mediaFolders         MediaFolder[]    @relation("MediaFolderCreator")
 }
 
 model RefreshToken {
@@ -266,6 +284,7 @@ model RefundQueue {
   refundType          String            // "FULL" or "PARTIAL"
   refundAmount        Int
   reason              String?
+  paymobRefundId      String?           @unique
 
   retryCount          Int               @default(0)
   maxRetries          Int               @default(3)
@@ -500,6 +519,8 @@ model Lesson {
   dripDays        Int?
   sectionId       String?
   section         Section?         @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  mediaFileId     String?
+  mediaFile       MediaFile?       @relation("LessonVideo", fields: [mediaFileId], references: [id], onDelete: SetNull)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   progress        LessonProgress[]
@@ -512,6 +533,7 @@ model Lesson {
   @@index([isPublished, sortOrder])
   @@index([sectionId, isPublished, sortOrder])
   @@index([isPreview, isPublished])
+  @@index([mediaFileId])
 }
 
 model LessonProgress {
@@ -559,8 +581,12 @@ model VideoUpload {
   status       UploadStatus @default(UPLOADING)
   storagePath  String?
   errorMessage String?
+  mediaFileId  String?
+  mediaFile    MediaFile?   @relation(fields: [mediaFileId], references: [id], onDelete: SetNull)
   createdAt    DateTime     @default(now())
   completedAt  DateTime?
+
+  @@index([mediaFileId])
 }
 
 model CourseSettings {
@@ -592,13 +618,17 @@ model Note {
 }
 
 model LessonResource {
-  id            String   @id @default(uuid())
+  id            String     @id @default(uuid())
   lessonId      String
-  lesson        Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson        Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   title         String
-  fileUrl       String
-  fileSizeBytes BigInt   @default(0)
-  createdAt     DateTime @default(now())
+  fileUrl       String?
+  fileSizeBytes BigInt     @default(0)
+  mediaFileId   String?
+  mediaFile     MediaFile? @relation(fields: [mediaFileId], references: [id], onDelete: SetNull)
+  createdAt     DateTime   @default(now())
+
+  @@index([mediaFileId])
 }
 
 model AuditLog {
@@ -667,4 +697,49 @@ model NotificationTemplate {
   subject   String
   bodyHtml  String
   updatedAt DateTime @updatedAt
+}
+
+model MediaFolder {
+  id          String        @id @default(uuid())
+  name        String
+  parentId    String?
+  parent      MediaFolder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children    MediaFolder[] @relation("FolderTree")
+  files       MediaFile[]
+  createdById String
+  createdBy   User          @relation("MediaFolderCreator", fields: [createdById], references: [id])
+  createdAt   DateTime      @default(now())
+
+  @@index([parentId])
+  @@index([createdById])
+}
+
+model MediaFile {
+  id               String        @id @default(uuid())
+  title            String
+  type             MediaType
+  status           MediaStatus   @default(UPLOADING)
+  originalFilename String
+  storagePath      String?
+  hlsPath          String?
+  durationSeconds  Int?
+  mimeType         String?
+  sizeBytes        BigInt        @default(0)
+  errorMessage     String?
+  folderId         String?
+  folder           MediaFolder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  uploadedById     String
+  uploadedBy       User          @relation("MediaFileUploader", fields: [uploadedById], references: [id])
+  tusUploadId      String?
+  lessonVideo      Lesson[]      @relation("LessonVideo")
+  lessonResources  LessonResource[]
+  videoUploads     VideoUpload[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([folderId])
+  @@index([uploadedById])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
 }

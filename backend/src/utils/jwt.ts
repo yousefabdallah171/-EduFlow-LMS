@@ -17,7 +17,7 @@ export type AccessTokenPayload = BasePayload;
 export type RefreshTokenPayload = BasePayload & { familyId: string; tokenId: string };
 
 export const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
-export const REFRESH_SESSION_WINDOW_DAYS = 30;
+export const REFRESH_SESSION_WINDOW_DAYS = 365;
 export const REFRESH_SESSION_WINDOW_SECONDS = REFRESH_SESSION_WINDOW_DAYS * 24 * 60 * 60;
 export const REFRESH_SESSION_WINDOW_MS = REFRESH_SESSION_WINDOW_SECONDS * 1000;
 export const REFRESH_TOKEN_JWT_LIFETIME_DAYS = 365;

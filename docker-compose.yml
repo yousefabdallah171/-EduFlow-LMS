@@ -62,6 +62,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     networks:
       - eduflow_net
+    ports:
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -76,6 +78,8 @@ services:
     command: redis-server --appendonly yes
     networks:
       - eduflow_net
+    ports:
+      - "6379:6379"
     volumes:
       - redisdata:/data
 

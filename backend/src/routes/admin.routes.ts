@@ -17,6 +17,7 @@ import { resourcesController as adminResourcesController } from "../controllers/
 import { ticketsController } from "../controllers/tickets.controller.js";
 import { adminRecoveryController } from "../controllers/admin-recovery.controller.js";
 import { refundController } from "../controllers/refund.controller.js";
+import { mediaController } from "../controllers/admin/media.controller.js";
 import { auditMiddleware } from "../middleware/audit.middleware.js";
 import { requireRole } from "../middleware/rbac.middleware.js";
 import { adminSearchRateLimit } from "../middleware/rate-limit.middleware.js";
@@ -62,6 +63,8 @@ router.patch("/lessons/:lessonId", adminLessonsController.update);
 router.delete("/lessons/:lessonId", adminLessonsController.remove);
 router.post("/lessons/reorder", adminLessonsController.reorder);
 router.patch("/lessons/:lessonId/preview", adminLessonsController.togglePreview);
+router.post("/lessons/:lessonId/media", adminLessonsController.linkMedia);
+router.delete("/lessons/:lessonId/media", adminLessonsController.unlinkMedia);
 router.get("/lessons/:id/resources", adminResourcesController.list);
 router.post("/lessons/:id/resources", adminResourcesController.create);
 router.delete("/lessons/:id/resources/:resourceId", adminResourcesController.remove);
@@ -70,6 +73,21 @@ router.post("/uploads", adminUploadsController.create);
 router.head("/uploads/:id", adminUploadsController.head);
 router.patch("/uploads/:id", adminUploadsController.patch);
 router.delete("/uploads/:id", adminUploadsController.remove);
+
+// Media Library
+router.get("/media", mediaController.getMediaFiles);
+router.get("/media/:id", mediaController.getMediaFileById);
+router.patch("/media/:id", mediaController.updateMediaFile);
+router.delete("/media/:id", mediaController.deleteMediaFile);
+router.post("/media/move", mediaController.moveMediaFiles);
+
+// Media Folders
+router.get("/media/folders", mediaController.getFolders);
+router.post("/media/folders", mediaController.createFolder);
+router.get("/media/folders/:id", mediaController.getFolderById);
+router.patch("/media/folders/:id", mediaController.updateFolder);
+router.delete("/media/folders/:id", mediaController.deleteFolder);
+
 router.get("/analytics", adminAnalyticsController.analytics);
 router.get("/payments", adminAnalyticsController.payments);
 router.post("/payments/:paymentId/mark-paid", adminAnalyticsController.markPaid);

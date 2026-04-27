@@ -27,7 +27,8 @@ import {
   setupWebhookRetryProcessor,
   setupEmailQueueProcessor,
   setupFailedPaymentRecoveryProcessor,
-  setupRefundProcessor
+  setupRefundProcessor,
+  setupVideoProcessingProcessor
 } from "./jobs/index.js";
 
 export const createApp = () => {
@@ -126,6 +127,7 @@ export const createApp = () => {
   setupEmailQueueProcessor();
   setupFailedPaymentRecoveryProcessor();
   setupRefundProcessor();
+  setupVideoProcessingProcessor();
   console.log("[App] Job queue processors initialized");
 
   app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
