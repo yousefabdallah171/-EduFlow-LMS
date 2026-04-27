@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MediaCard } from "@/components/admin/MediaCard";
 import { FolderTree } from "@/components/admin/FolderTree";
 import { UploadQueue } from "@/components/admin/UploadQueue";
+import { UploadProcessor } from "@/components/admin/UploadProcessor";
 import { FileDropZone } from "@/components/shared/FileDropZone";
 import { api } from "@/lib/api";
 import { useUploadStore } from "@/stores/upload.store";
@@ -152,6 +153,7 @@ export const AdminMediaLibrary = () => {
 
   return (
     <AdminShell title={t("admin.media.title")} description={t("admin.media.desc")}>
+      <UploadProcessor />
       <div className="space-y-6">
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-3">

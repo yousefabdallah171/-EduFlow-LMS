@@ -90,8 +90,15 @@ export const useUploadStore = create<UploadQueueState>((set, get) => ({
     }));
 
     set((state) => ({
-      queue: [...state.queue, ...newItems]
+      queue: [...state.queue, ...newItems],
+      isQueueOpen: true
     }));
+
+    // Start first upload if none active
+    const state = get();
+    if (!state.activeUploadId) {
+      get().startNext();
+    }
   },
 
   updateItemProgress: (id, progress, bytesUploaded) => {
