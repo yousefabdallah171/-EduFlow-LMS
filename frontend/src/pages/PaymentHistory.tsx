@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import { resolveLocale } from "@/lib/locale";
 import { api } from "@/lib/api";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 interface Payment {
   id: string;
@@ -115,6 +117,7 @@ export const PaymentHistory = () => {
 
   return (
     <div className="dashboard-page min-h-dvh px-4 py-10 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
+      <SEO page={SEO_PAGES.paymentHistory} />
       <div className="app-shell app-shell--compact">
         <PageHeader
           title={t("paymentHistory.title")}

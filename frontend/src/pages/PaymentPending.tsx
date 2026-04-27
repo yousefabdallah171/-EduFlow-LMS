@@ -4,6 +4,8 @@ import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { resolveLocale } from "@/lib/locale";
 import { usePaymentStatus } from "@/hooks/usePaymentStatus";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 const MAX_WAIT_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
 const POLL_INTERVAL = 2000; // 2 seconds
@@ -62,6 +64,7 @@ export const PaymentPending = () => {
 
   return (
     <div className="dashboard-page min-h-dvh px-4 py-12 sm:px-6 flex items-center justify-center" style={{ backgroundColor: "var(--color-page)" }}>
+      <SEO page={SEO_PAGES.paymentPending} />
       <div className="mx-auto max-w-2xl w-full">
         <div className="dashboard-panel dashboard-panel--strong p-8 text-center">
           {/* Loading Spinner */}

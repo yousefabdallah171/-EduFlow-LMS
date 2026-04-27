@@ -9,6 +9,8 @@ import { api } from "@/lib/api";
 import { contactInfo } from "@/lib/public-page-content";
 import { getPublicTrustCopy } from "@/lib/public-trust-copy";
 import { useAuthStore } from "@/stores/auth.store";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 export const Contact = () => {
   const { locale } = useParams();
@@ -72,6 +74,7 @@ export const Contact = () => {
 
   return (
     <main className="reference-page">
+      <SEO page={SEO_PAGES.contact} />
       <div className="reference-shell reference-shell--narrow">
         <header className="reference-hero">
           <span className="reference-badge">

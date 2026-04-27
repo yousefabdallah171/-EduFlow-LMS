@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import { AuthShell } from "@/components/shared/AuthShell";
 import { api } from "@/lib/api";
 import { resolveLocale } from "@/lib/locale";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 export const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
@@ -49,7 +51,9 @@ export const VerifyEmail = () => {
   }, [copy.genericError, copy.missingToken, searchParams]);
 
   return (
-    <AuthShell
+    <>
+      <SEO page={SEO_PAGES.verifyEmail} />
+      <AuthShell
       badge={isAr ? "تأكيد الحساب" : "Confirm your account"}
       title={isAr ? "التحقق من البريد الإلكتروني" : "Verify your email address"}
       subtitle={isAr ? "نؤكد ملكية البريد قبل فتح الوصول الكامل للحساب والدورة." : "We confirm your email before unlocking full account and course access."}
@@ -132,6 +136,7 @@ export const VerifyEmail = () => {
           </>
         ) : null}
       </div>
-    </AuthShell>
+      </AuthShell>
+    </>
   );
 };

@@ -12,6 +12,8 @@ import { api } from "@/lib/api";
 import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { resolveLocale } from "@/lib/locale";
 import { useEnrollment } from "@/hooks/useEnrollment";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 interface Section {
   id: string;
@@ -59,6 +61,7 @@ export const Lessons = () => {
   return (
     <StudentShell>
       <>
+        <SEO page={SEO_PAGES.lessons} />
         <PageHeader
           hero
           eyebrow={t("nav.lessons")}

@@ -20,6 +20,8 @@ import { api } from "@/lib/api";
 import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { resolveLocale } from "@/lib/locale";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 export const Checkout = () => {
   const { locale } = useParams();
@@ -151,6 +153,7 @@ export const Checkout = () => {
 
   return (
     <div className="dashboard-page min-h-dvh px-4 py-10 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
+      <SEO page={SEO_PAGES.checkout} />
       <div className="app-shell app-shell--compact">
         <PageHeader
           hero

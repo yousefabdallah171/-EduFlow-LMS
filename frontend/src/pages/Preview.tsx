@@ -12,6 +12,8 @@ import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
 import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { formatClockDuration, pickLocalizedText, resolveLocale } from "@/lib/locale";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 type PreviewLesson = {
   id: string;
@@ -139,6 +141,7 @@ export const Preview = () => {
 
   return (
     <main className="marketing-dark min-h-dvh px-4 py-6 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
+      <SEO page={SEO_PAGES.preview} />
       <section className="app-shell space-y-5">
         <PageHeader
           hero

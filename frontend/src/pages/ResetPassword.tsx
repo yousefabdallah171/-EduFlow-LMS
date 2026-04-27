@@ -8,6 +8,8 @@ import { AuthShell } from "@/components/shared/AuthShell";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import { resolveLocale } from "@/lib/locale";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 export const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -79,9 +81,11 @@ export const ResetPassword = () => {
   };
 
   return (
-    <AuthShell
-      badge={isAr ? "تأمين الحساب" : "Secure your account"}
-      title={t("auth.resetPassword.title")}
+    <>
+      <SEO page={SEO_PAGES.resetPassword} />
+      <AuthShell
+        badge={isAr ? "تأمين الحساب" : "Secure your account"}
+        title={t("auth.resetPassword.title")}
       subtitle={t("auth.resetPassword.subtitle")}
       highlights={[
         {
@@ -234,6 +238,7 @@ export const ResetPassword = () => {
           </button>
         </form>
       )}
-    </AuthShell>
+      </AuthShell>
+    </>
   );
 };

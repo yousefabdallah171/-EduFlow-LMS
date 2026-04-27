@@ -5,6 +5,8 @@ import { AxiosError } from "axios";
 import { useTranslation } from "react-i18next";
 
 import { AuthShell } from "@/components/shared/AuthShell";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 
@@ -34,6 +36,8 @@ export const ForgotPassword = () => {
   };
 
   return (
+    <>
+    <SEO page={SEO_PAGES.forgotPassword} />
     <AuthShell
       badge={t("auth.forgotPassword.badge")}
       title={t("auth.forgotPassword.title")}
@@ -127,5 +131,6 @@ export const ForgotPassword = () => {
         </form>
       )}
     </AuthShell>
+    </>
   );
 };

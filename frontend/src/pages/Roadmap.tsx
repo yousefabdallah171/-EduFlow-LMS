@@ -2,6 +2,8 @@ import { ArrowLeft, CheckCircle2, Cpu, FileText, Layers3, Rocket, Search, Shield
 import { Link, useParams } from "react-router-dom";
 
 import { resolveLocale } from "@/lib/locale";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 const phaseIcons = [FileText, Layers3, Cpu, TestTube2, ShieldCheck, Search, Rocket] as const;
 
@@ -59,6 +61,7 @@ export const Roadmap = () => {
 
   return (
     <main className="reference-page">
+      <SEO page={SEO_PAGES.roadmap} />
       <div className="reference-shell reference-shell--narrow">
         <header className="reference-hero">
           <span className="reference-badge">

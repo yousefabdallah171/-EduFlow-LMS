@@ -1,3 +1,5 @@
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 import { type FormEvent, useMemo, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Link, Navigate, useParams } from "react-router-dom";
@@ -74,6 +76,8 @@ export const Register = () => {
   }
 
   return (
+    <>
+    <SEO page={SEO_PAGES.register} />
     <AuthShell
       badge={isAr ? "ابدأ رحلتك" : "Start your journey"}
       title={t("auth.register.title")}
@@ -252,5 +256,6 @@ export const Register = () => {
         </form>
       )}
     </AuthShell>
+    </>
   );
 };
