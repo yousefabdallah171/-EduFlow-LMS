@@ -47,6 +47,7 @@ services:
       cd /app/backend &&
       pnpm prisma generate &&
       pnpm prisma migrate deploy --schema prisma/schema.prisma &&
+      pnpm prisma db push --schema prisma/schema.prisma --skip-generate --accept-data-loss &&
       pnpm prisma:seed &&
       pnpm dev"
     ports:
@@ -67,6 +68,7 @@ services:
       cd /app/backend &&
       pnpm prisma generate &&
       pnpm prisma migrate deploy --schema prisma/schema.prisma &&
+      pnpm prisma db push --schema prisma/schema.prisma --skip-generate --accept-data-loss &&
       pnpm prisma:seed"
     depends_on:
       - postgres

@@ -52,7 +52,7 @@ type UploadQueueState = {
 };
 
 const detectMediaType = (file: File): MediaType => {
-  const mimeType = file.type.toLowerCase();
+  const mimeType = String(file.type ?? "").toLowerCase();
 
   if (mimeType.startsWith("video/")) return MediaType.VIDEO;
   if (mimeType.startsWith("image/")) return MediaType.IMAGE;

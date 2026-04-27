@@ -39,7 +39,24 @@ const envSchema = z.object({
   CACHE_TTL_VIDEO_TOKEN_SECONDS: z.coerce.number().int().positive().default(5 * 60),
   CACHE_TTL_VIDEO_PREVIEW_SECONDS: z.coerce.number().int().positive().default(15 * 60),
   CACHE_TTL_SEARCH_SECONDS: z.coerce.number().int().positive().default(300),
-  DEFAULT_COURSE_ID: z.string().default("primary")
+  DEFAULT_COURSE_ID: z.string().default("primary"),
+  UPLOAD_FEATURE_ENABLED: z.coerce.boolean().default(true),
+  UPLOAD_PROTOCOL: z.enum(["TUS", "MULTIPART"]).default("TUS"),
+  UPLOAD_STORAGE_PROVIDER: z.enum(["S3", "R2", "MINIO", "LOCAL"]).default("S3"),
+  UPLOAD_STORAGE_BUCKET: z.string().default("eduflow-media"),
+  UPLOAD_ALLOWED_MIME_TYPES: z.string().default("video/mp4,video/quicktime,video/webm"),
+  UPLOAD_MAX_FILE_SIZE_BYTES: z.coerce.number().int().positive().default(5 * 1024 * 1024 * 1024),
+  UPLOAD_MIN_CHUNK_SIZE_BYTES: z.coerce.number().int().positive().default(1 * 1024 * 1024),
+  UPLOAD_DEFAULT_CHUNK_SIZE_BYTES: z.coerce.number().int().positive().default(2 * 1024 * 1024),
+  UPLOAD_MAX_CHUNK_SIZE_BYTES: z.coerce.number().int().positive().default(20 * 1024 * 1024),
+  UPLOAD_MAX_CONCURRENCY: z.coerce.number().int().positive().default(2),
+  UPLOAD_MAX_RETRY_ATTEMPTS: z.coerce.number().int().nonnegative().default(3),
+  UPLOAD_RETRY_INITIAL_DELAY_SECONDS: z.coerce.number().int().positive().default(5),
+  UPLOAD_RETRY_MAX_DELAY_SECONDS: z.coerce.number().int().positive().default(30),
+  UPLOAD_SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(24 * 60 * 60),
+  UPLOAD_CHECKPOINT_TTL_SECONDS: z.coerce.number().int().positive().default(7 * 24 * 60 * 60),
+  UPLOAD_SIGNED_URL_TTL_SECONDS: z.coerce.number().int().positive().default(15 * 60),
+  UPLOAD_QUEUE_STUCK_THRESHOLD_SECONDS: z.coerce.number().int().positive().default(10 * 60)
 });
 
 export const env = envSchema.parse(process.env);

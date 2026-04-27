@@ -41,10 +41,11 @@ export const FAQ = () => {
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const copy = getPublicTrustCopy(resolveLocale(locale)).faq;
   const [search, setSearch] = useState("");
+  const normalizedSearch = search.trim().toLowerCase();
 
-  const filtered = search.trim()
+  const filtered = normalizedSearch
     ? copy.items.filter((item) =>
-        `${item.q} ${item.a} ${item.pills.join(" ")}`.toLowerCase().includes(search.trim().toLowerCase())
+        `${item.q ?? ""} ${item.a ?? ""} ${(item.pills ?? []).join(" ")}`.toLowerCase().includes(normalizedSearch)
       )
     : copy.items;
 

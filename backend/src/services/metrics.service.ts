@@ -108,6 +108,18 @@ const enrollmentProcessingTime = new client.Histogram({
   buckets: [50, 100, 250, 500, 1000, 2000]
 });
 
+const apiRequestsTotal = new client.Counter({
+  name: "eduflow_api_requests_total",
+  help: "Total API requests by path/method/status",
+  labelNames: ["path", "method", "status"] as const
+});
+
+const errorRateGauge = new client.Gauge({
+  name: "eduflow_error_rate_percent",
+  help: "Error rate percent by category/time window",
+  labelNames: ["category", "window"] as const
+});
+
 // Register all metrics
 const metrics: Array<client.Counter<any> | client.Histogram<any> | client.Gauge<any>> = [
   paymentsTotal,
@@ -124,7 +136,9 @@ const metrics: Array<client.Counter<any> | client.Histogram<any> | client.Gauge<
   webhookProcessingTime,
   webhookErrors,
   enrollmentsTotal,
-  enrollmentProcessingTime
+  enrollmentProcessingTime,
+  apiRequestsTotal,
+  errorRateGauge
 ];
 
 metrics.forEach(metric => {
@@ -136,6 +150,15 @@ metrics.forEach(metric => {
 });
 
 export const metricsService = {
+  recordApiRequest(path: string, method: string, statusCode: number) {
+    if (!enabled) return;
+    try {
+      apiRequestsTotal.inc({ path, method, status: String(statusCode) });
+    } catch {
+      // ignore metrics failures
+    }
+  },
+
   recordPaymentOperation(status: "pending" | "success" | "failure", method: string = "paymob", durationMs: number = 0, amountPiasters: number = 0) {
     if (!enabled) return;
     try {
@@ -215,6 +238,15 @@ export const metricsService = {
     }
   },
 
+  updateActivePaymentsGauge(status: string, value: number) {
+    if (!enabled) return;
+    try {
+      activePayments.set({ status: status.toLowerCase() }, value);
+    } catch {
+      // ignore metrics failures
+    }
+  },
+
   updateActivePayments(status: "pending" | "processing", delta: number) {
     if (!enabled) return;
     try {
@@ -223,6 +255,15 @@ export const metricsService = {
       } else if (delta < 0) {
         activePayments.dec({ status }, Math.abs(delta));
       }
+    } catch {
+      // ignore metrics failures
+    }
+  },
+
+  updateErrorRate(category: string, timeWindow: string, ratePercent: number) {
+    if (!enabled) return;
+    try {
+      errorRateGauge.set({ category, window: timeWindow }, ratePercent);
     } catch {
       // ignore metrics failures
     }

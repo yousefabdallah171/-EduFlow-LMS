@@ -44,12 +44,32 @@ const redisCacheMissesTotal = new client.Counter({
   labelNames: ["cache"] as const
 });
 
+const uploadRetryEventsTotal = new client.Counter({
+  name: "upload_retry_events_total",
+  help: "Upload retry events",
+  labelNames: ["outcome"] as const
+});
+
+const uploadResumeEventsTotal = new client.Counter({
+  name: "upload_resume_events_total",
+  help: "Upload resume events",
+  labelNames: ["result"] as const
+});
+
+const uploadThroughputBytes = new client.Counter({
+  name: "upload_throughput_bytes_total",
+  help: "Total acknowledged uploaded bytes"
+});
+
 registry.registerMetric(httpDurationMs);
 registry.registerMetric(httpRequestsTotal);
 registry.registerMetric(httpInflight);
 registry.registerMetric(videoSecurityEventsTotal);
 registry.registerMetric(redisCacheHitsTotal);
 registry.registerMetric(redisCacheMissesTotal);
+registry.registerMetric(uploadRetryEventsTotal);
+registry.registerMetric(uploadResumeEventsTotal);
+registry.registerMetric(uploadThroughputBytes);
 
 const normalizeRoute = (req: Request): string => {
   const original = req.originalUrl.split("?")[0] ?? "/";
@@ -128,6 +148,34 @@ export const prometheus = {
     if (!enabled) return;
     try {
       redisCacheMissesTotal.inc({ cache });
+    } catch {
+      // ignore metrics failures
+    }
+  },
+
+  recordUploadRetry(outcome: "scheduled" | "maxed" | "failed") {
+    if (!enabled) return;
+    try {
+      uploadRetryEventsTotal.inc({ outcome });
+    } catch {
+      // ignore metrics failures
+    }
+  },
+
+  recordUploadResume(result: "success" | "failed") {
+    if (!enabled) return;
+    try {
+      uploadResumeEventsTotal.inc({ result });
+    } catch {
+      // ignore metrics failures
+    }
+  },
+
+  recordUploadThroughput(bytes: number) {
+    if (!enabled) return;
+    if (!Number.isFinite(bytes) || bytes <= 0) return;
+    try {
+      uploadThroughputBytes.inc(bytes);
     } catch {
       // ignore metrics failures
     }

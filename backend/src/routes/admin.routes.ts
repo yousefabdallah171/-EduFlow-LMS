@@ -12,6 +12,8 @@ import { adminSettingsController } from "../controllers/admin/settings.controlle
 import { adminStudentsController, verifyAdminCanAccessStudent } from "../controllers/admin/students.controller.js";
 import { adminUploadsController } from "../controllers/admin/uploads.controller.js";
 import { adminVideoSecurityController } from "../controllers/admin/video-security.controller.js";
+import { lessonAttachmentController } from "../controllers/admin/lesson-attachment.controller.js";
+import { mediaLibraryController } from "../controllers/admin/media-library.controller.js";
 import * as sectionsController from "../controllers/admin/sections.controller.js";
 import { resourcesController as adminResourcesController } from "../controllers/resources.controller.js";
 import { ticketsController } from "../controllers/tickets.controller.js";
@@ -70,6 +72,12 @@ router.post("/lessons/:id/resources", adminResourcesController.create);
 router.delete("/lessons/:id/resources/:resourceId", adminResourcesController.remove);
 router.get("/uploads", adminUploadsController.list);
 router.post("/uploads", adminUploadsController.create);
+router.post("/uploads/sessions", adminUploadsController.createSession);
+router.get("/uploads/sessions/:sessionId", adminUploadsController.getSession);
+router.patch("/uploads/sessions/:sessionId/chunks", adminUploadsController.patchSessionChunk);
+router.post("/uploads/sessions/:sessionId/complete", adminUploadsController.completeSession);
+router.post("/uploads/retry-failed", adminUploadsController.retryFailed);
+router.get("/uploads/batch-summary", adminUploadsController.batchSummary);
 router.head("/uploads/:id", adminUploadsController.head);
 router.patch("/uploads/:id", adminUploadsController.patch);
 router.delete("/uploads/:id", adminUploadsController.remove);
@@ -87,6 +95,17 @@ router.post("/media/folders", mediaController.createFolder);
 router.get("/media/folders/:id", mediaController.getFolderById);
 router.patch("/media/folders/:id", mediaController.updateFolder);
 router.delete("/media/folders/:id", mediaController.deleteFolder);
+
+// New upload/media library contracts (professional uploader)
+router.get("/media-library", mediaLibraryController.list);
+router.get("/media-library/status-summary", mediaLibraryController.statusSummary);
+router.get("/media-library/telemetry", mediaLibraryController.processingTelemetry);
+
+// Lesson attachment contracts
+router.post("/lessons/media/auto-map", lessonAttachmentController.autoMap);
+router.post("/lessons/media/bulk-attach", lessonAttachmentController.bulkAttach);
+router.put("/lessons/:lessonId/media/:mediaAssetId", lessonAttachmentController.attachSingle);
+router.get("/lessons/:lessonId/media", lessonAttachmentController.listByLesson);
 
 router.get("/analytics", adminAnalyticsController.analytics);
 router.get("/payments", adminAnalyticsController.payments);

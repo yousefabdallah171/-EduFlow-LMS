@@ -45,6 +45,7 @@ export function MediaPicker({
   mediaType = "VIDEO"
 }: MediaPickerProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const mediaTypeLabel = String(mediaType ?? "VIDEO").toLowerCase();
 
   const { data: filesData, isLoading } = useQuery({
     queryKey: ["media-picker", mediaType, searchQuery],
@@ -71,7 +72,7 @@ export function MediaPicker({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Pick a {mediaType.toLowerCase()} file
+            Pick a {mediaTypeLabel} file
           </h2>
           <button
             onClick={onClose}
@@ -105,7 +106,7 @@ export function MediaPicker({
             </div>
           ) : files.length === 0 ? (
             <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-              <p>No {mediaType.toLowerCase()} files available</p>
+              <p>No {mediaTypeLabel} files available</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-200 dark:divide-gray-700">

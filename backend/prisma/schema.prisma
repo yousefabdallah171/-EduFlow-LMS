@@ -129,6 +129,61 @@ enum MediaStatus {
   ERROR
 }
 
+enum UploadProtocol {
+  TUS
+  MULTIPART
+}
+
+enum UploadSessionStatus {
+  QUEUED
+  UPLOADING
+  PAUSED
+  OFFLINE
+  PROCESSING
+  READY
+  FAILED
+  CANCELLED
+}
+
+enum ValidationStage {
+  PRE_UPLOAD
+  POST_UPLOAD
+}
+
+enum ValidationStatus {
+  PASSED
+  FAILED
+  WARNING
+}
+
+enum ValidationRule {
+  TYPE
+  SIZE
+  DURATION
+  DUPLICATE
+  STORAGE_QUOTA
+  CHECKSUM
+  PLAYABILITY
+}
+
+enum AttachmentRole {
+  PRIMARY_VIDEO
+  SUPPLEMENTAL
+}
+
+enum MappingSource {
+  MANUAL
+  AUTO_MATCH
+  BULK_REVIEWED
+}
+
+enum BatchOperationType {
+  UPLOAD_BATCH
+  RETRY_FAILED
+  BULK_ATTACH
+  BULK_METADATA_UPDATE
+}
+
 model User {
   id                   String           @id @default(uuid())
   email                String           @unique
@@ -163,6 +218,9 @@ model User {
   adminAuditLogs       AdminAuditLog[]
   mediaFilesUploaded   MediaFile[]      @relation("MediaFileUploader")
   mediaFolders         MediaFolder[]    @relation("MediaFolderCreator")
+  uploadSessions       UploadSession[]
+  lessonMediaAttached  LessonMediaAttachment[] @relation("LessonMediaAttachedBy")
+  batchOperationReports BatchOperationReport[]
 }
 
 model RefreshToken {
@@ -529,6 +587,7 @@ model Lesson {
   notes           Note[]
   resources       LessonResource[]
   videoSecurityEvents VideoSecurityEvent[]
+  mediaAttachments LessonMediaAttachment[]
 
   @@index([isPublished, sortOrder])
   @@index([sectionId, isPublished, sortOrder])
@@ -734,6 +793,10 @@ model MediaFile {
   lessonVideo      Lesson[]      @relation("LessonVideo")
   lessonResources  LessonResource[]
   videoUploads     VideoUpload[]
+  uploadSessionId  String?
+  uploadSession    UploadSession? @relation(fields: [uploadSessionId], references: [id], onDelete: SetNull)
+  validationResults MediaValidationResult[]
+  lessonAttachments LessonMediaAttachment[]
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
@@ -742,4 +805,102 @@ model MediaFile {
   @@index([status])
   @@index([type])
   @@index([createdAt])
+  @@index([uploadSessionId])
+}
+
+model UploadSession {
+  id                   String                @id @default(uuid())
+  adminUserId          String
+  adminUser            User                  @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  uploadProtocol       UploadProtocol        @default(TUS)
+  sourceFileName       String
+  sourceFileSizeBytes  BigInt
+  mimeType             String
+  status               UploadSessionStatus   @default(QUEUED)
+  chunkSizeBytes       Int
+  nextChunkIndex       Int                   @default(0)
+  maxChunkIndex        Int
+  retryAttempt         Int                   @default(0)
+  retryNextAt          DateTime?
+  uploadSessionToken   String                @unique
+  storageObjectKey     String?
+  mediaAsset           MediaFile[]
+  chunkCheckpoints     UploadChunkCheckpoint[]
+  validationResults    MediaValidationResult[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  @@index([adminUserId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model UploadChunkCheckpoint {
+  id               String        @id @default(uuid())
+  uploadSessionId  String
+  uploadSession    UploadSession @relation(fields: [uploadSessionId], references: [id], onDelete: Cascade)
+  chunkIndex       Int
+  chunkSizeBytes   Int
+  chunkChecksum    String
+  acknowledgedAt   DateTime      @default(now())
+  isFinalChunk     Boolean       @default(false)
+
+  @@unique([uploadSessionId, chunkIndex])
+  @@index([uploadSessionId, acknowledgedAt])
+}
+
+model MediaValidationResult {
+  id               String           @id @default(uuid())
+  mediaAssetId     String?
+  mediaAsset       MediaFile?       @relation(fields: [mediaAssetId], references: [id], onDelete: SetNull)
+  uploadSessionId  String?
+  uploadSession    UploadSession?   @relation(fields: [uploadSessionId], references: [id], onDelete: SetNull)
+  stage            ValidationStage
+  status           ValidationStatus
+  rule             ValidationRule
+  message          String
+  detailsJson      Json
+  createdAt        DateTime         @default(now())
+
+  @@index([mediaAssetId])
+  @@index([uploadSessionId])
+  @@index([stage, status])
+}
+
+model LessonMediaAttachment {
+  id               String         @id @default(uuid())
+  lessonId         String
+  lesson           Lesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  mediaAssetId     String
+  mediaAsset       MediaFile      @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+  attachmentRole   AttachmentRole @default(PRIMARY_VIDEO)
+  mappingSource    MappingSource  @default(MANUAL)
+  isActive         Boolean        @default(true)
+  attachedByUserId String
+  attachedByUser   User           @relation("LessonMediaAttachedBy", fields: [attachedByUserId], references: [id], onDelete: Cascade)
+  attachedAt       DateTime       @default(now())
+
+  @@index([lessonId, isActive])
+  @@index([mediaAssetId])
+  @@index([attachedByUserId])
+}
+
+model BatchOperationReport {
+  id               String             @id @default(uuid())
+  operationType    BatchOperationType
+  initiatedByUserId String
+  initiatedByUser  User               @relation(fields: [initiatedByUserId], references: [id], onDelete: Cascade)
+  totalItems       Int                @default(0)
+  acceptedItems    Int                @default(0)
+  rejectedItems    Int                @default(0)
+  completedItems   Int                @default(0)
+  failedItems      Int                @default(0)
+  retriedItems     Int                @default(0)
+  pendingItems     Int                @default(0)
+  startedAt        DateTime           @default(now())
+  finishedAt       DateTime?
+  summaryJson      Json
+
+  @@index([initiatedByUserId, startedAt])
+  @@index([operationType, startedAt])
 }

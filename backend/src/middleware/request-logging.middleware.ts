@@ -10,6 +10,12 @@ export interface RequestLog {
   userAgent?: string;
   userId?: string;
   error?: string;
+  uploadContext?: {
+    sessionId?: string;
+    uploadId?: string;
+    chunkIndex?: string;
+    statusHint?: string;
+  };
 }
 
 const formatRequestLog = (log: RequestLog): string => {
@@ -22,16 +28,26 @@ const formatRequestLog = (log: RequestLog): string => {
     ip: log.ip,
     user_id: log.userId || "anonymous",
     user_agent: log.userAgent ? log.userAgent.substring(0, 100) : undefined,
-    error: log.error
+    error: log.error,
+    upload_context: log.uploadContext
   });
 };
 
 export const requestLoggingMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const startTime = Date.now();
-  const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   res.on("finish", () => {
     const duration = Date.now() - startTime;
+
+    const isUploadRoute = req.path.includes("/uploads");
+    const uploadContext = isUploadRoute
+      ? {
+          sessionId: typeof req.params?.sessionId === "string" ? req.params.sessionId : undefined,
+          uploadId: typeof req.params?.id === "string" ? req.params.id : undefined,
+          chunkIndex: req.get("Upload-Chunk-Index") ?? undefined,
+          statusHint: req.get("Upload-Offset") ?? undefined
+        }
+      : undefined;
 
     const log: RequestLog = {
       timestamp: new Date().toISOString(),
@@ -41,7 +57,8 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
       duration,
       ip: req.ip || "unknown",
       userAgent: req.get("user-agent"),
-      userId: req.user?.userId
+      userId: req.user?.userId,
+      uploadContext
     };
 
     // Only log errors and slower requests
@@ -49,7 +66,7 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
     const isSlow = duration > 5000; // 5 seconds
     const isAuth = req.path.includes("/auth");
 
-    if (isError || isSlow || isAuth) {
+    if (isError || isSlow || isAuth || isUploadRoute) {
       console.log(formatRequestLog(log));
     }
   });
@@ -57,6 +74,7 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
   res.on("error", (err: Error) => {
     const duration = Date.now() - startTime;
 
+    const isUploadRoute = req.path.includes("/uploads");
     const log: RequestLog = {
       timestamp: new Date().toISOString(),
       method: req.method,
@@ -66,7 +84,15 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
       ip: req.ip || "unknown",
       userAgent: req.get("user-agent"),
       userId: req.user?.userId,
-      error: err.message
+      error: err.message,
+      uploadContext: isUploadRoute
+        ? {
+            sessionId: typeof req.params?.sessionId === "string" ? req.params.sessionId : undefined,
+            uploadId: typeof req.params?.id === "string" ? req.params.id : undefined,
+            chunkIndex: req.get("Upload-Chunk-Index") ?? undefined,
+            statusHint: req.get("Upload-Offset") ?? undefined
+          }
+        : undefined
     };
 
     console.error(formatRequestLog(log));

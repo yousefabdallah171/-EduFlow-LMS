@@ -13,7 +13,7 @@ const getInitialLocale = (): "en" | "ar" => {
 
   const browserLanguage =
     typeof navigator === "undefined" ? "" : String(navigator.language || navigator.languages?.[0] || "");
-  return browserLanguage.toLowerCase().startsWith("ar") ? "ar" : "en";
+  return String(browserLanguage).toLowerCase().startsWith("ar") ? "ar" : "en";
 };
 
 type LocaleState = {

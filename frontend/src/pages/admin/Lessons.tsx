@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { AttachmentManager } from "@/components/admin/AttachmentManager";
+import { BulkLessonMapper } from "@/components/admin/lessons/BulkLessonMapper";
+import { LessonAttachmentDrawer } from "@/components/admin/lessons/LessonAttachmentDrawer";
 import { LessonForm } from "@/components/admin/LessonForm";
 import { SectionManager } from "@/components/admin/SectionManager";
 import { MediaPicker } from "@/components/admin/MediaPicker";
@@ -105,6 +107,7 @@ export const AdminLessons = () => {
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [pendingDeleteLessonId, setPendingDeleteLessonId] = useState<string | null>(null);
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [attachmentDrawerOpen, setAttachmentDrawerOpen] = useState(false);
   const { progress, bytesUploaded, bytesTotal, isUploading, startUpload, cancelUpload } = useTusUpload({
     lessonId: selectedLessonId
   });
@@ -112,7 +115,7 @@ export const AdminLessons = () => {
   const linkMediaMutation = useMutation({
     mutationFn: async (mediaFileId: string) => {
       if (!selectedLessonId) throw new Error("No lesson selected");
-      return api.post(`/admin/lessons/${selectedLessonId}/media`, { mediaFileId });
+      return api.put(`/admin/lessons/${selectedLessonId}/media/${mediaFileId}`);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["admin-lessons"] });
@@ -494,6 +497,15 @@ export const AdminLessons = () => {
                       {linkMediaMutation.isPending ? "Linking..." : "Link from Media Library"}
                     </button>
 
+                    <button
+                      className="w-full rounded-lg border px-3 py-2 text-center text-xs font-semibold transition-colors"
+                      style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                      onClick={() => setAttachmentDrawerOpen(true)}
+                      type="button"
+                    >
+                      Open Lesson Attachment Drawer
+                    </button>
+
                     <a
                       href="/admin/media"
                       className="block w-full rounded-lg border px-3 py-2 text-center text-xs font-semibold transition-colors"
@@ -505,6 +517,12 @@ export const AdminLessons = () => {
                     </a>
                   </div>
                 </div>
+
+                <BulkLessonMapper
+                  onApplied={() => {
+                    void queryClient.invalidateQueries({ queryKey: ["admin-lessons"] });
+                  }}
+                />
 
                 <AttachmentManager lessonId={selectedLesson.id} />
               </>
@@ -536,6 +554,15 @@ export const AdminLessons = () => {
         onOpenChange={setLessonFormOpen}
         onSubmit={() => {
           setEditingLessonId(null);
+        }}
+      />
+
+      <LessonAttachmentDrawer
+        lessonId={selectedLessonId}
+        isOpen={attachmentDrawerOpen}
+        onClose={() => setAttachmentDrawerOpen(false)}
+        onAttached={() => {
+          void queryClient.invalidateQueries({ queryKey: ["admin-lessons"] });
         }}
       />
 

@@ -52,7 +52,7 @@ export const PaymentHistory = () => {
     // Filter by search term (order ID)
     if (searchTerm) {
       filtered = filtered.filter((p) =>
-        p.id.toLowerCase().includes(searchTerm.toLowerCase())
+        String(p.id ?? "").toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 

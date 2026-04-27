@@ -25,7 +25,7 @@ export const helmetConfig: HelmetOptions = {
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
-      upgradeInsecureRequests: env.NODE_ENV === "production" ? [] : undefined
+      ...(env.NODE_ENV === "production" ? { upgradeInsecureRequests: null } : {})
     },
     reportUri: undefined,
     useDefaults: true
