@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Search, Upload as UploadIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -56,7 +56,6 @@ export const AdminMediaLibrary = () => {
   const qc = useQueryClient();
   const { addFiles } = useUploadStore();
   const accessToken = useAuthStore((state) => state.accessToken);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -142,18 +141,6 @@ export const AdminMediaLibrary = () => {
     [selectedFolderId, addFiles]
   );
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.currentTarget.files;
-    if (files) {
-      handleFilesDrop(Array.from(files));
-      e.currentTarget.value = "";
-    }
-  };
-
   const files = filesData?.data ?? [];
   const folders = foldersData?.data ?? [];
 
@@ -231,14 +218,6 @@ export const AdminMediaLibrary = () => {
               <FileDropZone
                 onFilesDrop={handleFilesDrop}
                 disabled={false}
-              />
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                onChange={handleFileSelect}
-                className="hidden"
                 accept="video/*,image/*,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               />
 
