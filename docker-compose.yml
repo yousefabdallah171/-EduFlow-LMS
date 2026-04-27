@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: docker/frontend.Dockerfile
       target: dev
-    command: sh -c "cd /app/frontend && pnpm dev --host 0.0.0.0 --port 5173"
+    command: sh -c "cd /app && CI=1 pnpm install --filter frontend... --frozen-lockfile=false && cd /app/frontend && pnpm dev --host 0.0.0.0 --port 5173"
     depends_on:
       backend:
         condition: service_started
@@ -26,7 +26,7 @@ services:
       context: .
       dockerfile: docker/backend.Dockerfile
       target: dev
-    command: sh -c "cd /app && pnpm --filter backend prisma:generate && until (pnpm --filter backend exec prisma migrate deploy || pnpm --filter backend exec prisma db push --skip-generate); do echo 'Waiting for database...'; sleep 2; done; pnpm --filter backend prisma:seed && pnpm --filter backend dev"
+    command: sh -c "cd /app && CI=1 pnpm install --filter backend... --frozen-lockfile=false && pnpm --filter backend prisma:generate && until (pnpm --filter backend exec prisma migrate deploy || pnpm --filter backend exec prisma db push --skip-generate); do echo 'Waiting for database...'; sleep 2; done; pnpm --filter backend prisma:seed && pnpm --filter backend dev"
     depends_on:
       postgres:
         condition: service_healthy

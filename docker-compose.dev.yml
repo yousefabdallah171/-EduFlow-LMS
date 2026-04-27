@@ -16,7 +16,7 @@ services:
       context: .
       dockerfile: docker/frontend.Dockerfile
       target: dev
-    command: sh -c "cd /app/frontend && pnpm dev --host 0.0.0.0 --port 5173"
+    command: sh -c "cd /app && CI=1 pnpm install --filter frontend... --frozen-lockfile=false && cd /app/frontend && pnpm dev --host 0.0.0.0 --port 5173"
     environment:
       VITE_API_PROXY_TARGET: "http://backend:3000"
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
@@ -42,7 +42,9 @@ services:
       dockerfile: docker/backend.Dockerfile
       target: dev
     command: >
-      sh -c "cd /app/backend &&
+      sh -c "cd /app &&
+      CI=1 pnpm install --filter backend... --frozen-lockfile=false &&
+      cd /app/backend &&
       pnpm prisma generate &&
       pnpm prisma migrate deploy --schema prisma/schema.prisma &&
       pnpm prisma:seed &&
@@ -60,7 +62,9 @@ services:
       dockerfile: docker/backend.Dockerfile
       target: dev
     command: >
-      sh -c "cd /app/backend &&
+      sh -c "cd /app &&
+      CI=1 pnpm install --filter backend... --frozen-lockfile=false &&
+      cd /app/backend &&
       pnpm prisma generate &&
       pnpm prisma migrate deploy --schema prisma/schema.prisma &&
       pnpm prisma:seed"

@@ -2,7 +2,7 @@ FROM docker.io/library/node:20-alpine AS deps
 WORKDIR /app
 RUN apk add --no-cache ffmpeg openssl ca-certificates
 RUN corepack enable
-COPY package.json pnpm-workspace.yaml ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY backend/package.json backend/tsconfig.json backend/.eslintrc.cjs ./backend/
 RUN pnpm install --filter backend... --frozen-lockfile=false
 
@@ -15,7 +15,7 @@ RUN apk add --no-cache ffmpeg openssl ca-certificates
 RUN corepack enable
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/backend/node_modules ./backend/node_modules
-COPY package.json pnpm-workspace.yaml ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY backend ./backend
 RUN pnpm --filter backend prisma:generate
 RUN pnpm --filter backend build
