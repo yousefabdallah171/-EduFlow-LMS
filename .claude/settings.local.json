@@ -194,7 +194,8 @@
       "Bash(sudo -u youesf-abdallah-workflow-course bash -c \"cd /home/youesf-abdallah-workflow-course/actions-runner && nohup ./run.sh > /tmp/runner.log 2>&1 &\")",
       "Bash(2>&1)",
       "Bash(PGPASSWORD=eduflow-secure-pass-2024 psql *)",
-      "Bash(bash /tmp/final-verification.sh)"
+      "Bash(bash /tmp/final-verification.sh)",
+      "Bash(cp *)"
     ]
   }
 }
