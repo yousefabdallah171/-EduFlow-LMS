@@ -2,7 +2,9 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { demoEnrollment, isDemoMode } from "@/lib/demo";
 import { api } from "@/lib/api";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { useAuthStore } from "@/stores/auth.store";
+import { useQueryInvalidation } from "./useQueryInvalidation";
 
 type EnrollmentStatus = {
   enrolled: boolean;
@@ -37,6 +39,7 @@ export const useEnrollment = () => {
   const { user, accessToken } = useAuthStore();
   const demo = isDemoMode();
   const canFetchEnrollment = demo || Boolean(accessToken && user?.role === "STUDENT");
+  const { invalidateAfterEnrollment } = useQueryInvalidation();
 
   const statusQuery = useQuery({
     queryKey: ["enrollment-status"],
@@ -47,7 +50,9 @@ export const useEnrollment = () => {
       }
       const response = await api.get<EnrollmentStatus>("/enrollment");
       return response.data;
-    }
+    },
+    staleTime: CACHE_TIME.SHORT,
+    gcTime: getGCTime(CACHE_TIME.SHORT)
   });
 
   const validateCoupon = useMutation({
@@ -86,6 +91,9 @@ export const useEnrollment = () => {
       }
       const response = await api.post<CheckoutResponse>("/checkout", payload ?? {});
       return response.data;
+    },
+    onSuccess: () => {
+      invalidateAfterEnrollment();
     }
   });
 

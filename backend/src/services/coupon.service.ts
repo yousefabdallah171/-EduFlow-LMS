@@ -5,6 +5,7 @@ import { prisma } from "../config/database.js";
 import { redis } from "../config/redis.js";
 import { prometheus } from "../observability/prometheus.js";
 import { couponRepository } from "../repositories/coupon.repository.js";
+import { cacheVersioningService } from "./cache-versioning.service.js";
 
 type CouponPayload = {
   code: string;
@@ -61,23 +62,6 @@ const toNumericValue = (value: PrismaNamespace.Decimal | number | string) => Num
 
 const COUPON_VALIDATION_CACHE_TTL_SECONDS = 60 * 60;
 const COUPON_VALIDATION_NEGATIVE_TTL_SECONDS = 5 * 60;
-const couponCacheVersionKey = "coupon:cache-version:v1";
-
-const getCacheVersion = async () => {
-  try {
-    return (await redis.get(couponCacheVersionKey)) ?? "0";
-  } catch {
-    return "0";
-  }
-};
-
-const bumpCacheVersion = async () => {
-  try {
-    await redis.set(couponCacheVersionKey, String(Date.now()), "EX", COUPON_VALIDATION_CACHE_TTL_SECONDS);
-  } catch {
-    // ignore redis failures
-  }
-};
 
 const couponValidationCacheKey = (code: string) => `coupon:valid:${normalizeCode(code)}`;
 
@@ -173,7 +157,7 @@ const parseCouponPayload = (payload: CouponPayload) => {
 
 export const couponService = {
   async invalidateCouponCache() {
-    await bumpCacheVersion();
+    await cacheVersioningService.bumpVersion("coupon");
   },
 
   async validateCoupon(code: string | undefined, originalAmountPiasters: number): Promise<CouponValidationResult> {
@@ -181,7 +165,7 @@ export const couponService = {
       return { valid: false as const, reason: "NOT_FOUND" as const };
     }
 
-    const version = await getCacheVersion();
+    const version = await cacheVersioningService.getVersion("coupon");
     const key = couponValidationCacheKey(code);
 
     try {

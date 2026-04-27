@@ -7,6 +7,7 @@ import crypto from "node:crypto";
 import { env } from "../config/env.js";
 import { AuthError, authService } from "../services/auth.service.js";
 import { REFRESH_SESSION_WINDOW_MS } from "../utils/jwt.js";
+import { validateEmail } from "../utils/email-validation.js";
 
 const passwordSchema = z
   .string()
@@ -14,23 +15,25 @@ const passwordSchema = z
   .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
   .regex(/[0-9]/, "Password must contain at least one number");
 
+const emailSchema = z.string().max(255).refine(validateEmail, "Invalid email format");
+
 const registerSchema = z.object({
-  email: z.string().email("Invalid email format").max(255),
+  email: emailSchema,
   password: passwordSchema,
   fullName: z.string().trim().min(1, "Full name is required").max(100)
 });
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email format"),
+  email: emailSchema,
   password: z.string().min(1, "Password is required")
 });
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email("Invalid email format")
+  email: emailSchema
 });
 
 const resendVerificationSchema = z.object({
-  email: z.string().email("Invalid email format")
+  email: emailSchema
 });
 
 const resetPasswordSchema = z.object({

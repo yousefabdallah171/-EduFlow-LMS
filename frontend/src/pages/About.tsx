@@ -3,6 +3,17 @@ import { Link, useParams } from "react-router-dom";
 
 import { resolveLocale } from "@/lib/locale";
 import { getPublicTrustCopy } from "@/lib/public-trust-copy";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
+
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Yousef Abdallah",
+  "jobTitle": "Full-Stack Developer & Instructor",
+  "url": "https://yousef-abdallah.online/about",
+  "knowsAbout": ["Full-Stack Development", "React", "Node.js", "TypeScript", "AI tools"],
+};
 
 export const About = () => {
   const { locale } = useParams();
@@ -12,6 +23,7 @@ export const About = () => {
 
   return (
     <main className="reference-page">
+      <SEO page={SEO_PAGES.about} structuredData={personSchema} />
       <div className="reference-shell">
         <header className="reference-hero">
           <span className="reference-badge">

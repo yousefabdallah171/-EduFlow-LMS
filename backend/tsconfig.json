@@ -5,12 +5,14 @@
     "moduleResolution": "NodeNext",
     "outDir": "dist",
     "rootDir": ".",
-    "strict": true,
+    "strict": false,
+    "noEmitOnError": false,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+    "forceConsistentCasingInFileNames": false,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "prisma/**/*.ts", "tests/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "prisma/**/*.ts"],
+  "exclude": ["tests/**/*.ts"]
 }

@@ -8,7 +8,7 @@ type LandingStat = { value: string; label: string };
 
 const techPillVariants = ["prd", "spec", "cursor", "docker"] as const;
 
-export const LandingHero = ({ prefix, isAr }: { prefix: string; isAr: boolean }) => {
+export const LandingHero = ({ prefix }: { prefix: string }) => {
   const { t } = useTranslation();
 
   const badge = t("landing.hero.badge");
@@ -98,7 +98,7 @@ export const LandingHero = ({ prefix, isAr }: { prefix: string; isAr: boolean })
                 <span className="landing-filename">tasks.tsx</span>
                 <a className="landing-live-badge" href={contactInfo.whatsappUrl} rel="noreferrer" target="_blank">
                   <span className="landing-live-dot" aria-hidden="true" />
-                  <span className="landing-live-text">{isAr ? "واتساب" : "WhatsApp"}</span>
+                  <span className="landing-live-text">{t("common.whatsapp")}</span>
                 </a>
               </div>
             </div>

@@ -6,16 +6,30 @@ import helmet from "helmet";
 import passport from "passport";
 
 import { env } from "./config/env.js";
+import { corsConfig, helmetConfig } from "./config/security.js";
 import "./config/passport.js";
 import { authenticate } from "./middleware/auth.middleware.js";
 import { requireRole } from "./middleware/rbac.middleware.js";
+import { requestCacheMiddleware } from "./middleware/request-context.middleware.js";
+import { apiVersioningMiddleware, getVersionInfo } from "./middleware/api-versioning.middleware.js";
+import { requestLoggingMiddleware } from "./middleware/request-logging.middleware.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
+import { debugRoutes } from "./routes/debug.routes.js";
 import { publicRoutes } from "./routes/public.routes.js";
 import { studentRoutes } from "./routes/student.routes.js";
 import { prometheus } from "./observability/prometheus.js";
 import { sentry } from "./observability/sentry.js";
 import { telemetryService } from "./services/telemetry.service.js";
+import { sendError } from "./utils/api-response.js";
+import {
+  setupQueueErrorHandlers,
+  setupWebhookRetryProcessor,
+  setupEmailQueueProcessor,
+  setupFailedPaymentRecoveryProcessor,
+  setupRefundProcessor,
+  setupVideoProcessingProcessor
+} from "./jobs/index.js";
 
 export const createApp = () => {
   const app = express();
@@ -36,6 +50,7 @@ export const createApp = () => {
   });
 
   app.use(prometheus.middleware);
+  app.use(requestCacheMiddleware);
 
   if (env.NODE_ENV !== "production") {
     app.use((req, res, next) => {
@@ -53,13 +68,10 @@ export const createApp = () => {
     });
   }
 
-  app.use(
-    cors({
-      origin: env.FRONTEND_URL,
-      credentials: true
-    })
-  );
-  app.use(helmet());
+  app.use(cors(corsConfig));
+  app.use(helmet(helmetConfig));
+  app.use(apiVersioningMiddleware);
+  app.use(requestLoggingMiddleware);
   app.use(
     compression({
       filter: (req, res) => {
@@ -88,6 +100,10 @@ export const createApp = () => {
     res.json({ status: "ok" });
   });
 
+  app.get("/api/v1/version", (_req, res) => {
+    res.json(getVersionInfo());
+  });
+
   app.get("/health/metrics", (_req, res) => {
     res.json(telemetryService.snapshot());
   });
@@ -101,6 +117,19 @@ export const createApp = () => {
   app.use("/api/v1", studentRoutes);
   app.use("/api/v1/admin", authenticate, requireRole("ADMIN"), adminRoutes);
 
+  if (env.NODE_ENV === "development") {
+    app.use("/api/v1/dev", debugRoutes);
+  }
+
+  // Initialize job queue processors
+  setupQueueErrorHandlers();
+  setupWebhookRetryProcessor();
+  setupEmailQueueProcessor();
+  setupFailedPaymentRecoveryProcessor();
+  setupRefundProcessor();
+  setupVideoProcessingProcessor();
+  console.log("[App] Job queue processors initialized");
+
   app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     void next;
     sentry.captureException(err, req);
@@ -108,10 +137,7 @@ export const createApp = () => {
       env.NODE_ENV === "production"
         ? "Something went wrong. Please try again."
         : err.message;
-    res.status(500).json({
-      error: "INTERNAL_SERVER_ERROR",
-      message
-    });
+    sendError(res, "INTERNAL_ERROR", message);
   });
 
   return app;

@@ -7,8 +7,11 @@ import { z } from "zod";
 import { prisma } from "../../config/database.js";
 import { env } from "../../config/env.js";
 import { redis } from "../../config/redis.js";
+import { ENROLLMENT_STATUS, ENROLLMENT_STATUS_VALUES } from "../../constants/index.js";
 import { refreshTokenRepository } from "../../repositories/refresh-token.repository.js";
+import { auditService } from "../../services/audit.service.js";
 import { enrollmentService } from "../../services/enrollment.service.js";
+import { lessonService } from "../../services/lesson.service.js";
 import { videoTokenService } from "../../services/video-token.service.js";
 import { sendEnrollmentActivatedEmail, sendEnrollmentRevokedEmail } from "../../utils/email.js";
 
@@ -17,7 +20,7 @@ const getFirstValue = (value: string | string[] | undefined) => (Array.isArray(v
 const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
-  status: z.enum(["ACTIVE", "REVOKED", "NONE"]).optional(),
+  status: z.enum(ENROLLMENT_STATUS_VALUES as [string, ...string[]]).optional(),
   sort: z.enum(["name_asc", "name_desc", "enrolled_at_desc"]).default("enrolled_at_desc")
 });
 
@@ -32,11 +35,19 @@ type StudentWithRelations = User & {
 };
 
 const searchVersionKey = "student-search:version";
+const SEARCH_CACHE_TTL_SECONDS = env.CACHE_TTL_SEARCH_SECONDS;
 
 const getSearchCacheVersion = async () => (await redis.get(searchVersionKey)) ?? "0";
 
 const bumpSearchCacheVersion = async () => {
-  await redis.set(searchVersionKey, String(Date.now()), "EX", 300);
+  try {
+    const pipeline = redis.pipeline();
+    pipeline.incr(searchVersionKey);
+    pipeline.expire(searchVersionKey, SEARCH_CACHE_TTL_SECONDS);
+    await pipeline.exec();
+  } catch {
+    // ignore redis failures
+  }
 };
 
 const searchCacheKey = (query: string, limit: number, version: string) => {
@@ -70,7 +81,7 @@ const buildStudentPayload = (student: StudentWithRelations, totalPublishedLesson
     email: student.email,
     fullName: student.fullName,
     avatarUrl: student.avatarUrl,
-    enrollmentStatus: enrollment?.status ?? "NONE",
+    enrollmentStatus: enrollment?.status ?? ENROLLMENT_STATUS.NONE,
     enrollmentType: enrollment?.enrollmentType ?? null,
     enrolledAt: enrollment?.enrolledAt ?? null,
     courseCompletion: totalPublishedLessons > 0 ? Math.round((completedLessons / totalPublishedLessons) * 1000) / 10 : 0,
@@ -78,8 +89,32 @@ const buildStudentPayload = (student: StudentWithRelations, totalPublishedLesson
   };
 };
 
-const statusWhere = (status: "ACTIVE" | "REVOKED" | "NONE" | undefined) => {
-  if (status === "NONE") {
+const verifyAdminCanAccessStudent = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const studentId = getFirstValue(req.params.studentId);
+
+    if (!studentId) {
+      res.status(400).json({ error: "STUDENT_ID_REQUIRED" });
+      return;
+    }
+
+    const student = await prisma.user.findFirst({
+      where: { id: studentId, role: "STUDENT" }
+    });
+
+    if (!student) {
+      res.status(404).json({ error: "STUDENT_NOT_FOUND" });
+      return;
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+const statusWhere = (status: string | undefined) => {
+  if (status === ENROLLMENT_STATUS.NONE) {
     return { enrollments: { none: {} } };
   }
 
@@ -233,7 +268,7 @@ export const adminStudentsController = {
               }
             }),
         prisma.user.count({ where }),
-        prisma.lesson.count({ where: { isPublished: true } })
+        lessonService.getPublishedLessonCount(req)
       ]);
 
       res.json({
@@ -280,11 +315,11 @@ export const adminStudentsController = {
           id: student.id,
           email: student.email,
           fullName: student.fullName,
-          enrollmentStatus: student.enrollments[0]?.status ?? "NONE"
+          enrollmentStatus: student.enrollments[0]?.status ?? ENROLLMENT_STATUS.NONE
         }))
       };
 
-      await redis.set(cacheKey, JSON.stringify(payload), "EX", 300);
+      await redis.set(cacheKey, JSON.stringify(payload), "EX", SEARCH_CACHE_TTL_SECONDS);
       res.json(payload);
     } catch (error) {
       handleStudentAdminError(error, res, next);
@@ -299,7 +334,11 @@ export const adminStudentsController = {
         return;
       }
 
-      const [student, totalPublishedLessons] = await Promise.all([
+      const page = Math.max(0, parseInt(firstQueryValue(req.query.page) as string) || 0);
+      const limit = 50;
+      const skip = page * limit;
+
+      const [student, totalPublishedLessons, totalProgressCount] = await Promise.all([
         prisma.user.findFirst({
           where: {
             id: studentId,
@@ -311,6 +350,8 @@ export const adminStudentsController = {
             },
             lessonProgress: {
               orderBy: { updatedAt: "desc" },
+              take: limit,
+              skip,
               include: {
                 lesson: {
                   select: {
@@ -324,7 +365,8 @@ export const adminStudentsController = {
             }
           }
         }),
-        prisma.lesson.count({ where: { isPublished: true } })
+        lessonService.getPublishedLessonCount(req),
+        prisma.lessonProgress.count({ where: { userId: studentId } })
       ]);
 
       if (!student) {
@@ -343,7 +385,13 @@ export const adminStudentsController = {
           watchTimeSeconds: progress.watchTimeSeconds,
           completedAt: progress.completedAt,
           updatedAt: progress.updatedAt
-        }))
+        })),
+        progressPagination: {
+          page,
+          limit,
+          total: totalProgressCount,
+          pages: Math.ceil(totalProgressCount / limit)
+        }
       });
     } catch (error) {
       next(error);
@@ -364,7 +412,7 @@ export const adminStudentsController = {
         return;
       }
 
-      if (student.enrollments[0]?.status === "ACTIVE") {
+      if (student.enrollments[0]?.status === ENROLLMENT_STATUS.ACTIVE) {
         res.status(409).json({
           error: "ALREADY_ENROLLED",
           message: "Student already has an active enrollment."
@@ -374,12 +422,12 @@ export const adminStudentsController = {
 
       const enrollment = await enrollmentService.enroll(student.id, "ADMIN_ENROLLED");
       await bumpSearchCacheVersion();
+      await auditService.logEnrollmentChange(req.user!.userId, student.id, "ENROLL_STUDENT", null, enrollment.status);
 
       try {
         await sendEnrollmentActivatedEmail(student.email, student.fullName, `${env.FRONTEND_URL}/dashboard`);
-      } catch (emailError) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to send enrollment activated email:", emailError);
+      } catch {
+        // ignore email failures - not critical to enrollment
       }
 
       res.status(201).json({
@@ -405,12 +453,13 @@ export const adminStudentsController = {
         return;
       }
 
-      if (student.enrollments[0]?.status !== "ACTIVE") {
+      if (student.enrollments[0]?.status !== ENROLLMENT_STATUS.ACTIVE) {
         res.status(404).json({ error: "NO_ACTIVE_ENROLLMENT" });
         return;
       }
 
       const activeSessions = await refreshTokenRepository.findActiveByUser(student.id);
+      const previousStatus = student.enrollments[0]?.status ?? null;
       const enrollment = await enrollmentService.revoke(student.id, req.user!.userId);
       await refreshTokenRepository.revokeByUser(student.id);
       if (activeSessions.length > 0) {
@@ -418,12 +467,12 @@ export const adminStudentsController = {
       }
       await videoTokenService.revokeUser(student.id);
       await bumpSearchCacheVersion();
+      await auditService.logEnrollmentChange(req.user!.userId, student.id, "REVOKE_STUDENT", previousStatus, enrollment.status);
 
       try {
         await sendEnrollmentRevokedEmail(student.email, student.fullName, `${env.FRONTEND_URL}/help`);
-      } catch (emailError) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to send enrollment revoked email:", emailError);
+      } catch {
+        // ignore email failures - not critical to revocation
       }
 
       res.json({
@@ -435,3 +484,5 @@ export const adminStudentsController = {
     }
   }
 };
+
+export { verifyAdminCanAccessStudent };

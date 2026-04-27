@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { env } from "../config/env.js";
 import { prisma } from "../config/database.js";
+import { ENROLLMENT_STATUS } from "../constants/index.js";
 import { enrollmentRepository } from "../repositories/enrollment.repository.js";
 import { lessonRepository } from "../repositories/lesson.repository.js";
 import { userRepository } from "../repositories/user.repository.js";
@@ -14,7 +15,6 @@ import { lessonService } from "../services/lesson.service.js";
 import { progressService, ProgressError } from "../services/progress.service.js";
 import { VideoTokenError, videoTokenService } from "../services/video-token.service.js";
 import { VideoAbuseError, getClientContext, videoAbuseService } from "../services/video-abuse.service.js";
-import { maskEmail } from "../utils/mask-email.js";
 
 const progressSchema = z.object({
   lastPositionSeconds: z.number().int().min(0),
@@ -22,6 +22,7 @@ const progressSchema = z.object({
   completed: z.boolean().optional()
 });
 
+const MAX_TOKEN_LENGTH = 2000;
 const getStorageRoot = () => path.resolve(process.cwd(), env.STORAGE_PATH);
 const getFirstValue = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 const isHttpsRequest = (req: Request) =>
@@ -80,7 +81,7 @@ const rewritePlaylist = (playlist: string, lessonId: string, token: string) => {
 
 const resolveLessonAccess = async (userId: string, lessonId: string) => {
   const enrollment = await enrollmentRepository.findByUserId(userId);
-  if (!enrollment || enrollment.status !== "ACTIVE") {
+  if (!enrollment || enrollment.status !== ENROLLMENT_STATUS.ACTIVE) {
     throw new VideoTokenError("NOT_ENROLLED", 403, "Enrollment required.");
   }
 
@@ -146,10 +147,10 @@ const buildPlaylist = (lessonId: string, token: string) => {
 };
 
 export const lessonController = {
-  async getAllLessonsGrouped(req: Request, res: Response) {
+  async getAllLessonsGrouped(req: Request, res: Response, next: NextFunction) {
     try {
       const enrollment = await enrollmentRepository.findByUserId(req.user!.userId);
-      if (!enrollment || enrollment.status !== "ACTIVE") {
+      if (!enrollment || enrollment.status !== ENROLLMENT_STATUS.ACTIVE) {
         res.status(403).json({ error: "NOT_ENROLLED" });
         return;
       }
@@ -187,12 +188,11 @@ export const lessonController = {
         }))
       });
     } catch (error) {
-      console.error("Error fetching lessons:", error);
-      res.status(500).json({ message: "Failed to fetch lessons" });
+      next(error);
     }
   },
 
-  async getLessonDetail(req: Request, res: Response) {
+  async getLessonDetail(req: Request, res: Response, next: NextFunction) {
     try {
       const lessonId = getFirstValue(req.params.lessonId);
       const userId = req.user?.userId;
@@ -230,15 +230,14 @@ export const lessonController = {
         }
       });
     } catch (error) {
-      console.error("Error fetching lesson:", error);
-      res.status(500).json({ message: "Failed to fetch lesson" });
+      next(error);
     }
   },
 
   async list(req: Request, res: Response, next: NextFunction) {
     try {
       const enrollment = await enrollmentRepository.findByUserId(req.user!.userId);
-      if (!enrollment || enrollment.status !== "ACTIVE") {
+      if (!enrollment || enrollment.status !== ENROLLMENT_STATUS.ACTIVE) {
         res.status(403).json({ error: "NOT_ENROLLED" });
         return;
       }
@@ -337,8 +336,13 @@ export const lessonController = {
         hlsUrl: token.hlsUrl,
         expiresAt: token.expiresAt.toISOString(),
         watermark: {
-          name: user.fullName,
-          maskedEmail: maskEmail(user.email)
+          initials: user.fullName
+            .split(" ")
+            .slice(0, 2)
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase(),
+          timestamp: new Date().toISOString()
         },
         progress: {
           lastPositionSeconds: progress?.lastPositionSeconds ?? 0,
@@ -397,6 +401,11 @@ export const lessonController = {
       const token = getFirstValue(req.query.token as string | string[] | undefined);
       if (!lessonId) {
         res.status(400).json({ error: "LESSON_ID_REQUIRED" });
+        return;
+      }
+
+      if (token && token.length > MAX_TOKEN_LENGTH) {
+        res.status(400).json({ error: "TOKEN_TOO_LONG" });
         return;
       }
 
@@ -470,6 +479,11 @@ export const lessonController = {
       const token = getFirstValue(req.query.token as string | string[] | undefined);
       if (!lessonId) {
         res.status(400).json({ error: "LESSON_ID_REQUIRED" });
+        return;
+      }
+
+      if (token && token.length > MAX_TOKEN_LENGTH) {
+        res.status(400).json({ error: "TOKEN_TOO_LONG" });
         return;
       }
 
@@ -587,6 +601,11 @@ export const lessonController = {
         return;
       }
 
+      if (token && token.length > MAX_TOKEN_LENGTH) {
+        res.status(400).json({ error: "TOKEN_TOO_LONG" });
+        return;
+      }
+
       const client = getClientContext({ ip: req.ip, userAgent: req.get("user-agent") });
       const payload = await videoTokenService.validateToken({
         token,
@@ -630,22 +649,14 @@ export const lessonController = {
       }
 
       const trimmed = segment.trim();
-      const lower = trimmed.toLowerCase();
-      if (
-        !trimmed ||
-        trimmed.includes("..") ||
-        trimmed.includes("/") ||
-        trimmed.includes("\\") ||
-        trimmed.includes(":") ||
-        lower.includes("%2f") ||
-        lower.includes("%5c")
-      ) {
+
+      if (!trimmed || trimmed.length > 255) {
         res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
         return;
       }
 
-      const allowedExts = new Set([".ts", ".m4s", ".aac"]);
-      if (!allowedExts.has(path.extname(trimmed).toLowerCase())) {
+      const allowlistPattern = /^(segment-\d{3}(\.ts|\.m4s)|segment\.aac|enc\.key|init\.mp4|[a-zA-Z0-9_-]+\.m3u8)$/;
+      if (!allowlistPattern.test(trimmed)) {
         res.status(404).json({ error: "SEGMENT_NOT_FOUND" });
         return;
       }

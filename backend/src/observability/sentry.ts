@@ -32,8 +32,17 @@ export const sentry = {
         method: req.method,
         url: req.originalUrl,
         ip: req.ip,
-        userAgent: req.get("user-agent")
+        userAgent: req.get("user-agent"),
+        query: JSON.stringify(req.query),
+        body: JSON.stringify(req.body, null, 2).substring(0, 1000)
       });
+
+      if (req.user) {
+        Sentry.setUser({
+          id: (req.user as any).userId,
+          role: (req.user as any).role
+        });
+      }
     }
 
     Sentry.captureException(error);

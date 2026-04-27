@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <url>
+    <loc>https://yousef-abdallah.online/</loc>
+    <lastmod>2026-04-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yousef-abdallah.online/"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yousef-abdallah.online/ar/"/>
+  </url>
+
+  <url>
+    <loc>https://yousef-abdallah.online/course</loc>
+    <lastmod>2026-04-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yousef-abdallah.online/course"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yousef-abdallah.online/ar/course"/>
+  </url>
+
+  <url>
+    <loc>https://yousef-abdallah.online/pricing</loc>
+    <lastmod>2026-04-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yousef-abdallah.online/pricing"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yousef-abdallah.online/ar/pricing"/>
+  </url>
+
+  <url>
+    <loc>https://yousef-abdallah.online/about</loc>
+    <lastmod>2026-04-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yousef-abdallah.online/about"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yousef-abdallah.online/ar/about"/>
+  </url>
+
+  <url>
+    <loc>https://yousef-abdallah.online/faq</loc>
+    <lastmod>2026-04-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yousef-abdallah.online/faq"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yousef-abdallah.online/ar/faq"/>
+  </url>
+
+  <url>
+    <loc>https://yousef-abdallah.online/contact</loc>
+    <lastmod>2026-04-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yousef-abdallah.online/contact"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yousef-abdallah.online/ar/contact"/>
+  </url>
+
+  <url>
+    <loc>https://yousef-abdallah.online/testimonials</loc>
+    <lastmod>2026-04-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yousef-abdallah.online/testimonials"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yousef-abdallah.online/ar/testimonials"/>
+  </url>
+
+  <url>
+    <loc>https://yousef-abdallah.online/roadmap</loc>
+    <lastmod>2026-04-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yousef-abdallah.online/roadmap"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yousef-abdallah.online/ar/roadmap"/>
+  </url>
+
+  <url>
+    <loc>https://yousef-abdallah.online/privacy</loc>
+    <lastmod>2026-04-25</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yousef-abdallah.online/privacy"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yousef-abdallah.online/ar/privacy"/>
+  </url>
+
+  <url>
+    <loc>https://yousef-abdallah.online/terms</loc>
+    <lastmod>2026-04-25</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yousef-abdallah.online/terms"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yousef-abdallah.online/ar/terms"/>
+  </url>
+
+  <url>
+    <loc>https://yousef-abdallah.online/refund</loc>
+    <lastmod>2026-04-25</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://yousef-abdallah.online/refund"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://yousef-abdallah.online/ar/refund"/>
+  </url>
+
+</urlset>

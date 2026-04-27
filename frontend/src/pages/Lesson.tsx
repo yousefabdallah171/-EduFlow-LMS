@@ -3,7 +3,7 @@ import axios from "axios";
 import { ArrowLeft, ArrowRight, Check, LockKeyhole, TriangleAlert, Plus } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 
 import { VideoPlayer } from "@/components/shared/VideoPlayer";
 import { ResourcesList } from "@/components/student/ResourcesList";
@@ -15,6 +15,8 @@ import { useVideoToken } from "@/hooks/useVideoToken";
 import { api, queryClient } from "@/lib/api";
 import { demoLessons, isDemoMode } from "@/lib/demo";
 import { pickLocalizedText, resolveLocale } from "@/lib/locale";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 type LessonSummary = {
   id: string;
@@ -67,9 +69,9 @@ export const Lesson = () => {
   const { lessonId, locale } = useParams();
   const [searchParams] = useSearchParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const currentLocale = resolveLocale(locale);
-  const { t } = useTranslation();
-  const isAr = currentLocale === "ar";
+  const { t, i18n } = useTranslation();
+  const resolvedLocale = resolveLocale(i18n.language);
+  const isAr = resolvedLocale === "ar";
   const demo = isDemoMode();
   const { statusQuery } = useEnrollment();
   const isEnrolled = statusQuery.data?.enrolled && statusQuery.data?.status === "ACTIVE";
@@ -168,7 +170,7 @@ export const Lesson = () => {
 
   const orderedLessonNavItems: LessonNavItem[] = orderedLessons.map((lesson, index) => ({
     id: lesson.id,
-    title: pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr),
+    title: pickLocalizedText(resolvedLocale, lesson.titleEn ?? lesson.title, lesson.titleAr),
     completedAt: lesson.completedAt,
     isUnlocked: lesson.isUnlocked,
     index
@@ -328,28 +330,30 @@ export const Lesson = () => {
   };
 
   const currentLessonTitle = pickLocalizedText(
-    currentLocale,
+    resolvedLocale,
     lessonQuery.data.titleEn ?? lessonQuery.data.title,
     lessonQuery.data.titleAr
   );
   const currentSectionTitle = lessonQuery.data.section
-    ? pickLocalizedText(currentLocale, lessonQuery.data.section.titleEn, lessonQuery.data.section.titleAr)
+    ? pickLocalizedText(resolvedLocale, lessonQuery.data.section.titleEn, lessonQuery.data.section.titleAr)
     : "";
   const currentLessonDescription = pickLocalizedText(
-    currentLocale,
+    resolvedLocale,
     lessonQuery.data.descriptionHtmlEn ?? lessonQuery.data.descriptionHtml,
     lessonQuery.data.descriptionHtmlAr
   );
 
   return (
-    <main
-      className="min-h-dvh px-4 py-6 sm:px-6"
-      style={{
-        backgroundColor: "var(--color-page)",
-        backgroundImage:
-          "radial-gradient(circle at 10% 0%, color-mix(in oklab, var(--color-brand) 12%, transparent), transparent 22rem), radial-gradient(circle at 100% 10%, color-mix(in oklab, var(--color-brand-accent) 12%, transparent), transparent 20rem)"
-      }}
-    >
+    <>
+      <SEO page={SEO_PAGES.lesson} />
+      <main
+        className="min-h-dvh px-4 py-6 sm:px-6"
+        style={{
+          backgroundColor: "var(--color-page)",
+          backgroundImage:
+            "radial-gradient(circle at 10% 0%, color-mix(in oklab, var(--color-brand) 12%, transparent), transparent 22rem), radial-gradient(circle at 100% 10%, color-mix(in oklab, var(--color-brand-accent) 12%, transparent), transparent 20rem)"
+        }}
+      >
       <section className="mx-auto max-w-6xl space-y-5">
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(19rem,0.7fr)]">
           <div className="space-y-5">
@@ -554,7 +558,7 @@ export const Lesson = () => {
               <div className="space-y-4">
                 {groupedLessonsQuery.data && groupedLessonsQuery.data.length > 0 ? (
                   groupedLessonsQuery.data.map((section) => {
-                    const sectionTitle = pickLocalizedText(currentLocale, section.titleEn, section.titleAr);
+                    const sectionTitle = pickLocalizedText(resolvedLocale, section.titleEn, section.titleAr);
 
                     return (
                       <div key={section.id} className="space-y-2">
@@ -564,7 +568,7 @@ export const Lesson = () => {
                         <div className="space-y-1">
                           {section.lessons.map((lesson, index) => {
                             const isCurrent = lesson.id === lessonId;
-                            const lessonTitle = pickLocalizedText(currentLocale, lesson.titleEn, lesson.titleAr);
+                            const lessonTitle = pickLocalizedText(resolvedLocale, lesson.titleEn, lesson.titleAr);
 
                             return (
                               <Link
@@ -671,6 +675,7 @@ export const Lesson = () => {
           </aside>
         </div>
       </section>
-    </main>
+      </main>
+    </>
   );
 };

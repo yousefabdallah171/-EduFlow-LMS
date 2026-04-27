@@ -36,7 +36,17 @@ export const profileController = {
       const [user, enrollment, payments] = await Promise.all([
         prisma.user.findUnique({
           where: { id: userId },
-          select: { id: true, email: true, fullName: true, avatarUrl: true, role: true, locale: true, theme: true, emailVerified: true }
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            avatarUrl: true,
+            role: true,
+            locale: true,
+            theme: true,
+            emailVerified: true,
+            oauthProvider: true
+          }
         }),
         prisma.enrollment.findUnique({
           where: { userId },
@@ -81,6 +91,13 @@ export const profileController = {
     try {
       const { currentPassword, newPassword } = passwordSchema.parse(req.body);
       const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+      if (user?.oauthProvider === "google") {
+        res.status(403).json({
+          error: "OAUTH_PASSWORD_LOCKED",
+          message: "This account uses Google sign-in. Password changes are disabled."
+        });
+        return;
+      }
       if (!user?.passwordHash) { res.status(400).json({ error: "NO_PASSWORD", message: "No password set for this account" }); return; }
       const valid = await bcrypt.compare(currentPassword, user.passwordHash);
       if (!valid) { res.status(400).json({ error: "INVALID_PASSWORD", message: "Current password is incorrect" }); return; }

@@ -153,8 +153,8 @@ export const StudentShell = ({ children }: StudentShellProps) => {
               isAr ? "right-6" : "left-6"
             )}
             style={{ backgroundColor: "#25D366", color: "white" }}
-            aria-label={isAr ? "تواصل عبر واتساب" : "Contact via WhatsApp"}
-            title={isAr ? "تواصل عبر واتساب" : "Contact via WhatsApp"}
+            aria-label={t("common.contactWhatsApp")}
+            title={t("common.contactWhatsApp")}
           >
             <MessageCircle className="h-7 w-7" />
           </a>

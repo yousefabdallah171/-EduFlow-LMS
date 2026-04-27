@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth.store";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 export const Login = () => {
   const { login } = useAuth();
@@ -15,8 +17,7 @@ export const Login = () => {
   const { isAuthReady, user } = useAuthStore();
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -46,7 +47,7 @@ export const Login = () => {
       const apiStatus = apiError.response?.status;
       const apiErrorCode = apiError.response?.data?.error ?? null;
       setErrorCode(apiErrorCode ?? (apiStatus === 403 ? "EMAIL_NOT_VERIFIED" : null));
-      setMessage(apiError.response?.data?.message ?? (isAr ? "تعذر تسجيل الدخول. راجع بياناتك وحاول مرة أخرى." : "Login failed. Please try again."));
+      setMessage(apiError.response?.data?.message ?? t("auth.login.errorLoginFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -62,46 +63,40 @@ export const Login = () => {
       setResendMessage(response.data.message);
     } catch (error: unknown) {
       const apiError = error as AxiosError<{ message?: string }>;
-      setResendMessage(apiError.response?.data?.message ?? (isAr ? "تعذر إرسال الرابط الآن." : "Could not send the verification email right now."));
+      setResendMessage(apiError.response?.data?.message ?? t("auth.login.errorResendFailed"));
     } finally {
       setIsResending(false);
     }
   };
 
   return (
-    <AuthShell
-      badge={isAr ? "العودة إلى مسارك" : "Return to your workflow"}
-      title={t("auth.login.title")}
-      subtitle={t("auth.login.subtitle")}
+    <>
+      <SEO page={SEO_PAGES.login} />
+      <AuthShell
+        badge={t("auth.login.badge")}
+        title={t("auth.login.title")}
+        subtitle={t("auth.login.subtitle")}
       highlights={[
         {
-          title: isAr ? "أكمل من حيث توقفت" : "Continue where you left off",
-          description: isAr
-            ? "بعد تسجيل الدخول ستعود مباشرة إلى مسارك، سواء كنت طالبا أو داخل لوحة الإدارة."
-            : "Sign in once and we can route you straight back into the student flow or admin workspace."
+          title: t("auth.login.highlight.continue.title"),
+          description: t("auth.login.highlight.continue.description")
         },
         {
-          title: isAr ? "نفس الحساب لكل شيء" : "One account for the whole journey",
-          description: isAr
-            ? "المعاينة والدفع والوصول الكامل للدروس كلها مرتبطة بنفس الحساب."
-            : "Preview, checkout, and full lesson access all stay connected through the same account."
+          title: t("auth.login.highlight.account.title"),
+          description: t("auth.login.highlight.account.description")
         },
         {
-          title: isAr ? "دخول أكثر اطمئنانا" : "Safer session handling",
-          description: isAr
-            ? "ربط الجلسة بالمستخدم يساعد على إبقاء المحتوى والوصول والمدفوعات متناسقة."
-            : "Session-aware access keeps lesson playback, account state, and payments aligned."
+          title: t("auth.login.highlight.session.title"),
+          description: t("auth.login.highlight.session.description")
         }
       ]}
       aside={
         <div className="content-stack gap-2">
           <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-            {isAr ? "نسيت كلمة المرور؟" : "Forgot your password?"}
+            {t("auth.login.aside.hint")}
           </p>
           <p className="text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
-            {isAr
-              ? "يمكنك طلب رابط استعادة جديد والعودة بسرعة بدون فقدان وصولك للدورة."
-              : "You can request a fresh reset link and get back into the course without losing your place."}
+            {t("auth.login.aside.description")}
           </p>
         </div>
       }
@@ -144,7 +139,7 @@ export const Login = () => {
               type="password"
               autoComplete="current-password"
               value={password}
-              placeholder={isAr ? "اكتب كلمة المرور الخاصة بك" : "Enter your password"}
+              placeholder={t("auth.login.passwordPlaceholder")}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
@@ -162,7 +157,7 @@ export const Login = () => {
                   onClick={() => void resendVerification()}
                   disabled={isResending}
                 >
-                  {isResending ? (isAr ? "جاري الإرسال…" : "Sending…") : (isAr ? "إعادة إرسال رابط التحقق" : "Resend verification email")}
+                  {isResending ? t("auth.login.sendingVerification") : t("auth.login.resendVerification")}
                 </button>
                 {resendMessage ? (
                   <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{resendMessage}</p>
@@ -204,5 +199,6 @@ export const Login = () => {
         </a>
       </form>
     </AuthShell>
+    </>
   );
 };

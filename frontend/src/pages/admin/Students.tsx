@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 
 import { AdminShell } from "@/components/layout/AdminShell";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { Pagination } from "@/components/shared/Pagination";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +19,6 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api, queryClient } from "@/lib/api";
-import { resolveLocale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
 type EnrollmentStatus = "ACTIVE" | "REVOKED" | "NONE";
@@ -47,11 +47,11 @@ type PendingAction = {
   action: "enroll" | "revoke";
 };
 
-const StatusBadge = ({ status, isAr }: { status: EnrollmentStatus; isAr: boolean }) => {
-  const styles: Record<EnrollmentStatus, { bg: string; color: string; label: string }> = {
-    ACTIVE:  { bg: "rgba(34,197,94,0.12)", color: "rgb(21,128,61)",  label: isAr ? "نشط" : "Active" },
-    REVOKED: { bg: "rgba(239,68,68,0.12)", color: "rgb(185,28,28)",  label: isAr ? "مسحوب" : "Revoked" },
-    NONE:    { bg: "var(--color-surface-2)", color: "var(--color-text-muted)", label: isAr ? "لا يوجد" : "None" }
+const StatusBadge = ({ status, label }: { status: EnrollmentStatus; label: string }) => {
+  const styles: Record<EnrollmentStatus, { bg: string; color: string }> = {
+    ACTIVE:  { bg: "rgba(34,197,94,0.12)", color: "rgb(21,128,61)" },
+    REVOKED: { bg: "rgba(239,68,68,0.12)", color: "rgb(185,28,28)" },
+    NONE:    { bg: "var(--color-surface-2)", color: "var(--color-text-muted)" }
   };
   const s = styles[status];
   return (
@@ -59,7 +59,7 @@ const StatusBadge = ({ status, isAr }: { status: EnrollmentStatus; isAr: boolean
       className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
       style={{ backgroundColor: s.bg, color: s.color }}
     >
-      {s.label}
+      {label}
     </span>
   );
 };
@@ -69,8 +69,8 @@ const formatDate = (value: string | null) => (value ? new Date(value).toLocaleDa
 export const AdminStudents = () => {
   const { t } = useTranslation();
   const { locale } = useParams();
-  const isAr = resolveLocale(locale) === "ar";
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
+  const [page, setPage] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedSearchStudent, setSelectedSearchStudent] = useState<StudentSearchResult | null>(null);
@@ -83,10 +83,10 @@ export const AdminStudents = () => {
   }, [searchValue]);
 
   const studentsQuery = useQuery({
-    queryKey: ["admin-students"],
+    queryKey: ["admin-students", page],
     queryFn: async () => {
       const response = await api.get<{ data: Student[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(
-        "/admin/students", { params: { limit: 20 } }
+        "/admin/students", { params: { page, limit: 20 } }
       );
       return response.data;
     }
@@ -132,6 +132,15 @@ export const AdminStudents = () => {
   const students = studentsQuery.data?.data ?? [];
   const activeCount = students.filter((student) => student.enrollmentStatus === "ACTIVE").length;
   const revokedCount = students.filter((student) => student.enrollmentStatus === "REVOKED").length;
+
+  const getStatusLabel = (status: EnrollmentStatus): string => {
+    const keyMap: Record<EnrollmentStatus, string> = {
+      ACTIVE: "Active",
+      REVOKED: "Revoked",
+      NONE: "None"
+    };
+    return t(`admin.students.status${keyMap[status]}`);
+  };
 
   const openAction = (student: PendingAction["student"], action: PendingAction["action"]) => {
     setActionError(null);
@@ -181,15 +190,15 @@ export const AdminStudents = () => {
       <section className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="dashboard-panel dashboard-panel--accent p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{isAr ? "الطلاب" : "Students"}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("admin.students.totalStudents")}</p>
             <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{students.length}</p>
           </div>
           <div className="dashboard-panel p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{isAr ? "وصول نشط" : "Active access"}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{t("admin.students.activeAccess")}</p>
             <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{activeCount}</p>
           </div>
           <div className="dashboard-panel p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{isAr ? "مسحوب" : "Revoked"}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{t("admin.students.revoked")}</p>
             <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{revokedCount}</p>
           </div>
         </div>
@@ -197,9 +206,9 @@ export const AdminStudents = () => {
         <div className="dashboard-panel p-5">
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{isAr ? "البحث عن الطلاب" : "Search students"}</p>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("admin.students.searchTitle")}</p>
               <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                {isAr ? "ابحث عن الطالب بسرعة، ثم سجله أو اسحب وصوله أو افتح صفحة التفاصيل." : "Find a student fast, then enroll, revoke, or open the detail view."}
+                {t("admin.students.searchDesc")}
               </p>
             </div>
           </div>
@@ -216,7 +225,7 @@ export const AdminStudents = () => {
                 }}
                 displayValue={(s: StudentSearchResult | null) => s?.fullName ?? searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
-                placeholder={isAr ? "اكتب حرفين على الأقل..." : "Type at least 2 characters..."}
+                placeholder={t("admin.students.searchPlaceholder")}
               />
               <Search className="pointer-events-none absolute end-3 top-3 h-4 w-4" style={{ color: "var(--color-text-muted)" }} />
               <ComboboxOptions
@@ -231,7 +240,7 @@ export const AdminStudents = () => {
                 ) : null}
 
                 {debouncedSearch.length >= 2 && searchQuery.data?.length === 0 ? (
-                  <div className="px-3 py-2 text-sm" style={{ color: "var(--color-text-muted)" }}>{isAr ? "لم يتم العثور على طلاب." : "No students found."}</div>
+                  <div className="px-3 py-2 text-sm" style={{ color: "var(--color-text-muted)" }}>{t("admin.students.noStudentsFound")}</div>
                 ) : null}
 
                 {searchQuery.data?.map((student) => (
@@ -260,13 +269,16 @@ export const AdminStudents = () => {
                 <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{searchedStudent.email}</p>
               </div>
               <div className="flex items-center gap-3">
-                <StatusBadge isAr={isAr} status={searchedStudent.enrollmentStatus} />
+                <StatusBadge
+                  status={searchedStudent.enrollmentStatus}
+                  label={getStatusLabel(searchedStudent.enrollmentStatus)}
+                />
                 <Link
                   className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-xs font-semibold no-underline transition-colors hover:bg-surface2"
                   style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
                   to={`${prefix}/admin/students/${searchedStudent.id}`}
                 >
-                  {isAr ? "فتح" : "Open"}
+                  {t("admin.students.openDetail")}
                   <ArrowRight className="icon-dir h-3.5 w-3.5" />
                 </Link>
                 {renderActions(searchedStudent)}
@@ -278,9 +290,9 @@ export const AdminStudents = () => {
         <div className="dashboard-panel overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-4 border-b px-5 py-4" style={{ borderColor: "var(--color-border)" }}>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{isAr ? "قائمة الطلاب" : "Student roster"}</p>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("admin.students.studentRoster")}</p>
               <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                {isAr ? "راجع حالة التسجيل والإكمال وانتقل مباشرة إلى ملف الطالب عند الحاجة." : "Review enrollment state, completion, and jump directly into a student profile when needed."}
+                {t("admin.students.rosterDesc")}
               </p>
             </div>
           </div>
@@ -289,12 +301,12 @@ export const AdminStudents = () => {
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--color-border)" }}>
                   {[
-                    isAr ? "الطالب" : "Student",
-                    isAr ? "الحالة" : "Status",
-                    isAr ? "النوع" : "Type",
-                    isAr ? "تاريخ التسجيل" : "Enrolled",
-                    isAr ? "الإكمال" : "Completion",
-                    isAr ? "الإجراءات" : "Actions"
+                    t("admin.students.tableHeaderStudent"),
+                    t("admin.students.tableHeaderStatus"),
+                    t("admin.students.tableHeaderType"),
+                    t("admin.students.tableHeaderEnrolled"),
+                    t("admin.students.tableHeaderCompletion"),
+                    t("admin.students.tableHeaderActions")
                   ].map((h) => (
                     <th
                       key={h}
@@ -335,7 +347,10 @@ export const AdminStudents = () => {
                         </div>
                       </Link>
                     </td>
-                    <td className="px-4 py-3"><StatusBadge isAr={isAr} status={student.enrollmentStatus} /></td>
+                    <td className="px-4 py-3"><StatusBadge
+                      status={student.enrollmentStatus}
+                      label={getStatusLabel(student.enrollmentStatus)}
+                    /></td>
                     <td className="px-4 py-3 text-xs" style={{ color: "var(--color-text-secondary)" }}>{student.enrollmentType ?? "-"}</td>
                     <td className="px-4 py-3 text-xs" style={{ color: "var(--color-text-secondary)" }}>{formatDate(student.enrolledAt)}</td>
                     <td className="px-4 py-3">
@@ -353,7 +368,7 @@ export const AdminStudents = () => {
                           style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
                           to={`${prefix}/admin/students/${student.id}`}
                         >
-                          {isAr ? "فتح" : "Open"}
+                          {t("admin.students.openDetail")}
                           <ArrowRight className="icon-dir h-3.5 w-3.5" />
                         </Link>
                         {renderActions(student)}
@@ -369,23 +384,32 @@ export const AdminStudents = () => {
             <div className="p-8">
               <EmptyState
                 illustration={<Users className="mx-auto h-10 w-10 text-brand-600" />}
-                title={isAr ? "لا يوجد طلاب بعد" : "No students yet"}
-                description={isAr ? "يجب أن يتم التسجيل أو الدخول عبر Google قبل استخدام التسجيل اليدوي من الإدارة." : "Registration or Google sign-in must happen before admin enrollment can be used."}
-                action={<div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand)" }}><UserPlus className="h-3.5 w-3.5" />{isAr ? "أنشئ حسابات الطلاب أولا" : "Create student accounts first"}</div>}
+                title={t("admin.students.noStudentsYet")}
+                description={t("admin.students.noStudentsYetDesc")}
+                action={<div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand)" }}><UserPlus className="h-3.5 w-3.5" />{t("admin.students.createAccountsFirst")}</div>}
               />
             </div>
           ) : null}
+
+          {students.length > 0 && (
+            <Pagination
+              currentPage={studentsQuery.data?.pagination.page ?? 1}
+              totalPages={studentsQuery.data?.pagination.totalPages ?? 1}
+              onPageChange={setPage}
+              isLoading={studentsQuery.isLoading}
+            />
+          )}
         </div>
       </section>
 
       <Dialog open={Boolean(pendingAction)} onOpenChange={(open) => !open && setPendingAction(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{pendingAction?.action === "revoke" ? (isAr ? "سحب الوصول؟" : "Revoke access?") : (isAr ? "تسجيل الطالب؟" : "Enroll student?")}</DialogTitle>
+            <DialogTitle>{pendingAction?.action === "revoke" ? t("admin.students.revokeTitle") : t("admin.students.enrollTitle")}</DialogTitle>
             <DialogDescription>
               {pendingAction?.action === "revoke"
-                ? (isAr ? `سيتم سحب وصول ${pendingAction.student.fullName} إلى الدورة فورا.` : `${pendingAction.student.fullName} will lose course access immediately.`)
-                : (isAr ? `سيحصل ${pendingAction?.student.fullName ?? "هذا الطالب"} على وصول فوري للدورة.` : `${pendingAction?.student.fullName ?? "This student"} will gain course access immediately.`)}
+                ? `${pendingAction.student.fullName} ${t("admin.students.revokeMessage")}`
+                : `${pendingAction?.student.fullName ?? "This student"} ${t("admin.students.enrollMessage")}`}
             </DialogDescription>
           </DialogHeader>
 
@@ -415,7 +439,7 @@ export const AdminStudents = () => {
               onClick={() => void confirmAction()}
               type="button"
             >
-              {isMutating ? (isAr ? "جار التنفيذ..." : "Working...") : pendingAction?.action === "revoke" ? t("actions.revokeAccess") : t("actions.enroll")}
+              {isMutating ? t("admin.students.working") : pendingAction?.action === "revoke" ? t("actions.revokeAccess") : t("actions.enroll")}
             </button>
           </DialogFooter>
         </DialogContent>

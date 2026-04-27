@@ -10,7 +10,10 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { formatClockDuration, pickLocalizedText, resolveLocale } from "@/lib/locale";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 type PreviewLesson = {
   id: string;
@@ -46,10 +49,9 @@ type CourseInfo = {
 export const Preview = () => {
   const { locale } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const currentLocale = resolveLocale(locale);
-  const isAr = currentLocale === "ar";
+  const resolvedLocale = resolveLocale(i18n.language);
   const { user, isAuthReady } = useAuth();
   const { statusQuery } = useEnrollment();
   const isLoggedIn = Boolean(user);
@@ -66,13 +68,15 @@ export const Preview = () => {
   });
 
   const courseQuery = useQuery({
-    queryKey: ["course-summary-public"],
+    queryKey: ["course"],
     retry: false,
     refetchOnWindowFocus: false,
     queryFn: async () => {
       const response = await api.get<CourseInfo>("/course");
       return response.data;
-    }
+    },
+    staleTime: CACHE_TIME.MEDIUM,
+    gcTime: getGCTime(CACHE_TIME.MEDIUM)
   });
 
   useEffect(() => {
@@ -103,10 +107,10 @@ export const Preview = () => {
           style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
         >
           <p className="text-base font-bold" style={{ color: "var(--color-text-primary)" }}>
-            {isAr ? "لا تتوفر معاينة حالياً" : "Preview not available"}
+            {t("preview.notAvailableTitle")}
           </p>
           <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-            {isAr ? "لم يتم نشر أي دروس بعد." : "No lessons have been published yet."}
+            {t("preview.notAvailableBody")}
           </p>
           <Link
             className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
@@ -122,31 +126,22 @@ export const Preview = () => {
 
   const lesson = previewQuery.data;
   const course = courseQuery.data;
-  const title = pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr);
+  const title = pickLocalizedText(resolvedLocale, lesson.titleEn ?? lesson.title, lesson.titleAr);
   const description = pickLocalizedText(
-    currentLocale,
+    resolvedLocale,
     lesson.descriptionHtmlEn ?? lesson.descriptionHtml,
     lesson.descriptionHtmlAr
   );
   const courseTitle = course
-    ? pickLocalizedText(currentLocale, course.titleEn ?? course.title, course.titleAr)
+    ? pickLocalizedText(resolvedLocale, course.titleEn ?? course.title, course.titleAr)
     : title;
   const lockedActionLabel = isLoggedIn ? t("preview.getAccessCta") : t("actions.logIn");
   const lockedActionHref = isLoggedIn ? `${prefix}/checkout` : `${prefix}/login`;
-  const previewBenefits = isAr
-    ? [
-        "شاهد أول درس كاملاً قبل أن تدفع",
-        "افهم مستوى الشرح والإيقاع العملي للكورس",
-        "ثم افتح بقية الدروس كلها بدفعة واحدة"
-      ]
-    : [
-        "Watch the first lesson in full before paying",
-        "See the teaching style and practical rhythm of the course",
-        "Then unlock the full lesson library with one payment"
-      ];
+  const previewBenefits = t("preview.benefits.items", { returnObjects: true }) as string[];
 
   return (
     <main className="marketing-dark min-h-dvh px-4 py-6 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
+      <SEO page={SEO_PAGES.preview} />
       <section className="app-shell space-y-5">
         <PageHeader
           hero
@@ -178,8 +173,8 @@ export const Preview = () => {
         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_260px]">
           <div className="dashboard-panel dashboard-panel--accent p-5">
             <div className="section-heading">
-              <p className="section-heading__eyebrow">{isAr ? "لماذا المعاينة مهمة؟" : "Why this preview matters"}</p>
-              <h2 className="section-heading__title">{isAr ? "اختبر قيمة الكورس قبل الالتزام" : "Validate the course before you commit"}</h2>
+              <p className="section-heading__eyebrow">{t("preview.benefits.eyebrow")}</p>
+              <h2 className="section-heading__title">{t("preview.benefits.title")}</h2>
             </div>
             <div className="mt-4 grid gap-3 md:grid-cols-3">
               {previewBenefits.map((benefit) => (
@@ -198,7 +193,7 @@ export const Preview = () => {
               {course?.lessonCount ?? 1}
             </p>
             <p className="mt-1 text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>
-              {isAr ? "درس داخل الرحلة الكاملة التي تفتحها بعد الدفع" : "Lessons inside the full learning path you unlock after checkout"}
+              {t("preview.courseLessonsHint")}
             </p>
           </div>
         </div>
@@ -219,7 +214,7 @@ export const Preview = () => {
                       {t("preview.freePreview")}
                     </p>
                     <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                      {isAr ? "الدرس الأول مفتوح للمشاهدة الآن" : "Lesson 1 is unlocked and ready to watch"}
+                      {t("preview.firstLessonUnlocked")}
                     </p>
                   </div>
                 </div>
@@ -353,7 +348,7 @@ export const Preview = () => {
                   {t("course.public.content")}
                 </p>
                 <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
-                  {course ? `${course.lessonCount} ${isAr ? "دروس" : "lessons"}` : null}
+                  {course ? t("lessons.lessonCount", { count: course.lessonCount }) : null}
                 </p>
               </div>
               <Link
@@ -367,7 +362,7 @@ export const Preview = () => {
 
             <div className="space-y-2">
               {course?.lessons.map((courseLesson, index) => {
-                const lessonTitle = pickLocalizedText(currentLocale, courseLesson.title, courseLesson.titleAr);
+                const lessonTitle = pickLocalizedText(resolvedLocale, courseLesson.title, courseLesson.titleAr);
                 const isPreviewLesson = courseLesson.id === lesson.id || index === 0;
 
                 return (
@@ -394,9 +389,7 @@ export const Preview = () => {
                         {lessonTitle}
                       </p>
                       <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                        {isPreviewLesson
-                          ? (isAr ? "متاح الآن" : "Available now")
-                          : (isAr ? "مغلق حتى تسجيل الدخول والاشتراك" : "Locked until login and enrollment")}
+                        {isPreviewLesson ? t("preview.lessonAvailability.available") : t("preview.lessonAvailability.locked")}
                         {courseLesson.durationSeconds ? ` - ${formatClockDuration(courseLesson.durationSeconds)}` : ""}
                       </p>
                     </div>

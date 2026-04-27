@@ -2,6 +2,8 @@ import { Link, useLocation } from "react-router-dom";
 
 import { resolveLocale } from "@/lib/locale";
 import { getPublicTrustCopy } from "@/lib/public-trust-copy";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 export const NotFound = () => {
   const location = useLocation();
@@ -11,6 +13,7 @@ export const NotFound = () => {
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-6 text-center" style={{ backgroundColor: "var(--color-page)" }}>
+      <SEO page={SEO_PAGES.notFound} />
       <div className="reference-card max-w-xl p-8">
         <p className="text-8xl font-black opacity-10" style={{ color: "var(--color-brand)" }}>404</p>
         <h1 className="mt-4 text-3xl font-black" style={{ color: "var(--color-text-primary)" }}>

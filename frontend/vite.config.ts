@@ -5,10 +5,25 @@ import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+const PUBLIC_ROUTES = [
+  "/",
+  "/pricing",
+  "/about",
+  "/faq",
+  "/contact",
+  "/testimonials",
+  "/roadmap",
+  "/preview",
+  "/privacy",
+  "/terms",
+  "/refund",
+];
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const apiProxyTarget = env.VITE_API_PROXY_TARGET || "http://127.0.0.1:3000";
   const currentDir = path.dirname(fileURLToPath(import.meta.url));
+  const isProd = mode === "production";
 
   return {
     plugins: [react()],

@@ -22,11 +22,11 @@ type Note = {
 
 export const StudentNotes = () => {
   const { locale } = useParams();
-  const currentLocale = resolveLocale(locale);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
+  const resolvedLocale = resolveLocale(i18n.language);
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Record<string, string>>({});
-  const isAr = currentLocale === "ar";
 
   const { data, isLoading } = useQuery({
     queryKey: ["student-notes"],
@@ -70,11 +70,7 @@ export const StudentNotes = () => {
           hero
           eyebrow={t("student.shell.section")}
           title={t("student.notes.title")}
-          description={
-            isAr
-              ? "اجمع أفكارك وملاحظاتك في مكان واحد حتى يسهل الرجوع إليها أثناء التقدم عبر الدروس."
-              : "Keep your ideas and lesson takeaways in one place so they are easy to revisit while you move through the course."
-          }
+          description={t("student.notes.description")}
           actions={
             notes.length > 0 ? (
               <button
@@ -97,13 +93,13 @@ export const StudentNotes = () => {
         ) : notes.length === 0 ? (
           <EmptyState
             illustration={<FileText className="mx-auto h-10 w-10 text-brand-600" />}
-            eyebrow={isAr ? "مساحة الملاحظات" : "Your note space"}
+            eyebrow={t("student.notes.emptyEyebrow")}
             title={t("student.notes.empty")}
             description={t("student.notes.emptyDesc")}
             action={
               <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand)" }}>
                 <Sparkles className="h-3.5 w-3.5" />
-                {isAr ? "افتح أي درس وابدأ التدوين أثناء المشاهدة." : "Open any lesson and start writing while you watch."}
+                {t("student.notes.emptyTip")}
               </div>
             }
           />
@@ -118,18 +114,18 @@ export const StudentNotes = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-                          {pickLocalizedText(currentLocale, note.lesson.titleEn, note.lesson.titleAr)}
+                          {pickLocalizedText(resolvedLocale, note.lesson.titleEn, note.lesson.titleAr)}
                         </p>
                         <span className="text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
                           {Math.floor(note.positionSeconds / 60)}:{String(note.positionSeconds % 60).padStart(2, "0")}
                         </span>
                       </div>
                       <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                        {isAr ? "حرر الملاحظة ثم احفظها لتظل مرتبطة بالدرس." : "Edit your note here and save it to keep it attached to this lesson."}
+                        {t("student.notes.editHint")}
                       </p>
                     </div>
                     <Link
-                      to={`/${locale}/lessons/${note.lesson.id}?notePosition=${note.positionSeconds}`}
+                      to={`${prefix}/lessons/${note.lesson.id}?notePosition=${note.positionSeconds}`}
                       className="flex-shrink-0 inline-flex min-h-10 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium no-underline transition-colors hover:bg-surface2"
                       style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-secondary)" }}
                     >

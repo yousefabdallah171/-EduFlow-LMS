@@ -14,26 +14,23 @@ echo "Installing backend dependencies..." >> "$LOG_FILE"
 cd "$BACKEND_PATH"
 npm install >> "$LOG_FILE" 2>&1
 
+# Build TypeScript
+echo "Building backend..." >> "$LOG_FILE"
+npm run build >> "$LOG_FILE" 2>&1
+
 # Run Prisma migrations
 echo "Running database migrations..." >> "$LOG_FILE"
 npx prisma migrate deploy >> "$LOG_FILE" 2>&1
 
-# Kill old backend process
-echo "Stopping old backend process..." >> "$LOG_FILE"
-pkill -f "node.*backend" 2>/dev/null || true
-sleep 2
+# Start/Restart backend with PM2
+echo "Starting backend with PM2 on port 3008..." >> "$LOG_FILE"
+pm2 restart eduflow-backend >> "$LOG_FILE" 2>&1 || pm2 start "node dist/src/server.js" --name eduflow-backend --cwd "$BACKEND_PATH" >> "$LOG_FILE" 2>&1
 
-# Start backend
-echo "Starting backend on port 3008..." >> "$LOG_FILE"
-cd "$BACKEND_PATH"
-nohup npm run start > /dev/null 2>&1 &
+# Save PM2 configuration for autostart
+pm2 save >> "$LOG_FILE" 2>&1
 
 # Wait for backend to start
 sleep 3
-
-# Reload nginx (ignore errors)
-echo "Reloading nginx..." >> "$LOG_FILE"
-sudo systemctl reload nginx >> "$LOG_FILE" 2>&1 || echo "Nginx reload skipped (may require manual reload)" >> "$LOG_FILE"
 
 echo "=== Deployment completed at $(date) ===" >> "$LOG_FILE"
 exit 0

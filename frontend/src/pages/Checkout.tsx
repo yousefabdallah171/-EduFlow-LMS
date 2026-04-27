@@ -17,14 +17,18 @@ import { useTranslation } from "react-i18next";
 
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { resolveLocale } from "@/lib/locale";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 export const Checkout = () => {
   const { locale } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const isAr = resolveLocale(i18n.language) === "ar";
   const { statusQuery, validateCoupon, checkout } = useEnrollment();
   const [couponCode, setCouponCode] = useState("");
   const [couponInput, setCouponInput] = useState("");
@@ -32,7 +36,7 @@ export const Checkout = () => {
   const [couponOpen, setCouponOpen] = useState(false);
 
   const courseQuery = useQuery({
-    queryKey: ["course-summary"],
+    queryKey: ["course"],
     queryFn: async () => {
       const response = await api.get<{
         priceEgp: number;
@@ -48,7 +52,9 @@ export const Checkout = () => {
         }>;
       }>("/course");
       return response.data;
-    }
+    },
+    staleTime: CACHE_TIME.MEDIUM,
+    gcTime: getGCTime(CACHE_TIME.MEDIUM)
   });
 
   const couponPreview = validateCoupon.data;
@@ -68,8 +74,8 @@ export const Checkout = () => {
   const savingsLabel = useMemo(() => {
     if (!couponPreview?.valid) return null;
     const saved = basePrice - couponPreview.discountedAmountEgp;
-    return isAr ? `وفرت ${saved.toFixed(2)} ${currency}` : `You save ${saved.toFixed(2)} ${currency}`;
-  }, [couponPreview, basePrice, currency, isAr]);
+    return t("checkout.savingsLabel", { amount: saved.toFixed(2), currency });
+  }, [couponPreview, basePrice, currency, t]);
 
   const handleValidateCoupon = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -86,35 +92,29 @@ export const Checkout = () => {
       );
     } catch (error: unknown) {
       const apiError = error as AxiosError<{ message?: string }>;
-      setMessage(apiError.response?.data?.message ?? (isAr ? "فشل الدفع. حاول مرة أخرى." : "Checkout failed. Please try again."));
+      setMessage(apiError.response?.data?.message ?? t("checkout.errorMessage"));
     }
   };
 
   const checkPoints = [
-    { icon: PlayCircle, text: isAr ? "الـ workflow الكامل في 7 مراحل من PRD إلى production" : "The full 7-phase workflow from PRD to production" },
-    { icon: ShieldCheck, text: isAr ? "مشاهدة محمية بعلامة مائية ديناميكية" : "Protected playback with dynamic watermarking" },
-    { icon: Sparkles, text: isAr ? "Templates وprompts وخطوات تنفيذ عملية" : "Templates, prompts, and practical execution steps" },
-    { icon: Globe2, text: isAr ? "تجربة عربية مع دعم واجهة عربي/إنجليزي" : "Arabic-first experience with AR/EN platform support" },
-    { icon: TimerReset, text: isAr ? "وصول دائم وتحديثات مستقبلية" : "Lifetime access and future updates" }
+    { icon: PlayCircle, text: t("checkout.included.workflow") },
+    { icon: ShieldCheck, text: t("checkout.included.protectedPlayback") },
+    { icon: Sparkles, text: t("checkout.included.templates") },
+    { icon: Globe2, text: t("checkout.included.arEnSupport") },
+    { icon: TimerReset, text: t("checkout.included.lifetimeAccess") }
   ];
 
   const trustSignals = [
-    { icon: LockKeyhole, label: t("checkout.securePayment"), sub: isAr ? "مدعوم بـ Paymob" : "Powered by Paymob" },
-    { icon: Infinity, label: t("checkout.lifetimeAccess"), sub: isAr ? "بدون انتهاء صلاحية أبداً" : "No expiry, ever" },
-    { icon: Check, label: t("checkout.instantActivation"), sub: isAr ? "وصول خلال ثوانٍ" : "Access within seconds" }
+    { icon: LockKeyhole, label: t("checkout.securePayment"), sub: t("checkout.trust.paymob") },
+    { icon: Infinity, label: t("checkout.lifetimeAccess"), sub: t("checkout.trust.noExpiry") },
+    { icon: Check, label: t("checkout.instantActivation"), sub: t("checkout.trust.accessSeconds") }
   ];
 
-  const decisionBullets = isAr
-    ? [
-        "كل شيء واضح قبل الدفع: الباقة، السعر، وأي خصم مطبق",
-        "الدفع يتم عبر Paymob ثم يتم تفعيل الوصول مباشرة",
-        "لو لديك سؤال قبل الحجز يمكنك الرجوع للتسعير أو التواصل معنا"
-      ]
-    : [
-        "Everything is clear before payment: package, price, and any applied discount",
-        "Payment is processed through Paymob and access is activated right after",
-        "If you still have questions, you can return to pricing or contact us first"
-      ];
+  const decisionBullets = [
+    t("checkout.decisionBullets.clear"),
+    t("checkout.decisionBullets.activation"),
+    t("checkout.decisionBullets.questions")
+  ];
 
   if (isAlreadyEnrolled) {
     return (
@@ -122,7 +122,14 @@ export const Checkout = () => {
         <div
           className="dashboard-panel dashboard-panel--strong w-full max-w-md p-8 text-center"
         >
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+          <div
+            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
+            style={{
+              backgroundColor: "color-mix(in oklab, var(--color-brand) 12%, var(--color-surface))",
+              border: "1px solid color-mix(in oklab, var(--color-brand) 22%, transparent)",
+              color: "var(--color-brand-text)",
+            }}
+          >
             <Check className="h-6 w-6" />
           </div>
           <h1 className="font-display text-2xl font-bold" style={{ color: "var(--color-text-primary)" }}>
@@ -146,10 +153,11 @@ export const Checkout = () => {
 
   return (
     <div className="dashboard-page min-h-dvh px-4 py-10 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>
+      <SEO page={SEO_PAGES.checkout} />
       <div className="app-shell app-shell--compact">
         <PageHeader
           hero
-          eyebrow={isAr ? "دفع آمن" : "Secure checkout"}
+          eyebrow={t("checkout.eyebrow")}
           title={t("checkout.title")}
           description={t("preview.onePayment")}
         />
@@ -159,7 +167,7 @@ export const Checkout = () => {
             {packages.length > 1 ? (
               <div className="dashboard-panel p-6">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
-                  {isAr ? "اختر الباقة" : "Choose your package"}
+                  {t("checkout.choosePackage")}
                 </p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   {packages.map((coursePackage) => {
@@ -229,12 +237,10 @@ export const Checkout = () => {
 
             <div className="dashboard-panel p-6">
               <div className="section-heading">
-                <p className="section-heading__eyebrow">{isAr ? "قبل ما تدفع" : "Before you pay"}</p>
-                <h2 className="section-heading__title">{isAr ? "كل شيء واضح ومباشر" : "A clear, low-friction decision"}</h2>
+                <p className="section-heading__eyebrow">{t("checkout.beforePay.eyebrow")}</p>
+                <h2 className="section-heading__title">{t("checkout.beforePay.title")}</h2>
                 <p className="section-heading__description">
-                  {isAr
-                    ? "صفحة الدفع هذه مصممة لتوضح لك ما الذي ستحصل عليه وما الذي سيحدث بعد الدفع بدون مفاجآت."
-                    : "This checkout keeps the commitment simple: what you get, what you pay, and what happens next."}
+                  {t("checkout.beforePay.description")}
                 </p>
               </div>
               <ul className="mt-5 space-y-3">
@@ -315,7 +321,7 @@ export const Checkout = () => {
                       </p>
                     ) : (
                       <p className="mt-2 text-xs text-red-500">
-                        {couponPreview.reason ?? (isAr ? "رمز القسيمة غير صالح" : "Invalid coupon code")}
+                        {couponPreview.reason ?? t("checkout.invalidCoupon")}
                       </p>
                     )
                   ) : null}
@@ -349,7 +355,7 @@ export const Checkout = () => {
 
             <div className="mt-5 grid gap-2 text-center">
               <Link className="text-xs font-medium text-brand-600 no-underline hover:underline" to={`${prefix}/pricing`}>
-                {isAr ? "راجع الباقات مرة ثانية" : "Compare packages again"}
+                {t("checkout.comparePackagesAgain")}
               </Link>
               <Link
                 className="text-xs font-medium no-underline hover:underline"

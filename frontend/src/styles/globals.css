@@ -155,8 +155,6 @@ button[style*="var(--gradient-brand)"],
 button[style*="--gradient-brand"],
 a[style*="var(--gradient-brand)"],
 a[style*="--gradient-brand"],
-button[style*="var(--color-brand)"],
-a[style*="var(--color-brand)"],
 button.text-white[style*="var(--gradient-brand)"],
 button.text-white[style*="--gradient-brand"],
 a.text-white[style*="var(--gradient-brand)"],
@@ -1362,10 +1360,10 @@ p {
   margin-top: 14px;
   color: var(--color-brand);
   font-size: 18px;
-  animation: eduflow-landing-bounce-down 1.5s ease-in-out infinite;
+  animation: eduflow-landing-nudge-down 1.5s ease-in-out infinite;
 }
 
-@keyframes eduflow-landing-bounce-down {
+@keyframes eduflow-landing-nudge-down {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(6px); }
 }
@@ -1620,13 +1618,16 @@ p {
 }
 
 .landing-phase-segment-fill {
-  height: 0;
+  height: 100%;
   background: rgb(var(--phase-rgb) / 0.5);
-  transition: height 0.55s ease;
+  transform: translateX(-50%) scaleY(0);
+  transform-origin: top;
+  transition: transform 0.55s ease;
+  will-change: transform;
 }
 
 .landing-phase.is-visible .landing-phase-segment-fill {
-  height: 100%;
+  transform: translateX(-50%) scaleY(1);
 }
 
 .landing-phase-node {
@@ -1707,8 +1708,8 @@ p {
   transform: scale(0.6);
   text-align: center;
   transition:
-    opacity 0.6s cubic-bezier(.34, 1.56, .64, 1),
-    transform 0.6s cubic-bezier(.34, 1.56, .64, 1);
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .landing-timeline-completion.is-visible {

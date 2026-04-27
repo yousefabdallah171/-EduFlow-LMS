@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { AttachmentManager } from "@/components/admin/AttachmentManager";
 import { LessonForm } from "@/components/admin/LessonForm";
 import { SectionManager } from "@/components/admin/SectionManager";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { EmptyState } from "@/components/shared/EmptyState";
 import {
@@ -22,6 +23,15 @@ import { useTusUpload } from "@/hooks/useTusUpload";
 import { getAdminUiCopy } from "@/lib/admin-ui-copy";
 import { api, queryClient } from "@/lib/api";
 import { resolveLocale } from "@/lib/locale";
+
+type MediaFile = {
+  id: string;
+  title: string;
+  type: string;
+  status: string;
+  durationSeconds: number | null;
+  sizeBytes: bigint;
+};
 
 type LessonAdmin = {
   id: string;
@@ -94,8 +104,27 @@ export const AdminLessons = () => {
   const [lessonFormOpen, setLessonFormOpen] = useState(false);
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [pendingDeleteLessonId, setPendingDeleteLessonId] = useState<string | null>(null);
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const { progress, bytesUploaded, bytesTotal, isUploading, startUpload, cancelUpload } = useTusUpload({
     lessonId: selectedLessonId
+  });
+
+  const linkMediaMutation = useMutation({
+    mutationFn: async (mediaFileId: string) => {
+      if (!selectedLessonId) throw new Error("No lesson selected");
+      return api.post(`/admin/lessons/${selectedLessonId}/media`, { mediaFileId });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin-lessons"] });
+      setMediaPickerOpen(false);
+      toast.success(isAr ? "تم ربط الفيديو بنجاح" : "Video linked successfully");
+    },
+    onError: (error) => {
+      const apiError = error as AxiosError<{ message?: string }>;
+      toast.error(
+        apiError.response?.data?.message ?? (isAr ? "فشل ربط الفيديو" : "Failed to link video")
+      );
+    }
   });
 
   const lessonsQuery = useQuery({
@@ -452,60 +481,28 @@ export const AdminLessons = () => {
 
                   <div className="mt-4 space-y-3">
                     <p className="text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
-                      {copy.lessons.uploadDesc}
+                      Select a video from your media library or upload a new one to /admin/media, then link it here.
                     </p>
 
-                    <div>
-                      <label className="mb-2 block text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
-                        {copy.lessons.videoFile}
-                      </label>
-                      <input
-                        accept="video/*"
-                        className="block w-full rounded-lg border px-3 py-2 text-sm transition-colors file:mr-2 file:rounded-lg file:border-0 file:bg-zinc-950 file:px-2 file:py-1 file:text-xs file:font-bold file:text-white"
-                        style={{
-                          borderColor: "var(--color-border-strong)",
-                          color: "var(--color-text-primary)",
-                          backgroundColor: "var(--color-surface-2)"
-                        }}
-                        disabled={isUploading}
-                        type="file"
-                        onChange={(event) => {
-                          const file = event.target.files?.[0];
-                          if (file && selectedLesson.id) {
-                            startUpload(file);
-                          }
-                        }}
-                      />
-                    </div>
+                    <button
+                      className="w-full rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95"
+                      style={{ background: "var(--gradient-brand)" }}
+                      onClick={() => setMediaPickerOpen(true)}
+                      type="button"
+                      disabled={linkMediaMutation.isPending}
+                    >
+                      {linkMediaMutation.isPending ? "Linking..." : "Link from Media Library"}
+                    </button>
 
-                    {isUploading ? (
-                      <div
-                        className="rounded-2xl border p-4"
-                        style={{ borderColor: "var(--color-border-strong)", backgroundColor: "var(--color-surface-2)" }}
-                      >
-                        <div className="mb-2 flex items-center justify-between gap-3">
-                          <span className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                            {copy.lessons.uploadProgress}
-                          </span>
-                          <span className="tabular-nums text-sm font-bold text-brand-600">{progress}%</span>
-                        </div>
-                        <Progress className="h-2" value={progress} />
-                        <p className="mt-2 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                          {formatBytes(bytesUploaded)} / {formatBytes(bytesTotal)}
-                        </p>
-                      </div>
-                    ) : null}
-
-                    {isUploading ? (
-                      <button
-                        className="w-full rounded-lg border px-3 py-2 text-xs font-semibold transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
-                        style={{ borderColor: "rgba(239,68,68,0.4)", color: "rgb(185,28,28)" }}
-                        onClick={() => void cancelUpload()}
-                        type="button"
-                      >
-                        {copy.lessons.cancelUpload}
-                      </button>
-                    ) : null}
+                    <a
+                      href="/admin/media"
+                      className="block w-full rounded-lg border px-3 py-2 text-center text-xs font-semibold transition-colors"
+                      style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Go to Media Library
+                    </a>
                   </div>
                 </div>
 
@@ -522,6 +519,15 @@ export const AdminLessons = () => {
           </div>
         </div>
       </section>
+
+      <MediaPicker
+        isOpen={mediaPickerOpen}
+        onClose={() => setMediaPickerOpen(false)}
+        onSelect={(mediaFile) => {
+          void linkMediaMutation.mutateAsync(mediaFile.id);
+        }}
+        mediaType="VIDEO"
+      />
 
       <LessonForm
         lessonId={editingLessonId}

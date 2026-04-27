@@ -249,6 +249,51 @@ export const adminLessonsController = {
     } catch (error) {
       handleLessonAdminError(error, res, next);
     }
+  },
+
+  async linkMedia(req: Request, res: Response, next: NextFunction) {
+    try {
+      const lessonId = getFirstValue(req.params.lessonId);
+      if (!lessonId) {
+        res.status(400).json({ error: "LESSON_ID_REQUIRED" });
+        return;
+      }
+
+      const { mediaFileId } = z.object({ mediaFileId: z.string().min(1) }).parse(req.body);
+      const lesson = await prisma.lesson.update({
+        where: { id: lessonId },
+        data: { mediaFileId },
+        include: { mediaFile: true }
+      });
+      await courseService.invalidatePublicCourseCache();
+      await lessonService.invalidatePublishedLessonsCache();
+      await lessonService.invalidateLessonMetadataCache(lessonId);
+      res.json(lesson);
+    } catch (error) {
+      handleLessonAdminError(error, res, next);
+    }
+  },
+
+  async unlinkMedia(req: Request, res: Response, next: NextFunction) {
+    try {
+      const lessonId = getFirstValue(req.params.lessonId);
+      if (!lessonId) {
+        res.status(400).json({ error: "LESSON_ID_REQUIRED" });
+        return;
+      }
+
+      const lesson = await prisma.lesson.update({
+        where: { id: lessonId },
+        data: { mediaFileId: null },
+        include: { mediaFile: true }
+      });
+      await courseService.invalidatePublicCourseCache();
+      await lessonService.invalidatePublishedLessonsCache();
+      await lessonService.invalidateLessonMetadataCache(lessonId);
+      res.json(lesson);
+    } catch (error) {
+      handleLessonAdminError(error, res, next);
+    }
   }
 };
 

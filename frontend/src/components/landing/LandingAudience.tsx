@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 type AudienceCard = { title: string; body: string };
 
-export const LandingAudience = ({ isAr }: { isAr: boolean }) => {
+export const LandingAudience = () => {
   const { t } = useTranslation();
 
   const eyebrow = t("landing.audience.eyebrow");
@@ -11,7 +11,7 @@ export const LandingAudience = ({ isAr }: { isAr: boolean }) => {
   const accent = t("landing.audience.accent");
   const subtitle = t("landing.audience.subtitle");
   const cards = t("landing.audience.cards", { returnObjects: true }) as AudienceCard[];
-  const fitLabel = isAr ? "مناسب" : "Good fit";
+  const fitLabel = t("landing.audience.fitLabel");
 
   return (
     <section className="landing-section" data-landing-section>

@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { Download, FileDown, FileText } from "lucide-react";
-import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
@@ -20,10 +19,8 @@ const formatSize = (bytes: number, locale: "en" | "ar") => {
 };
 
 export const StudentDownloads = () => {
-  const { locale } = useParams();
-  const currentLocale = resolveLocale(locale);
-  const { t } = useTranslation();
-  const isAr = currentLocale === "ar";
+  const { t, i18n } = useTranslation();
+  const resolvedLocale = resolveLocale(i18n.language);
 
   const { data: lessonsData, isLoading } = useQuery({
     queryKey: ["student-lessons-downloads"],
@@ -60,26 +57,22 @@ export const StudentDownloads = () => {
           hero
           eyebrow={t("student.shell.section")}
           title={t("student.downloads.title")}
-          description={
-            isAr
-              ? "كل الملفات المساعدة المرفقة بالدروس تظهر هنا حتى يسهل الوصول إليها من مكان واحد."
-              : "All lesson attachments and supporting files live here so you can grab them from one place."
-          }
+          description={t("student.downloads.description")}
         />
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="dashboard-panel dashboard-panel--accent p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{isAr ? "الموارد المتاحة" : "Available resources"}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("student.downloads.metrics.availableResources")}</p>
             <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{resourceCount}</p>
           </div>
           <div className="dashboard-panel p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{isAr ? "الدروس المرتبطة" : "Linked lessons"}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{t("student.downloads.metrics.linkedLessons")}</p>
             <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{grouped.length}</p>
           </div>
           <div className="dashboard-panel p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{isAr ? "طريقة الاستخدام" : "Best use"}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{t("student.downloads.metrics.bestUse")}</p>
             <p className="mt-2 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
-              {isAr ? "افتح الدرس أولًا إذا كنت تريد فهم السياق، ثم نزّل الملف المرتبط به." : "Open the lesson first if you need context, then download the matching file."}
+              {t("student.downloads.metrics.bestUseBody")}
             </p>
           </div>
         </div>
@@ -91,7 +84,7 @@ export const StudentDownloads = () => {
         ) : grouped.length === 0 ? (
           <EmptyState
             illustration={<FileDown className="mx-auto h-10 w-10 text-brand-600" />}
-            eyebrow={isAr ? "مركز التنزيلات" : "Download center"}
+            eyebrow={t("student.downloads.emptyEyebrow")}
             title={t("student.downloads.empty")}
             description={t("student.downloads.emptyDesc")}
           />
@@ -102,10 +95,10 @@ export const StudentDownloads = () => {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="font-display text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
-                      {pickLocalizedText(currentLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
+                      {pickLocalizedText(resolvedLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
                     </p>
                     <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                      {isAr ? `${resources.length} ملف مرتبط بهذا الدرس` : `${resources.length} files attached to this lesson`}
+                      {t("student.downloads.filesAttached", { count: resources.length })}
                     </p>
                   </div>
                 </div>
@@ -128,15 +121,15 @@ export const StudentDownloads = () => {
                             {resource.title}
                           </p>
                           <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                            {isAr ? "جاهز للتنزيل" : "Ready to download"}
+                            {t("student.downloads.readyToDownload")}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline">{formatSize(resource.fileSizeBytes, currentLocale)}</Badge>
+                        <Badge variant="outline">{formatSize(resource.fileSizeBytes, resolvedLocale)}</Badge>
                         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600">
                           <Download className="h-3.5 w-3.5" />
-                          {isAr ? "تنزيل" : "Download"}
+                          {t("student.downloads.download")}
                         </span>
                       </div>
                     </a>

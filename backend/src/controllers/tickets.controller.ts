@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../config/database.js";
 import { env } from "../config/env.js";
+import { ROLES } from "../constants/index.js";
 import { sendTicketCreatedEmail, sendTicketReplyEmail } from "../utils/email.js";
 
 const firstParamValue = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
@@ -79,9 +80,8 @@ export const ticketsController = {
             `${env.FRONTEND_URL}/help`
           );
         }
-      } catch (emailError) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to send ticket created email:", emailError);
+      } catch {
+        // Ignore email failures - not critical to ticket creation
       }
 
       res.status(201).json(ticket);
@@ -92,6 +92,11 @@ export const ticketsController = {
 
   async listAll(req: Request, res: Response, next: NextFunction) {
     try {
+      // Security: Verify admin role (defense in depth)
+      if (req.user?.role !== ROLES.ADMIN) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
       const status = req.query.status as string | undefined;
       const where = status ? { status: status as "OPEN" | "RESOLVED" } : {};
 
@@ -115,6 +120,11 @@ export const ticketsController = {
 
   async updateStatus(req: Request, res: Response, next: NextFunction) {
     try {
+      // Security: Verify admin role (defense in depth)
+      if (req.user?.role !== ROLES.ADMIN) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
       const result = updateStatusSchema.safeParse(req.body);
       if (!result.success) {
         res.status(422).json(validationError(result.error));
@@ -151,6 +161,11 @@ export const ticketsController = {
 
   async reply(req: Request, res: Response, next: NextFunction) {
     try {
+      // Security: Verify admin role (defense in depth)
+      if (req.user?.role !== ROLES.ADMIN) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
       const result = replySchema.safeParse(req.body);
       if (!result.success) {
         res.status(422).json(validationError(result.error));
@@ -197,9 +212,8 @@ export const ticketsController = {
           admin?.fullName ?? "Support Team",
           message
         );
-      } catch (emailError) {
-        // Log but don't fail the request if email fails
-        console.error("Failed to send ticket reply email:", emailError);
+      } catch {
+        // Ignore email failures - not critical to message processing
       }
 
       res.json(newMessage);

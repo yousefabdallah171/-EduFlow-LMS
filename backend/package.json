@@ -12,6 +12,8 @@
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run --dir tests/integration",
+    "test:security": "vitest run tests/security",
+    "test:performance": "vitest run tests/performance",
     "load:course": "node scripts/load/course.mjs",
     "load:student": "node scripts/load/student.mjs",
     "prisma:generate": "prisma generate",
@@ -24,7 +26,9 @@
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "@sentry/node": "^10.49.0",
+    "@types/bull": "^3.15.9",
     "bcryptjs": "^2.4.3",
+    "bull": "^4.16.5",
     "compression": "^1.7.5",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { MessageCircle, Send, ShieldCheck, Sparkles } from "lucide-react";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { resolveLocale } from "@/lib/locale";
@@ -8,12 +9,14 @@ import { api } from "@/lib/api";
 import { contactInfo } from "@/lib/public-page-content";
 import { getPublicTrustCopy } from "@/lib/public-trust-copy";
 import { useAuthStore } from "@/stores/auth.store";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 
 export const Contact = () => {
   const { locale } = useParams();
+  const { t } = useTranslation();
   const resolved = resolveLocale(locale);
   const copy = getPublicTrustCopy(resolved).contact;
-  const isAr = resolved === "ar";
   const { user } = useAuthStore();
 
   const [form, setForm] = useState({ name: "", email: "", message: "" });
@@ -30,15 +33,15 @@ export const Contact = () => {
 
   const signedInLabel = useMemo(() => {
     if (!user?.email) return "";
-    return isAr ? `مسجل الدخول: ${user.email}` : `Signed in as: ${user.email}`;
-  }, [isAr, user?.email]);
+    return t("contact.signedInAs", { email: user.email });
+  }, [t, user?.email]);
 
   const validationMessages = {
-    nameRequired: isAr ? "الاسم مطلوب" : "Name is required",
-    emailRequired: isAr ? "البريد الإلكتروني مطلوب" : "Email is required",
-    nameShort: isAr ? "الاسم يجب أن يكون حرفين على الأقل" : "Name must be at least 2 characters",
-    emailInvalid: isAr ? "اكتب بريدًا إلكترونيًا صحيحًا" : "Please enter a valid email address",
-    messageShort: isAr ? "الرسالة يجب أن تكون 10 أحرف على الأقل" : "Message must be at least 10 characters"
+    nameRequired: t("contact.validation.nameRequired"),
+    emailRequired: t("contact.validation.emailRequired"),
+    nameShort: t("contact.validation.nameShort"),
+    emailInvalid: t("contact.validation.emailInvalid"),
+    messageShort: t("contact.validation.messageShort")
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -71,6 +74,7 @@ export const Contact = () => {
 
   return (
     <main className="reference-page">
+      <SEO page={SEO_PAGES.contact} />
       <div className="reference-shell reference-shell--narrow">
         <header className="reference-hero">
           <span className="reference-badge">
@@ -100,14 +104,14 @@ export const Contact = () => {
 
             <div className="mt-6 space-y-3 text-sm" style={{ color: "var(--color-text-secondary)" }}>
               <div className="flex items-center justify-between gap-3 rounded-2xl border px-4 py-3" style={{ borderColor: "var(--color-border)" }}>
-                <span>{isAr ? "واتساب" : "WhatsApp"}</span>
+                <span>{t("contact.whatsapp")}</span>
                 <a className="inline-flex items-center gap-2 font-bold text-brand-600 no-underline" href={contactInfo.whatsappUrl} target="_blank" rel="noreferrer">
                   {contactInfo.whatsapp}
                   <MessageCircle className="h-4 w-4" />
                 </a>
               </div>
               <div className="flex items-center justify-between gap-3 rounded-2xl border px-4 py-3" style={{ borderColor: "var(--color-border)" }}>
-                <span>{isAr ? "الموقع" : "Location"}</span>
+                <span>{t("contact.location")}</span>
                 <span style={{ color: "var(--color-text-primary)" }}>{copy.location}</span>
               </div>
             </div>
@@ -123,12 +127,12 @@ export const Contact = () => {
               <div>
                 <p className="m-0 font-display text-xl font-black" style={{ color: "var(--color-text-primary)" }}>{copy.formTitle}</p>
                 <p className="mt-2 text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>
-                  {isAr ? "اكتب رسالة واضحة وسنرد عليك في أقرب وقت." : "Send a clear message and we’ll reply as soon as possible."}
+                  {t("contact.formHint")}
                 </p>
               </div>
               <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand)" }}>
                 <ShieldCheck className="h-3.5 w-3.5" />
-                {isAr ? "رسالة واضحة = رد أسرع" : "Clear message = faster reply"}
+                {t("contact.formTipBadge")}
               </div>
             </div>
 
@@ -172,9 +176,7 @@ export const Contact = () => {
                 <div className="inline-flex items-start gap-2">
                   <ShieldCheck className="mt-0.5 h-4 w-4 text-brand-600" />
                   <p>
-                    {isAr
-                      ? "اذكر المشكلة، الصفحة التي كنت عليها، وما الذي كنت تحاول فعله."
-                      : "Mention the issue, the page you were on, and what you were trying to do."}
+                    {t("contact.formTip")}
                   </p>
                 </div>
               </div>

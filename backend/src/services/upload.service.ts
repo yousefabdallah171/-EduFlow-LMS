@@ -8,19 +8,38 @@ import { prisma } from "../config/database.js";
 import { redis } from "../config/redis.js";
 import { lessonRepository } from "../repositories/lesson.repository.js";
 import { videoUploadRepository } from "../repositories/video-upload.repository.js";
+import { malwareScanService } from "./malware-scan.service.js";
+import { queueVideoForProcessing } from "../jobs/index.js";
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024 * 1024; // 4 GB
-const ALLOWED_MIME_PREFIXES = ["video/"];
+const ALLOWED_MIME_TYPES = {
+  "video/mp4": "VIDEO",
+  "video/quicktime": "VIDEO",
+  "video/x-msvideo": "VIDEO",
+  "video/x-matroska": "VIDEO",
+  "image/jpeg": "IMAGE",
+  "image/png": "IMAGE",
+  "image/gif": "IMAGE",
+  "image/webp": "IMAGE",
+  "application/pdf": "PDF",
+  "application/msword": "DOCUMENT",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCUMENT",
+  "application/vnd.ms-excel": "DOCUMENT",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "DOCUMENT",
+};
 const FFMPEG_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
 type UploadState = {
   id: string;
   lessonId: string | null;
+  mediaFileId: string | null;
   filename: string;
   contentType: string;
   uploadLength: number;
   offset: number;
   userId: string;
+  folderId?: string;
+  mediaType?: string;
 };
 
 const uploadStateKey = (uploadId: string) => `tus-upload:${uploadId}`;
@@ -44,8 +63,11 @@ const parseUploadMetadata = (value: string | undefined) => {
 
   return {
     filename: entries.filename ?? "upload.bin",
+    title: entries.title || null,
     lessonId: entries.lessonId || null,
-    contentType: entries.contentType ?? "application/octet-stream"
+    folderId: entries.folderId || null,
+    contentType: entries.contentType ?? "application/octet-stream",
+    mediaType: entries.mediaType || null
   };
 };
 
@@ -208,9 +230,12 @@ export const uploadService = {
 
     const metadata = parseUploadMetadata(input.uploadMetadataHeader);
 
-    if (!ALLOWED_MIME_PREFIXES.some((prefix) => metadata.contentType.startsWith(prefix))) {
-      throw new UploadError("INVALID_CONTENT_TYPE", 415, "Only video files are accepted.");
+    // Check if content type is allowed
+    if (!(metadata.contentType in ALLOWED_MIME_TYPES)) {
+      throw new UploadError("INVALID_CONTENT_TYPE", 415, "File type not supported. Allowed: video, image, PDF, documents.");
     }
+
+    // Validate lesson exists if provided
     if (metadata.lessonId) {
       const lesson = await lessonRepository.findById(metadata.lessonId);
       if (!lesson) {
@@ -220,11 +245,30 @@ export const uploadService = {
 
     await ensureStorage();
 
+    // Detect media type from MIME type if not provided
+    const mediaType = metadata.mediaType || (ALLOWED_MIME_TYPES[metadata.contentType as keyof typeof ALLOWED_MIME_TYPES] || "OTHER");
+
+    // Create MediaFile record for library
+    const mediaFile = await prisma.mediaFile.create({
+      data: {
+        title: metadata.title || metadata.filename,
+        type: mediaType as any,
+        originalFilename: metadata.filename,
+        mimeType: metadata.contentType,
+        sizeBytes: BigInt(uploadLength),
+        folderId: metadata.folderId || null,
+        uploadedById: input.userId,
+        status: "UPLOADING"
+      }
+    });
+
+    // Create VideoUpload record for backward compatibility
     const upload = await videoUploadRepository.create({
       lesson: metadata.lessonId ? { connect: { id: metadata.lessonId } } : undefined,
       uploadedBy: { connect: { id: input.userId } },
       filename: metadata.filename,
-      sizeBytes: BigInt(uploadLength)
+      sizeBytes: BigInt(uploadLength),
+      mediaFile: { connect: { id: mediaFile.id } }
     });
 
     const finalPath = rawUploadPath(upload.id, metadata.filename);
@@ -233,14 +277,23 @@ export const uploadService = {
       storagePath: finalPath
     });
 
+    // Update MediaFile with storage path
+    await prisma.mediaFile.update({
+      where: { id: mediaFile.id },
+      data: { storagePath: finalPath, tusUploadId: upload.id }
+    });
+
     const state: UploadState = {
       id: upload.id,
-      lessonId: metadata.lessonId,
+      lessonId: metadata.lessonId || null,
+      mediaFileId: mediaFile.id,
       filename: metadata.filename,
       contentType: metadata.contentType,
       uploadLength,
       offset: 0,
-      userId: input.userId
+      userId: input.userId,
+      folderId: metadata.folderId,
+      mediaType
     };
     await writeUploadState(state);
 
@@ -324,42 +377,94 @@ export const uploadService = {
 
   async processUpload(uploadId: string) {
     const upload = await videoUploadRepository.findById(uploadId);
-    if (!upload?.lessonId || !upload.storagePath) {
+    if (!upload?.storagePath) {
       return;
     }
 
-    await videoUploadRepository.updateStatus(uploadId, { status: "PROCESSING" });
-    await prisma.lesson.update({
-      where: { id: upload.lessonId },
-      data: { videoStatus: "PROCESSING" }
-    });
+    const mediaFile = upload.mediaFileId ? await prisma.mediaFile.findUnique({ where: { id: upload.mediaFileId } }) : null;
 
-    try {
-      const processed = await runFfmpeg(upload.lessonId, upload.storagePath);
-
-      await prisma.lesson.update({
-        where: { id: upload.lessonId },
-        data: {
-          videoStatus: "READY",
-          videoHlsPath: processed.playlistRelativePath,
-          durationSeconds: processed.durationSeconds
-        }
+    // For non-video files, mark as READY immediately
+    if (mediaFile && mediaFile.type !== "VIDEO") {
+      await prisma.mediaFile.update({
+        where: { id: mediaFile.id },
+        data: { status: "READY" }
       });
-
-      await videoUploadRepository.updateStatus(uploadId, {
-        status: "READY"
-      });
+      await videoUploadRepository.updateStatus(uploadId, { status: "READY" });
       await deleteUploadState(uploadId);
-    } catch (error) {
+      return;
+    }
+
+    // For videos, enqueue transcoding job
+    if (mediaFile && mediaFile.type === "VIDEO") {
+      await prisma.mediaFile.update({
+        where: { id: mediaFile.id },
+        data: { status: "PROCESSING" }
+      });
+      await videoUploadRepository.updateStatus(uploadId, { status: "PROCESSING" });
+
+      try {
+        const scanResult = await malwareScanService.scanFile(upload.storagePath);
+        if (scanResult.isInfected) {
+          throw new Error("Malware detected. Upload rejected.");
+        }
+
+        // Enqueue video transcoding job
+        await queueVideoForProcessing(mediaFile.id, upload.storagePath);
+      } catch (error) {
+        await prisma.mediaFile.update({
+          where: { id: mediaFile.id },
+          data: {
+            status: "ERROR",
+            errorMessage: error instanceof Error ? error.message : "Upload processing failed."
+          }
+        });
+        await videoUploadRepository.updateStatus(uploadId, {
+          status: "ERROR",
+          errorMessage: error instanceof Error ? error.message : "Upload processing failed."
+        });
+        throw error;
+      }
+      return;
+    }
+
+    // Backward compatibility: if lesson-based upload without mediaFile
+    if (upload.lessonId && !mediaFile) {
+      await videoUploadRepository.updateStatus(uploadId, { status: "PROCESSING" });
       await prisma.lesson.update({
         where: { id: upload.lessonId },
-        data: { videoStatus: "ERROR" }
+        data: { videoStatus: "PROCESSING" }
       });
-      await videoUploadRepository.updateStatus(uploadId, {
-        status: "ERROR",
-        errorMessage: error instanceof Error ? error.message : "Upload processing failed."
-      });
-      throw error;
+
+      try {
+        const scanResult = await malwareScanService.scanFile(upload.storagePath);
+        if (scanResult.isInfected) {
+          throw new Error("Malware detected. Upload rejected.");
+        }
+
+        const processed = await runFfmpeg(upload.lessonId, upload.storagePath);
+
+        await prisma.lesson.update({
+          where: { id: upload.lessonId },
+          data: {
+            videoStatus: "READY",
+            videoHlsPath: processed.playlistRelativePath,
+            durationSeconds: processed.durationSeconds
+          }
+        });
+
+        await videoUploadRepository.updateStatus(uploadId, { status: "READY" });
+        await deleteUploadState(uploadId);
+      } catch (error) {
+        await prisma.lesson.update({
+          where: { id: upload.lessonId },
+          data: { videoStatus: "ERROR" }
+        });
+        await videoUploadRepository.updateStatus(uploadId, {
+          status: "ERROR",
+          errorMessage: error instanceof Error ? error.message : "Upload processing failed."
+        });
+        throw error;
+      }
     }
   }
 };

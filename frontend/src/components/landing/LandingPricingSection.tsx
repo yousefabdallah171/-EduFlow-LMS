@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/lib/api";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
+import { resolveLocale } from "@/lib/locale";
 
 type PricingCard = {
   id: string;
@@ -36,19 +38,20 @@ export const LandingPricingSection = ({
   forceVisible?: boolean;
 }) => {
   const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const isAr = resolveLocale(i18n.language) === "ar";
 
   const titleLines = t("landing.pricing.titleLines", { returnObjects: true }) as string[];
   const cards = t("landing.pricing.cards", { returnObjects: true }) as PricingCard[];
   const trust = t("landing.pricing.trust", { returnObjects: true }) as string[];
 
   const courseQuery = useQuery({
-    queryKey: ["course-public"],
+    queryKey: ["course"],
     queryFn: async () => {
       const response = await api.get<{ packages?: CoursePackage[] }>("/course");
       return response.data;
     },
-    staleTime: 60_000
+    staleTime: CACHE_TIME.MEDIUM,
+    gcTime: getGCTime(CACHE_TIME.MEDIUM)
   });
 
   const packages = courseQuery.data?.packages ?? [];
@@ -95,7 +98,7 @@ export const LandingPricingSection = ({
           const soldOut = card.variant === "vip";
           const pkg = byId.get(card.id);
           const resolvedCurrency = pkg?.currency ?? card.currency;
-          const currencyLabel = isAr && resolvedCurrency === "EGP" ? "جنيه" : resolvedCurrency;
+          const currencyLabel = resolvedCurrency === "EGP" ? t("common.currency.egp") : resolvedCurrency;
           const resolvedPrice = pkg?.priceEgp != null ? pkg.priceEgp.toLocaleString(isAr ? "ar-EG" : "en-US") : card.price;
 
           return (

@@ -15,29 +15,18 @@ router.get(
     try {
       const userId = req.user!.userId;
 
-      const [summary, user, course, enrollmentStatus, progressRows] = await Promise.all([
+      const [summary, user, course, enrollmentStatus] = await Promise.all([
         dashboardService.getStudentDashboard(userId),
         prisma.user.findUnique({
           where: { id: userId },
           select: { id: true, fullName: true, email: true, avatarUrl: true }
         }),
         courseService.getPublicCourse(),
-        enrollmentService.getStatus(userId),
-        prisma.lessonProgress.findMany({
-          where: {
-            userId,
-            lesson: { isPublished: true }
-          },
-          select: {
-            lessonId: true,
-            watchTimeSeconds: true,
-            completedAt: true
-          }
-        })
+        enrollmentService.getStatus(userId)
       ]);
 
-      const totalWatchTimeSeconds = progressRows.reduce((sum, row) => sum + row.watchTimeSeconds, 0);
-      const lessonsWatched = progressRows.filter((row) => row.watchTimeSeconds > 0).length;
+      const totalWatchTimeSeconds = summary.totalWatchTimeSeconds;
+      const lessonsWatched = summary.lessonsWatched;
 
       res.json({
         // Backward-compatible keys used by current frontend
@@ -64,11 +53,7 @@ router.get(
             enrolledAt: enrollmentStatus.enrolledAt ? enrollmentStatus.enrolledAt.toISOString() : null
           }
         ],
-        progress: progressRows.map((row) => ({
-          lessonId: row.lessonId,
-          watchTime: row.watchTimeSeconds,
-          completed: row.completedAt !== null
-        })),
+        progress: summary.progress,
         stats: {
           lessonsWatched,
           totalWatchTime: totalWatchTimeSeconds,

@@ -5,14 +5,15 @@ import { AxiosError } from "axios";
 import { useTranslation } from "react-i18next";
 
 import { AuthShell } from "@/components/shared/AuthShell";
+import { SEO } from "@/components/shared/SEO";
+import { SEO_PAGES } from "@/lib/seo-config";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 
 export const ForgotPassword = () => {
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
@@ -28,42 +29,36 @@ export const ForgotPassword = () => {
       setIsSuccess(true);
     } catch (error: unknown) {
       const apiError = error as AxiosError<{ message?: string }>;
-      setMessage(apiError.response?.data?.message ?? (isAr ? "تعذر إرسال رابط الاستعادة الآن." : "Failed to send reset link."));
+      setMessage(apiError.response?.data?.message ?? t("auth.forgotPassword.errorSendLink"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
+    <>
+    <SEO page={SEO_PAGES.forgotPassword} />
     <AuthShell
-      badge={isAr ? "استعادة الوصول" : "Recover access"}
+      badge={t("auth.forgotPassword.badge")}
       title={t("auth.forgotPassword.title")}
       subtitle={t("auth.forgotPassword.subtitle")}
       highlights={[
         {
-          title: isAr ? "خطوة سريعة" : "A quick step",
-          description: isAr
-            ? "اكتب بريدك فقط وسنرسل رابطا جديدا لإعادة الدخول إلى حسابك."
-            : "Enter your email and we will send a fresh link so you can securely get back into your account."
+          title: t("auth.forgotPassword.highlights.quick.title"),
+          description: t("auth.forgotPassword.highlights.quick.body")
         },
         {
-          title: isAr ? "بدون فقدان التقدم" : "No lost progress",
-          description: isAr
-            ? "إعادة تعيين كلمة المرور لا تؤثر على اشتراكك أو ترتيبك داخل الدورة."
-            : "Resetting your password does not interrupt your enrollment or lesson progress."
+          title: t("auth.forgotPassword.highlights.noLost.title"),
+          description: t("auth.forgotPassword.highlights.noLost.body")
         },
         {
-          title: isAr ? "رسالة واضحة لما بعد ذلك" : "Clear next steps",
-          description: isAr
-            ? "بعد إرسال الطلب ستعرف بالضبط أين تذهب وماذا تفعل بعد فتح البريد."
-            : "Once submitted, the flow tells you exactly what to do next after opening your email."
+          title: t("auth.forgotPassword.highlights.nextSteps.title"),
+          description: t("auth.forgotPassword.highlights.nextSteps.body")
         }
       ]}
       aside={
         <p className="text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
-          {isAr
-            ? "إذا لم تصلك الرسالة خلال دقائق، راجع مجلد الرسائل غير المرغوب فيها ثم أعد المحاولة."
-            : "If the email does not arrive within a few minutes, check your spam folder and try again from here."}
+          {t("auth.forgotPassword.asideHint")}
         </p>
       }
       footer={
@@ -77,7 +72,14 @@ export const ForgotPassword = () => {
     >
       {isSuccess ? (
         <div className="content-stack gap-5 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+          <div
+            className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
+            style={{
+              backgroundColor: "color-mix(in oklab, var(--color-brand) 12%, var(--color-surface))",
+              border: "1px solid color-mix(in oklab, var(--color-brand) 22%, transparent)",
+              color: "var(--color-brand-text)",
+            }}
+          >
             <CheckCircle2 className="h-7 w-7" />
           </div>
           <div className="content-stack gap-2">
@@ -129,5 +131,6 @@ export const ForgotPassword = () => {
         </form>
       )}
     </AuthShell>
+    </>
   );
 };

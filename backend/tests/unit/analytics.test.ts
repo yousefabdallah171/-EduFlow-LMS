@@ -14,7 +14,8 @@ const prismaMock = vi.hoisted(() => ({
     findMany: vi.fn(),
     findUnique: vi.fn(),
     create: vi.fn(),
-    update: vi.fn()
+    update: vi.fn(),
+    count: vi.fn()
   },
   lesson: {
     findMany: vi.fn()
@@ -67,6 +68,10 @@ describe("analyticsService", () => {
         { status: "ACTIVE" },
         { status: "REVOKED" }
       ]);
+    prismaMock.enrollment.count
+      .mockResolvedValueOnce(2) // active
+      .mockResolvedValueOnce(1) // revoked
+      .mockResolvedValueOnce(3); // total
     prismaMock.lesson.findMany.mockResolvedValue([
       { id: "lesson-1", titleEn: "Intro", titleAr: "مقدمة", durationSeconds: 100, sortOrder: 1, isPublished: true },
       { id: "lesson-2", titleEn: "Deep Dive", titleAr: "تعمق", durationSeconds: 200, sortOrder: 2, isPublished: true }

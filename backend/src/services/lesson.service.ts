@@ -1,36 +1,21 @@
-import crypto from "node:crypto";
 import type { VideoStatus } from "@prisma/client";
+import type { Request } from "express";
 
 import { redis } from "../config/redis.js";
+import { env } from "../config/env.js";
 import { prisma } from "../config/database.js";
 import { prometheus } from "../observability/prometheus.js";
+import { cacheVersioningService } from "./cache-versioning.service.js";
 
 const publishedLessonsCacheKey = "lessons:published:v1";
 const publishedGroupedCacheKey = "lessons:published-grouped:v1";
-const cacheVersionKey = "lessons:cache-version:v1";
+const adminLessonsCacheKey = "lessons:admin:v1";
 const lessonMetadataCacheKey = (lessonId: string) => `lesson:metadata:${lessonId}`;
+const publishedLessonCountCacheKey = "lesson:published-count";
 
-const LESSONS_CACHE_TTL_SECONDS = 2 * 60 * 60;
-const LESSON_METADATA_CACHE_TTL_SECONDS = 2 * 60 * 60;
+const LESSONS_CACHE_TTL_SECONDS = env.CACHE_TTL_LESSON_METADATA_SECONDS;
+const LESSON_METADATA_CACHE_TTL_SECONDS = env.CACHE_TTL_LESSON_METADATA_SECONDS;
 
-const getCacheVersion = async () => {
-  try {
-    return (await redis.get(cacheVersionKey)) ?? "0";
-  } catch {
-    return "0";
-  }
-};
-
-const bumpCacheVersion = async () => {
-  try {
-    await redis.set(cacheVersionKey, String(Date.now()), "EX", LESSONS_CACHE_TTL_SECONDS);
-  } catch {
-    // ignore redis failures
-  }
-};
-
-const hashKey = (base: string, version: string) =>
-  `${base}:${crypto.createHash("sha256").update(version).digest("hex")}`;
 
 export type PublishedLessonSummary = {
   id: string;
@@ -85,7 +70,12 @@ export type LessonMetadata = {
 
 export const lessonService = {
   async invalidatePublishedLessonsCache() {
-    await bumpCacheVersion();
+    await cacheVersioningService.bumpVersion("lessons");
+    try {
+      await redis.del(publishedLessonCountCacheKey, adminLessonsCacheKey);
+    } catch {
+      // ignore redis failures
+    }
   },
 
   async invalidateLessonMetadataCache(lessonIds: string | string[]) {
@@ -179,9 +169,47 @@ export const lessonService = {
     return payload;
   },
 
+  async getPublishedLessonCount(req?: Request): Promise<number> {
+    const cacheKey = "publishedLessonCount";
+
+    // PERFORMANCE: Check request-level cache first (per-request memoization)
+    if (req?.cache?.has(cacheKey)) {
+      return req.cache.get(cacheKey);
+    }
+
+    // Check Redis cache
+    try {
+      const cached = await redis.get(publishedLessonCountCacheKey);
+      if (cached !== null) {
+        const count = parseInt(cached, 10);
+        if (req?.cache) req.cache.set(cacheKey, count);
+        prometheus.recordCacheHit("lesson_count");
+        return count;
+      }
+    } catch {
+      // ignore redis failures
+    }
+    prometheus.recordCacheMiss("lesson_count");
+
+    // Database query
+    const count = await prisma.lesson.count({ where: { isPublished: true } });
+
+    // Cache in Redis
+    try {
+      await redis.set(publishedLessonCountCacheKey, String(count), "EX", LESSONS_CACHE_TTL_SECONDS);
+    } catch {
+      // ignore redis failures
+    }
+
+    // Cache in request
+    if (req?.cache) req.cache.set(cacheKey, count);
+
+    return count;
+  },
+
   async getPublishedLessons(): Promise<PublishedLessonSummary[]> {
-    const version = await getCacheVersion();
-    const key = hashKey(publishedLessonsCacheKey, version);
+    const version = await cacheVersioningService.getVersion("lessons");
+    const key = cacheVersioningService.createVersionedKey(publishedLessonsCacheKey, version);
     try {
       const cached = await redis.get(key);
       if (cached) {
@@ -216,8 +244,8 @@ export const lessonService = {
   },
 
   async getPublishedLessonsGrouped(): Promise<PublishedSectionWithLessons[]> {
-    const version = await getCacheVersion();
-    const key = hashKey(publishedGroupedCacheKey, version);
+    const version = await cacheVersioningService.getVersion("lessons");
+    const key = cacheVersioningService.createVersionedKey(publishedGroupedCacheKey, version);
     try {
       const cached = await redis.get(key);
       if (cached) {
@@ -259,6 +287,40 @@ export const lessonService = {
       // ignore redis failures
     }
     return sections;
+  },
+
+  async getAdminLessons() {
+    try {
+      const cached = await redis.get(adminLessonsCacheKey);
+      if (cached) {
+        prometheus.recordCacheHit("lessons_admin");
+        return JSON.parse(cached);
+      }
+    } catch {
+      // ignore redis failures
+    }
+    prometheus.recordCacheMiss("lessons_admin");
+
+    const lessons = await prisma.lesson.findMany({
+      include: {
+        section: {
+          select: {
+            id: true,
+            titleEn: true,
+            titleAr: true
+          }
+        }
+      },
+      orderBy: [{ sectionId: "asc" }, { sortOrder: "asc" }]
+    });
+
+    try {
+      await redis.set(adminLessonsCacheKey, JSON.stringify(lessons), "EX", LESSONS_CACHE_TTL_SECONDS);
+    } catch {
+      // ignore redis failures
+    }
+
+    return lessons;
   }
 };
 

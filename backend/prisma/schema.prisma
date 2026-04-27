@@ -40,9 +40,57 @@ enum EnrollmentType {
 
 enum PaymentStatus {
   PENDING
+  INITIATED
+  AWAITING_PAYMENT
+  WEBHOOK_PENDING
   COMPLETED
   FAILED
+  CANCELLED
+  ENROLLMENT_FAILED
+  EMAIL_FAILED
+  REFUND_REQUESTED
   REFUNDED
+  REFUND_FAILED
+  DISPUTED
+  MANUAL_OVERRIDE
+}
+
+enum PaymentEventType {
+  INITIATED
+  PAYMENT_KEY_GENERATED
+  PAYMOB_API_ERROR
+  WEBHOOK_RECEIVED
+  WEBHOOK_VERIFIED
+  WEBHOOK_DUPLICATE
+  STATUS_CHANGED
+  ENROLLMENT_TRIGGERED
+  ENROLLMENT_SUCCEEDED
+  ENROLLMENT_FAILED
+  EMAIL_QUEUED
+  EMAIL_SENT
+  EMAIL_FAILED
+  COUPON_INCREMENTED
+  REFUND_INITIATED
+  REFUND_API_CALL
+  REFUND_SUCCEEDED
+  REFUND_FAILED
+  DISPUTE_RECEIVED
+  MANUAL_OVERRIDE_APPLIED
+  PAYMENT_POLLED
+}
+
+enum PaymentMethod {
+  CARD
+  MOBILE_WALLET
+  BANK_TRANSFER
+}
+
+enum RefundStatus {
+  REQUESTED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
 }
 
 enum CouponDiscountType {
@@ -63,6 +111,21 @@ enum UploadStatus {
   PROCESSING
   READY
   CANCELLED
+  ERROR
+}
+
+enum MediaType {
+  VIDEO
+  IMAGE
+  PDF
+  DOCUMENT
+  OTHER
+}
+
+enum MediaStatus {
+  UPLOADING
+  PROCESSING
+  READY
   ERROR
 }
 
@@ -97,6 +160,9 @@ model User {
   videoSecurityEvents  VideoSecurityEvent[]
   tickets              SupportTicket[]  @relation("TicketUser")
   ticketMessages       TicketMessage[]  @relation("MessageSender")
+  adminAuditLogs       AdminAuditLog[]
+  mediaFilesUploaded   MediaFile[]      @relation("MediaFileUploader")
+  mediaFolders         MediaFolder[]    @relation("MediaFolderCreator")
 }
 
 model RefreshToken {
@@ -135,27 +201,263 @@ model Enrollment {
 }
 
 model Payment {
-  id                  String         @id @default(uuid())
-  userId              String
-  user                User           @relation(fields: [userId], references: [id], onDelete: Restrict)
-  packageId           String?
-  package             CoursePackage? @relation(fields: [packageId], references: [id])
-  amountPiasters      Int
-  currency            String         @default("EGP")
-  paymobOrderId       String?
-  paymobTransactionId String?        @unique
-  couponId            String?
-  coupon              Coupon?        @relation(fields: [couponId], references: [id])
-  discountPiasters    Int            @default(0)
-  status              PaymentStatus  @default(PENDING)
-  webhookReceivedAt   DateTime?
-  webhookHmac         String?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
-  enrollment          Enrollment?
+  id                      String         @id @default(uuid())
+  userId                  String
+  user                    User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  packageId               String?
+  package                 CoursePackage? @relation(fields: [packageId], references: [id])
+  amountPiasters          Int
+  currency                String         @default("EGP")
+  couponId                String?
+  coupon                  Coupon?        @relation(fields: [couponId], references: [id])
+  discountPiasters        Int            @default(0)
 
+  status                  PaymentStatus  @default(INITIATED)
+  paymentMethod           PaymentMethod?
+
+  paymobOrderId           String?        @unique
+  paymobTransactionId     String?        @unique
+  paymobIdempotencyKey    String?        @unique
+
+  webhookReceivedAt       DateTime?
+  webhookHmac             String?
+  webhookPayload          Json?
+  webhookRetryCount       Int            @default(0)
+  webhookLastRetryAt      DateTime?
+  webhookNextRetryAt      DateTime?
+
+  enrollmentRetryCount    Int            @default(0)
+  enrollmentLastRetryAt   DateTime?
+  enrollmentNextRetryAt   DateTime?
+
+  recoveryAttempts        Json?
+
+  errorCode               String?
+  errorMessage            String?
+  errorDetails            Json?
+
+  refundInitiatedAt       DateTime?
+  refundInitiatedBy       String?
+  refundAmount            Int?
+  refundStatus            RefundStatus?
+  refundRetryCount        Int            @default(0)
+  refundLastRetryAt       DateTime?
+  refundNextRetryAt       DateTime?
+  paymobRefundId          String?        @unique
+  refundCompletedAt       DateTime?
+
+  disputedAt              DateTime?
+  disputeReason           String?
+  resolvedAt              DateTime?
+  resolvedBy              String?
+
+  ipAddress               String?
+  userAgent               String?
+
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  enrollment              Enrollment?
+  events                  PaymentEvent[]
+  reconciliations         PaymentReconciliation[]
+  failedPaymentQueue      FailedPaymentQueue? @relation("FailedPaymentQueue")
+  emailQueue              EmailQueue[] @relation("EmailQueue")
+  webhookRetryQueue       WebhookRetryQueue? @relation("WebhookRetryQueue")
+  refundQueue             RefundQueue?
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
   @@index([userId, createdAt])
   @@index([status, createdAt])
+  @@index([paymobOrderId])
+  @@index([paymobTransactionId])
+  @@index([paymobIdempotencyKey])
+  @@index([refundStatus])
+  @@index([paymobRefundId])
+}
+
+model RefundQueue {
+  id                  String            @id @default(uuid())
+  paymentId           String            @unique
+  payment             Payment           @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  refundType          String            // "FULL" or "PARTIAL"
+  refundAmount        Int
+  reason              String?
+  paymobRefundId      String?           @unique
+
+  retryCount          Int               @default(0)
+  maxRetries          Int               @default(3)
+
+  firstAttempt        DateTime          @default(now())
+  lastAttempt         DateTime?
+  nextRetry           DateTime?
+
+  resolvedAt          DateTime?
+  resolution          String?           // "COMPLETED", "FAILED", "CANCELLED"
+
+  errorDetails        Json?
+
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([paymentId])
+  @@index([nextRetry])
+  @@index([resolution])
+}
+
+model PaymentEvent {
+  id              String            @id @default(uuid())
+  paymentId       String
+  payment         Payment           @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  eventType       PaymentEventType
+  status          PaymentStatus?
+  previousStatus  PaymentStatus?
+
+  errorCode       String?
+  errorMessage    String?
+
+  metadata        Json?
+
+  createdAt       DateTime          @default(now())
+
+  @@index([paymentId])
+  @@index([paymentId, createdAt])
+  @@index([eventType])
+  @@index([eventType, createdAt])
+  @@index([createdAt])
+}
+
+model PaymentReconciliation {
+  id              String    @id @default(uuid())
+  paymentId       String
+  payment         Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  paymobStatus    String?
+  localStatus     String
+
+  paymobAmount    Int?
+  localAmount     Int
+  amountMismatch  Boolean   @default(false)
+
+  isReconciled    Boolean   @default(false)
+  reconciliedAt   DateTime?
+  reconciliedBy   String?
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([paymentId])
+  @@index([isReconciled])
+}
+
+model FailedPaymentQueue {
+  id            String    @id @default(uuid())
+  paymentId     String    @unique
+  payment       Payment   @relation("FailedPaymentQueue", fields: [paymentId], references: [id], onDelete: Cascade)
+
+  failureType   String    // TRANSIENT, USER_ERROR, SYSTEM_ERROR
+  failureCode   String    // PAYMOB_TIMEOUT, INVALID_COUPON, etc.
+  failureReason String
+
+  retryCount    Int       @default(0)
+  maxRetries    Int       @default(3)
+
+  firstAttempt  DateTime  @default(now())
+  lastAttempt   DateTime  @updatedAt
+  nextRetry     DateTime?
+
+  resolvedAt    DateTime?
+  resolvedBy    String?   // Admin user ID
+  resolution    String?   // MANUAL_OVERRIDE, AUTO_RETRY, REFUND
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([resolvedAt])
+  @@index([nextRetry])
+  @@index([failureType])
+}
+
+model EmailQueue {
+  id          String    @id @default(uuid())
+  paymentId   String?
+  payment     Payment?  @relation("EmailQueue", fields: [paymentId], references: [id], onDelete: SetNull)
+
+  recipient   String
+  emailType   String    // PAYMENT_RECEIPT, ENROLLMENT_ACTIVATED, REFUND_NOTICE
+  subject     String
+  template    String
+  context     Json
+
+  retryCount  Int       @default(0)
+  maxRetries  Int       @default(5)
+
+  status      String    // PENDING, SENT, FAILED_PERMANENT, BOUNCED, DLQ
+  lastError   String?
+  errorCode   String?   // SMTP error code if applicable
+
+  firstAttempt DateTime  @default(now())
+  lastAttempt  DateTime  @updatedAt
+  nextRetry    DateTime?
+
+  sentAt      DateTime?
+  movedToDlqAt DateTime?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([nextRetry])
+  @@index([paymentId])
+  @@index([status, createdAt])
+}
+
+model WebhookRetryQueue {
+  id          String    @id @default(uuid())
+  paymentId   String    @unique
+  payment     Payment   @relation("WebhookRetryQueue", fields: [paymentId], references: [id], onDelete: Cascade)
+
+  payload     Json
+  errorDetails Json?
+
+  retryCount  Int       @default(0)
+  maxRetries  Int       @default(3)
+
+  firstAttempt DateTime  @default(now())
+  lastAttempt  DateTime  @updatedAt
+  nextRetry    DateTime?
+
+  resolvedAt  DateTime?
+  resolution  String?   // SUCCESS, FAILED, LATE_WEBHOOK
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([nextRetry])
+  @@index([resolvedAt])
+}
+
+model AdminAuditLog {
+  id          String    @id @default(uuid())
+  adminId     String
+  admin       User      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+
+  action      String    // OVERRIDE_PAYMENT, CANCEL_PAYMENT, RETRY_PAYMENT, MARK_PAID
+  paymentId   String?
+  targetId    String?   // ID of affected resource
+
+  reason      String
+  metadata    Json?
+
+  createdAt   DateTime  @default(now())
+
+  @@index([adminId])
+  @@index([paymentId])
+  @@index([createdAt])
+  @@index([action, createdAt])
 }
 
 model CoursePackage {
@@ -217,6 +519,8 @@ model Lesson {
   dripDays        Int?
   sectionId       String?
   section         Section?         @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  mediaFileId     String?
+  mediaFile       MediaFile?       @relation("LessonVideo", fields: [mediaFileId], references: [id], onDelete: SetNull)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   progress        LessonProgress[]
@@ -229,6 +533,7 @@ model Lesson {
   @@index([isPublished, sortOrder])
   @@index([sectionId, isPublished, sortOrder])
   @@index([isPreview, isPublished])
+  @@index([mediaFileId])
 }
 
 model LessonProgress {
@@ -276,8 +581,12 @@ model VideoUpload {
   status       UploadStatus @default(UPLOADING)
   storagePath  String?
   errorMessage String?
+  mediaFileId  String?
+  mediaFile    MediaFile?   @relation(fields: [mediaFileId], references: [id], onDelete: SetNull)
   createdAt    DateTime     @default(now())
   completedAt  DateTime?
+
+  @@index([mediaFileId])
 }
 
 model CourseSettings {
@@ -309,13 +618,17 @@ model Note {
 }
 
 model LessonResource {
-  id            String   @id @default(uuid())
+  id            String     @id @default(uuid())
   lessonId      String
-  lesson        Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson        Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   title         String
-  fileUrl       String
-  fileSizeBytes BigInt   @default(0)
-  createdAt     DateTime @default(now())
+  fileUrl       String?
+  fileSizeBytes BigInt     @default(0)
+  mediaFileId   String?
+  mediaFile     MediaFile? @relation(fields: [mediaFileId], references: [id], onDelete: SetNull)
+  createdAt     DateTime   @default(now())
+
+  @@index([mediaFileId])
 }
 
 model AuditLog {
@@ -384,4 +697,49 @@ model NotificationTemplate {
   subject   String
   bodyHtml  String
   updatedAt DateTime @updatedAt
+}
+
+model MediaFolder {
+  id          String        @id @default(uuid())
+  name        String
+  parentId    String?
+  parent      MediaFolder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children    MediaFolder[] @relation("FolderTree")
+  files       MediaFile[]
+  createdById String
+  createdBy   User          @relation("MediaFolderCreator", fields: [createdById], references: [id])
+  createdAt   DateTime      @default(now())
+
+  @@index([parentId])
+  @@index([createdById])
+}
+
+model MediaFile {
+  id               String        @id @default(uuid())
+  title            String
+  type             MediaType
+  status           MediaStatus   @default(UPLOADING)
+  originalFilename String
+  storagePath      String?
+  hlsPath          String?
+  durationSeconds  Int?
+  mimeType         String?
+  sizeBytes        BigInt        @default(0)
+  errorMessage     String?
+  folderId         String?
+  folder           MediaFolder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  uploadedById     String
+  uploadedBy       User          @relation("MediaFileUploader", fields: [uploadedById], references: [id])
+  tusUploadId      String?
+  lessonVideo      Lesson[]      @relation("LessonVideo")
+  lessonResources  LessonResource[]
+  videoUploads     VideoUpload[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([folderId])
+  @@index([uploadedById])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
 }

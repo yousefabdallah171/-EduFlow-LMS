@@ -8,6 +8,7 @@ import { StudentShell } from "@/components/layout/StudentShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SkeletonDashboard } from "@/components/skeletons";
 import { api } from "@/lib/api";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { formatDate, resolveLocale } from "@/lib/locale";
 
 type DashboardData = {
@@ -21,24 +22,25 @@ type DashboardData = {
 export const StudentDashboard = () => {
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
-  const currentLocale = resolveLocale(locale);
-  const { t } = useTranslation();
-  const isAr = currentLocale === "ar";
+  const { t, i18n } = useTranslation();
+  const resolvedLocale = resolveLocale(i18n.language);
 
   const { data, isLoading } = useQuery({
     queryKey: ["student-dashboard"],
-    queryFn: () => api.get<DashboardData>("/student/dashboard").then((r) => r.data)
+    queryFn: () => api.get<DashboardData>("/student/dashboard").then((r) => r.data),
+    staleTime: CACHE_TIME.MEDIUM,
+    gcTime: getGCTime(CACHE_TIME.MEDIUM)
   });
 
   const progress = data?.completionPercent ?? 0;
   const milestoneLabel =
     progress >= 100
-      ? isAr ? "أكملت المسار بالكامل" : "You completed the full workflow"
+      ? t("student.dashboard.milestone.complete")
       : progress >= 70
-        ? isAr ? "أنت في المرحلة النهائية" : "You are in the final stretch"
+        ? t("student.dashboard.milestone.finalStretch")
         : progress >= 35
-          ? isAr ? "أنت تتقدم بثبات" : "You are building strong momentum"
-          : isAr ? "ابدأ بالدرس التالي لتثبيت العادة" : "Start the next lesson to build momentum";
+          ? t("student.dashboard.milestone.strongMomentum")
+          : t("student.dashboard.milestone.startNext");
 
   return (
     <StudentShell>
@@ -47,7 +49,7 @@ export const StudentDashboard = () => {
           hero
           eyebrow={t("student.shell.section")}
           title={t("course.welcomeBack")}
-          description={isAr ? "هذا هو مركز التعلم الخاص بك: تابع من حيث توقفت، راجع تقدمك، وتحرك بسرعة إلى الدرس التالي." : "This is your learning hub: resume quickly, check your progress, and move straight into the next lesson."}
+          description={t("student.dashboard.heroDescription")}
           actions={
             <div className="flex flex-wrap gap-3">
               <Link
@@ -80,7 +82,7 @@ export const StudentDashboard = () => {
                   <div className="max-w-xl">
                     <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("student.dashboard.continueLearning")}</p>
                     <h2 className="mt-3 font-display text-3xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-                      {progress > 0 ? `${progress}%` : isAr ? "ابدأ أول درس" : "Start your first lesson"}
+                      {progress > 0 ? `${progress}%` : t("student.dashboard.startFirstLesson")}
                     </h2>
                     <p className="mt-2 text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>
                       {milestoneLabel}
@@ -91,7 +93,7 @@ export const StudentDashboard = () => {
                       {t("student.dashboard.enrolledOn")}
                     </p>
                     <p className="mt-1 font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                      {data?.enrolledAt ? formatDate(data.enrolledAt, currentLocale) : isAr ? "غير متاح بعد" : "Not available yet"}
+                      {data?.enrolledAt ? formatDate(data.enrolledAt, resolvedLocale) : t("common.notAvailableYet")}
                     </p>
                   </div>
                 </div>
@@ -99,7 +101,7 @@ export const StudentDashboard = () => {
                 <div className="mt-6 space-y-3">
                   <div className="flex items-center justify-between gap-3 text-sm">
                     <span style={{ color: "var(--color-text-secondary)" }}>
-                      {isAr ? "تقدمك في جميع الدروس المفتوحة" : "Your progress across the full course"}
+                      {t("student.dashboard.fullCourseProgressLabel")}
                     </span>
                     <span className="font-display text-lg font-bold text-brand-600">{progress}%</span>
                   </div>
@@ -109,15 +111,15 @@ export const StudentDashboard = () => {
                 <div className="mt-6 grid gap-3 sm:grid-cols-3">
                   {[
                     {
-                      label: isAr ? "الهدف الحالي" : "Current focus",
-                      value: data?.lastLessonId ? (isAr ? "متابعة آخر درس" : "Resume your latest lesson") : (isAr ? "استكشاف مكتبة الدورة" : "Browse the lesson library")
+                      label: t("student.dashboard.metrics.currentFocus.label"),
+                      value: data?.lastLessonId ? t("student.dashboard.metrics.currentFocus.resumeLatest") : t("student.dashboard.metrics.currentFocus.browseLibrary")
                     },
                     {
-                      label: isAr ? "إيقاع التعلم" : "Learning pace",
-                      value: progress >= 60 ? (isAr ? "متقدم" : "Advanced momentum") : (isAr ? "قيد البناء" : "Building rhythm")
+                      label: t("student.dashboard.metrics.learningPace.label"),
+                      value: progress >= 60 ? t("student.dashboard.metrics.learningPace.advanced") : t("student.dashboard.metrics.learningPace.building")
                     },
                     {
-                      label: isAr ? "الخطوة التالية" : "Next action",
+                      label: t("student.dashboard.metrics.nextAction.label"),
                       value: data?.lastLessonId ? t("course.continueLearning") : t("course.allLessons")
                     }
                   ].map((item) => (
@@ -136,17 +138,17 @@ export const StudentDashboard = () => {
               <section className="dashboard-panel p-6">
                 <div className="flex items-center gap-2 text-brand-600">
                   <Sparkles className="h-4 w-4" />
-                  <p className="text-xs font-bold uppercase tracking-[0.16em]">{isAr ? "المسار القادم" : "What to do next"}</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em]">{t("student.dashboard.nextSteps.title")}</p>
                 </div>
                 <div className="mt-4 content-stack gap-4">
                   <div className="rounded-[22px] border p-4" style={{ borderColor: "var(--color-border)", backgroundColor: "color-mix(in oklab, var(--color-brand) 8%, var(--color-surface))" }}>
                     <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
-                      {data?.lastLessonId ? (isAr ? "أكمل آخر درس توقفت عنده" : "Resume the lesson you last touched") : (isAr ? "ادخل إلى مكتبة الدروس" : "Open the lesson library")}
+                      {data?.lastLessonId ? t("student.dashboard.nextSteps.cardTitle.resume") : t("student.dashboard.nextSteps.cardTitle.library")}
                     </p>
                     <p className="mt-2 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
                       {data?.lastLessonId
-                        ? (isAr ? "العودة السريعة تقلل التشتت وتساعدك على الحفاظ على تسلسل التعلم." : "A quick return keeps your learning rhythm intact and reduces friction.")
-                        : (isAr ? "ابدأ بالوحدة الأولى ثم انتقل خطوة بخطوة عبر مراحل الـ workflow." : "Start with the first module, then move phase by phase through the workflow.")}
+                        ? t("student.dashboard.nextSteps.cardBody.resume")
+                        : t("student.dashboard.nextSteps.cardBody.library")}
                     </p>
                   </div>
 
@@ -176,7 +178,7 @@ export const StudentDashboard = () => {
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{t("student.dashboard.quickLinks")}</p>
                   <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                    {isAr ? "تنقل سريع إلى الصفحات التي تستخدمها باستمرار أثناء التعلم." : "Fast access to the supporting pages you use while learning."}
+                    {t("student.dashboard.quickLinksDescription")}
                   </p>
                 </div>
               </div>

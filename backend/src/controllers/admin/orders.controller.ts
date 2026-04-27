@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { PaymentStatus, type Prisma } from "@prisma/client";
 
 import { prisma } from "../../config/database.js";
+import { auditService } from "../../services/audit.service.js";
 import { analyticsService } from "../../services/analytics.service.js";
 
 const firstQueryValue = (value: unknown) => (Array.isArray(value) ? value[0] : value);
@@ -47,7 +48,18 @@ export const adminOrdersController = {
 
       const payment = await prisma.payment.findUnique({
         where: { id },
-        include: { user: true, coupon: true, enrollment: true }
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true
+              // SECURITY: Do NOT expose: passwordHash, emailVerified, oauthProvider, createdAt, updatedAt
+            }
+          },
+          coupon: true,
+          enrollment: true
+        }
       });
       if (!payment) { res.status(404).json({ error: "NOT_FOUND" }); return; }
       res.json(payment);
@@ -62,8 +74,6 @@ export const adminOrdersController = {
       const result = await analyticsService.markPaymentPaid(id);
       res.json({ message: "Payment marked as completed", payment: result.payment, enrollment: result.enrollment });
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error("Error marking payment as paid:", e);
       if (e instanceof analyticsService.AnalyticsError) {
         res.status(e.status).json({ error: e.code, message: e.message });
         return;
@@ -74,18 +84,46 @@ export const adminOrdersController = {
 
   async exportCsv(req: Request, res: Response, next: NextFunction) {
     try {
-      const payments = await prisma.payment.findMany({
-        include: { user: { select: { fullName: true, email: true } } },
-        orderBy: { createdAt: "desc" }
-      });
-      const rows = [
-        "id,student,email,amount_egp,status,created_at",
-        ...payments.map((p) =>
-          `${p.id},"${p.user.fullName}","${p.user.email}",${p.amountPiasters / 100},${p.status},${p.createdAt.toISOString()}`
-        )
-      ];
+      const totalRecords = await prisma.payment.count();
+      await auditService.logDataExport(req.user!.userId, "orders_csv", totalRecords);
+
+      // PERFORMANCE: Stream CSV instead of loading all payments into memory
+      // Previous: loaded all payments, built entire CSV string → OOM for 100k+ records
+      // Now: streams chunks as rows are fetched, constant memory usage
       res.setHeader("Content-Disposition", "attachment; filename=orders.csv");
-      res.type("text/csv").send(rows.join("\n"));
+      res.type("text/csv");
+
+      // Write header
+      res.write("id,student,email,amount_egp,status,created_at\n");
+
+      const batchSize = 1000;
+      let hasMore = true;
+      let lastId: string | null = null;
+
+      while (hasMore) {
+        const payments = await prisma.payment.findMany({
+          where: lastId ? { id: { gt: lastId } } : {},
+          include: { user: { select: { fullName: true, email: true } } },
+          orderBy: { id: "asc" },
+          take: batchSize
+        });
+
+        if (payments.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        // Write rows as we fetch them
+        for (const p of payments) {
+          const csv = `${p.id},"${p.user.fullName}","${p.user.email}",${p.amountPiasters / 100},${p.status},${p.createdAt.toISOString()}\n`;
+          res.write(csv);
+        }
+
+        lastId = payments[payments.length - 1]!.id;
+        hasMore = payments.length === batchSize;
+      }
+
+      res.end();
     } catch (e) { next(e); }
   }
 };
