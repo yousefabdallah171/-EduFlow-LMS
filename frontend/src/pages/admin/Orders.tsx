@@ -36,6 +36,9 @@ export const AdminOrders = () => {
   const queryClient = useQueryClient();
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING" | "COMPLETED" | "FAILED">("ALL");
+  const [sellerFilter, setSellerFilter] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-orders"],
@@ -43,10 +46,36 @@ export const AdminOrders = () => {
   });
 
   const payments = useMemo(() => data?.payments ?? [], [data?.payments]);
-  const filteredPayments = useMemo(
-    () => payments.filter((payment) => statusFilter === "ALL" || payment.status === statusFilter),
-    [payments, statusFilter]
-  );
+  const filteredPayments = useMemo(() => {
+    const normalizedSeller = sellerFilter.trim().toLowerCase();
+    const fromTime = fromDate ? new Date(`${fromDate}T00:00:00`).getTime() : null;
+    const toTime = toDate ? new Date(`${toDate}T23:59:59.999`).getTime() : null;
+
+    return payments.filter((payment) => {
+      if (statusFilter !== "ALL" && payment.status !== statusFilter) {
+        return false;
+      }
+
+      if (normalizedSeller) {
+        const haystack = `${payment.user.fullName} ${payment.user.email} ${payment.id}`.toLowerCase();
+        if (!haystack.includes(normalizedSeller)) {
+          return false;
+        }
+      }
+
+      if (fromTime !== null || toTime !== null) {
+        const createdAtTime = new Date(payment.createdAt).getTime();
+        if (fromTime !== null && createdAtTime < fromTime) {
+          return false;
+        }
+        if (toTime !== null && createdAtTime > toTime) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [payments, statusFilter, sellerFilter, fromDate, toDate]);
 
   const markPaidMutation = useMutation({
     mutationFn: (id: string) => api.patch(`/admin/orders/${id}/mark-paid`),
@@ -106,7 +135,7 @@ export const AdminOrders = () => {
         </div>
 
         <div className="dashboard-panel p-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4">
             <div className="space-y-2">
               <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
                 {copy.orders.revenueOps}
@@ -118,35 +147,94 @@ export const AdminOrders = () => {
                 {copy.orders.desc}
               </p>
             </div>
-
-            <div className="flex flex-wrap gap-2">
-              {(["ALL", "PENDING", "COMPLETED", "FAILED"] as const).map((filter) => (
-                <button
-                  key={filter}
-                  className="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors hover:bg-surface2"
+            <div className="grid gap-3 lg:grid-cols-[1fr_170px_170px_auto]">
+              <label className="flex flex-col gap-1 text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
+                Seller
+                <input
+                  type="text"
+                  value={sellerFilter}
+                  onChange={(event) => setSellerFilter(event.target.value)}
+                  placeholder="JABEDUL"
+                  className="rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-brand-600/30"
                   style={{
-                    borderColor: statusFilter === filter ? "var(--color-brand)" : "var(--color-border-strong)",
-                    color: statusFilter === filter ? "var(--color-brand-700)" : "var(--color-text-primary)",
-                    backgroundColor: statusFilter === filter ? "var(--color-brand-muted)" : "transparent"
+                    borderColor: "var(--color-border-strong)",
+                    backgroundColor: "var(--color-surface-2)",
+                    color: "var(--color-text-primary)"
                   }}
-                  onClick={() => setStatusFilter(filter)}
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
+                From
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(event) => setFromDate(event.target.value)}
+                  aria-label="From"
+                  className="rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-brand-600/30"
+                  style={{
+                    borderColor: "var(--color-border-strong)",
+                    backgroundColor: "var(--color-surface-2)",
+                    color: "var(--color-text-primary)"
+                  }}
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
+                To
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(event) => setToDate(event.target.value)}
+                  aria-label="To"
+                  className="rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-brand-600/30"
+                  style={{
+                    borderColor: "var(--color-border-strong)",
+                    backgroundColor: "var(--color-surface-2)",
+                    color: "var(--color-text-primary)"
+                  }}
+                />
+              </label>
+              <div className="flex flex-wrap items-end gap-2">
+                {(["ALL", "PENDING", "COMPLETED", "FAILED"] as const).map((filter) => (
+                  <button
+                    key={filter}
+                    className="rounded-lg border px-3 py-2 text-sm font-semibold transition-colors hover:bg-surface2"
+                    style={{
+                      borderColor: statusFilter === filter ? "var(--color-brand)" : "var(--color-border-strong)",
+                      color: statusFilter === filter ? "var(--color-brand-700)" : "var(--color-text-primary)",
+                      backgroundColor: statusFilter === filter ? "var(--color-brand-muted)" : "transparent"
+                    }}
+                    onClick={() => setStatusFilter(filter)}
+                    type="button"
+                  >
+                    {filter === "ALL"
+                      ? copy.orders.allOrders
+                      : isAr
+                        ? t(`orders.status.${String(filter).toLowerCase()}`)
+                        : filter}
+                  </button>
+                ))}
+                <button
+                  className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface2"
+                  style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-secondary)" }}
+                  onClick={() => void exportCsv()}
                   type="button"
                 >
-                  {filter === "ALL"
-                    ? copy.orders.allOrders
-                    : isAr
-                      ? t(`orders.status.${String(filter).toLowerCase()}`)
-                      : filter}
+                  {copy.orders.exportCsv}
                 </button>
-              ))}
-              <button
-                className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface2"
-                style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-secondary)" }}
-                onClick={() => void exportCsv()}
-                type="button"
-              >
-                {copy.orders.exportCsv}
-              </button>
+                <button
+                  className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-surface2"
+                  style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-secondary)" }}
+                  onClick={() => {
+                    setSellerFilter("");
+                    setFromDate("");
+                    setToDate("");
+                    setStatusFilter("ALL");
+                  }}
+                  type="button"
+                >
+                  Reset
+                </button>
+              </div>
             </div>
           </div>
         </div>
