@@ -4,9 +4,6 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import prerender from "vite-plugin-prerender";
-
-const { PuppeteerRenderer } = prerender;
 
 const PUBLIC_ROUTES = [
   "/",
@@ -29,21 +26,7 @@ export default defineConfig(({ mode }) => {
   const isProd = mode === "production";
 
   return {
-    plugins: [
-      react(),
-      ...(isProd
-        ? [
-            prerender({
-              staticDir: path.join(currentDir, "dist"),
-              routes: PUBLIC_ROUTES,
-              renderer: new PuppeteerRenderer({
-                renderAfterDocumentEvent: "render-event",
-                timeout: 10000,
-              }),
-            }),
-          ]
-        : []),
-    ],
+    plugins: [react()],
     server: {
       watch: {
         usePolling: true,
