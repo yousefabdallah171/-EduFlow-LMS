@@ -19,6 +19,11 @@ const getSortBy = (value: string | undefined) => {
 
 const getSortDir = (value: string | undefined) => (value === "asc" ? "asc" : "desc");
 
+const toJsonSafe = <T>(value: T): T =>
+  JSON.parse(
+    JSON.stringify(value, (_key, item: unknown) => (typeof item === "bigint" ? Number(item) : item))
+  ) as T;
+
 export const mediaLibraryController = {
   async list(req: Request, res: Response, next: NextFunction) {
     try {
@@ -70,7 +75,7 @@ export const mediaLibraryController = {
       ]);
 
       res.status(200).json({
-        items,
+        items: toJsonSafe(items),
         pagination: {
           page,
           pageSize,

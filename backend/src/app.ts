@@ -35,6 +35,7 @@ export const createApp = () => {
   const app = express();
 
   app.set("trust proxy", 1);
+  app.set("json replacer", (_key: string, value: unknown) => (typeof value === "bigint" ? Number(value) : value));
 
   const redactUrl = (value: string) =>
     value.replace(/([?&]token=)[^&]+/g, "$1<redacted>");
