@@ -18,6 +18,17 @@ const getSortBy = (value: string | undefined) => {
 };
 
 const getSortDir = (value: string | undefined) => (value === "asc" ? "asc" : "desc");
+const getMediaType = (value: string | undefined) => {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized = value.toUpperCase();
+  if (normalized === "VIDEO" || normalized === "IMAGE" || normalized === "PDF" || normalized === "DOCUMENT" || normalized === "OTHER") {
+    return normalized as "VIDEO" | "IMAGE" | "PDF" | "DOCUMENT" | "OTHER";
+  }
+  return undefined;
+};
 
 const toJsonSafe = <T>(value: T): T =>
   JSON.parse(
@@ -32,10 +43,12 @@ export const mediaLibraryController = {
       const sortBy = getSortBy(req.query.sortBy as string | undefined);
       const sortDir = getSortDir(req.query.sortDir as string | undefined);
       const status = (req.query.status as string | undefined)?.toUpperCase();
+      const type = getMediaType(req.query.type as string | undefined);
       const folderId = req.query.folderId as string | undefined;
       const search = (req.query.search as string | undefined)?.trim();
       const where = {
         ...(status ? { status: status as "UPLOADING" | "PROCESSING" | "READY" | "ERROR" } : {}),
+        ...(type ? { type } : {}),
         ...(folderId ? { folderId } : {}),
         ...(search
           ? {

@@ -15,7 +15,17 @@ type Attachment = {
     title: string;
     originalFilename: string;
     status: string;
+    type: "VIDEO" | "IMAGE" | "PDF" | "DOCUMENT" | "OTHER";
+    mimeType: string | null;
   };
+};
+
+type MediaAsset = {
+  id: string;
+  title: string;
+  originalFilename: string;
+  status: "UPLOADING" | "PROCESSING" | "READY" | "ERROR";
+  type: "VIDEO" | "IMAGE" | "PDF" | "DOCUMENT" | "OTHER";
 };
 
 type LessonAttachmentDrawerProps = {
@@ -27,6 +37,7 @@ type LessonAttachmentDrawerProps = {
 
 export function LessonAttachmentDrawer({ lessonId, isOpen, onClose, onAttached }: LessonAttachmentDrawerProps) {
   const [mediaAssetId, setMediaAssetId] = useState("");
+  const [role, setRole] = useState<"PRIMARY_VIDEO" | "SUPPLEMENTAL">("SUPPLEMENTAL");
 
   const attachmentQuery = useQuery({
     queryKey: ["lesson-attachments", lessonId],
@@ -37,12 +48,28 @@ export function LessonAttachmentDrawer({ lessonId, isOpen, onClose, onAttached }
     enabled: isOpen && Boolean(lessonId)
   });
 
+  const mediaQuery = useQuery({
+    queryKey: ["lesson-attachment-candidates", role],
+    queryFn: async () => {
+      const response = await api.get<{ items: MediaAsset[] }>("/admin/media-library", {
+        params: {
+          status: "READY",
+          page: 1,
+          pageSize: 200,
+          ...(role === "PRIMARY_VIDEO" ? { type: "VIDEO" } : {})
+        }
+      });
+      return response.data.items;
+    },
+    enabled: isOpen
+  });
+
   const attachMutation = useMutation({
     mutationFn: async (nextMediaAssetId: string) => {
       if (!lessonId) {
         throw new Error("LESSON_ID_REQUIRED");
       }
-      return api.put(`/admin/lessons/${lessonId}/media/${nextMediaAssetId}`);
+      return api.put(`/admin/lessons/${lessonId}/media/${nextMediaAssetId}`, { role });
     },
     onSuccess: async () => {
       toast.success("Lesson attachment updated");
@@ -77,13 +104,35 @@ export function LessonAttachmentDrawer({ lessonId, isOpen, onClose, onAttached }
 
         <div className="space-y-3">
           <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300">
-            Media Asset ID
-            <input
+            Attachment Role
+            <select
               className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
-              placeholder="Paste media asset id"
+              value={role}
+              onChange={(event) => {
+                const nextRole = event.target.value as "PRIMARY_VIDEO" | "SUPPLEMENTAL";
+                setRole(nextRole);
+                setMediaAssetId("");
+              }}
+            >
+              <option value="SUPPLEMENTAL">Supplemental attachment (all file types)</option>
+              <option value="PRIMARY_VIDEO">Primary lesson video (video only)</option>
+            </select>
+          </label>
+
+          <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300">
+            Media Asset
+            <select
+              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
               value={mediaAssetId}
               onChange={(event) => setMediaAssetId(event.target.value)}
-            />
+            >
+              <option value="">Select media asset</option>
+              {(mediaQuery.data ?? []).map((asset) => (
+                <option key={asset.id} value={asset.id}>
+                  {asset.title} ({asset.type})
+                </option>
+              ))}
+            </select>
           </label>
 
           <button
@@ -111,7 +160,8 @@ export function LessonAttachmentDrawer({ lessonId, isOpen, onClose, onAttached }
                     {attachment.mediaAsset?.title ?? attachment.mediaAssetId}
                   </p>
                   <p className="text-gray-500 dark:text-gray-400">
-                    {attachment.role} · {attachment.mappingSource} · {attachment.isActive ? "Active" : "Inactive"}
+                    {attachment.role} · {attachment.mediaAsset?.type ?? "UNKNOWN"} · {attachment.mappingSource} ·{" "}
+                    {attachment.isActive ? "Active" : "Inactive"}
                   </p>
                 </li>
               ))}

@@ -30,6 +30,7 @@ let app: Express;
 let prisma: PrismaClient;
 let lessonId = "";
 let mediaAssetId = "";
+let supplementalMediaAssetId = "";
 
 const loginAsAdmin = async () => {
   const response = await request(app)
@@ -96,6 +97,19 @@ beforeEach(async () => {
     }
   });
   mediaAssetId = mediaAsset.id;
+
+  const supplementalMedia = await prisma.mediaFile.create({
+    data: {
+      title: "Lesson 01 PDF",
+      type: "PDF",
+      status: "READY",
+      originalFilename: "lesson-01.pdf",
+      mimeType: "application/pdf",
+      sizeBytes: BigInt(1024),
+      uploadedById: admin.id
+    }
+  });
+  supplementalMediaAssetId = supplementalMedia.id;
 });
 
 describe("Lesson attachment contract", () => {
@@ -142,5 +156,34 @@ describe("Lesson attachment contract", () => {
       skipped: 0,
       failed: 0
     });
+  });
+
+  it("supports supplemental non-video attach and rejects non-video as primary", async () => {
+    const token = await loginAsAdmin();
+
+    await request(app)
+      .put(`/api/v1/admin/lessons/${lessonId}/media/${supplementalMediaAssetId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ role: "SUPPLEMENTAL" })
+      .expect(200);
+
+    const supplementalAttachment = await prisma.lessonMediaAttachment.findFirst({
+      where: {
+        lessonId,
+        mediaAssetId: supplementalMediaAssetId,
+        attachmentRole: "SUPPLEMENTAL",
+        isActive: true
+      }
+    });
+    expect(supplementalAttachment).toBeTruthy();
+
+    const lessonAfterSupplemental = await prisma.lesson.findUnique({ where: { id: lessonId } });
+    expect(lessonAfterSupplemental?.mediaFileId).toBeNull();
+
+    await request(app)
+      .put(`/api/v1/admin/lessons/${lessonId}/media/${supplementalMediaAssetId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ role: "PRIMARY_VIDEO" })
+      .expect(422);
   });
 });

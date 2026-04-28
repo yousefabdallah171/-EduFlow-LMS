@@ -30,6 +30,7 @@ let app: Express;
 let prisma: PrismaClient;
 let lessonId = "";
 let mediaAssetId = "";
+let documentMediaAssetId = "";
 
 const loginAsAdmin = async () => {
   const response = await request(app)
@@ -96,6 +97,19 @@ beforeEach(async () => {
     }
   });
   mediaAssetId = mediaAsset.id;
+
+  const documentMedia = await prisma.mediaFile.create({
+    data: {
+      title: "Bulk Lesson Notes",
+      type: "DOCUMENT",
+      status: "READY",
+      originalFilename: "bulk-lesson-notes.docx",
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      sizeBytes: BigInt(2048),
+      uploadedById: admin.id
+    }
+  });
+  documentMediaAssetId = documentMedia.id;
 });
 
 describe("Lesson bulk attach atomic behavior", () => {
@@ -129,5 +143,30 @@ describe("Lesson bulk attach atomic behavior", () => {
 
     const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });
     expect(lesson?.mediaFileId).toBeNull();
+  });
+
+  it("rejects bulk primary attachment when media type is non-video", async () => {
+    const token = await loginAsAdmin();
+
+    await request(app)
+      .post("/api/v1/admin/lessons/media/bulk-attach")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        attachments: [
+          {
+            lessonId,
+            mediaAssetId: documentMediaAssetId,
+            role: "PRIMARY_VIDEO",
+            mappingSource: "BULK_REVIEWED"
+          }
+        ],
+        replaceExistingPrimaryVideo: true
+      })
+      .expect(422);
+
+    const attachments = await prisma.lessonMediaAttachment.findMany({
+      where: { lessonId }
+    });
+    expect(attachments).toHaveLength(0);
   });
 });

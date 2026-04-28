@@ -59,7 +59,8 @@ export const lessonMediaMatchingService = {
     const mediaAssets = await prisma.mediaFile.findMany({
       where: {
         ...(input.mediaAssetIds?.length ? { id: { in: input.mediaAssetIds } } : {}),
-        status: "READY"
+        status: "READY",
+        type: "VIDEO"
       },
       select: {
         id: true,

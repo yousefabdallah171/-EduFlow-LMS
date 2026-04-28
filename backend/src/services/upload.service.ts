@@ -15,6 +15,7 @@ const MAX_UPLOAD_BYTES = 4 * 1024 * 1024 * 1024; // 4 GB
 const ALLOWED_MIME_TYPES = {
   "video/mp4": "VIDEO",
   "video/quicktime": "VIDEO",
+  "video/webm": "VIDEO",
   "video/x-msvideo": "VIDEO",
   "video/x-matroska": "VIDEO",
   "image/jpeg": "IMAGE",
@@ -26,6 +27,11 @@ const ALLOWED_MIME_TYPES = {
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCUMENT",
   "application/vnd.ms-excel": "DOCUMENT",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "DOCUMENT",
+  "application/vnd.ms-powerpoint": "DOCUMENT",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": "DOCUMENT",
+  "application/zip": "OTHER",
+  "application/x-zip-compressed": "OTHER",
+  "text/plain": "DOCUMENT",
 };
 const FFMPEG_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 

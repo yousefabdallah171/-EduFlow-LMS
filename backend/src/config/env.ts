@@ -31,6 +31,7 @@ const envSchema = z.object({
   SMTP_PORT: z.coerce.number().int().positive(),
   SMTP_USER: z.string().min(1),
   SMTP_PASS: z.string().min(1),
+  HCAPTCHA_SECRET_KEY: z.string().min(1).default("placeholder_hcaptcha_secret"),
   CACHE_TTL_DASHBOARD_SECONDS: z.coerce.number().int().positive().default(5 * 60),
   CACHE_TTL_ENROLLMENT_SECONDS: z.coerce.number().int().positive().default(2 * 60),
   CACHE_TTL_LESSON_METADATA_SECONDS: z.coerce.number().int().positive().default(2 * 60 * 60),
@@ -44,7 +45,9 @@ const envSchema = z.object({
   UPLOAD_PROTOCOL: z.enum(["TUS", "MULTIPART"]).default("TUS"),
   UPLOAD_STORAGE_PROVIDER: z.enum(["S3", "R2", "MINIO", "LOCAL"]).default("S3"),
   UPLOAD_STORAGE_BUCKET: z.string().default("eduflow-media"),
-  UPLOAD_ALLOWED_MIME_TYPES: z.string().default("video/mp4,video/quicktime,video/webm"),
+  UPLOAD_ALLOWED_MIME_TYPES: z.string().default(
+    "video/mp4,video/quicktime,video/webm,video/x-msvideo,video/x-matroska,image/jpeg,image/png,image/gif,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/zip,application/x-zip-compressed,text/plain"
+  ),
   UPLOAD_MAX_FILE_SIZE_BYTES: z.coerce.number().int().positive().default(5 * 1024 * 1024 * 1024),
   UPLOAD_MIN_CHUNK_SIZE_BYTES: z.coerce.number().int().positive().default(1 * 1024 * 1024),
   UPLOAD_DEFAULT_CHUNK_SIZE_BYTES: z.coerce.number().int().positive().default(2 * 1024 * 1024),
