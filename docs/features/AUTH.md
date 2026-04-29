@@ -220,3 +220,40 @@ Emails are sent via SMTP (configured via `SMTP_*` env vars).
 
 Templates stored in `NotificationTemplate` DB table (editable by admin at `/admin/notifications`).  
 Email delivery queued via `EmailQueue` table with retry logic (3 attempts: 2min → 10min → 30min).
+
+---
+
+## Progressive Auth Protection
+
+EduFlow now applies layered auth protection for login/register/password reset/resend-verification:
+
+1. Whitelist bypass (`auth:whitelist:ip:*`)
+2. Active ban check (`SecurityBan` + Redis)
+3. Active lockout check (`auth:lockout:*`)
+4. CAPTCHA requirement/verification (`auth:captcha:*` + hCaptcha)
+5. Progressive delay + escalation + logging (`AuthAttemptLog`)
+6. Auto-whitelist on successful admin login
+7. Security notifications + acknowledge flow
+
+### Thresholds
+
+- Attempts 1-5: normal
+- 6-10: CAPTCHA + 2s delay
+- 11-15: 5m lockout
+- 16-20: 30m lockout
+- 21-25: 1h lockout
+- 26+: permanent ban
+
+### Key Redis Patterns
+
+- `auth:fail:ip:{ip}` / `auth:fail:email:{email}` / `auth:fail:fp:{hash}`
+- `auth:captcha:*`
+- `auth:lockout:*`
+- `auth:ban:*`
+- `auth:email:ips:{email}`
+
+### Error Codes
+
+- `CAPTCHA_REQUIRED`, `CAPTCHA_INVALID`
+- `ACCOUNT_LOCKED` (+ `Retry-After`)
+- `BAN_ACTIVE`

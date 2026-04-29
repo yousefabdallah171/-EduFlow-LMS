@@ -333,3 +333,27 @@ GET /metrics          Prometheus metrics text format
                       (optional Bearer auth if PROMETHEUS_METRICS_TOKEN set)
 GET /metrics/health   { status: "ok", timestamp }
 ```
+
+---
+
+## Security Endpoints Addendum
+
+### Auth
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/v1/auth/security/acknowledge` | — | Acknowledge suspicious activity link (`was-me` / `was-not-me`) |
+
+### Admin Security
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/admin/security/logs` | ADMIN | List auth attempt logs |
+| GET | `/api/v1/admin/security/stats` | ADMIN | Security KPIs |
+| GET | `/api/v1/admin/security/bans` | ADMIN | List bans |
+| POST | `/api/v1/admin/security/bans` | ADMIN | Create manual ban |
+| DELETE | `/api/v1/admin/security/bans/:id` | ADMIN | Lift ban |
+| PATCH | `/api/v1/admin/security/bans/:id` | ADMIN | Extend ban |
+| GET | `/api/v1/admin/security/whitelist` | ADMIN | List whitelist |
+| POST | `/api/v1/admin/security/whitelist` | ADMIN | Add whitelist entry |
+| DELETE | `/api/v1/admin/security/whitelist/:id` | ADMIN | Remove whitelist entry |

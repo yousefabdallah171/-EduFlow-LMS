@@ -6,10 +6,13 @@ import { useTranslation } from "react-i18next";
 import { AuthShell } from "@/components/shared/AuthShell";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
+import { useDeviceFingerprint } from "@/hooks/useDeviceFingerprint";
 import { api } from "@/lib/api";
+import { buildAuthProtectionHeaders } from "@/lib/auth-protection";
 import { useAuthStore } from "@/stores/auth.store";
 import { SEO } from "@/components/shared/SEO";
 import { SEO_PAGES } from "@/lib/seo-config";
+import { HCaptchaWidget } from "@/components/shared/HCaptchaWidget";
 
 export const Login = () => {
   const { login } = useAuth();
@@ -25,6 +28,10 @@ export const Login = () => {
   const [resendMessage, setResendMessage] = useState<string>("");
   const [isResending, setIsResending] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captchaRequired, setCaptchaRequired] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [lockoutMessage, setLockoutMessage] = useState<string>("");
+  const { fingerprintHash } = useDeviceFingerprint();
 
   const canResend = useMemo(() => errorCode === "EMAIL_NOT_VERIFIED" && email.trim().length > 3, [email, errorCode]);
 
@@ -39,15 +46,30 @@ export const Login = () => {
     setMessage("");
     setResendMessage("");
     setErrorCode(null);
+    setLockoutMessage("");
     try {
-      const nextUser = await login(email, password);
+      const nextUser = await login(email, password, {
+        captchaToken: captchaToken ?? undefined,
+        headers: buildAuthProtectionHeaders(fingerprintHash)
+      });
       navigate(nextUser.role === "ADMIN" ? `${prefix}/admin/dashboard` : `${prefix}/dashboard`, { replace: true });
     } catch (error: unknown) {
       const apiError = error as AxiosError<{ message?: string; error?: string }>;
       const apiStatus = apiError.response?.status;
       const apiErrorCode = apiError.response?.data?.error ?? null;
+      const retryAfter = Number(apiError.response?.headers?.["retry-after"] ?? 0);
       setErrorCode(apiErrorCode ?? (apiStatus === 403 ? "EMAIL_NOT_VERIFIED" : null));
-      setMessage(apiError.response?.data?.message ?? t("auth.login.errorLoginFailed"));
+      if (apiErrorCode === "CAPTCHA_REQUIRED" || apiErrorCode === "CAPTCHA_INVALID") {
+        setCaptchaRequired(true);
+        setMessage("Too many attempts. Please complete the verification below.");
+      } else if (apiErrorCode === "ACCOUNT_LOCKED") {
+        setLockoutMessage(`Account temporarily locked. Try again in ${Math.max(1, Math.ceil(retryAfter / 60))} minutes.`);
+        setMessage("");
+      } else if (apiErrorCode === "BAN_ACTIVE") {
+        setMessage("Access to this account has been blocked. Contact support.");
+      } else {
+        setMessage(apiError.response?.data?.message ?? t("auth.login.errorLoginFailed"));
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -166,11 +188,18 @@ export const Login = () => {
             ) : null}
           </div>
         ) : null}
+        {lockoutMessage ? <div className="ui-feedback ui-feedback--danger"><p>{lockoutMessage}</p></div> : null}
+
+        <HCaptchaWidget
+          captchaRequired={captchaRequired}
+          onVerify={(token) => setCaptchaToken(token)}
+          onExpire={() => setCaptchaToken(null)}
+        />
 
         <button
           className="w-full rounded-xl py-3 text-sm font-bold text-white shadow-sm transition-all hover:opacity-95 disabled:opacity-50"
           style={{ background: "var(--gradient-brand)" }}
-          disabled={isSubmitting}
+          disabled={isSubmitting || (captchaRequired && !captchaToken)}
           type="submit"
         >
           {isSubmitting ? t("auth.login.signingIn") : t("auth.login.signIn")}

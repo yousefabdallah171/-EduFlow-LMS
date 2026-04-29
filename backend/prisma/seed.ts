@@ -480,6 +480,36 @@ async function main() {
       completedAt: null
     }
   });
+
+  await prisma.notificationTemplate.upsert({
+    where: { key: "SECURITY_SUSPICIOUS_ACTIVITY" },
+    update: {
+      subject: "Unusual login activity on your EduFlow account",
+      bodyHtml:
+        "Hello {{fullName}},<br/><br/>We detected unusual login attempts on your account from IP {{ipAddress}} at {{timestamp}}.<br/><br/>If this was you: <a href='{{wasMe}}'>This was me</a><br/>If this was NOT you: <a href='{{wasNotMe}}'>This was not me</a><br/><br/>For your security, we recommend changing your password if you did not attempt to log in."
+    },
+    create: {
+      key: "SECURITY_SUSPICIOUS_ACTIVITY",
+      subject: "Unusual login activity on your EduFlow account",
+      bodyHtml:
+        "Hello {{fullName}},<br/><br/>We detected unusual login attempts on your account from IP {{ipAddress}} at {{timestamp}}.<br/><br/>If this was you: <a href='{{wasMe}}'>This was me</a><br/>If this was NOT you: <a href='{{wasNotMe}}'>This was not me</a><br/><br/>For your security, we recommend changing your password if you did not attempt to log in."
+    }
+  });
+
+  await prisma.notificationTemplate.upsert({
+    where: { key: "ADMIN_SECURITY_ALERT" },
+    update: {
+      subject: "EduFlow Security: Permanent ban triggered",
+      bodyHtml:
+        "A permanent ban has been triggered.<br/><br/>IP: {{ipAddress}}<br/>Email: {{email}}<br/>Fingerprint: {{fingerprintHash}}<br/>Attempt count: {{attemptCount}}<br/>Time: {{timestamp}}<br/><br/>Manage at: {{adminSecurityUrl}}"
+    },
+    create: {
+      key: "ADMIN_SECURITY_ALERT",
+      subject: "EduFlow Security: Permanent ban triggered",
+      bodyHtml:
+        "A permanent ban has been triggered.<br/><br/>IP: {{ipAddress}}<br/>Email: {{email}}<br/>Fingerprint: {{fingerprintHash}}<br/>Attempt count: {{attemptCount}}<br/>Time: {{timestamp}}<br/><br/>Manage at: {{adminSecurityUrl}}"
+    }
+  });
 }
 
 main()

@@ -256,3 +256,14 @@ Admin-only nav; students never see admin routes.
 | Notifications | NotificationTemplate |
 | Audit | AuditLog, AdminAuditLog |
 | Settings | CourseSettings |
+
+| `/admin/security/logs` | `pages/admin/SecurityLogs.tsx` | Auth attempt event log |
+| `/admin/security` | `pages/admin/Security.tsx` | Ban management + whitelist |
+
+## Security Logs Page
+
+Shows attempt timeline, filters, and pagination for auth security events.
+
+## Security Management Page
+
+Shows security KPIs, active bans, manual ban actions, and IP whitelist management.

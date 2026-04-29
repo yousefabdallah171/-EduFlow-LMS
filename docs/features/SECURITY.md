@@ -236,3 +236,26 @@ FRONTEND_URL             must be valid URL
 | `tests/security/rate-limiting.test.ts` | Rate limit enforcement |
 | `tests/security/webhook-hmac.test.ts` | HMAC validation, replay prevention |
 | `tests/security/data-protection.test.ts` | PII masking, field exposure |
+
+---
+
+## Progressive Auth Lockout
+
+### Auth Lockout Tiers
+
+| Tier | Attempt Range | Behavior |
+|------|---------------|----------|
+| Normal | 1-5 | No CAPTCHA or lockout |
+| CAPTCHA Tier | 6-10 | CAPTCHA required + server delay |
+| Lockout L1 | 11-15 | 5-minute lockout |
+| Lockout L2 | 16-20 | 30-minute lockout |
+| Lockout L3 | 21-25 | 1-hour lockout |
+| Permanent | 26+ | Manual admin unban required |
+
+### Additional Security Rate Limits
+
+| Flow | Threshold | Behavior |
+|------|-----------|----------|
+| Registration flood soft | >5/day | controlled pacing |
+| Registration flood medium | >=11/day | temporary lockout |
+| Registration flood hard | >=15/day | longer lockout + admin alert |

@@ -58,6 +58,9 @@ const AdminAuditLog = lazy(async () => import("@/pages/admin/AuditLog").then((m)
 const AdminTickets = lazy(async () => import("@/pages/admin/Tickets").then((m) => ({ default: m.AdminTickets })));
 const AdminSettings = lazy(async () => import("@/pages/admin/Settings").then((m) => ({ default: m.AdminSettings })));
 const AdminNotifications = lazy(async () => import("@/pages/admin/Notifications").then((m) => ({ default: m.AdminNotifications })));
+const AdminSecurityLogs = lazy(async () => import("@/pages/admin/SecurityLogs").then((m) => ({ default: m.AdminSecurityLogs })));
+const AdminSecurity = lazy(async () => import("@/pages/admin/Security").then((m) => ({ default: m.AdminSecurity })));
+const SecurityAcknowledge = lazy(async () => import("@/pages/SecurityAcknowledge").then((m) => ({ default: m.SecurityAcknowledge })));
 const VerifyEmailPage = lazy(async () => import("@/pages/VerifyEmail").then((m) => ({ default: m.VerifyEmail })));
 const ResetPasswordPage = lazy(async () => import("@/pages/ResetPassword").then((m) => ({ default: m.ResetPassword })));
 
@@ -257,6 +260,7 @@ export const AppRoutes = () => (
       <Route element={<ForgotPassword />} path="/forgot-password" />
       <Route element={<ResetPasswordPage />} path="/reset-password" />
       <Route element={<VerifyEmailPage />} path="/verify-email" />
+      <Route element={<SecurityAcknowledge />} path="/security/acknowledge" />
       <Route element={<OAuthCallback />} path="/auth/callback" />
       <Route element={<About />} path="/about" />
       <Route element={<Testimonials />} path="/testimonials" />
@@ -302,6 +306,8 @@ export const AppRoutes = () => (
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminStudentDetail /></RequireRole>} path="/admin/students/:id" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminMediaLibrary /></RequireRole>} path="/admin/media" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminAuditLog /></RequireRole>} path="/admin/audit" />
+      <Route element={<RequireRole role={ROLES.ADMIN}><AdminSecurityLogs /></RequireRole>} path="/admin/security/logs" />
+      <Route element={<RequireRole role={ROLES.ADMIN}><AdminSecurity /></RequireRole>} path="/admin/security" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminTickets /></RequireRole>} path="/admin/tickets" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminSettings /></RequireRole>} path="/admin/settings" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminNotifications /></RequireRole>} path="/admin/notifications" />
@@ -335,6 +341,7 @@ export const AppRoutes = () => (
       <Route element={<ForgotPassword />} path="/:locale/forgot-password" />
       <Route element={<ResetPasswordPage />} path="/:locale/reset-password" />
       <Route element={<VerifyEmailPage />} path="/:locale/verify-email" />
+      <Route element={<SecurityAcknowledge />} path="/:locale/security/acknowledge" />
       <Route element={<OAuthCallback />} path="/:locale/auth/callback" />
       <Route element={<About />} path="/:locale/about" />
       <Route element={<Testimonials />} path="/:locale/testimonials" />
@@ -380,6 +387,8 @@ export const AppRoutes = () => (
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminStudentDetail /></RequireRole>} path="/:locale/admin/students/:id" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminMediaLibrary /></RequireRole>} path="/:locale/admin/media" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminAuditLog /></RequireRole>} path="/:locale/admin/audit" />
+      <Route element={<RequireRole role={ROLES.ADMIN}><AdminSecurityLogs /></RequireRole>} path="/:locale/admin/security/logs" />
+      <Route element={<RequireRole role={ROLES.ADMIN}><AdminSecurity /></RequireRole>} path="/:locale/admin/security" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminTickets /></RequireRole>} path="/:locale/admin/tickets" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminSettings /></RequireRole>} path="/:locale/admin/settings" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminNotifications /></RequireRole>} path="/:locale/admin/notifications" />

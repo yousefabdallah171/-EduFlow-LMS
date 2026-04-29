@@ -1,45 +1,35 @@
 import Queue from "bull";
 import { env } from "../config/env.js";
 
+function queueRedisConfig() {
+  const redisUrl = new URL(env.REDIS_URL);
+  return {
+    host: redisUrl.hostname,
+    port: redisUrl.port ? parseInt(redisUrl.port, 10) : 6379,
+    password: redisUrl.password || undefined,
+    db: redisUrl.pathname && redisUrl.pathname !== "/" ? parseInt(redisUrl.pathname.slice(1), 10) : 0
+  };
+}
+
 // Job queue instances
 export const webhookRetryQueue = new Queue("webhook-retry", {
-  redis: {
-    host: env.REDIS_HOST || "localhost",
-    port: env.REDIS_PORT ? parseInt(env.REDIS_PORT) : 6379,
-    password: env.REDIS_PASSWORD
-  }
+  redis: queueRedisConfig()
 });
 
 export const emailQueue = new Queue("email-queue", {
-  redis: {
-    host: env.REDIS_HOST || "localhost",
-    port: env.REDIS_PORT ? parseInt(env.REDIS_PORT) : 6379,
-    password: env.REDIS_PASSWORD
-  }
+  redis: queueRedisConfig()
 });
 
 export const failedPaymentRecoveryQueue = new Queue("failed-payment-recovery", {
-  redis: {
-    host: env.REDIS_HOST || "localhost",
-    port: env.REDIS_PORT ? parseInt(env.REDIS_PORT) : 6379,
-    password: env.REDIS_PASSWORD
-  }
+  redis: queueRedisConfig()
 });
 
 export const refundQueue = new Queue("refund-processing", {
-  redis: {
-    host: env.REDIS_HOST || "localhost",
-    port: env.REDIS_PORT ? parseInt(env.REDIS_PORT) : 6379,
-    password: env.REDIS_PASSWORD
-  }
+  redis: queueRedisConfig()
 });
 
 export const videoProcessingQueue = new Queue("video-processing", {
-  redis: {
-    host: env.REDIS_HOST || "localhost",
-    port: env.REDIS_PORT ? parseInt(env.REDIS_PORT) : 6379,
-    password: env.REDIS_PASSWORD
-  }
+  redis: queueRedisConfig()
 });
 
 // Event handlers for all queues

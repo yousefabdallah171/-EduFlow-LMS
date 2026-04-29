@@ -5,11 +5,13 @@ import {
   BookOpen,
   CreditCard,
   FileClock,
+  FileSearch,
   Gauge,
   Image,
   LifeBuoy,
   ReceiptText,
   Settings,
+  ShieldAlert,
   Users
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -28,6 +30,8 @@ const adminItems = [
   { labelKey: "admin.nav.orders", to: "/admin/orders", icon: ReceiptText },
   { labelKey: "admin.nav.media", to: "/admin/media", icon: Image },
   { labelKey: "admin.nav.audit", to: "/admin/audit", icon: FileClock },
+  { labelKey: "admin.nav.securityLogs", to: "/admin/security/logs", icon: FileSearch },
+  { labelKey: "admin.nav.security", to: "/admin/security", icon: ShieldAlert },
   { labelKey: "admin.nav.tickets", to: "/admin/tickets", icon: LifeBuoy },
   { labelKey: "admin.nav.settings", to: "/admin/settings", icon: Settings },
   { labelKey: "admin.nav.notifications", to: "/admin/notifications", icon: Bell }

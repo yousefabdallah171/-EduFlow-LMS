@@ -184,6 +184,40 @@ enum BatchOperationType {
   BULK_METADATA_UPDATE
 }
 
+enum AttemptType {
+  LOGIN
+  REGISTER
+  PASSWORD_RESET
+  RESEND_VERIFICATION
+}
+
+enum AttemptResult {
+  SUCCESS
+  FAIL_CREDENTIALS
+  FAIL_NOT_VERIFIED
+  BLOCKED_BAN
+  LOCKED_OUT
+  CAPTCHA_REQUIRED
+  CAPTCHA_FAIL
+  RATE_LIMITED
+  FLOOD_LIMIT
+}
+
+enum BanType {
+  IP
+  EMAIL
+  FINGERPRINT
+  IP_EMAIL
+  IP_FINGERPRINT
+  ALL
+}
+
+enum BanReason {
+  AUTO_PROGRESSIVE
+  AUTO_REGISTRATION_FLOOD
+  MANUAL_ADMIN
+}
+
 model User {
   id                   String           @id @default(uuid())
   email                String           @unique
@@ -221,6 +255,94 @@ model User {
   uploadSessions       UploadSession[]
   lessonMediaAttached  LessonMediaAttachment[] @relation("LessonMediaAttachedBy")
   batchOperationReports BatchOperationReport[]
+  fingerprints         BrowserFingerprint[] @relation("UserFingerprints")
+  authAttempts         AuthAttemptLog[]     @relation("UserAttempts")
+  bansCreated          SecurityBan[]        @relation("BanCreatedBy")
+  bansLifted           SecurityBan[]        @relation("BanLiftedBy")
+  whitelistEntries     SecurityWhitelist[]  @relation("WhitelistAddedBy")
+}
+
+model BrowserFingerprint {
+  id          String   @id @default(uuid())
+  hash        String   @unique
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @updatedAt
+  seenCount   Int      @default(1)
+  userId      String?
+  user        User?    @relation("UserFingerprints", fields: [userId], references: [id])
+  attempts    AuthAttemptLog[]
+  bans        SecurityBan[]
+
+  @@index([hash])
+  @@index([userId])
+}
+
+model AuthAttemptLog {
+  id              String              @id @default(uuid())
+  type            AttemptType
+  result          AttemptResult
+  ipAddress       String
+  emailAttempted  String?
+  fingerprintId   String?
+  fingerprint     BrowserFingerprint? @relation(fields: [fingerprintId], references: [id])
+  userId          String?
+  user            User?               @relation("UserAttempts", fields: [userId], references: [id])
+  attemptNumber   Int                 @default(1)
+  lockoutApplied  Boolean             @default(false)
+  banApplied      Boolean             @default(false)
+  captchaRequired Boolean             @default(false)
+  captchaPassed   Boolean?
+  delayApplied    Int                 @default(0)
+  userAgent       String?
+  metadata        Json?
+  createdAt       DateTime            @default(now())
+
+  @@index([ipAddress, createdAt])
+  @@index([emailAttempted, createdAt])
+  @@index([fingerprintId, createdAt])
+  @@index([result, createdAt])
+  @@index([type, result, createdAt])
+  @@index([createdAt])
+}
+
+model SecurityBan {
+  id            String              @id @default(uuid())
+  banType       BanType
+  reason        BanReason
+  notes         String?
+  ipAddress     String?
+  email         String?
+  fingerprintId String?
+  fingerprint   BrowserFingerprint? @relation(fields: [fingerprintId], references: [id])
+  attemptCount  Int?
+  isPermanent   Boolean             @default(false)
+  expiresAt     DateTime?
+  isActive      Boolean             @default(true)
+  createdAt     DateTime            @default(now())
+  liftedAt      DateTime?
+  liftedById    String?
+  liftedBy      User?               @relation("BanLiftedBy", fields: [liftedById], references: [id])
+  createdById   String?
+  createdBy     User?               @relation("BanCreatedBy", fields: [createdById], references: [id])
+  liftReason    String?
+
+  @@index([ipAddress, isActive])
+  @@index([email, isActive])
+  @@index([fingerprintId, isActive])
+  @@index([isActive, expiresAt])
+  @@index([createdAt])
+  @@index([banType, isActive])
+}
+
+model SecurityWhitelist {
+  id        String   @id @default(uuid())
+  ipAddress String   @unique
+  reason    String?
+  addedById String
+  addedBy   User     @relation("WhitelistAddedBy", fields: [addedById], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([ipAddress])
 }
 
 model RefreshToken {

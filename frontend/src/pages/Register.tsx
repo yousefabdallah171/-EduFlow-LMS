@@ -10,8 +10,11 @@ import { useTranslation } from "react-i18next";
 import { AuthShell } from "@/components/shared/AuthShell";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
+import { buildAuthProtectionHeaders } from "@/lib/auth-protection";
 import { resolveLocale } from "@/lib/locale";
 import { useAuthStore } from "@/stores/auth.store";
+import { useDeviceFingerprint } from "@/hooks/useDeviceFingerprint";
+import { HCaptchaWidget } from "@/components/shared/HCaptchaWidget";
 
 type FieldErrors = Partial<Record<"fullName" | "email" | "password", string>>;
 
@@ -26,6 +29,10 @@ export const Register = () => {
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captchaRequired, setCaptchaRequired] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [floodMessage, setFloodMessage] = useState("");
+  const { fingerprintHash } = useDeviceFingerprint();
 
   const registerSchema = useMemo(
     () =>
@@ -49,6 +56,7 @@ export const Register = () => {
     event.preventDefault();
     setMessage("");
     setIsSuccess(false);
+    setFloodMessage("");
 
     const parsed = registerSchema.safeParse(values);
     if (!parsed.success) {
@@ -59,12 +67,26 @@ export const Register = () => {
     setErrors({});
     setIsSubmitting(true);
     try {
-      const response = await api.post<{ message: string }>("/auth/register", parsed.data);
+      const response = await api.post<{ message: string }>(
+        "/auth/register",
+        { ...parsed.data, captchaToken: captchaToken ?? undefined },
+        { headers: buildAuthProtectionHeaders(fingerprintHash) }
+      );
       setMessage(response.data.message);
       setIsSuccess(true);
     } catch (error: unknown) {
-      const apiError = error as AxiosError<{ message?: string }>;
-      setMessage(apiError.response?.data?.message ?? (isAr ? "تعذر إنشاء الحساب الآن. حاول مرة أخرى." : "Registration failed. Please try again."));
+      const apiError = error as AxiosError<{ message?: string; error?: string }>;
+      const errorCode = apiError.response?.data?.error;
+      if (errorCode === "CAPTCHA_REQUIRED" || errorCode === "CAPTCHA_INVALID") {
+        setCaptchaRequired(true);
+        setMessage("Too many attempts. Please complete the verification below.");
+      } else if (errorCode === "REG_FLOOD_MEDIUM") {
+        setFloodMessage("Too many registrations from your network. Please wait 30 minutes.");
+      } else if (errorCode === "REG_FLOOD_HARD") {
+        setFloodMessage("Registration limit reached from your network. Please try again in 1 hour.");
+      } else {
+        setMessage(apiError.response?.data?.message ?? (isAr ? "تعذر إنشاء الحساب الآن. حاول مرة أخرى." : "Registration failed. Please try again."));
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -222,11 +244,22 @@ export const Register = () => {
               <p>{message}</p>
             </div>
           ) : null}
+          {floodMessage ? (
+            <div className="ui-feedback ui-feedback--danger">
+              <p>{floodMessage}</p>
+            </div>
+          ) : null}
+
+          <HCaptchaWidget
+            captchaRequired={captchaRequired}
+            onVerify={(token) => setCaptchaToken(token)}
+            onExpire={() => setCaptchaToken(null)}
+          />
 
           <button
             className="w-full rounded-xl py-3 text-sm font-bold text-white shadow-sm transition-all hover:opacity-95 disabled:opacity-50"
             style={{ background: "var(--gradient-brand)" }}
-            disabled={isSubmitting}
+            disabled={isSubmitting || (captchaRequired && !captchaToken)}
             type="submit"
           >
             {isSubmitting ? t("auth.register.creatingAccount") : t("auth.register.createAccount")}

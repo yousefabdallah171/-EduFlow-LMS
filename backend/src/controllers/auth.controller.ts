@@ -6,8 +6,10 @@ import crypto from "node:crypto";
 
 import { env } from "../config/env.js";
 import { AuthError, authService } from "../services/auth.service.js";
+import { whitelistService, protectionNotificationService, attemptCounterService, attemptLogService } from "../services/security/index.js";
 import { REFRESH_SESSION_WINDOW_MS } from "../utils/jwt.js";
 import { validateEmail } from "../utils/email-validation.js";
+import { extractIp } from "../utils/ip-extractor.js";
 
 const passwordSchema = z
   .string()
@@ -39,6 +41,10 @@ const resendVerificationSchema = z.object({
 const resetPasswordSchema = z.object({
   token: z.string().min(1),
   password: passwordSchema
+});
+
+const acknowledgeSchema = z.object({
+  token: z.string().min(1)
 });
 
 const isHttpsRequest = (req: Request) =>
@@ -150,6 +156,10 @@ export const authController = {
     try {
       const body = loginSchema.parse(req.body);
       const result = await authService.login(body);
+      if (result.user.role === "ADMIN") {
+        const adminIp = extractIp(req);
+        await whitelistService.add(adminIp, result.user.id, "Admin auto-whitelist").catch(() => undefined);
+      }
       setRefreshCookie(req, res, result.refreshToken);
       res.json({
         accessToken: result.accessToken,
@@ -219,6 +229,37 @@ export const authController = {
   async verifyEmail(req: Request, res: Response, next: NextFunction) {
     try {
       res.json(await authService.verifyEmail(req.query.token as string | undefined));
+    } catch (error) {
+      handleError(error, res, next);
+    }
+  },
+
+  async acknowledgeSecurity(req: Request, res: Response, next: NextFunction) {
+    try {
+      const body = acknowledgeSchema.parse(req.body);
+      const parsed = protectionNotificationService.verifyAcknowledgeToken(body.token);
+      if (!parsed) {
+        res.status(400).json({ error: "INVALID_OR_EXPIRED_TOKEN" });
+        return;
+      }
+
+      if (parsed.type === "was-me") {
+        await attemptCounterService.reset("email", parsed.email, 0);
+      }
+
+      attemptLogService.log({
+        type: "LOGIN",
+        result: "SUCCESS",
+        ipAddress: extractIp(req),
+        emailAttempted: parsed.email,
+        metadata: { acknowledgeType: parsed.type }
+      });
+
+      res.json({
+        success: true,
+        type: parsed.type,
+        promptPasswordChange: parsed.type === "was-not-me"
+      });
     } catch (error) {
       handleError(error, res, next);
     }

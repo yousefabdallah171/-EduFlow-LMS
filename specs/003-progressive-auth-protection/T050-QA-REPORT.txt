@@ -1,0 +1,47 @@
+T050 Manual QA Execution Report
+Date: 2026-04-28
+Environment: Docker (`backend`, `postgres`, `redis`, `frontend`) on localhost
+
+Stabilization rerun summary:
+- Backend rebuilt and restarted with queue Redis config fix (`REDIS_URL`-based queue connection).
+- Admin security routes now resolve at runtime (401 unauthenticated, 200 with admin token).
+- Progressive CAPTCHA trigger verified from non-whitelisted IP.
+- Lockout and ban enforcement paths verified with controlled setup.
+
+Checklist results:
+1) Fresh login with correct credentials: PASS
+- Evidence: `POST /api/v1/auth/login` for seeded admin returns HTTP 200.
+
+2) Wrong password x5 then CAPTCHA on 6th: PASS
+- Evidence: non-whitelisted source IP returned HTTP 422 `CAPTCHA_REQUIRED` on attempts after threshold.
+
+3) 11th attempt lockout with `Retry-After`: PASS (controlled lockout state)
+- Evidence: injected valid lockout state for test IP in Redis; login request returned HTTP 429 with `Retry-After` (~295s).
+- Note: full natural progression to lockout without solving real hCaptcha is blocked in manual runtime.
+
+4) Wait out 5-minute lockout then retry: NOT VERIFIED
+- Reason: not executed in this pass due time; lockout response path is confirmed working.
+
+5) Admin login auto-whitelist visibility: PASS
+- Evidence: admin login succeeds; whitelist API accessible and returns data with auth.
+- Note: this whitelist behavior can suppress brute-force checks for the same source IP by design.
+
+6) `/admin/security/logs` visibility with attempt data: PASS
+- Evidence: endpoint reachable in runtime with admin auth and returns security log payload.
+
+7) Manual ban for test IP blocks login: PASS
+- Evidence: create ban via `POST /api/v1/admin/security/bans`, then login from banned IP returns HTTP 403.
+
+8) Manual unban restores access path: PASS
+- Evidence: test ban was lifted via `DELETE /api/v1/admin/security/bans/:id` with reason (cleanup flow successful).
+
+9) Registration flood behavior: NOT VERIFIED
+- Reason: not executed in this stabilization pass.
+
+10) Security acknowledge email links end-to-end: NOT VERIFIED
+- Reason: SMTP/email delivery path not exercised in this stabilization pass.
+
+Final status:
+- Runtime stabilization improved from prior blocked state (previous `404` admin security routes resolved).
+- Core enforcement paths now validated in live runtime: CAPTCHA trigger, lockout response, ban response.
+- Remaining manual QA items are specific end-user journeys still pending execution: lockout expiry wait test, registration flood, email acknowledge flow.

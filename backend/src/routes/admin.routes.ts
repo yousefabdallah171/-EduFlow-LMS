@@ -25,12 +25,14 @@ import { requireRole } from "../middleware/rbac.middleware.js";
 import { adminSearchRateLimit } from "../middleware/rate-limit.middleware.js";
 import { adminDashboardRoutes } from "./admin-dashboard.routes.js";
 import { courseAnalyticsRoutes } from "./course-analytics.routes.js";
+import { adminSecurityRoutes } from "./admin/security.routes.js";
 
 const router = Router();
 
 router.use(auditMiddleware);
 router.use(adminDashboardRoutes);
 router.use(courseAnalyticsRoutes);
+router.use(adminSecurityRoutes);
 
 router.get("/health", (_req, res) => {
   res.json({ scope: "admin" });

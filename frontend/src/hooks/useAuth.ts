@@ -13,8 +13,16 @@ export const useAuth = () => {
   const { accessToken, user, isAuthReady } = useAuthStore();
 
   const login = useCallback(
-    async (email: string, password: string) => {
-      const response = await api.post<SessionResponse>("/auth/login", { email, password });
+    async (
+      email: string,
+      password: string,
+      options?: { captchaToken?: string; headers?: Record<string, string> }
+    ) => {
+      const response = await api.post<SessionResponse>(
+        "/auth/login",
+        { email, password, captchaToken: options?.captchaToken },
+        { headers: options?.headers }
+      );
       setAuthenticatedSession(response.data.accessToken, response.data.user);
       return response.data.user;
     },
