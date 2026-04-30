@@ -58,6 +58,7 @@ const AdminAuditLog = lazy(async () => import("@/pages/admin/AuditLog").then((m)
 const AdminTickets = lazy(async () => import("@/pages/admin/Tickets").then((m) => ({ default: m.AdminTickets })));
 const AdminSettings = lazy(async () => import("@/pages/admin/Settings").then((m) => ({ default: m.AdminSettings })));
 const AdminNotifications = lazy(async () => import("@/pages/admin/Notifications").then((m) => ({ default: m.AdminNotifications })));
+const AdminSecurity = lazy(async () => import("@/pages/admin/Security").then((m) => ({ default: m.AdminSecurity })));
 const VerifyEmailPage = lazy(async () => import("@/pages/VerifyEmail").then((m) => ({ default: m.VerifyEmail })));
 const ResetPasswordPage = lazy(async () => import("@/pages/ResetPassword").then((m) => ({ default: m.ResetPassword })));
 
@@ -305,6 +306,7 @@ export const AppRoutes = () => (
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminTickets /></RequireRole>} path="/admin/tickets" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminSettings /></RequireRole>} path="/admin/settings" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminNotifications /></RequireRole>} path="/admin/notifications" />
+      <Route element={<RequireRole role={ROLES.ADMIN}><AdminSecurity /></RequireRole>} path="/admin/security" />
 
       <Route element={<Landing />} path="/:locale" />
       <Route element={<Register />} path="/:locale/register" />
@@ -383,6 +385,7 @@ export const AppRoutes = () => (
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminTickets /></RequireRole>} path="/:locale/admin/tickets" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminSettings /></RequireRole>} path="/:locale/admin/settings" />
       <Route element={<RequireRole role={ROLES.ADMIN}><AdminNotifications /></RequireRole>} path="/:locale/admin/notifications" />
+      <Route element={<RequireRole role={ROLES.ADMIN}><AdminSecurity /></RequireRole>} path="/:locale/admin/security" />
       <Route element={<NotFoundPage />} path="*" />
     </Routes>
   </Suspense>

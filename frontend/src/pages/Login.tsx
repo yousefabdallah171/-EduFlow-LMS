@@ -1,4 +1,4 @@
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { AxiosError } from "axios";
 import { useTranslation } from "react-i18next";
@@ -25,8 +25,15 @@ export const Login = () => {
   const [resendMessage, setResendMessage] = useState<string>("");
   const [isResending, setIsResending] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lockoutSeconds, setLockoutSeconds] = useState(0);
 
   const canResend = useMemo(() => errorCode === "EMAIL_NOT_VERIFIED" && email.trim().length > 3, [email, errorCode]);
+
+  useEffect(() => {
+    if (lockoutSeconds <= 0) return;
+    const interval = setInterval(() => setLockoutSeconds((s) => s - 1), 1000);
+    return () => clearInterval(interval);
+  }, [lockoutSeconds]);
 
   if (isAuthReady && user) {
     const target = user.role === "ADMIN" ? `${prefix}/admin/dashboard` : `${prefix}/profile`;
@@ -47,7 +54,20 @@ export const Login = () => {
       const apiStatus = apiError.response?.status;
       const apiErrorCode = apiError.response?.data?.error ?? null;
       setErrorCode(apiErrorCode ?? (apiStatus === 403 ? "EMAIL_NOT_VERIFIED" : null));
-      setMessage(apiError.response?.data?.message ?? t("auth.login.errorLoginFailed"));
+
+      let displayMessage = apiError.response?.data?.message ?? t("auth.login.errorLoginFailed");
+
+      if (apiStatus === 429 || apiErrorCode === "RATE_LIMITED") {
+        displayMessage = t("auth.login.tooManyAttempts", { defaultValue: "Too many login attempts. Please try again in a moment." });
+        setLockoutSeconds(60);
+      } else if (apiErrorCode === "LOCKED_OUT") {
+        displayMessage = t("auth.login.accountLocked", { defaultValue: "Your account is temporarily locked due to too many failed attempts. Please try again in 5 minutes." });
+        setLockoutSeconds(300);
+      } else if (apiErrorCode === "BLOCKED_BAN") {
+        displayMessage = t("auth.login.accountBlocked", { defaultValue: "Your access has been blocked. Please contact support." });
+      }
+
+      setMessage(displayMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -147,7 +167,14 @@ export const Login = () => {
 
         {message ? (
           <div className="ui-feedback ui-feedback--danger">
-            <p>{message}</p>
+            <p>
+              {message}
+              {lockoutSeconds > 0 && (
+                <span className="ml-1 font-semibold">
+                  ({Math.floor(lockoutSeconds / 60)}:{String(lockoutSeconds % 60).padStart(2, "0")})
+                </span>
+              )}
+            </p>
             {canResend ? (
               <div className="mt-3 flex flex-col gap-2">
                 <button
@@ -170,7 +197,7 @@ export const Login = () => {
         <button
           className="w-full rounded-xl py-3 text-sm font-bold text-white shadow-sm transition-all hover:opacity-95 disabled:opacity-50"
           style={{ background: "var(--gradient-brand)" }}
-          disabled={isSubmitting}
+          disabled={isSubmitting || lockoutSeconds > 0}
           type="submit"
         >
           {isSubmitting ? t("auth.login.signingIn") : t("auth.login.signIn")}
