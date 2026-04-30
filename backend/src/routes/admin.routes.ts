@@ -102,6 +102,8 @@ router.delete("/media/folders/:id", mediaController.deleteFolder);
 router.get("/media-library", mediaLibraryController.list);
 router.get("/media-library/status-summary", mediaLibraryController.statusSummary);
 router.get("/media-library/telemetry", mediaLibraryController.processingTelemetry);
+router.get("/media-library/legacy-count", mediaLibraryController.legacyCount);
+router.post("/media-library/backfill-legacy", mediaLibraryController.backfillLegacy);
 
 // Lesson attachment contracts
 router.post("/lessons/media/auto-map", lessonAttachmentController.autoMap);

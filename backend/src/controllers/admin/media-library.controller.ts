@@ -177,5 +177,91 @@ export const mediaLibraryController = {
     } catch (error) {
       next(error);
     }
+  },
+
+  async legacyCount(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const count = await prisma.lesson.count({
+        where: { videoHlsPath: { not: null }, mediaFileId: null }
+      });
+      res.json({ count });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async backfillLegacy(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const getMediaType = (filename: string) => {
+        const ext = filename.split(".").pop()?.toLowerCase() ?? "";
+        if (["mp4", "mov", "webm", "avi", "mkv"].includes(ext)) return "VIDEO" as const;
+        if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) return "IMAGE" as const;
+        if (ext === "pdf") return "PDF" as const;
+        if (["doc", "docx", "xls", "xlsx", "ppt", "pptx"].includes(ext)) return "DOCUMENT" as const;
+        return "OTHER" as const;
+      };
+
+      let migrated = 0;
+
+      // Step 1 — VideoUpload records that are complete and have no MediaFile yet
+      const legacyUploads = await prisma.videoUpload.findMany({
+        where: { status: { in: ["COMPLETE", "READY"] }, mediaFileId: null },
+        include: { lesson: { select: { id: true, videoHlsPath: true, mediaFileId: true } } }
+      });
+
+      for (const upload of legacyUploads) {
+        const title = upload.filename.replace(/\.[^/.]+$/, "");
+        const mediaFile = await prisma.mediaFile.create({
+          data: {
+            title,
+            type: getMediaType(upload.filename),
+            status: "READY",
+            originalFilename: upload.filename,
+            storagePath: upload.storagePath,
+            hlsPath: upload.lesson?.videoHlsPath ?? null,
+            sizeBytes: upload.sizeBytes,
+            uploadedById: upload.uploadedById
+          }
+        });
+
+        await prisma.videoUpload.update({ where: { id: upload.id }, data: { mediaFileId: mediaFile.id } });
+
+        if (upload.lesson && upload.lesson.videoHlsPath && !upload.lesson.mediaFileId) {
+          await prisma.lesson.update({ where: { id: upload.lesson.id }, data: { mediaFileId: mediaFile.id } });
+        }
+        migrated++;
+      }
+
+      // Step 2 — Lessons with videoHlsPath but still no mediaFileId (no VideoUpload record)
+      const orphanLessons = await prisma.lesson.findMany({
+        where: { videoHlsPath: { not: null }, mediaFileId: null }
+      });
+
+      const adminUser = await prisma.user.findFirst({ where: { role: "ADMIN" }, select: { id: true } });
+
+      if (adminUser && orphanLessons.length > 0) {
+        for (const lesson of orphanLessons) {
+          const title = lesson.titleEn || "Untitled";
+          const mediaFile = await prisma.mediaFile.create({
+            data: {
+              title,
+              type: "VIDEO",
+              status: "READY",
+              originalFilename: `${title}.mp4`,
+              storagePath: null,
+              hlsPath: lesson.videoHlsPath,
+              sizeBytes: BigInt(0),
+              uploadedById: adminUser.id
+            }
+          });
+          await prisma.lesson.update({ where: { id: lesson.id }, data: { mediaFileId: mediaFile.id } });
+          migrated++;
+        }
+      }
+
+      res.json({ migrated });
+    } catch (error) {
+      next(error);
+    }
   }
 };
