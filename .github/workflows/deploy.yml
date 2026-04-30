@@ -27,6 +27,8 @@ jobs:
         continue-on-error: true
       
       - name: Build frontend
+        env:
+          VITE_HCAPTCHA_SITE_KEY: ${{ secrets.VITE_HCAPTCHA_SITE_KEY }}
         run: cd frontend && npm run build
       
       - name: Run backend linter
