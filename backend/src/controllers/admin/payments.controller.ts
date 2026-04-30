@@ -74,7 +74,7 @@ export const adminPaymentsController = {
       const query = listPaymentsSchema.parse(req.query);
 
       const filters = {
-        status: query.status as any,
+        status: query.status as "PENDING" | "COMPLETED" | "FAILED" | "WEBHOOK_PENDING" | "REFUND_REQUESTED" | "REFUNDED" | undefined,
         userId: query.userId,
         startDate: query.startDate ? new Date(query.startDate) : undefined,
         endDate: query.endDate ? new Date(query.endDate) : undefined,
@@ -130,7 +130,7 @@ export const adminPaymentsController = {
 
       const limit = parseInt(req.query.limit as string) || 50;
 
-      const payments = await adminPaymentService.getPaymentsByStatus(status as any, limit);
+      const payments = await adminPaymentService.getPaymentsByStatus(status as "PENDING" | "COMPLETED" | "FAILED" | "WEBHOOK_PENDING" | "REFUND_REQUESTED" | "REFUNDED", limit);
 
       console.log(`[Admin Payments Controller] Retrieved ${payments.length} payments with status ${status} by admin ${req.user?.id}`);
       res.json({ success: true, data: payments, count: payments.length });
@@ -189,7 +189,7 @@ export const adminPaymentsController = {
       }
 
       const payment = await adminPaymentManagementService.overridePaymentStatus(
-        { paymentId, newStatus: newStatus as any, reason, adminNotes },
+        { paymentId, newStatus: newStatus as "PENDING" | "COMPLETED" | "FAILED" | "WEBHOOK_PENDING" | "REFUND_REQUESTED" | "REFUNDED", reason, adminNotes },
         adminId
       );
 

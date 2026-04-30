@@ -9,7 +9,7 @@ export const refundController = {
   // Initiate refund (user)
   async initiateRefund(req: Request, res: Response) {
     try {
-      const userId = (req.user as any)?.userId;
+      const userId = (req.user as { userId?: string })?.userId;
       const { paymentId, amount, reason } = req.body;
 
       if (!userId) {
@@ -42,7 +42,7 @@ export const refundController = {
         message: "Refund initiated successfully"
       });
     } catch (error) {
-      const err = error as any;
+      const err = error as { statusCode?: number; code?: string; message?: string };
       const statusCode = err.statusCode || 400;
       res.status(statusCode).json({
         error: err.code || "REFUND_FAILED",
@@ -54,7 +54,7 @@ export const refundController = {
   // Get refund status (user)
   async getRefundStatus(req: Request, res: Response) {
     try {
-      const userId = (req.user as any)?.userId;
+      const userId = (req.user as { userId?: string })?.userId;
       const paymentIdParam = req.params.paymentId;
       const paymentId = Array.isArray(paymentIdParam) ? paymentIdParam[0] : paymentIdParam;
 
@@ -87,7 +87,7 @@ export const refundController = {
 
       res.json(status);
     } catch (error) {
-      const err = error as any;
+      const err = error as { statusCode?: number; code?: string; message?: string };
       const statusCode = err.statusCode || 400;
       res.status(statusCode).json({
         error: err.code || "REFUND_STATUS_FAILED",
@@ -99,7 +99,7 @@ export const refundController = {
   // Cancel refund (user)
   async cancelRefund(req: Request, res: Response) {
     try {
-      const userId = (req.user as any)?.userId;
+      const userId = (req.user as { userId?: string })?.userId;
       const paymentIdParam = req.params.paymentId;
       const paymentId = Array.isArray(paymentIdParam) ? paymentIdParam[0] : paymentIdParam;
       const { reason } = req.body;
@@ -132,7 +132,7 @@ export const refundController = {
         message: "Refund cancelled successfully"
       });
     } catch (error) {
-      const err = error as any;
+      const err = error as { statusCode?: number; code?: string; message?: string };
       const statusCode = err.statusCode || 400;
       res.status(statusCode).json({
         error: err.code || "CANCEL_REFUND_FAILED",
@@ -144,7 +144,7 @@ export const refundController = {
   // Get refund history (user)
   async getRefundHistory(req: Request, res: Response) {
     try {
-      const userId = (req.user as any)?.userId;
+      const userId = (req.user as { userId?: string })?.userId;
       const paymentIdParam = req.params.paymentId;
       const paymentId = Array.isArray(paymentIdParam) ? paymentIdParam[0] : paymentIdParam;
 
@@ -174,7 +174,7 @@ export const refundController = {
         refunds: history
       });
     } catch (error) {
-      const err = error as any;
+      const err = error as { statusCode?: number; code?: string; message?: string };
       const statusCode = err.statusCode || 400;
       res.status(statusCode).json({
         error: err.code || "GET_HISTORY_FAILED",
@@ -188,7 +188,7 @@ export const refundController = {
   // Admin initiate refund
   async adminInitiateRefund(req: Request, res: Response) {
     try {
-      const adminId = (req.user as any)?.userId;
+      const adminId = (req.user as { userId?: string })?.userId;
       const { paymentId, amount, reason } = req.body;
 
       if (!adminId) {
@@ -234,7 +234,7 @@ export const refundController = {
         message: "Refund initiated by admin"
       });
     } catch (error) {
-      const err = error as any;
+      const err = error as { statusCode?: number; code?: string; message?: string };
       const statusCode = err.statusCode || 400;
       res.status(statusCode).json({
         error: err.code || "ADMIN_REFUND_FAILED",
@@ -272,7 +272,7 @@ export const refundController = {
         refunds: history
       });
     } catch (error) {
-      const err = error as any;
+      const err = error as { statusCode?: number; code?: string; message?: string };
       const statusCode = err.statusCode || 400;
       res.status(statusCode).json({
         error: err.code || "ADMIN_HISTORY_FAILED",
@@ -291,7 +291,7 @@ export const refundController = {
       const skip = (page - 1) * limit;
 
       // Build filter
-      const where: any = {};
+      const where: { refundStatus?: string } = {};
       if (status) {
         where.refundStatus = status;
       }
@@ -333,7 +333,7 @@ export const refundController = {
         }
       });
     } catch (error) {
-      const err = error as any;
+      const err = error as { statusCode?: number; code?: string; message?: string };
       const statusCode = err.statusCode || 400;
       res.status(statusCode).json({
         error: err.code || "LIST_REFUNDS_FAILED",
