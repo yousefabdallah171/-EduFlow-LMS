@@ -42,33 +42,31 @@ jobs:
             exit 1
           fi
 
-          # Ensure directories exist with proper permissions
-          sudo mkdir -p $DEPLOY_PATH/public_html
-          sudo mkdir -p $DEPLOY_PATH/backend
-          sudo chmod -R 755 $DEPLOY_PATH/backend 2>/dev/null || true
-          sudo chmod -R 755 $DEPLOY_PATH/public_html 2>/dev/null || true
+          # Ensure directories exist
+          mkdir -p $DEPLOY_PATH/public_html
+          mkdir -p $DEPLOY_PATH/backend
 
-          # Remove read-only files if they exist (can't be overwritten)
-          sudo find $DEPLOY_PATH/backend/src -type f -perm 444 -delete 2>/dev/null || true
-          sudo find $DEPLOY_PATH/backend/src -type f ! -perm 644 -exec chmod 644 {} \; 2>/dev/null || true
+          # Remove old frontend files first
+          rm -rf $DEPLOY_PATH/public_html/* 2>/dev/null || true
 
           # Copy frontend build
-          sudo cp -r frontend/dist/* $DEPLOY_PATH/public_html/
+          cp -r frontend/dist/* $DEPLOY_PATH/public_html/
+          chmod -R 755 $DEPLOY_PATH/public_html 2>/dev/null || true
           echo "✅ Frontend deployed"
 
           # Copy backend files (remove old first to avoid permission issues)
-          sudo rm -rf $DEPLOY_PATH/backend/src 2>/dev/null || true
-          sudo cp -r backend/src $DEPLOY_PATH/backend/
-          sudo cp -f backend/package.json $DEPLOY_PATH/backend/
-          sudo cp -f backend/tsconfig.json $DEPLOY_PATH/backend/
-          sudo rm -rf $DEPLOY_PATH/backend/prisma 2>/dev/null || true
-          sudo cp -r backend/prisma $DEPLOY_PATH/backend/
-          sudo chmod -R 755 $DEPLOY_PATH/backend 2>/dev/null || true
+          rm -rf $DEPLOY_PATH/backend/src 2>/dev/null || true
+          cp -r backend/src $DEPLOY_PATH/backend/
+          cp -f backend/package.json $DEPLOY_PATH/backend/
+          cp -f backend/tsconfig.json $DEPLOY_PATH/backend/
+          rm -rf $DEPLOY_PATH/backend/prisma 2>/dev/null || true
+          cp -r backend/prisma $DEPLOY_PATH/backend/
+          chmod -R 755 $DEPLOY_PATH/backend 2>/dev/null || true
           echo "✅ Backend files copied"
 
           # Run deployment script if it exists
           if [ -f $DEPLOY_PATH/deploy.sh ]; then
-            sudo bash $DEPLOY_PATH/deploy.sh
+            bash $DEPLOY_PATH/deploy.sh
             echo "✅ Deployment script executed"
           else
             echo "⚠️ Deploy script not found at $DEPLOY_PATH/deploy.sh"
