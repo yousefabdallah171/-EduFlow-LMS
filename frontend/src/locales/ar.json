@@ -738,6 +738,8 @@
   "admin.nav.orders": "الطلبات",
   "admin.nav.media": "الوسائط",
   "admin.nav.audit": "سجل التدقيق",
+  "admin.nav.securityLogs": "سجلات الأمان",
+  "admin.nav.security": "الأمان",
   "admin.nav.tickets": "التذاكر",
   "admin.nav.settings": "الإعدادات",
   "admin.nav.notifications": "الإشعارات",

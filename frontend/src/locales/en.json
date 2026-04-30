@@ -939,6 +939,8 @@
   "admin.nav.orders": "Orders",
   "admin.nav.media": "Media",
   "admin.nav.audit": "Audit Log",
+  "admin.nav.securityLogs": "Security Logs",
+  "admin.nav.security": "Security",
   "admin.nav.tickets": "Tickets",
   "admin.nav.settings": "Settings",
   "admin.nav.notifications": "Notifications",
