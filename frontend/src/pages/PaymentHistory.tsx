@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { Download, Search, Filter, ChevronRight } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Download, Search, Filter } from "lucide-react";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { resolveLocale } from "@/lib/locale";
@@ -20,8 +20,7 @@ interface Payment {
 export const PaymentHistory = () => {
   const { locale } = useParams();
   const { t, i18n } = useTranslation();
-  const isAr = resolveLocale(i18n.language) === "ar";
-  const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
+  const resolvedLocale = locale === "en" || locale === "ar" ? locale : resolveLocale(i18n.language);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -106,7 +105,7 @@ export const PaymentHistory = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(isAr ? "ar-EG" : "en-US", {
+    return new Date(dateString).toLocaleDateString(resolvedLocale === "ar" ? "ar-EG" : "en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",

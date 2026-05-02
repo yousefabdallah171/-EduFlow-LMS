@@ -109,7 +109,7 @@ export const isApiError = (error: unknown): error is ApiError => {
     typeof error === "object" &&
     "error" in error &&
     "message" in error &&
-    typeof (error as any).error === "string"
+    typeof (error as { error: unknown }).error === "string"
   );
 };
 

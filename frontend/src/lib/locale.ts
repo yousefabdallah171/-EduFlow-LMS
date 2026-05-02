@@ -33,19 +33,26 @@ export const formatDate = (
   return new Intl.DateTimeFormat(locale, options).format(new Date(value));
 };
 
-export const formatNumber = (value: number, locale: AppLocale) => new Intl.NumberFormat(locale).format(value);
+export const formatNumber = (value: number, locale: AppLocale) =>
+  new Intl.NumberFormat(locale).format(value);
 
 export const formatMinutesShort = (seconds: number, locale: AppLocale) => {
   const minutes = Math.max(0, Math.floor(seconds / 60));
   return locale === "ar" ? `${formatNumber(minutes, locale)} د` : `${minutes}m`;
 };
 
-export const formatClockDuration = (seconds: number | null) => {
+export const formatClockDuration = (seconds: number | null, locale: AppLocale = "en") => {
   if (!seconds) {
     return null;
   }
 
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
-  return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+  const wholeNumberFormatter = new Intl.NumberFormat(locale, { useGrouping: false });
+  const paddedNumberFormatter = new Intl.NumberFormat(locale, {
+    minimumIntegerDigits: 2,
+    useGrouping: false
+  });
+
+  return `${wholeNumberFormatter.format(minutes)}:${paddedNumberFormatter.format(remainingSeconds)}`;
 };

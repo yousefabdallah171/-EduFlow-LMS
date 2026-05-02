@@ -56,6 +56,32 @@ export const StudentShell = ({ children }: StudentShellProps) => {
       <div className="mx-auto max-w-6xl">
         <MobileDrawer items={drawerItems} />
 
+        <div className="-mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1 md:hidden">
+          {studentItems.map((item) => {
+            const target = `${prefix}${item.to}`;
+            const active = location.pathname === target || location.pathname.startsWith(target + "/");
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.to}
+                className="inline-flex min-h-10 flex-shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium no-underline transition-colors"
+                style={{
+                  borderColor: active ? "color-mix(in oklab, var(--color-brand) 30%, transparent)" : "var(--color-border-strong)",
+                  background: active
+                    ? "linear-gradient(135deg, color-mix(in oklab, var(--color-brand) 12%, var(--color-surface)), color-mix(in oklab, var(--color-surface-2) 92%, transparent))"
+                    : "color-mix(in oklab, var(--color-surface) 92%, transparent)",
+                  color: active ? "var(--color-brand-text)" : "var(--color-text-primary)"
+                }}
+                to={target}
+              >
+                <Icon className="h-4 w-4 text-brand-600" />
+                <span className="whitespace-nowrap">{t(item.labelKey)}</span>
+              </Link>
+            );
+          })}
+        </div>
+
         <div className="mt-4 grid gap-5 md:grid-cols-[248px_minmax(0,1fr)] md:items-start">
           <aside className="dashboard-panel dashboard-sidebar hidden p-3 md:block">
             {user ? (
@@ -86,7 +112,7 @@ export const StudentShell = ({ children }: StudentShellProps) => {
               </div>
             ) : null}
 
-            <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: "var(--color-text-muted)" }}>
+            <p className={cn("mb-2 px-3 text-[10px] font-bold tracking-[0.18em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>
               {t("student.shell.section")}
             </p>
 
@@ -118,7 +144,7 @@ export const StudentShell = ({ children }: StudentShellProps) => {
                 <div className="flex items-start gap-2">
                   <BookOpenCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-600" />
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-600">
+                    <p className={cn("text-[10px] font-bold tracking-[0.18em] text-brand-600", !isAr && "uppercase")}>
                       {t("student.shell.enrolled")}
                     </p>
                     <p className="mt-1 text-xs leading-5" style={{ color: "var(--color-text-muted)" }}>

@@ -10,7 +10,8 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { api } from "@/lib/api";
-import { pickLocalizedText, resolveLocale } from "@/lib/locale";
+import { formatClockDuration, pickLocalizedText, resolveLocale } from "@/lib/locale";
+import { cn } from "@/lib/utils";
 
 type Note = {
   id: string;
@@ -25,6 +26,7 @@ export const StudentNotes = () => {
   const { t, i18n } = useTranslation();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const resolvedLocale = resolveLocale(i18n.language);
+  const isAr = resolvedLocale === "ar";
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Record<string, string>>({});
 
@@ -68,6 +70,8 @@ export const StudentNotes = () => {
       <>
         <PageHeader
           hero
+          backHref={`${prefix}/dashboard`}
+          backLabel={t("nav.dashboard")}
           eyebrow={t("student.shell.section")}
           title={t("student.notes.title")}
           description={t("student.notes.description")}
@@ -113,11 +117,15 @@ export const StudentNotes = () => {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                        <p className={cn("text-xs font-bold tracking-[0.16em] text-brand-600", !isAr && "uppercase")}>
                           {pickLocalizedText(resolvedLocale, note.lesson.titleEn, note.lesson.titleAr)}
                         </p>
-                        <span className="text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
-                          {Math.floor(note.positionSeconds / 60)}:{String(note.positionSeconds % 60).padStart(2, "0")}
+                        <span
+                          className="rounded-full px-2.5 py-1 text-xs font-semibold"
+                          dir="ltr"
+                          style={{ backgroundColor: "var(--color-surface-2)", color: "var(--color-text-muted)" }}
+                        >
+                          {formatClockDuration(note.positionSeconds, resolvedLocale)}
                         </span>
                       </div>
                       <p className="mt-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
@@ -126,16 +134,18 @@ export const StudentNotes = () => {
                     </div>
                     <Link
                       to={`${prefix}/lessons/${note.lesson.id}?notePosition=${note.positionSeconds}`}
-                      className="flex-shrink-0 inline-flex min-h-10 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium no-underline transition-colors hover:bg-surface2"
+                      className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium no-underline transition-colors hover:bg-surface2 sm:w-auto sm:flex-shrink-0"
                       style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-secondary)" }}
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
+                      <span>{t("actions.resume")}</span>
                     </Link>
                   </div>
 
                   <textarea
                     className="mt-4 w-full rounded-[20px] border px-4 py-4 text-sm leading-7 outline-none transition-colors focus:border-brand-600 focus:ring-2 focus:ring-brand-600/15"
                     style={{ backgroundColor: "var(--color-page)", borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)", resize: "vertical", minHeight: "160px" }}
+                    dir="auto"
                     value={draft}
                     onChange={(e) => setEditing({ ...editing, [note.id]: e.target.value })}
                   />

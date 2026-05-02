@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Trash2, Link2, Move, Edit2, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { Trash2, Link2, Edit2, CheckCircle, Clock, AlertCircle } from "lucide-react";
 
 type MediaType = "VIDEO" | "IMAGE" | "PDF" | "DOCUMENT" | "OTHER";
 type MediaStatus = "UPLOADING" | "PROCESSING" | "READY" | "ERROR";
@@ -46,7 +46,7 @@ const statusColors: Record<MediaStatus, string> = {
   ERROR: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
 };
 
-export function MediaCard({ file, onDelete, onLink, onRename, onMove }: MediaCardProps) {
+export function MediaCard({ file, onDelete, onLink, onRename }: MediaCardProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(file.title);
 

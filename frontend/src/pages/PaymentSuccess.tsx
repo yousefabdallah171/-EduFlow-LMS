@@ -1,31 +1,18 @@
-import { useEffect } from "react";
 import { Check, ArrowRight, Download, Mail } from "lucide-react";
-import { Link, useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { resolveLocale } from "@/lib/locale";
 import { SEO } from "@/components/shared/SEO";
 import { SEO_PAGES } from "@/lib/seo-config";
 
 export const PaymentSuccess = () => {
   const { locale } = useParams();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { t, i18n } = useTranslation();
-  const isAr = resolveLocale(i18n.language) === "ar";
+  const { t } = useTranslation();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
 
   // Extract payment details from URL or state
   const orderId = searchParams.get("orderId") || "---";
   const amount = searchParams.get("amount") || "---";
-
-  // Redirect to checkout if accessed directly without order info
-  useEffect(() => {
-    const checkOrderInfo = async () => {
-      // Could fetch order details from backend here if needed
-      // For now, we trust the URL params
-    };
-    checkOrderInfo();
-  }, [orderId]);
 
   return (
     <div className="dashboard-page min-h-dvh px-4 py-12 sm:px-6" style={{ backgroundColor: "var(--color-page)" }}>

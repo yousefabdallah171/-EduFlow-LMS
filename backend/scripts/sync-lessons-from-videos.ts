@@ -37,7 +37,12 @@ const root = process.cwd();
 const mapPath = path.resolve(root, "prisma", "videos-map.json");
 const generatedPath = path.resolve(root, "prisma", "generated-lessons.json");
 const videoDir = process.env.VIDEO_SOURCE_DIR?.trim() || DEFAULT_VIDEO_DIR;
-const validSectionKeys = new Set<SectionKey>(["introduction", "foundations", "advanced", "production"]);
+const validSectionKeys = new Set<SectionKey>([
+  "introduction",
+  "foundations",
+  "advanced",
+  "production"
+]);
 
 const runFfprobe = (filePath: string) =>
   new Promise<number>((resolve, reject) => {

@@ -8,14 +8,21 @@ export interface ErrorContext {
   connectionType?: string;
 }
 
+type ErrorLogEntry = {
+  timestamp: Date;
+  error: Error;
+  context: ErrorContext;
+  code?: string;
+};
+
+type PaymentApiErrorBody = {
+  message?: string;
+  [key: string]: unknown;
+};
+
 export class PaymentErrorHandler {
   private static instance: PaymentErrorHandler;
-  private errorLog: Array<{
-    timestamp: Date;
-    error: Error;
-    context: ErrorContext;
-    code?: string;
-  }> = [];
+  private errorLog: ErrorLogEntry[] = [];
 
   static getInstance(): PaymentErrorHandler {
     if (!this.instance) {
@@ -128,7 +135,7 @@ export class PaymentErrorHandler {
   /**
    * Report error to tracking service (Sentry, etc.)
    */
-  private reportToTracking(errorEntry: any): void {
+  private reportToTracking(errorEntry: ErrorLogEntry): void {
     try {
       // Send to backend for error tracking
       navigator.sendBeacon("/api/v1/logs/error", JSON.stringify(errorEntry));
@@ -184,7 +191,7 @@ export const paymentErrorHandler = PaymentErrorHandler.getInstance();
  * Helper to handle payment API errors
  */
 export async function handlePaymentApiError(response: Response): Promise<never> {
-  let errorData: any;
+  let errorData: PaymentApiErrorBody;
 
   try {
     errorData = await response.json();
@@ -192,7 +199,7 @@ export async function handlePaymentApiError(response: Response): Promise<never> 
     errorData = { message: response.statusText };
   }
 
-  const error = new Error(errorData.message || `HTTP ${response.status}`);
+  const error = new Error(errorData.message ?? `HTTP ${response.status}`);
   const handled = paymentErrorHandler.handle(error, {
     isOnline: navigator.onLine
   });

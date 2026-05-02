@@ -24,6 +24,10 @@ backend/storage/
 Thumbs.db
 .idea/
 .vscode/
+.agents/
+.claude/
+skills-lock.json
+the full workflow*.html
 public_html/
 public_html.zip
 client_secret*.json

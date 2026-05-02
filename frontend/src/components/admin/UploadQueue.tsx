@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { X, ChevronUp, ChevronDown, Play, Pause, Trash2 } from "lucide-react";
+import { X, ChevronUp, ChevronDown, Play, Pause } from "lucide-react";
 import { useUploadStore, UploadQueueItem } from "@/stores/upload.store";
 
 export function UploadQueue() {
   const {
     queue,
-    activeUploadId,
     isQueueOpen,
     toggleQueue,
     removeItem,
@@ -90,7 +89,6 @@ export function UploadQueue() {
               <UploadQueueItemRow
                 key={item.id}
                 item={item}
-                isActive={activeUploadId === item.id}
                 onPause={() => pauseUpload(item.id)}
                 onResume={() => resumeUpload(item.id)}
                 onRemove={() => removeItem(item.id)}
@@ -117,13 +115,11 @@ export function UploadQueue() {
 
 function UploadQueueItemRow({
   item,
-  isActive,
   onPause,
   onResume,
   onRemove
 }: {
   item: UploadQueueItem;
-  isActive: boolean;
   onPause: () => void;
   onResume: () => void;
   onRemove: () => void;

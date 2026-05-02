@@ -15,20 +15,33 @@ import { AxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
+import { PageHeader } from "@/components/shared/PageHeader";
+import { SEO } from "@/components/shared/SEO";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
-import { CACHE_TIME, getGCTime } from "@/lib/query-config";
-import { PageHeader } from "@/components/shared/PageHeader";
+import { formatOfferPrice, getLandingPricingCards, getPricingCardById } from "@/lib/course-offer";
 import { resolveLocale } from "@/lib/locale";
-import { SEO } from "@/components/shared/SEO";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { SEO_PAGES } from "@/lib/seo-config";
+import { cn } from "@/lib/utils";
+
+type CheckoutPackage = {
+  id: string;
+  titleEn: string;
+  titleAr: string;
+  descriptionEn?: string | null;
+  descriptionAr?: string | null;
+  priceEgp: number;
+  currency: string;
+};
 
 export const Checkout = () => {
   const { locale } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const { t, i18n } = useTranslation();
-  const isAr = resolveLocale(i18n.language) === "ar";
+  const resolvedLocale = resolveLocale(i18n.language);
+  const isAr = resolvedLocale === "ar";
   const { statusQuery, validateCoupon, checkout } = useEnrollment();
   const [couponCode, setCouponCode] = useState("");
   const [couponInput, setCouponInput] = useState("");
@@ -41,15 +54,7 @@ export const Checkout = () => {
       const response = await api.get<{
         priceEgp: number;
         currency: string;
-        packages?: Array<{
-          id: string;
-          titleEn: string;
-          titleAr: string;
-          descriptionEn?: string | null;
-          descriptionAr?: string | null;
-          priceEgp: number;
-          currency: string;
-        }>;
+        packages?: CheckoutPackage[];
       }>("/course");
       return response.data;
     },
@@ -61,15 +66,21 @@ export const Checkout = () => {
   const isAlreadyEnrolled = statusQuery.data?.enrolled && statusQuery.data?.status === "ACTIVE";
 
   const packages = courseQuery.data?.packages ?? [];
+  const offerCards = getLandingPricingCards(t);
+  const offerById = new Map(offerCards.map((card) => [card.id, card] as const));
+
   const selectedPackageId = searchParams.get("package") ?? packages[0]?.id;
   const selectedPackage = packages.find((coursePackage) => coursePackage.id === selectedPackageId) ?? packages[0];
+  const selectedOffer = getPricingCardById(t, selectedPackage?.id);
   const basePrice = selectedPackage?.priceEgp ?? courseQuery.data?.priceEgp ?? 1000;
   const currency = selectedPackage?.currency ?? courseQuery.data?.currency ?? "EGP";
 
   const priceLabel = useMemo(() => {
-    if (couponPreview?.valid) return `${couponPreview.discountedAmountEgp.toFixed(2)} ${currency}`;
-    return `${basePrice.toFixed(2)} ${currency}`;
-  }, [couponPreview, basePrice, currency]);
+    if (couponPreview?.valid) {
+      return formatOfferPrice(couponPreview.discountedAmountEgp, currency, resolvedLocale);
+    }
+    return formatOfferPrice(basePrice, currency, resolvedLocale);
+  }, [couponPreview, basePrice, currency, resolvedLocale]);
 
   const savingsLabel = useMemo(() => {
     if (!couponPreview?.valid) return null;
@@ -87,9 +98,7 @@ export const Checkout = () => {
     setMessage("");
     try {
       const result = await checkout.mutateAsync({ couponCode: couponCode || undefined, packageId: selectedPackage?.id });
-      window.location.assign(
-        `https://accept.paymob.com/api/acceptance/iframes/${result.iframeId}?payment_token=${result.paymentKey}`
-      );
+      window.location.assign(`https://accept.paymob.com/api/acceptance/iframes/${result.iframeId}?payment_token=${result.paymentKey}`);
     } catch (error: unknown) {
       const apiError = error as AxiosError<{ message?: string }>;
       setMessage(apiError.response?.data?.message ?? t("checkout.errorMessage"));
@@ -119,15 +128,13 @@ export const Checkout = () => {
   if (isAlreadyEnrolled) {
     return (
       <div className="dashboard-page flex min-h-dvh items-center justify-center px-6 py-12" style={{ backgroundColor: "var(--color-page)" }}>
-        <div
-          className="dashboard-panel dashboard-panel--strong w-full max-w-md p-8 text-center"
-        >
+        <div className="dashboard-panel dashboard-panel--strong w-full max-w-md p-8 text-center">
           <div
             className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
             style={{
               backgroundColor: "color-mix(in oklab, var(--color-brand) 12%, var(--color-surface))",
               border: "1px solid color-mix(in oklab, var(--color-brand) 22%, transparent)",
-              color: "var(--color-brand-text)",
+              color: "var(--color-brand-text)"
             }}
           >
             <Check className="h-6 w-6" />
@@ -164,34 +171,74 @@ export const Checkout = () => {
 
         <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
           <div className="space-y-5">
-            {packages.length > 1 ? (
+            {packages.length > 0 ? (
               <div className="dashboard-panel p-6">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                <p className={cn("text-xs font-bold tracking-[0.16em] text-brand-600", !isAr && "uppercase")}>
                   {t("checkout.choosePackage")}
                 </p>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="mt-4 grid gap-4 xl:grid-cols-2">
                   {packages.map((coursePackage) => {
                     const active = coursePackage.id === selectedPackage?.id;
+                    const offer = offerById.get(coursePackage.id);
+
                     return (
                       <button
                         key={coursePackage.id}
-                        className="rounded-2xl border p-4 text-start transition-all hover:-translate-y-0.5"
+                        className="rounded-[26px] border p-5 text-start transition-all hover:-translate-y-0.5"
                         style={{
-                          backgroundColor: active ? "var(--color-brand-muted)" : "var(--color-surface-2)",
+                          backgroundColor: active ? "color-mix(in oklab, var(--color-brand) 12%, var(--color-surface))" : "var(--color-surface-2)",
                           borderColor: active ? "var(--color-brand)" : "var(--color-border)"
                         }}
                         onClick={() => setSearchParams({ package: coursePackage.id })}
                         type="button"
                       >
-                        <p className="text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>
-                          {isAr ? coursePackage.titleAr : coursePackage.titleEn}
+                        {offer?.featuredBadge ? (
+                          <div className="mb-3 rounded-full px-3 py-1 text-xs font-semibold" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-text-primary)" }}>
+                            {offer.featuredBadge}
+                          </div>
+                        ) : null}
+
+                        <p className="text-[11px] font-bold tracking-[0.16em]" dir="ltr" style={{ color: "var(--color-text-muted)" }}>
+                          {offer?.kicker ?? coursePackage.id}
                         </p>
-                        <p className="mt-2 text-xs leading-6" style={{ color: "var(--color-text-secondary)" }}>
-                          {isAr ? coursePackage.descriptionAr : coursePackage.descriptionEn}
+                        <p className="mt-3 font-display text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+                          {offer?.title ?? (isAr ? coursePackage.titleAr : coursePackage.titleEn)}
                         </p>
-                        <p className="mt-3 font-display text-2xl font-black text-brand-600">
-                          {coursePackage.priceEgp} {coursePackage.currency}
+                        <p className="mt-2 text-sm leading-7" style={{ color: "var(--color-text-secondary)" }}>
+                          {offer?.description ?? (isAr ? coursePackage.descriptionAr : coursePackage.descriptionEn)}
                         </p>
+
+                        <div className="mt-4 space-y-1">
+                          {offer?.oldPrice ? (
+                            <p className="text-sm line-through" style={{ color: "var(--color-text-muted)" }}>
+                              {offer.oldPrice}
+                            </p>
+                          ) : null}
+                          <p className="font-display text-3xl font-black text-brand-600" dir="ltr">
+                            {formatOfferPrice(coursePackage.priceEgp, coursePackage.currency, resolvedLocale)}
+                          </p>
+                          {offer?.savePill ? (
+                            <p className="text-xs font-semibold text-brand-600">{offer.savePill}</p>
+                          ) : null}
+                          {offer?.priceNote ? (
+                            <p className="text-xs font-medium" style={{ color: "var(--color-text-primary)" }}>
+                              {offer.priceNote}
+                            </p>
+                          ) : null}
+                        </div>
+
+                        {offer?.features?.length ? (
+                          <ul className="mt-4 space-y-2">
+                            {offer.features.slice(0, 4).map((feature) => (
+                              <li key={feature} className="flex items-start gap-2 text-sm">
+                                <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand-text)" }}>
+                                  <Check className="h-3 w-3" />
+                                </span>
+                                <span style={{ color: "var(--color-text-primary)" }}>{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
                       </button>
                     );
                   })}
@@ -200,11 +247,10 @@ export const Checkout = () => {
             ) : null}
 
             <div className="dashboard-panel p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("checkout.whatsIncluded")}</p>
+              <p className={cn("text-xs font-bold tracking-[0.16em] text-brand-600", !isAr && "uppercase")}>{t("checkout.whatsIncluded")}</p>
               <ul className="mt-4 space-y-3">
                 {checkPoints.map((point) => {
                   const Icon = point.icon;
-
                   return (
                     <li key={point.text} className="flex items-center gap-3">
                       <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-brand-600" style={{ backgroundColor: "var(--color-brand-muted)" }}>
@@ -221,7 +267,6 @@ export const Checkout = () => {
               <div className="grid gap-4 sm:grid-cols-3">
                 {trustSignals.map((item) => {
                   const Icon = item.icon;
-
                   return (
                     <div key={item.label} className="text-center">
                       <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl text-brand-600" style={{ backgroundColor: "var(--color-brand-muted)" }}>
@@ -239,9 +284,7 @@ export const Checkout = () => {
               <div className="section-heading">
                 <p className="section-heading__eyebrow">{t("checkout.beforePay.eyebrow")}</p>
                 <h2 className="section-heading__title">{t("checkout.beforePay.title")}</h2>
-                <p className="section-heading__description">
-                  {t("checkout.beforePay.description")}
-                </p>
+                <p className="section-heading__description">{t("checkout.beforePay.description")}</p>
               </div>
               <ul className="mt-5 space-y-3">
                 {decisionBullets.map((bullet) => (
@@ -257,25 +300,32 @@ export const Checkout = () => {
           </div>
 
           <div className="dashboard-panel dashboard-panel--strong p-6 lg:sticky lg:top-28 lg:h-fit">
-            <div
-              className="rounded-xl p-4"
-              style={{ backgroundColor: "var(--color-surface-2)", borderColor: "var(--color-border-strong)" }}
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                {selectedPackage ? (isAr ? selectedPackage.titleAr : selectedPackage.titleEn) : t("checkout.coursePrice")}
+            <div className="rounded-xl p-4" style={{ backgroundColor: "var(--color-surface-2)", borderColor: "var(--color-border-strong)" }}>
+              <p className="text-xs font-semibold tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                {selectedOffer?.kicker ?? (selectedPackage ? (isAr ? selectedPackage.titleAr : selectedPackage.titleEn) : t("checkout.coursePrice"))}
               </p>
-              <div className="mt-2 flex items-baseline gap-2">
-                <p className="font-display text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>
+              <p className="mt-2 font-display text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+                {selectedOffer?.title ?? (selectedPackage ? (isAr ? selectedPackage.titleAr : selectedPackage.titleEn) : t("checkout.coursePrice"))}
+              </p>
+              <div className="mt-3 flex items-baseline gap-2">
+                <p className="font-display text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }} dir="ltr">
                   {priceLabel}
                 </p>
                 {couponPreview?.valid ? (
-                  <p className="text-sm font-semibold text-green-600 line-through dark:text-green-400">
-                    {basePrice.toFixed(2)} {currency}
+                  <p className="text-sm font-semibold text-green-600 line-through dark:text-green-400" dir="ltr">
+                    {formatOfferPrice(basePrice, currency, resolvedLocale)}
                   </p>
                 ) : null}
               </div>
+              {selectedOffer?.oldPrice ? (
+                <p className="mt-1 text-xs line-through" style={{ color: "var(--color-text-muted)" }}>
+                  {selectedOffer.oldPrice}
+                </p>
+              ) : null}
               {savingsLabel ? (
                 <p className="mt-1.5 text-xs font-semibold text-green-600 dark:text-green-400">{savingsLabel}</p>
+              ) : selectedOffer?.savePill ? (
+                <p className="mt-1.5 text-xs font-semibold text-brand-600">{selectedOffer.savePill}</p>
               ) : null}
             </div>
 
@@ -283,7 +333,7 @@ export const Checkout = () => {
               <button
                 className="flex w-full items-center justify-between py-2 text-xs font-semibold transition-colors hover:text-brand-600"
                 style={{ color: "var(--color-text-muted)" }}
-                onClick={() => setCouponOpen((v) => !v)}
+                onClick={() => setCouponOpen((value) => !value)}
                 type="button"
               >
                 {t("checkout.haveCoupon")}
@@ -301,7 +351,7 @@ export const Checkout = () => {
                         color: "var(--color-text-primary)"
                       }}
                       value={couponInput}
-                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      onChange={(event) => setCouponInput(event.target.value.toUpperCase())}
                       placeholder="SAVE20"
                     />
                     <button
@@ -329,6 +379,24 @@ export const Checkout = () => {
               ) : null}
             </div>
 
+            {selectedOffer?.features?.length ? (
+              <div className="mt-5 rounded-[20px] border p-4" style={{ borderColor: "var(--color-border)", backgroundColor: "color-mix(in oklab, var(--color-surface-2) 88%, transparent)" }}>
+                <p className="text-xs font-bold tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                  {selectedOffer.kicker}
+                </p>
+                <ul className="mt-3 space-y-2">
+                  {selectedOffer.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2 text-sm">
+                      <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand-text)" }}>
+                        <Check className="h-3 w-3" />
+                      </span>
+                      <span style={{ color: "var(--color-text-primary)" }}>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
             <div className="my-4 h-px" style={{ backgroundColor: "var(--color-border)" }} />
 
             <button
@@ -338,9 +406,7 @@ export const Checkout = () => {
               onClick={() => void handleCheckout()}
               type="button"
             >
-              {checkout.isPending
-                ? t("checkout.paying")
-                : t("checkout.payAndGetAccess", { price: priceLabel })}
+              {checkout.isPending ? t("checkout.paying") : t("checkout.payAndGetAccess", { price: priceLabel })}
             </button>
 
             {message ? (
@@ -357,11 +423,7 @@ export const Checkout = () => {
               <Link className="text-xs font-medium text-brand-600 no-underline hover:underline" to={`${prefix}/pricing`}>
                 {t("checkout.comparePackagesAgain")}
               </Link>
-              <Link
-                className="text-xs font-medium no-underline hover:underline"
-                style={{ color: "var(--color-text-muted)" }}
-                to={`${prefix}/`}
-              >
+              <Link className="text-xs font-medium no-underline hover:underline" style={{ color: "var(--color-text-muted)" }} to={`${prefix}/`}>
                 {t("checkout.backToOverview")}
               </Link>
             </div>

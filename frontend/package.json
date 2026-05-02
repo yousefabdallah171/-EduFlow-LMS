@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint \"src/**/*.{ts,tsx}\" && node scripts/check-logical-css.mjs",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" && node scripts/check-logical-css.mjs && node scripts/check-i18n.mjs",
+    "audit:i18n": "node scripts/check-i18n.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test"
   },
@@ -48,6 +49,9 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^22.7.4",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
@@ -59,6 +63,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "glob": "^11.0.0",
+    "jsdom": "^29.1.1",
     "playwright": "^1.48.1",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",

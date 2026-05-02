@@ -178,19 +178,19 @@ async function main() {
     where: { id: 1 },
     update: {
       titleEn: "AI Workflow: From Idea to Production",
-      titleAr: "AI Workflow: Ù…Ù† Ø§Ù„ÙÙƒØ±Ø© Ø¥Ù„Ù‰ Ø§Ù„Ù€ Production",
+      titleAr: "AI Workflow: من الفكرة إلى الـ Production",
       descriptionEn: "A practical Arabic-first workflow course that turns ideas into production-ready applications using PRDs, Spec Kit, Claude Code, Codex, Docker, testing, SEO, and CI/CD.",
-      descriptionAr: "ÙƒÙˆØ±Ø³ Ø¹Ø±Ø¨ÙŠ Ø¹Ù…Ù„ÙŠ ÙŠØ¹Ù„Ù‘Ù…Ùƒ Ø§Ù„Ù€ workflow Ø§Ù„ÙƒØ§Ù…Ù„ Ù…Ù† Ø§Ù„ÙÙƒØ±Ø© Ø¥Ù„Ù‰ ØªØ·Ø¨ÙŠÙ‚ production Ø¨Ø§Ø³ØªØ®Ø¯Ø§Ù… PRD ÙˆSpec Kit ÙˆClaude Code ÙˆCodex ÙˆDocker ÙˆØ§Ù„Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª ÙˆØ§Ù„Ù€ SEO ÙˆØ§Ù„Ù€ CI/CD.",
-      pricePiasters: 100000,
+      descriptionAr: "كورس عربي عملي يعلمك الـ workflow الكامل من الفكرة إلى تطبيق production باستخدام PRD وSpec Kit وClaude Code وCodex وDocker والاختبارات والـ SEO والـ CI/CD.",
+      pricePiasters: 99900,
       updatedById: admin.id
     },
     create: {
       id: 1,
       titleEn: "AI Workflow: From Idea to Production",
-      titleAr: "AI Workflow: Ù…Ù† Ø§Ù„ÙÙƒØ±Ø© Ø¥Ù„Ù‰ Ø§Ù„Ù€ Production",
+      titleAr: "AI Workflow: من الفكرة إلى الـ Production",
       descriptionEn: "A practical Arabic-first workflow course that turns ideas into production-ready applications using PRDs, Spec Kit, Claude Code, Codex, Docker, testing, SEO, and CI/CD.",
-      descriptionAr: "ÙƒÙˆØ±Ø³ Ø¹Ø±Ø¨ÙŠ Ø¹Ù…Ù„ÙŠ ÙŠØ¹Ù„Ù‘Ù…Ùƒ Ø§Ù„Ù€ workflow Ø§Ù„ÙƒØ§Ù…Ù„ Ù…Ù† Ø§Ù„ÙÙƒØ±Ø© Ø¥Ù„Ù‰ ØªØ·Ø¨ÙŠÙ‚ production Ø¨Ø§Ø³ØªØ®Ø¯Ø§Ù… PRD ÙˆSpec Kit ÙˆClaude Code ÙˆCodex ÙˆDocker ÙˆØ§Ù„Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª ÙˆØ§Ù„Ù€ SEO ÙˆØ§Ù„Ù€ CI/CD.",
-      pricePiasters: 100000,
+      descriptionAr: "كورس عربي عملي يعلمك الـ workflow الكامل من الفكرة إلى تطبيق production باستخدام PRD وSpec Kit وClaude Code وCodex وDocker والاختبارات والـ SEO والـ CI/CD.",
+      pricePiasters: 99900,
       updatedById: admin.id
     }
   });
@@ -208,10 +208,10 @@ async function main() {
       where: { id: "core-course" },
       update: {
         titleEn: "AI Workflow Course",
-        titleAr: "ÙƒÙˆØ±Ø³ AI Workflow",
-        descriptionEn: "The complete 7-phase workflow with lifetime access and future updates.",
-        descriptionAr: "Ø§Ù„Ù€ workflow Ø§Ù„ÙƒØ§Ù…Ù„ ÙÙŠ 7 Ù…Ø±Ø§Ø­Ù„ Ù…Ø¹ ÙˆØµÙˆÙ„ Ø¯Ø§Ø¦Ù… ÙˆØªØ­Ø¯ÙŠØ«Ø§Øª Ù…Ø³ØªÙ‚Ø¨Ù„ÙŠØ©.",
-        pricePiasters: 100000,
+        titleAr: "كورس AI Workflow",
+        descriptionEn: "All 7 phases of the workflow so you can learn the system and apply it on your own project.",
+        descriptionAr: "الـ 7 مراحل كاملة، تتعلم الـ workflow وتطبقه على مشروعك بنفسك.",
+        pricePiasters: 99900,
         currency: "EGP",
         isActive: true,
         sortOrder: 1
@@ -219,10 +219,10 @@ async function main() {
       create: {
         id: "core-course",
         titleEn: "AI Workflow Course",
-        titleAr: "ÙƒÙˆØ±Ø³ AI Workflow",
-        descriptionEn: "The complete 7-phase workflow with lifetime access and future updates.",
-        descriptionAr: "Ø§Ù„Ù€ workflow Ø§Ù„ÙƒØ§Ù…Ù„ ÙÙŠ 7 Ù…Ø±Ø§Ø­Ù„ Ù…Ø¹ ÙˆØµÙˆÙ„ Ø¯Ø§Ø¦Ù… ÙˆØªØ­Ø¯ÙŠØ«Ø§Øª Ù…Ø³ØªÙ‚Ø¨Ù„ÙŠØ©.",
-        pricePiasters: 100000,
+        titleAr: "كورس AI Workflow",
+        descriptionEn: "All 7 phases of the workflow so you can learn the system and apply it on your own project.",
+        descriptionAr: "الـ 7 مراحل كاملة، تتعلم الـ workflow وتطبقه على مشروعك بنفسك.",
+        pricePiasters: 99900,
         currency: "EGP",
         isActive: true,
         sortOrder: 1
@@ -232,10 +232,10 @@ async function main() {
       where: { id: "course-review-session" },
       update: {
         titleEn: "Course + Review Session",
-        titleAr: "Ø§Ù„ÙƒÙˆØ±Ø³ + Ø¬Ù„Ø³Ø© Ù…Ø±Ø§Ø¬Ø¹Ø©",
-        descriptionEn: "Everything in the course plus one personal review session for your real project.",
-        descriptionAr: "ÙƒÙ„ Ù…Ø­ØªÙˆÙ‰ Ø§Ù„ÙƒÙˆØ±Ø³ Ù…Ø¹ Ø¬Ù„Ø³Ø© Ø´Ø®ØµÙŠØ© Ù„Ù…Ø±Ø§Ø¬Ø¹Ø© Ù…Ø´Ø±ÙˆØ¹Ùƒ Ø§Ù„Ø­Ù‚ÙŠÙ‚ÙŠ ÙˆØ§Ù„Ø®Ø·ÙˆØ§Øª Ø§Ù„ØªØ§Ù„ÙŠØ©.",
-        pricePiasters: 250000,
+        titleAr: "الكورس + جلسة مراجعة",
+        descriptionEn: "The full workflow plus one personal session to review your real project and shorten the path.",
+        descriptionAr: "الـ workflow كامل + جلسة واحدة معايا شخصياً تراجع فيها مشروعك الحقيقي. لو اشتغلت لوحدك ممكن تضيع وقت كتير — هنا بتختصر الطريق.",
+        pricePiasters: 199900,
         currency: "EGP",
         isActive: true,
         sortOrder: 2
@@ -243,10 +243,10 @@ async function main() {
       create: {
         id: "course-review-session",
         titleEn: "Course + Review Session",
-        titleAr: "Ø§Ù„ÙƒÙˆØ±Ø³ + Ø¬Ù„Ø³Ø© Ù…Ø±Ø§Ø¬Ø¹Ø©",
-        descriptionEn: "Everything in the course plus one personal review session for your real project.",
-        descriptionAr: "ÙƒÙ„ Ù…Ø­ØªÙˆÙ‰ Ø§Ù„ÙƒÙˆØ±Ø³ Ù…Ø¹ Ø¬Ù„Ø³Ø© Ø´Ø®ØµÙŠØ© Ù„Ù…Ø±Ø§Ø¬Ø¹Ø© Ù…Ø´Ø±ÙˆØ¹Ùƒ Ø§Ù„Ø­Ù‚ÙŠÙ‚ÙŠ ÙˆØ§Ù„Ø®Ø·ÙˆØ§Øª Ø§Ù„ØªØ§Ù„ÙŠØ©.",
-        pricePiasters: 250000,
+        titleAr: "الكورس + جلسة مراجعة",
+        descriptionEn: "The full workflow plus one personal session to review your real project and shorten the path.",
+        descriptionAr: "الـ workflow كامل + جلسة واحدة معايا شخصياً تراجع فيها مشروعك الحقيقي. لو اشتغلت لوحدك ممكن تضيع وقت كتير — هنا بتختصر الطريق.",
+        pricePiasters: 199900,
         currency: "EGP",
         isActive: true,
         sortOrder: 2
@@ -261,9 +261,9 @@ async function main() {
       create: {
         id: "course-month-followup",
         titleEn: "Course + One Month Follow-up",
-        titleAr: "Ø§Ù„ÙƒÙˆØ±Ø³ + Ø´Ù‡Ø± Ù…ØªØ§Ø¨Ø¹Ø©",
+        titleAr: "الكورس + شهر متابعة",
         descriptionEn: "Weekly follow-up for a month. Disabled by default until you are ready to sell it inside checkout.",
-        descriptionAr: "Ø¬Ù„Ø³Ø© Ø£Ø³Ø¨ÙˆØ¹ÙŠØ© Ù„Ù…Ø¯Ø© Ø´Ù‡Ø±. ØºÙŠØ± Ù…ÙØ¹Ù‘Ù„ Ø§ÙØªØ±Ø§Ø¶ÙŠØ§Ù‹ Ø¥Ù„Ù‰ Ø£Ù† ØªÙƒÙˆÙ† Ø¬Ø§Ù‡Ø²Ø§Ù‹ Ù„Ø¨ÙŠØ¹Ù‡ Ø¯Ø§Ø®Ù„ Ø§Ù„Ø¯ÙØ¹.",
+        descriptionAr: "جلسة أسبوعية لمدة شهر. غير مفعّل افتراضياً إلى أن تكون جاهزاً لبيعه داخل صفحة الدفع.",
         pricePiasters: 800000,
         currency: "EGP",
         isActive: false,
@@ -295,17 +295,17 @@ async function main() {
     where: { id: "section-foundations" },
     update: {
       titleEn: "Planning and Product Shape",
-      titleAr: "Ø§Ù„ØªØ®Ø·ÙŠØ· ÙˆØ´ÙƒÙ„ Ø§Ù„Ù…Ù†ØªØ¬",
+      titleAr: "التخطيط وشكل المنتج",
       descriptionEn: "Turn the idea into a PRD, technical map, and UI direction before writing code.",
-      descriptionAr: "Ø­ÙˆÙ‘Ù„ Ø§Ù„ÙÙƒØ±Ø© Ø¥Ù„Ù‰ PRD ÙˆØ®Ø±ÙŠØ·Ø© ØªÙ‚Ù†ÙŠØ© ÙˆØ§ØªØ¬Ø§Ù‡ UI ÙˆØ§Ø¶Ø­ Ù‚Ø¨Ù„ ÙƒØªØ§Ø¨Ø© Ø§Ù„ÙƒÙˆØ¯.",
+      descriptionAr: "حوّل الفكرة إلى PRD وخريطة تقنية واتجاه UI واضح قبل كتابة الكود.",
       sortOrder: 1
     },
     create: {
       id: "section-foundations",
       titleEn: "Planning and Product Shape",
-      titleAr: "Ø§Ù„ØªØ®Ø·ÙŠØ· ÙˆØ´ÙƒÙ„ Ø§Ù„Ù…Ù†ØªØ¬",
+      titleAr: "التخطيط وشكل المنتج",
       descriptionEn: "Turn the idea into a PRD, technical map, and UI direction before writing code.",
-      descriptionAr: "Ø­ÙˆÙ‘Ù„ Ø§Ù„ÙÙƒØ±Ø© Ø¥Ù„Ù‰ PRD ÙˆØ®Ø±ÙŠØ·Ø© ØªÙ‚Ù†ÙŠØ© ÙˆØ§ØªØ¬Ø§Ù‡ UI ÙˆØ§Ø¶Ø­ Ù‚Ø¨Ù„ ÙƒØªØ§Ø¨Ø© Ø§Ù„ÙƒÙˆØ¯.",
+      descriptionAr: "حوّل الفكرة إلى PRD وخريطة تقنية واتجاه UI واضح قبل كتابة الكود.",
       sortOrder: 1
     }
   });
@@ -314,17 +314,17 @@ async function main() {
     where: { id: "section-advanced" },
     update: {
       titleEn: "Structured Implementation",
-      titleAr: "Ø§Ù„ØªÙ†ÙÙŠØ° Ø§Ù„Ù…Ù†Ø¸Ù…",
+      titleAr: "التنفيذ المنظم",
       descriptionEn: "Use Spec Kit and AI agents to build in focused, testable phases.",
-      descriptionAr: "Ø§Ø³ØªØ®Ø¯Ù… Spec Kit ÙˆÙˆÙƒÙ„Ø§Ø¡ Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ Ù„Ù„Ø¨Ù†Ø§Ø¡ Ø¹Ù„Ù‰ Ù…Ø±Ø§Ø­Ù„ ÙˆØ§Ø¶Ø­Ø© ÙˆÙ‚Ø§Ø¨Ù„Ø© Ù„Ù„Ø§Ø®ØªØ¨Ø§Ø±.",
+      descriptionAr: "استخدم Spec Kit ووكلاء الذكاء الاصطناعي للبناء على مراحل واضحة وقابلة للاختبار.",
       sortOrder: 2
     },
     create: {
       id: "section-advanced",
       titleEn: "Structured Implementation",
-      titleAr: "Ø§Ù„ØªÙ†ÙÙŠØ° Ø§Ù„Ù…Ù†Ø¸Ù…",
+      titleAr: "التنفيذ المنظم",
       descriptionEn: "Use Spec Kit and AI agents to build in focused, testable phases.",
-      descriptionAr: "Ø§Ø³ØªØ®Ø¯Ù… Spec Kit ÙˆÙˆÙƒÙ„Ø§Ø¡ Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ Ù„Ù„Ø¨Ù†Ø§Ø¡ Ø¹Ù„Ù‰ Ù…Ø±Ø§Ø­Ù„ ÙˆØ§Ø¶Ø­Ø© ÙˆÙ‚Ø§Ø¨Ù„Ø© Ù„Ù„Ø§Ø®ØªØ¨Ø§Ø±.",
+      descriptionAr: "استخدم Spec Kit ووكلاء الذكاء الاصطناعي للبناء على مراحل واضحة وقابلة للاختبار.",
       sortOrder: 2
     }
   });
@@ -333,17 +333,17 @@ async function main() {
     where: { id: "section-production" },
     update: {
       titleEn: "Launch and Production",
-      titleAr: "Ø§Ù„Ø¥Ø·Ù„Ø§Ù‚ ÙˆØ§Ù„Ù€ Production",
+      titleAr: "الإطلاق والـ Production",
       descriptionEn: "Harden security, performance, SEO, tracking, Docker, deployment, and CI/CD.",
-      descriptionAr: "Ù‚ÙˆÙ‘ÙŠ Ø§Ù„Ø£Ù…Ø§Ù† ÙˆØ§Ù„Ø£Ø¯Ø§Ø¡ ÙˆØ§Ù„Ù€ SEO ÙˆØ§Ù„ØªØªØ¨Ø¹ ÙˆDocker ÙˆØ§Ù„Ù†Ø´Ø± ÙˆØ§Ù„Ù€ CI/CD.",
+      descriptionAr: "قوّي الأمان والأداء والـ SEO والتتبع وDocker والنشر والـ CI/CD.",
       sortOrder: 3
     },
     create: {
       id: "section-production",
       titleEn: "Launch and Production",
-      titleAr: "Ø§Ù„Ø¥Ø·Ù„Ø§Ù‚ ÙˆØ§Ù„Ù€ Production",
+      titleAr: "الإطلاق والـ Production",
       descriptionEn: "Harden security, performance, SEO, tracking, Docker, deployment, and CI/CD.",
-      descriptionAr: "Ù‚ÙˆÙ‘ÙŠ Ø§Ù„Ø£Ù…Ø§Ù† ÙˆØ§Ù„Ø£Ø¯Ø§Ø¡ ÙˆØ§Ù„Ù€ SEO ÙˆØ§Ù„ØªØªØ¨Ø¹ ÙˆDocker ÙˆØ§Ù„Ù†Ø´Ø± ÙˆØ§Ù„Ù€ CI/CD.",
+      descriptionAr: "قوّي الأمان والأداء والـ SEO والتتبع وDocker والنشر والـ CI/CD.",
       sortOrder: 3
     }
   });

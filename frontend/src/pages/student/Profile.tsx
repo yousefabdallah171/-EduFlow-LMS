@@ -1,3 +1,4 @@
+import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Check, ImagePlus, KeyRound, Save, ShieldCheck, UserCircle2 } from "lucide-react";
@@ -22,6 +23,8 @@ type ProfileData = {
 
 export const StudentProfile = () => {
   const { t } = useTranslation();
+  const { locale } = useParams();
+  const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const [profile, setProfile] = useState({ fullName: "", avatarUrl: "" });
   const [passwords, setPasswords] = useState({ currentPassword: "", newPassword: "", confirmNewPassword: "" });
 
@@ -70,6 +73,8 @@ export const StudentProfile = () => {
       <div className="space-y-6">
         <PageHeader
           hero
+          backHref={`${prefix}/dashboard`}
+          backLabel={t("nav.dashboard")}
           eyebrow={t("student.shell.section")}
           title={t("student.profile.title")}
           description={t("student.profile.description")}

@@ -23,14 +23,14 @@ export const SheetOverlay = forwardRef<
 SheetOverlay.displayName = "SheetOverlay";
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 border bg-surface p-6 shadow-elevated transition ease-in-out",
+  "fixed z-50 gap-4 border bg-surface p-6 shadow-elevated transition-[transform,opacity] duration-300 ease-[var(--ease-out-quint)] data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
   {
     variants: {
       side: {
-        top: "inset-x-0 top-0 rounded-b-md",
-        bottom: "inset-x-0 bottom-0 rounded-t-md",
-        left: "inset-y-0 start-0 h-full w-3/4 max-w-md rounded-e-md",
-        right: "inset-y-0 end-0 h-full w-3/4 max-w-md rounded-s-md"
+        top: "inset-x-0 top-0 rounded-b-md data-[state=closed]:-translate-y-full data-[state=open]:translate-y-0",
+        bottom: "inset-x-0 bottom-0 rounded-t-md data-[state=closed]:translate-y-full data-[state=open]:translate-y-0",
+        left: "inset-y-0 start-0 h-full w-3/4 max-w-md rounded-e-md data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0",
+        right: "inset-y-0 end-0 h-full w-3/4 max-w-md rounded-s-md data-[state=closed]:translate-x-full data-[state=open]:translate-x-0"
       }
     },
     defaultVariants: {

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Send, ShieldCheck } from "lucide-react";
+import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -10,7 +11,9 @@ import { useAuthStore } from "@/stores/auth.store";
 
 export const StudentHelp = () => {
   const { t } = useTranslation();
+  const { locale } = useParams();
   const { user } = useAuthStore();
+  const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const [form, setForm] = useState({ subject: "", message: "" });
   const [sending, setSending] = useState(false);
 
@@ -40,6 +43,8 @@ export const StudentHelp = () => {
       <>
         <PageHeader
           hero
+          backHref={`${prefix}/dashboard`}
+          backLabel={t("nav.dashboard")}
           eyebrow={t("student.shell.section")}
           title={t("student.help.title")}
           description={t("student.help.description")}

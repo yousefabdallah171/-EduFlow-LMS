@@ -11,6 +11,21 @@ export interface UseNetworkStatusOptions {
   checkInterval?: number; // ms - how often to check status
 }
 
+type NavigatorConnection = EventTarget & {
+  effectiveType?: NetworkStatus["connectionType"];
+};
+
+type NavigatorWithConnection = Navigator & {
+  connection?: NavigatorConnection;
+  mozConnection?: NavigatorConnection;
+  webkitConnection?: NavigatorConnection;
+};
+
+const getNavigatorConnection = () => {
+  const nav = navigator as NavigatorWithConnection;
+  return nav.connection ?? nav.mozConnection ?? nav.webkitConnection;
+};
+
 export function useNetworkStatus(options: UseNetworkStatusOptions = {}) {
   const {
     slowConnectionThreshold = 5000,
@@ -28,18 +43,18 @@ export function useNetworkStatus(options: UseNetworkStatusOptions = {}) {
     const checkConnectionType = () => {
       if (typeof navigator === "undefined") return;
 
-      const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+      const connection = getNavigatorConnection();
       if (connection) {
         setStatus((prev) => ({
           ...prev,
-          connectionType: connection.effectiveType
+          connectionType: connection.effectiveType ?? "unknown"
         }));
       }
     };
 
     checkConnectionType();
 
-    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+    const connection = getNavigatorConnection();
     if (connection) {
       connection.addEventListener("change", checkConnectionType);
       return () => connection.removeEventListener("change", checkConnectionType);
@@ -108,12 +123,12 @@ export function useNetworkStatus(options: UseNetworkStatusOptions = {}) {
  * Useful for showing timeout messages
  */
 export function useNetworkRequestStatus(
-  requestPromise: Promise<any>,
+  requestPromise: Promise<unknown>,
   timeoutMs = 10000
 ) {
   const [status, setStatus] = useState<"idle" | "loading" | "slow" | "success" | "error">("idle");
   const [error, setError] = useState<Error | null>(null);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<unknown>(null);
 
   const execute = useCallback(async () => {
     setStatus("loading");

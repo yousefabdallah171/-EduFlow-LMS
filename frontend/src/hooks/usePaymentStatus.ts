@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
@@ -34,7 +34,6 @@ export function usePaymentStatus(
   const [status, setStatus] = useState<PaymentStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const retryCountRef = useRef(0);
-  const pollTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Final states where polling should stop
   const isFinalState = (s: PaymentStatus | null) => {
@@ -93,15 +92,6 @@ export function usePaymentStatus(
       );
     }
   }, [queryError, maxRetries]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (pollTimeoutRef.current) {
-        clearTimeout(pollTimeoutRef.current);
-      }
-    };
-  }, []);
 
   return {
     status,

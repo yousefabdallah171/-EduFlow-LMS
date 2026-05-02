@@ -3,12 +3,6 @@ import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import { uploadConfig } from "@/lib/upload-config";
 import { useUploadQueue } from "@/hooks/useUploadQueue";
 
-type DroppedFileLike = {
-  name: string;
-  size: number;
-  type: string;
-};
-
 export type DropzoneSummary = {
   accepted: number;
   rejected: number;

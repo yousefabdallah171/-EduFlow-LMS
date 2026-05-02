@@ -1,10 +1,9 @@
 import { useEffect } from "react";
 import { useUploadStore } from "@/stores/upload.store";
 import { useTusUpload } from "@/hooks/useTusUpload";
-import { toast } from "sonner";
 
 export function UploadProcessor() {
-  const { queue, activeUploadId, updateItemProgress, updateItemStatus, setTusUpload, startNext } = useUploadStore();
+  const { queue, activeUploadId, updateItemProgress, updateItemStatus, startNext } = useUploadStore();
 
   const activeItem = queue.find((item) => item.id === activeUploadId);
 
@@ -13,7 +12,7 @@ export function UploadProcessor() {
       endpoint: "/api/v1/admin/uploads"
     },
     {
-      onSuccess: (uploadId) => {
+      onSuccess: () => {
         if (activeUploadId) {
           updateItemStatus(activeUploadId, "processing");
           setTimeout(() => {
@@ -48,7 +47,7 @@ export function UploadProcessor() {
         mediaType: activeItem.type.toString()
       });
     }
-  }, [activeUploadId, activeItem]);
+  }, [activeItem, activeUploadId, startUpload, updateItemStatus]);
 
   return null;
 }

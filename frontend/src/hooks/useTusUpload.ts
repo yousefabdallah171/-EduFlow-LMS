@@ -56,7 +56,7 @@ export const useTusUpload = (
       },
       onSuccess: () => {
         setIsUploading(false);
-        const uploadId = (nextUpload as any).uploadUrl || file.name || "upload";
+        const uploadId = nextUpload.url ?? file.name ?? "upload";
         callbacks.onSuccess?.(uploadId);
         toast.success("File uploaded successfully. Processing...");
       }

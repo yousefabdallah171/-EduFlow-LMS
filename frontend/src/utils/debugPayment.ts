@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias */
+
 /**
  * Payment debugging tools - development only
  * Available as window.__debugPayment in dev mode

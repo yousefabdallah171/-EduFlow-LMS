@@ -3,18 +3,19 @@ import { ArrowRight, Check, CircleDot, LockKeyhole, LogIn, PlayCircle, Plus, Tro
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-import { Progress } from "@/components/ui/progress";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { SEO } from "@/components/shared/SEO";
+import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/useAuth";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { api } from "@/lib/api";
-import { CACHE_TIME, getGCTime } from "@/lib/query-config";
+import { formatOfferDuration, formatOfferPrice, getPricingCardById } from "@/lib/course-offer";
 import { demoLessons, isDemoMode } from "@/lib/demo";
-import { formatDate, pickLocalizedText, resolveLocale } from "@/lib/locale";
-import { cn } from "@/lib/utils";
-import { SEO } from "@/components/shared/SEO";
+import { formatClockDuration, formatDate, pickLocalizedText, resolveLocale } from "@/lib/locale";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { SEO_PAGES } from "@/lib/seo-config";
+import { cn } from "@/lib/utils";
 
 type LessonSummary = {
   id: string;
@@ -37,6 +38,16 @@ type PublicLesson = {
   sortOrder: number;
 };
 
+type CoursePackage = {
+  id: string;
+  titleEn: string;
+  titleAr: string;
+  descriptionEn?: string | null;
+  descriptionAr?: string | null;
+  priceEgp: number;
+  currency: string;
+};
+
 type CourseInfo = {
   title: string;
   titleEn?: string;
@@ -47,17 +58,22 @@ type CourseInfo = {
   priceEgp: number;
   currency: string;
   lessonCount: number;
+  totalDurationSeconds?: number;
   lessons: PublicLesson[];
+  packages?: CoursePackage[];
 };
 
-const formatDuration = (seconds: number | null) => {
-  if (!seconds) return null;
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, "0")}`;
-};
-
-const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, opts?: Record<string, unknown>) => string; isAr: boolean }) => {
+const PublicCourseView = ({
+  prefix,
+  t,
+  isAr,
+  locale
+}: {
+  prefix: string;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+  isAr: boolean;
+  locale: "en" | "ar";
+}) => {
   const navigate = useNavigate();
 
   const courseQuery = useQuery({
@@ -73,7 +89,13 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
   });
 
   const course = courseQuery.data;
-  const courseTitle = pickLocalizedText(isAr ? "ar" : "en", course?.titleEn ?? course?.title, course?.titleAr);
+  const courseTitle = pickLocalizedText(locale, course?.titleEn ?? course?.title, course?.titleAr);
+  const primaryPackage = course?.packages?.[0];
+  const featuredPackage = course?.packages?.[1];
+  const primaryOffer = getPricingCardById(t, primaryPackage?.id);
+  const featuredOffer = getPricingCardById(t, featuredPackage?.id);
+  const totalDurationLabel = formatOfferDuration(course?.totalDurationSeconds ?? 0, locale);
+
   const sidebarActions = [
     { icon: CircleDot, label: t("actions.getCourseAccess"), href: `${prefix}/checkout`, accent: true },
     { icon: PlayCircle, label: t("course.public.watchFreePreview"), href: `${prefix}/preview` },
@@ -86,14 +108,16 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-5 md:grid-cols-[240px_minmax(0,1fr)] md:items-start">
           <aside className="dashboard-panel dashboard-sidebar hidden p-3 md:block">
-            <div className="mb-3 rounded-xl p-3 text-center" style={{ backgroundColor: "var(--color-brand-muted)" }}>
+            <div className="mb-3 rounded-[22px] p-4 text-center" style={{ backgroundColor: "var(--color-brand-muted)" }}>
               <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl shadow-sm" style={{ background: "var(--gradient-brand)" }}>
                 <span className="font-mono text-sm font-black text-white">YA</span>
               </div>
-              <p className="mt-2 text-xs font-bold text-brand-600">{t("app.title")}</p>
+              <p className="mt-3 text-sm font-semibold leading-6" style={{ color: "var(--color-text-primary)" }}>
+                {courseTitle || t("course.public.titleFallback")}
+              </p>
             </div>
 
-            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+            <p className={cn("mb-1.5 px-3 text-[10px] font-bold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>
               {t("course.public.actions")}
             </p>
             <nav className="space-y-0.5">
@@ -119,18 +143,38 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
 
             {course ? (
               <div className="dashboard-panel dashboard-panel--accent mt-4 rounded-[22px] p-3">
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                  {t("checkout.coursePrice")}
+                <p className={cn("text-[10px] font-bold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>
+                  {primaryOffer?.kicker ?? t("checkout.coursePrice")}
                 </p>
-                <p className="mt-1 text-2xl font-bold text-brand-600">
-                  {course.priceEgp} <span className="text-sm">{course.currency}</span>
+                <p className="mt-2 text-sm font-bold text-brand-600">
+                  {primaryOffer?.title ?? (isAr ? primaryPackage?.titleAr : primaryPackage?.titleEn)}
                 </p>
-                <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                  {t("course.public.lessonCount", { count: course.lessonCount })}
+                {primaryOffer?.description ? (
+                  <p className="mt-2 text-xs leading-6" style={{ color: "var(--color-text-secondary)" }}>
+                    {primaryOffer.description}
+                  </p>
+                ) : null}
+                <p className="mt-3 font-display text-2xl font-bold text-brand-600" dir="ltr">
+                  {formatOfferPrice(course.priceEgp, course.currency, locale)}
                 </p>
-                <p className="mt-1 text-xs font-semibold text-brand-600">
-                  {isAr ? "إجمالي مدة الكورس: 4 ساعات" : "Total course duration: 4 hours"}
-                </p>
+                {primaryOffer?.savePill ? (
+                  <p className="mt-1 text-xs font-semibold text-brand-600">{primaryOffer.savePill}</p>
+                ) : null}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: "var(--color-surface-2)", color: "var(--color-text-primary)" }}>
+                    {t("course.public.lessonCount", { count: course.lessonCount })}
+                  </span>
+                  {totalDurationLabel ? (
+                    <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand-text)" }}>
+                      {totalDurationLabel}
+                    </span>
+                  ) : null}
+                </div>
+                {featuredOffer?.featuredBadge ? (
+                  <p className="mt-3 rounded-[18px] px-3 py-2 text-xs font-semibold leading-6" style={{ backgroundColor: "color-mix(in oklab, var(--color-brand) 10%, transparent)", color: "var(--color-text-primary)" }}>
+                    {featuredOffer.featuredBadge}
+                  </p>
+                ) : null}
               </div>
             ) : null}
           </aside>
@@ -138,7 +182,7 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
           <div className="space-y-5">
             <PageHeader
               hero
-              eyebrow={t("app.title")}
+              eyebrow={courseTitle || t("app.title")}
               title={courseTitle || t("course.public.titleFallback")}
               description={t("course.public.unlockMessage")}
               actions={
@@ -163,7 +207,7 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
 
             <div className="dashboard-panel dashboard-panel--accent flex flex-wrap items-center justify-between gap-3 rounded-[22px] p-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                <p className={cn("text-xs font-bold tracking-[0.16em] text-brand-600", !isAr && "uppercase")}>
                   {t("course.freePreview")}
                 </p>
                 <p className="mt-0.5 text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>
@@ -186,16 +230,18 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
             ) : course?.lessons && course.lessons.length > 0 ? (
               <div className="dashboard-panel overflow-hidden">
                 <div className="flex items-center justify-between p-5" style={{ borderBottom: "1px solid var(--color-border)" }}>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                  <p className={cn("text-xs font-bold tracking-[0.16em] text-brand-600", !isAr && "uppercase")}>
                     {t("course.public.content")}
                   </p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ backgroundColor: "var(--color-surface-2)", color: "var(--color-text-muted)" }}>
                       {t("course.public.lessonCount", { count: course.lessons.length })}
                     </span>
-                    <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand)" }}>
-                      {isAr ? "4 ساعات" : "4 hours"}
-                    </span>
+                    {totalDurationLabel ? (
+                      <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand-text)" }}>
+                        {totalDurationLabel}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
 
@@ -203,11 +249,12 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
                   {course.lessons.map((lesson, idx) => {
                     const title = isAr && lesson.titleAr ? lesson.titleAr : lesson.title;
                     const isFirst = idx === 0;
+
                     return (
                       <button
                         key={lesson.id}
                         type="button"
-                        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-start transition-colors hover:bg-surface2"
+                        className="flex w-full flex-col items-start gap-3 px-5 py-4 text-start transition-colors hover:bg-surface2 sm:flex-row sm:items-center sm:justify-between"
                         onClick={() => {
                           if (isFirst) {
                             navigate(`${prefix}/preview`);
@@ -230,13 +277,15 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
                             <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
                               {title}
                             </p>
-                            <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                              {isFirst ? t("course.public.freeWatchNow") : t("course.public.loginRequired")}
-                              {lesson.durationSeconds ? ` - ${formatDuration(lesson.durationSeconds)}` : ""}
-                            </p>
+                            <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
+                              <span>{isFirst ? t("course.public.freeWatchNow") : t("course.public.loginRequired")}</span>
+                              {lesson.durationSeconds ? (
+                                <span dir="ltr">{formatClockDuration(lesson.durationSeconds, locale)}</span>
+                              ) : null}
+                            </div>
                           </div>
                         </div>
-                        <span className="text-xs font-medium text-brand-600">
+                        <span className="text-xs font-medium text-brand-600 sm:flex-shrink-0">
                           {isFirst ? t("course.public.preview") : t("actions.logIn")}
                         </span>
                       </button>
@@ -288,15 +337,15 @@ export const Course = () => {
     }
   });
 
-  const completedCount = lessonsQuery.data?.filter((l) => l.completedAt).length ?? 0;
+  const completedCount = lessonsQuery.data?.filter((lesson) => lesson.completedAt).length ?? 0;
   const totalCount = lessonsQuery.data?.length ?? 0;
   const completionPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-  const nextLesson = lessonsQuery.data?.find((l) => l.isUnlocked && !l.completedAt);
-  const resumeLesson = lessonsQuery.data?.find((l) => l.lastPositionSeconds > 0 && !l.completedAt);
-  const featuredLesson = resumeLesson ?? nextLesson ?? lessonsQuery.data?.find((l) => l.isUnlocked) ?? null;
+  const nextLesson = lessonsQuery.data?.find((lesson) => lesson.isUnlocked && !lesson.completedAt);
+  const resumeLesson = lessonsQuery.data?.find((lesson) => lesson.lastPositionSeconds > 0 && !lesson.completedAt);
+  const featuredLesson = resumeLesson ?? nextLesson ?? lessonsQuery.data?.find((lesson) => lesson.isUnlocked) ?? null;
 
   if (!user && !demo) {
-    return <PublicCourseView prefix={prefix} t={t} isAr={isAr} />;
+    return <PublicCourseView prefix={prefix} t={t} isAr={isAr} locale={resolvedLocale} />;
   }
 
   return (
@@ -305,6 +354,8 @@ export const Course = () => {
         <SEO page={SEO_PAGES.course} />
         <PageHeader
           hero
+          backHref={`${prefix}/dashboard`}
+          backLabel={t("nav.dashboard")}
           eyebrow={isEnrolled ? t("course.welcomeBack") : t("course.title")}
           title={user ? user.fullName : t("course.titleFallback")}
           description={isEnrolled ? t("course.active") : t("course.notEnrolled")}
@@ -352,16 +403,16 @@ export const Course = () => {
         />
 
         {isEnrolled && totalCount > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="dashboard-panel dashboard-panel--accent p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="dashboard-panel dashboard-panel--accent p-5">
+              <p className={cn("text-xs font-semibold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>
                 {t("course.completion")}
               </p>
               <p className="mt-2 font-display text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>{completionPct}%</p>
               <Progress className="mt-3 h-2" value={completionPct} />
             </div>
             <div className="dashboard-panel p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+              <p className={cn("text-xs font-semibold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>
                 {t("course.completedLessons")}
               </p>
               <p className="mt-2 font-display text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>{completedCount}</p>
@@ -370,7 +421,7 @@ export const Course = () => {
               </p>
             </div>
             <div className="dashboard-panel p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+              <p className={cn("text-xs font-semibold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>
                 {t("course.learningRhythm")}
               </p>
               <p className="mt-2 text-sm font-semibold leading-6" style={{ color: "var(--color-text-primary)" }}>
@@ -386,10 +437,7 @@ export const Course = () => {
 
         {!statusQuery.isLoading && !isEnrolled ? (
           <div className="dashboard-panel p-6">
-            <div
-              className="rounded-[24px] border border-dashed p-6 text-center"
-              style={{ borderColor: "var(--color-border-strong)" }}
-            >
+            <div className="rounded-[24px] border border-dashed p-6 text-center" style={{ borderColor: "var(--color-border-strong)" }}>
               <p className="font-display text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
                 {t("course.noAccess")}
               </p>
@@ -420,7 +468,7 @@ export const Course = () => {
           <section className="dashboard-panel p-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                <p className={cn("text-xs font-bold tracking-[0.16em] text-brand-600", !isAr && "uppercase")}>
                   {resumeLesson ? t("course.continueLearning") : t("course.recommendedNextLesson")}
                 </p>
                 <p className="mt-2 text-lg font-semibold" style={{ color: "var(--color-text-primary)" }}>
@@ -430,7 +478,7 @@ export const Course = () => {
                   {resumeLesson
                     ? t("course.resumeFromSecondsFull", { seconds: featuredLesson.lastPositionSeconds })
                     : featuredLesson.durationSeconds
-                      ? `${formatDuration(featuredLesson.durationSeconds)}`
+                      ? formatClockDuration(featuredLesson.durationSeconds, resolvedLocale)
                       : t("course.readyToStart")}
                 </p>
               </div>
@@ -450,7 +498,7 @@ export const Course = () => {
           <div id="lessons" className="dashboard-panel overflow-hidden">
             <div className="flex items-center justify-between p-5" style={{ borderBottom: "1px solid var(--color-border)" }}>
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+                <p className={cn("text-xs font-bold tracking-[0.16em] text-brand-600", !isAr && "uppercase")}>
                   {t("course.lessonsLabel")}
                 </p>
                 <p className="mt-1 text-sm" style={{ color: "var(--color-text-secondary)" }}>
@@ -462,11 +510,11 @@ export const Course = () => {
               ) : null}
             </div>
 
-              {lessonsQuery.isError ? (
-                <p className="p-5 text-sm text-red-500">
-                  {t("course.unableToLoadLessons")}
-                </p>
-              ) : null}
+            {lessonsQuery.isError ? (
+              <p className="p-5 text-sm text-red-500">
+                {t("course.unableToLoadLessons")}
+              </p>
+            ) : null}
 
             <div className="divide-y" style={{ borderColor: "var(--color-border)" }}>
               {lessonsQuery.data?.map((lesson, idx) => {
@@ -475,7 +523,7 @@ export const Course = () => {
                   <div
                     key={lesson.id}
                     className={cn(
-                      "flex flex-wrap items-center justify-between gap-4 px-5 py-4 transition-colors",
+                      "flex flex-col items-start gap-4 px-5 py-4 transition-colors sm:flex-row sm:items-center sm:justify-between",
                       lesson.isUnlocked ? "hover:bg-surface2" : "opacity-60"
                     )}
                   >
@@ -501,25 +549,29 @@ export const Course = () => {
                         <p className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
                           {pickLocalizedText(resolvedLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
                         </p>
-                        <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                          {(() => {
-                            if (lesson.completedAt) return t("common.completed");
-                            if (isResume) return t("course.resumeFromSeconds", { seconds: lesson.lastPositionSeconds });
-                            if (!lesson.isUnlocked) {
-                              return lesson.unlocksAt
-                                ? t("course.unlocksAtDate", { date: formatDate(lesson.unlocksAt, resolvedLocale) })
-                                : t("course.unlocksAtSoon");
-                            }
-                            return t("course.notStarted");
-                          })()}
-                          {lesson.durationSeconds ? ` - ${formatDuration(lesson.durationSeconds)}` : ""}
-                        </p>
+                        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
+                          <span>
+                            {(() => {
+                              if (lesson.completedAt) return t("common.completed");
+                              if (isResume) return t("course.resumeFromSeconds", { seconds: lesson.lastPositionSeconds });
+                              if (!lesson.isUnlocked) {
+                                return lesson.unlocksAt
+                                  ? t("course.unlocksAtDate", { date: formatDate(lesson.unlocksAt, resolvedLocale) })
+                                  : t("course.unlocksAtSoon");
+                              }
+                              return t("course.notStarted");
+                            })()}
+                          </span>
+                          {lesson.durationSeconds ? (
+                            <span dir="ltr">{formatClockDuration(lesson.durationSeconds, resolvedLocale)}</span>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
 
                     {lesson.isUnlocked ? (
                       <Link
-                        className="rounded-lg px-3.5 py-2 text-xs font-bold text-white no-underline shadow-sm transition-all hover:opacity-95"
+                        className="rounded-lg px-3.5 py-2 text-xs font-bold text-white no-underline shadow-sm transition-all hover:opacity-95 sm:flex-shrink-0"
                         style={{ background: "var(--gradient-brand)" }}
                         to={`${prefix}/lessons/${lesson.id}`}
                       >

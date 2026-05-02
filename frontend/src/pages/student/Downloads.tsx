@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Download, FileDown, FileText } from "lucide-react";
+import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { api } from "@/lib/api";
 import { formatNumber, pickLocalizedText, resolveLocale } from "@/lib/locale";
+import { cn } from "@/lib/utils";
 
 type Resource = { id: string; title: string; fileUrl: string; fileSizeBytes: number };
 
@@ -20,7 +22,10 @@ const formatSize = (bytes: number, locale: "en" | "ar") => {
 
 export const StudentDownloads = () => {
   const { t, i18n } = useTranslation();
+  const { locale } = useParams();
   const resolvedLocale = resolveLocale(i18n.language);
+  const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
+  const isAr = resolvedLocale === "ar";
 
   const { data: lessonsData, isLoading } = useQuery({
     queryKey: ["student-lessons-downloads"],
@@ -55,6 +60,8 @@ export const StudentDownloads = () => {
       <>
         <PageHeader
           hero
+          backHref={`${prefix}/dashboard`}
+          backLabel={t("nav.dashboard")}
           eyebrow={t("student.shell.section")}
           title={t("student.downloads.title")}
           description={t("student.downloads.description")}
@@ -62,15 +69,15 @@ export const StudentDownloads = () => {
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="dashboard-panel dashboard-panel--accent p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">{t("student.downloads.metrics.availableResources")}</p>
-            <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{resourceCount}</p>
+            <p className={cn("text-xs font-bold tracking-[0.16em] text-brand-600", !isAr && "uppercase")}>{t("student.downloads.metrics.availableResources")}</p>
+            <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{formatNumber(resourceCount, resolvedLocale)}</p>
           </div>
           <div className="dashboard-panel p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{t("student.downloads.metrics.linkedLessons")}</p>
-            <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{grouped.length}</p>
+            <p className={cn("text-xs font-bold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>{t("student.downloads.metrics.linkedLessons")}</p>
+            <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{formatNumber(grouped.length, resolvedLocale)}</p>
           </div>
           <div className="dashboard-panel p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>{t("student.downloads.metrics.bestUse")}</p>
+            <p className={cn("text-xs font-bold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>{t("student.downloads.metrics.bestUse")}</p>
             <p className="mt-2 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
               {t("student.downloads.metrics.bestUseBody")}
             </p>
@@ -92,7 +99,7 @@ export const StudentDownloads = () => {
           <div className="space-y-4">
             {grouped.map(({ lesson, resources }) => (
               <div key={lesson.id} className="dashboard-panel p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="font-display text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
                       {pickLocalizedText(resolvedLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
@@ -110,7 +117,7 @@ export const StudentDownloads = () => {
                       href={resource.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="dashboard-panel flex flex-wrap items-center justify-between gap-3 rounded-[24px] px-4 py-4 no-underline transition-colors hover:bg-surface2"
+                      className="dashboard-panel flex flex-col items-start gap-3 rounded-[24px] px-4 py-4 no-underline transition-colors hover:bg-surface2 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="flex min-w-0 items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand)" }}>
@@ -125,8 +132,8 @@ export const StudentDownloads = () => {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">{formatSize(resource.fileSizeBytes, resolvedLocale)}</Badge>
+                      <div className="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto sm:justify-start">
+                        <Badge variant="outline" className="font-semibold" dir="ltr">{formatSize(resource.fileSizeBytes, resolvedLocale)}</Badge>
                         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600">
                           <Download className="h-3.5 w-3.5" />
                           {t("student.downloads.download")}

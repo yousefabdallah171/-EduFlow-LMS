@@ -48,8 +48,12 @@ export class PaymentErrorBoundary extends React.Component<Props, State> {
             componentStack: errorInfo.componentStack,
             timestamp: new Date().toISOString()
           })
-        }).catch(() => {}); // Silently fail if logging endpoint unavailable
-      } catch {}
+        }).catch((logError: unknown) => {
+          console.warn("Payment error logging failed:", logError);
+        });
+      } catch (logError) {
+        console.warn("Payment error logging failed:", logError);
+      }
     }
   }
 

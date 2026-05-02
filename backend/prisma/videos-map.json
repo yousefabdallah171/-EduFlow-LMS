@@ -4,10 +4,10 @@
     "lessonId": "seed-0",
     "sortOrder": 0,
     "sectionKey": "introduction",
-    "titleAr": "فيديو 0: نظرة المشروع النهائي والخطوات",
-    "titleEn": "Lesson 0: Final Project Preview and Execution Path",
-    "descriptionAr": "فيديو ترويجي مفتوح يوضح الشكل النهائي للمشروع والخطوات الكاملة التي سنمشي عليها داخل الكورس.",
-    "descriptionEn": "Open promotional preview showing the final project result and the full execution path of the course.",
+    "titleAr": "بناء ملف PRD للمشروع وتجميع كل تفاصيل المنتج في وثيقة واحدة واضحة",
+    "titleEn": "Build the Project PRD and Capture the Full Product Scope in One Clear Document",
+    "descriptionAr": "في هذا الدرس نبدأ من نقطة الصفر ونحوّل الفكرة إلى Product Requirements Document واضح يشرح الهدف من المشروع، نوع المستخدمين، أهم الصفحات، السيناريوهات الأساسية، والمخرجات التي سنبنيها لاحقاً داخل الكورس خطوة بخطوة.",
+    "descriptionEn": "This lesson starts from zero and turns the idea into a practical Product Requirements Document that captures the product goal, target users, key pages, core scenarios, and the delivery scope we will build throughout the course.",
     "isPreview": true,
     "isPublished": true
   },
@@ -16,219 +16,219 @@
     "lessonId": "seed-1",
     "sortOrder": 1,
     "sectionKey": "foundations",
-    "titleAr": "تثبيت بيئة العمل ومتطلبات التشغيل",
-    "titleEn": "Set Up Local Development Environment",
-    "descriptionAr": "تجهيز بيئة العمل كاملة لتشغيل وبناء المشاريع محليًا بشكل صحيح.",
-    "descriptionEn": "Configure all local requirements to run and build projects reliably."
+    "titleAr": "تثبيت بيئة العمل وكل متطلبات تشغيل الكود وبناء المشاريع محلياً بشكل صحيح",
+    "titleEn": "Set Up the Local Development Environment and All Requirements Needed to Run Projects Correctly",
+    "descriptionAr": "نجهز في هذا الدرس بيئة العمل بالكامل حتى تستطيع تشغيل الكود وبناء المشاريع على جهازك بدون مشاكل، مع توضيح الأدوات الأساسية، المتطلبات التي يجب تثبيتها، وكيف تتأكد أن كل شيء جاهز قبل بدء التنفيذ الفعلي.",
+    "descriptionEn": "In this lesson we prepare the full local environment so you can run code and build projects on your machine without friction, including the essential tools, required installations, and checks you should make before implementation begins."
   },
   {
     "fileName": "3- اي هو الجيت هب وليه بنستخدمه واي فايدته في الشغل (video for non techincailel ).mp4",
     "lessonId": "seed-2",
     "sortOrder": 2,
     "sectionKey": "foundations",
-    "titleAr": "GitHub لغير التقنيين (V1)",
-    "titleEn": "GitHub for Non-Technical Builders (V1)",
-    "descriptionAr": "فهم GitHub وأهميته في الشغل والتعاون حتى لغير التقنيين.",
-    "descriptionEn": "Understand GitHub value for collaboration and practical delivery."
+    "titleAr": "ما هو GitHub ولماذا نستخدمه وما فائدته في الشغل حتى لغير التقنيين",
+    "titleEn": "What GitHub Is, Why We Use It, and Why It Matters Even for Non-Technical Builders",
+    "descriptionAr": "هذا الدرس يشرح GitHub بشكل بسيط وعملي: لماذا نحتاجه في تنظيم الشغل، كيف يساعدنا في حفظ الكود والتعاون ومتابعة التعديلات، ولماذا يعتبر جزءاً أساسياً من أي workflow احترافي حتى لو لم تكن خلفيتك تقنية بالكامل.",
+    "descriptionEn": "This lesson explains GitHub in a simple, practical way: why we need it to organize work, how it helps with code history, collaboration, and change tracking, and why it is a core part of any professional workflow even if you are not fully technical."
   },
   {
     "fileName": "3- تجهيز بيئه العمل وتصطيب CLAUDE CODE و CODEX وبدا عمل ريبو جديد على جيت هب_ALTERED_final.mp4",
     "lessonId": "seed-3",
     "sortOrder": 3,
     "sectionKey": "foundations",
-    "titleAr": "تجهيز Claude Code وCodex وبداية الريبو (V2)",
-    "titleEn": "Claude Code + Codex Setup and Repo Kickoff (V2)",
-    "descriptionAr": "تجهيز أدوات AI العملية وبداية إنشاء الريبو بشكل منظم.",
-    "descriptionEn": "Prepare AI tooling and initialize the repository workflow cleanly."
+    "titleAr": "تجهيز بيئة العمل وتنصيب Claude Code وCodex وبدء إنشاء الريبو الجديد على GitHub",
+    "titleEn": "Prepare the Workspace, Install Claude Code and Codex, and Start the New GitHub Repository",
+    "descriptionAr": "بعد تجهيز الأساسيات ننتقل إلى تثبيت أدوات الذكاء الاصطناعي العملية التي سنستخدمها داخل الكورس، ثم نبدأ إنشاء الريبو بشكل مرتب حتى يكون عندنا مشروع جاهز نستقبل عليه التخطيط والتنفيذ والمراجعة والنشر.",
+    "descriptionEn": "After the fundamentals are ready, we install the practical AI tools used throughout the course, then set up the repository properly so we have a clean project base ready for planning, implementation, review, and deployment."
   },
   {
     "fileName": "5- بدا شرح عملي ل SPEC KIT  وتسطيبها على المشروع وبدا عمل ال PLAN بيها_ALTERED_final.mp4",
     "lessonId": "seed-4",
     "sortOrder": 4,
     "sectionKey": "foundations",
-    "titleAr": "تنصيب Spec Kit وبناء خطة التنفيذ",
-    "titleEn": "Spec Kit Setup and Execution Planning",
-    "descriptionAr": "شرح عملي لتنصيب Spec Kit وتحويل الفكرة لخطة تنفيذ قابلة للتطبيق.",
-    "descriptionEn": "Install Spec Kit and convert product intent into an actionable plan."
-  },
-  {
-    "fileName": "16 التخطيط لميزاه جديده باساتخدام super power pl;ugin.mp4",
-    "lessonId": "seed-5",
-    "sortOrder": 5,
-    "sectionKey": "foundations",
-    "titleAr": "التخطيط لميزة جديدة باستخدام Super Power",
-    "titleEn": "Plan a New Feature with Super Power",
-    "descriptionAr": "تخطيط ميزة جديدة بنطاق واضح وأولويات دقيقة باستخدام Super Power.",
-    "descriptionEn": "Plan a new feature with clear scope and priorities using Super Power."
+    "titleAr": "شرح عملي لـ Spec Kit: التثبيت على المشروع وبناء الـ Plan من المواصفات",
+    "titleEn": "Hands-On Spec Kit Setup: Install It in the Project and Turn the Spec into an Execution Plan",
+    "descriptionAr": "في هذا الدرس نبدأ الشغل الحقيقي مع Spec Kit: كيف نثبته على المشروع، كيف نستفيد من الـ spec الموجودة، وكيف نطلع منها plan واضحة تقسم الشغل إلى خطوات قابلة للتنفيذ بدل العشوائية أو الاعتماد على prompts غير منظمة.",
+    "descriptionEn": "This lesson is the real start of working with Spec Kit: how to install it in the project, use the existing specification, and generate a clear execution plan that breaks work into actionable steps instead of relying on random prompts."
   },
   {
     "fileName": "6- بدا تفنيذ المشروع باتسخدام اوامر spec kit_ALTERED_final.mp4",
-    "lessonId": "seed-6",
-    "sortOrder": 6,
+    "lessonId": "seed-5",
+    "sortOrder": 5,
     "sectionKey": "foundations",
-    "titleAr": "تنفيذ المشروع بأوامر Spec Kit",
-    "titleEn": "Execute the Project with Spec Kit Commands",
-    "descriptionAr": "بدء التنفيذ العملي للمشروع عبر أوامر Spec Kit بشكل منظم.",
-    "descriptionEn": "Run the implementation phase using structured Spec Kit commands."
+    "titleAr": "بدء تنفيذ المشروع باستخدام أوامر Spec Kit وتحويل الخطة إلى شغل فعلي داخل الكود",
+    "titleEn": "Start Implementing the Project with Spec Kit Commands and Turn the Plan into Real Code",
+    "descriptionAr": "هنا ننتقل من التخطيط إلى التنفيذ العملي، ونشاهد كيف تستخدم أوامر Spec Kit لتوليد الخطوات الصحيحة ومتابعة التنفيذ داخل المشروع بشكل منظم، مع الحفاظ على وضوح المهمة في كل مرحلة.",
+    "descriptionEn": "Here we move from planning into implementation and see how Spec Kit commands help generate the right workflow and keep coding organized, with a clear understanding of what is being built at each stage."
   },
   {
     "fileName": "7- ملخص لل هتعمله مع SPEC KIT في كل سبرينت  والفلو ال هتككره في كل حاجه_ALTERED_final.mp4",
-    "lessonId": "seed-7",
-    "sortOrder": 7,
+    "lessonId": "seed-6",
+    "sortOrder": 6,
     "sectionKey": "foundations",
-    "titleAr": "ملخص فلو Spec Kit في كل سبرنت",
-    "titleEn": "Spec Kit Sprint Workflow Summary",
-    "descriptionAr": "تلخيص الفلو المتكرر الذي ستعتمد عليه في كل سبرنت.",
-    "descriptionEn": "Summarize the repeatable sprint workflow used across features."
+    "titleAr": "ملخص الـ workflow الذي ستكرره مع Spec Kit في كل Sprint وكل ميزة جديدة",
+    "titleEn": "The Repeatable Spec Kit Workflow You Will Reuse in Every Sprint and New Feature",
+    "descriptionAr": "هذا الدرس يلخص الفلو الكامل الذي ستعتمد عليه كل مرة: من الفكرة إلى الـ spec ثم الـ plan ثم التنفيذ والمراجعة. الهدف هنا أن تثبت الصورة الكبيرة في ذهنك حتى يصبح عندك نظام شغل واضح وليس خطوات متفرقة.",
+    "descriptionEn": "This lesson summarizes the repeatable flow you will use every time: from idea to spec, then plan, implementation, and review. The goal is to lock in the big picture so you leave with a system, not scattered isolated steps."
   },
   {
     "fileName": "8- بعد ما عملت خطه المشروع بشكل كامل ازاي تعمل الديزاين_ALTERED_final.mp4",
-    "lessonId": "seed-8",
-    "sortOrder": 8,
-    "sectionKey": "advanced",
-    "titleAr": "من الخطة للتصميم العملي",
-    "titleEn": "From Plan to Practical Design",
-    "descriptionAr": "تحويل مخرجات التخطيط إلى تصميم واجهات قابل للتنفيذ.",
-    "descriptionEn": "Translate planning outputs into implementation-ready UI direction."
+    "lessonId": "seed-7",
+    "sortOrder": 7,
+    "sectionKey": "foundations",
+    "titleAr": "بعد اكتمال خطة المشروع: كيف تحوّل المخرجات إلى تصميم وواجهة قابلة للتنفيذ",
+    "titleEn": "After the Project Plan Is Complete: Turn the Outputs into a Design Direction You Can Implement",
+    "descriptionAr": "في هذا الدرس نأخذ ما خرج من التخطيط ونحوّله إلى شكل بصري وتجربة استخدام مناسبة للمشروع، بحيث تعرف كيف تبني الديزاين بعد وضوح الـ requirements بدل أن تبدأ من واجهة جميلة لكن بدون منطق منتج حقيقي.",
+    "descriptionEn": "This lesson takes the planning outputs and translates them into a practical visual and UX direction, so you learn how to design after the requirements are clear instead of starting from attractive screens with no real product logic behind them."
   },
   {
     "fileName": "-9 بعد ما خلصت المشروع بشكل كامل ددلوقتي المميزات اليزاده ليه_ALTERED_final.mp4",
-    "lessonId": "seed-9",
-    "sortOrder": 9,
+    "lessonId": "seed-8",
+    "sortOrder": 8,
     "sectionKey": "advanced",
-    "titleAr": "إضافة مميزات بعد اكتمال النسخة الأولى",
-    "titleEn": "Feature Expansion After First Complete Build",
-    "descriptionAr": "كيف تضيف مميزات جديدة بدون كسر استقرار المشروع.",
-    "descriptionEn": "Add meaningful features after first release without destabilizing the app."
+    "titleAr": "بعد إنهاء النسخة الأولى كاملة: ما المميزات الإضافية التي تستحق أن تضيفها للمشروع",
+    "titleEn": "After Finishing the First Full Version: Which Additional Features Are Worth Adding Next",
+    "descriptionAr": "بعد اكتمال المشروع بشكل أولي، نناقش في هذا الدرس كيف تفكر في المميزات الإضافية الصحيحة، وما الذي يضيف قيمة فعلية للمستخدم، وكيف توسّع المنتج بدون تشتيت أو إضافة شغل لا يخدم الهدف الأساسي.",
+    "descriptionEn": "Once the first complete version is done, this lesson focuses on how to think about the right next features, what actually adds user value, and how to expand the product without losing focus or creating noisy scope."
   },
   {
     "fileName": "--11 بناء مميزات جديده بعد بناء الموقع باستخدام SPEC KIT_ALTERED_final.mp4",
-    "lessonId": "seed-10",
-    "sortOrder": 10,
+    "lessonId": "seed-9",
+    "sortOrder": 9,
     "sectionKey": "advanced",
-    "titleAr": "بناء مميزات جديدة باستخدام Spec Kit",
-    "titleEn": "Build New Features with Spec Kit",
-    "descriptionAr": "استخدام Spec Kit مرة أخرى لتوسيع المشروع بشكل احترافي.",
-    "descriptionEn": "Reuse Spec Kit for safe and consistent feature expansion."
+    "titleAr": "بناء مميزات جديدة بعد بناء الموقع باستخدام Spec Kit بطريقة منظمة وآمنة",
+    "titleEn": "Build New Features After the Main Site Is Ready Using Spec Kit in a Structured Safe Way",
+    "descriptionAr": "في هذا الدرس نطبّق نفس الـ workflow مرة أخرى لكن على مميزات جديدة بعد اكتمال النسخة الأساسية، لتتعلم كيف تطور المشروع باستمرار مع الحفاظ على التنظيم، جودة الكود، وعدم كسر الأجزاء التي تعمل بالفعل.",
+    "descriptionEn": "This lesson reapplies the workflow to new post-launch features so you learn how to keep evolving the product while preserving structure, code quality, and the stability of what already works."
   },
   {
     "fileName": "-12 تحسين شكل الموقع وال uii_ALTERED_final.mp4",
-    "lessonId": "seed-11",
-    "sortOrder": 11,
+    "lessonId": "seed-10",
+    "sortOrder": 10,
     "sectionKey": "advanced",
-    "titleAr": "تحسين واجهة الموقع (V1)",
-    "titleEn": "Website UI Improvement (V1)",
-    "descriptionAr": "المرحلة الأولى لتحسين شكل الموقع وتجربة المستخدم.",
-    "descriptionEn": "First pass of interface and UX refinements."
+    "titleAr": "تحسين شكل الموقع والواجهة وتجربة الاستخدام في أول مرحلة من مراحل الـ UI polish",
+    "titleEn": "Improve the Site Look, Interface, and UX in the First UI Polish Pass",
+    "descriptionAr": "هذا الدرس يركز على أول مرحلة من تحسين الـ UI بعد أن يكون الهيكل الأساسي جاهزاً، فنراجع شكل الصفحات، وضوح العناصر، وترتيب التجربة حتى يصبح المنتج أسهل استخداماً وأكثر احترافية من الناحية البصرية.",
+    "descriptionEn": "This lesson covers the first UI polish pass after the core structure is ready, refining page presentation, clarity of interface elements, and the flow of the user experience to make the product feel more polished and professional."
   },
   {
     "fileName": "-12 تحسين شكل الموقع وال uii V2_ALTERED_final.mp4",
-    "lessonId": "seed-12",
-    "sortOrder": 12,
+    "lessonId": "seed-11",
+    "sortOrder": 11,
     "sectionKey": "advanced",
-    "titleAr": "تحسين واجهة الموقع (V2)",
-    "titleEn": "Website UI Improvement (V2)",
-    "descriptionAr": "المرحلة الثانية لتحسين الواجهة وتثبيت الجودة البصرية.",
-    "descriptionEn": "Second pass to polish visual consistency and UX details."
+    "titleAr": "المرحلة الثانية من تحسين شكل الموقع والـ UI لتثبيت الهوية البصرية ورفع الجودة",
+    "titleEn": "Second UI Improvement Pass to Solidify the Visual Identity and Raise Quality",
+    "descriptionAr": "نكمل هنا مرحلة التطوير البصري بمستوى أدق، ونعالج التفاصيل التي تصنع فرقاً كبيراً في الإحساس النهائي بالمنتج، مثل الاتساق البصري، تحسين بعض المكونات، وتنعيم التجربة على الشاشات المختلفة.",
+    "descriptionEn": "Here we continue with a more refined visual pass, addressing the details that shape the final product feel, such as visual consistency, component improvements, and a smoother experience across different screen sizes."
   },
   {
     "fileName": "-13 عمل كود ريفيو بين المرحله والتانيه_ALTERED_final.mp4",
-    "lessonId": "seed-13",
-    "sortOrder": 13,
+    "lessonId": "seed-12",
+    "sortOrder": 12,
     "sectionKey": "advanced",
-    "titleAr": "Code Review بين المراحل",
-    "titleEn": "Inter-Phase Code Review",
-    "descriptionAr": "مراجعة كود احترافية قبل الانتقال للمرحلة التالية.",
-    "descriptionEn": "Perform quality-focused code review before phase handoff."
+    "titleAr": "عمل Code Review بين مرحلة والثانية حتى تنتقل بخطوة نظيفة وقابلة للتوسعة",
+    "titleEn": "Run a Code Review Between Phases So Each Next Step Starts from a Clean Extensible Base",
+    "descriptionAr": "في هذا الدرس نراجع الكود قبل الانتقال إلى المرحلة التالية حتى نكتشف المشاكل مبكراً، ونرتب الملفات، ونراجع القرارات التي اتخذناها في التنفيذ، لأن جودة المراجعة هنا هي التي تحافظ على سرعة التطوير فيما بعد.",
+    "descriptionEn": "This lesson focuses on reviewing the code before the next phase so issues are caught early, files stay organized, and implementation decisions are revisited, because this review quality is what preserves delivery speed later on."
   },
   {
     "fileName": "14- اول فيديو ب التفاصيل الحقيقيه لبروجكيت جديده و.mp4",
-    "lessonId": "seed-14",
-    "sortOrder": 14,
+    "lessonId": "seed-13",
+    "sortOrder": 13,
     "sectionKey": "advanced",
-    "titleAr": "تفاصيل مشروع جديد حقيقي من البداية",
-    "titleEn": "Real New Project Deep-Dive Walkthrough",
-    "descriptionAr": "شرح تفصيلي عملي لبناء مشروع جديد بخطوات واضحة.",
-    "descriptionEn": "Detailed walkthrough of building a real project end-to-end."
+    "titleAr": "أول فيديو بالتفاصيل الحقيقية لبروجكت جديد: كيف تبدأ مشروعاً جديداً بنفس الـ workflow",
+    "titleEn": "First Real Deep-Dive on a New Project: How to Start Another Build with the Same Workflow",
+    "descriptionAr": "هذا درس تطبيقي طويل نرى فيه الـ workflow وهو يُستخدم على بروجكت جديد بتفاصيله الحقيقية، حتى تربط بين الخطوات النظرية التي تعلمتها وبين التطبيق العملي الكامل عندما تبدأ مشروعاً مختلفاً بنفسك.",
+    "descriptionEn": "This is a long practical lesson showing the workflow applied to a brand-new real project, helping you connect the system you learned to an actual build and understand how to repeat it independently on a different product."
   },
   {
     "fileName": "15 - هيبقي فيديوي كامل في كل smtp.mp4",
-    "lessonId": "seed-15",
-    "sortOrder": 15,
+    "lessonId": "seed-14",
+    "sortOrder": 14,
     "sectionKey": "advanced",
-    "titleAr": "ربط SMTP بالكامل",
-    "titleEn": "Complete SMTP Integration",
-    "descriptionAr": "تنفيذ تكامل SMTP وإدارة الإرسال بشكل موثوق.",
-    "descriptionEn": "Implement full SMTP integration for reliable delivery."
+    "titleAr": "ربط SMTP بالكامل من البداية حتى تجهيز إرسال الإيميلات داخل المشروع",
+    "titleEn": "Complete SMTP Integration from Scratch to Prepare Reliable Email Sending in the Project",
+    "descriptionAr": "في هذا الدرس نبدأ ربط خدمة SMTP بشكل عملي حتى يصبح المشروع قادراً على إرسال الإيميلات المطلوبة، مع شرح الإعدادات المهمة، أماكن الدمج داخل النظام، وما الذي يجب الانتباه له حتى يعمل الإرسال بشكل سليم.",
+    "descriptionEn": "This lesson walks through a practical SMTP integration so the project can send the emails it needs, including the key configuration steps, where the integration fits in the app, and the details that make delivery work correctly."
   },
   {
     "fileName": "15 تكمله ربط ال smtp.mp4",
+    "lessonId": "seed-15",
+    "sortOrder": 15,
+    "sectionKey": "advanced",
+    "titleAr": "تكملة ربط SMTP وحل المشاكل العملية التي تظهر أثناء الاختبار والتشغيل",
+    "titleEn": "Continue the SMTP Integration and Solve the Practical Issues That Show Up During Testing",
+    "descriptionAr": "نكمل في هذا الدرس الجزء الثاني من تكامل SMTP، ونحل المشاكل الواقعية التي قد تظهر أثناء التجربة، حتى لا يبقى الربط مجرد إعداد نظري بل يصبح جزءاً مستقراً ويعمل كما تتوقع داخل المشروع الفعلي.",
+    "descriptionEn": "This lesson continues the SMTP integration and works through the real issues that often appear during testing, so the setup becomes stable in practice rather than remaining only a theoretical configuration."
+  },
+  {
+    "fileName": "16 التخطيط لميزاه جديده باساتخدام super power pl;ugin.mp4",
     "lessonId": "seed-16",
     "sortOrder": 16,
     "sectionKey": "advanced",
-    "titleAr": "تكملة ربط SMTP وحل المشكلات",
-    "titleEn": "SMTP Continuation and Troubleshooting",
-    "descriptionAr": "استكمال الربط وحل المشكلات العملية المتكررة.",
-    "descriptionEn": "Continue SMTP implementation and resolve practical issues."
+    "titleAr": "التخطيط لميزة جديدة باستخدام Super Power Plugin قبل الدخول في التنفيذ",
+    "titleEn": "Plan a New Feature with the Super Power Plugin Before Writing the Implementation",
+    "descriptionAr": "في هذا الدرس نستخدم Super Power Plugin للتخطيط لميزة جديدة بطريقة أوضح وأذكى، حتى نحدد الهدف والنطاق والخطوات المتوقعة قبل لمس الكود، وهذا يساعدنا على تقليل التخمين وتحسين جودة التنفيذ من البداية.",
+    "descriptionEn": "In this lesson we use the Super Power Plugin to plan a new feature more clearly, defining the goal, scope, and expected steps before touching the code so implementation starts with less guesswork and stronger structure."
   },
   {
     "fileName": "18- Dockler وليه بنستتخدمه  وبيسهل اي واحنا بنرعف الويب ساي.mp4",
     "lessonId": "seed-17",
     "sortOrder": 17,
     "sectionKey": "production",
-    "titleAr": "Docker: لماذا نستخدمه وكيف يسهّل الشغل",
-    "titleEn": "Docker Fundamentals and Why It Matters",
-    "descriptionAr": "فهم Docker عمليًا لدعم تشغيل ونشر المشاريع.",
-    "descriptionEn": "Understand Docker basics for practical deployment workflows."
+    "titleAr": "Docker: ما هو، ولماذا نستخدمه، وكيف يسهّل تشغيل ورفع الويب سايت",
+    "titleEn": "Docker Fundamentals: What It Is, Why We Use It, and How It Simplifies Running and Shipping the Site",
+    "descriptionAr": "هذا الدرس يشرح Docker من منظور عملي جداً: لماذا نحتاجه في المشاريع الحديثة، كيف يسهّل توحيد البيئة بين الأجهزة والسيرفر، ولماذا يصبح جزءاً مهماً عندما تريد نقل المشروع من مرحلة التطوير إلى مرحلة النشر الفعلي.",
+    "descriptionEn": "This lesson explains Docker from a highly practical angle: why modern projects rely on it, how it keeps environments consistent between machines and servers, and why it becomes important when moving from local development into real deployment."
   },
   {
     "fileName": "19- بعد انهاء الويب سايت رفعه على السيرفر وربط الدومين.mp4",
     "lessonId": "seed-18",
     "sortOrder": 18,
     "sectionKey": "production",
-    "titleAr": "رفع الموقع على السيرفر وربط الدومين",
-    "titleEn": "Deploy to Server and Connect Domain",
-    "descriptionAr": "نشر المشروع وربط الدومين للوصول إلى بيئة إنتاج حقيقية.",
-    "descriptionEn": "Deploy the app to server and complete domain setup."
+    "titleAr": "بعد إنهاء الويب سايت: رفع المشروع على السيرفر وربط الدومين خطوة بخطوة",
+    "titleEn": "After Finishing the Site: Deploy It to the Server and Connect the Domain Step by Step",
+    "descriptionAr": "في هذا الدرس نأخذ المشروع إلى البيئة الحقيقية، من رفعه على السيرفر إلى ربط الدومين والتأكد أن كل شيء يعمل كما ينبغي. الهدف هو أن ترى مرحلة النشر كاملة بشكل واضح وليس فقط بناء المشروع محلياً.",
+    "descriptionEn": "This lesson takes the project into a real environment, from server deployment to domain connection and final verification. The goal is to make production launch tangible, not just stop at building the app locally."
   },
   {
     "fileName": "20- عمل الخطه والبلان لربط بوابه الدفع.mp4",
     "lessonId": "seed-19",
     "sortOrder": 19,
     "sectionKey": "production",
-    "titleAr": "خطة ربط بوابة الدفع",
-    "titleEn": "Plan the Payment Gateway Integration",
-    "descriptionAr": "وضع خطة ربط بوابة الدفع قبل التنفيذ الفعلي.",
-    "descriptionEn": "Create a clear payment gateway integration plan."
+    "titleAr": "عمل الخطة والـ plan لربط بوابة الدفع قبل التنفيذ الفعلي للتكامل",
+    "titleEn": "Create the Plan for the Payment Gateway Integration Before Starting the Actual Build",
+    "descriptionAr": "قبل أن نربط بوابة الدفع مباشرة، نحتاج أولاً إلى خطة واضحة تحدد السيناريوهات المطلوبة، البيانات التي ستنتقل بين النظام والبوابة، وحالات النجاح والفشل. هذا الدرس يوضح كيف نبني هذا التصور بشكل صحيح.",
+    "descriptionEn": "Before connecting a payment gateway directly, we need a clear plan that defines the required flows, the data exchanged with the gateway, and success and failure states. This lesson shows how to build that implementation picture properly."
   },
   {
     "fileName": "21- ربط جوجل auth لتسجيل الدخول ب جوجل.mp4",
     "lessonId": "seed-20",
     "sortOrder": 20,
     "sectionKey": "production",
-    "titleAr": "ربط تسجيل الدخول بجوجل OAuth",
-    "titleEn": "Google OAuth Login Integration",
-    "descriptionAr": "تفعيل Google OAuth لتجربة تسجيل دخول أسرع وأكثر أمانًا.",
-    "descriptionEn": "Integrate Google OAuth for seamless secure login."
+    "titleAr": "ربط Google Auth لتسجيل الدخول بجوجل وتسهيل تجربة المستخدم بشكل آمن",
+    "titleEn": "Integrate Google Auth for Secure Google Sign-In and a Smoother User Experience",
+    "descriptionAr": "هذا الدرس يشرح كيف تضيف تسجيل الدخول بجوجل داخل المشروع، وما الذي تحتاجه من إعدادات وخطوات، وكيف تستفيد من Google Auth لتحسين تجربة الدخول وجعلها أسرع وأسهل وأكثر موثوقية للمستخدم النهائي.",
+    "descriptionEn": "This lesson explains how to add Google sign-in to the project, what setup it requires, and how Google Auth improves the login experience by making it faster, easier, and more trustworthy for end users."
   },
   {
     "fileName": "22- ما بعد رفع الموقع ظبط ال ci cd عشان التعيدلات تسمع علطول_final.mp4",
     "lessonId": "seed-21",
     "sortOrder": 21,
     "sectionKey": "production",
-    "titleAr": "بعد الرفع: ضبط CI/CD للتحديثات المستمرة",
-    "titleEn": "Post-Deployment CI/CD Setup",
-    "descriptionAr": "ضبط CI/CD بعد النشر لضمان وصول التحديثات تلقائيًا.",
-    "descriptionEn": "Set up CI/CD for safe continuous post-deployment updates."
+    "titleAr": "بعد رفع الموقع: ضبط CI/CD حتى تصل التعديلات الجديدة بشكل مستمر ومنظم",
+    "titleEn": "After Deployment: Configure CI/CD So New Changes Ship in a Continuous Organized Way",
+    "descriptionAr": "بعد أن يصبح الموقع على السيرفر، نحتاج إلى آلية محترفة لنقل التعديلات الجديدة بدون فوضى. في هذا الدرس نرتب الـ CI/CD حتى تكون دورة التحديث أسرع وأكثر أماناً وأسهل في المتابعة مع كل تعديل جديد.",
+    "descriptionEn": "Once the site is live on the server, we need a professional way to ship new changes without chaos. This lesson sets up CI/CD so the update cycle becomes faster, safer, and easier to manage with every release."
   },
   {
     "fileName": "23- ما بعد رفع الموقع ما بعد الويب سايت وتحسين ال تيكينكيال SEO_final.mp4",
     "lessonId": "seed-22",
     "sortOrder": 22,
     "sectionKey": "production",
-    "titleAr": "ما بعد الإطلاق: تحسين Technical SEO",
-    "titleEn": "Post-Launch Technical SEO Optimization",
-    "descriptionAr": "تحسين الـ Technical SEO لزيادة الظهور والنمو.",
-    "descriptionEn": "Optimize technical SEO for better discoverability and growth."
+    "titleAr": "ما بعد الإطلاق: تحسين الـ Technical SEO للموقع بعد اكتمال البناء والنشر",
+    "titleEn": "Post-Launch Technical SEO Optimization After the Build and Deployment Are Complete",
+    "descriptionAr": "في آخر مرحلة نركز على الـ Technical SEO: كيف تجعل الموقع أوضح لمحركات البحث، وكيف تضبط الجوانب التقنية التي تؤثر على الظهور والفهرسة والانطباع العام بعد الإطلاق، حتى لا يتوقف الشغل عند مجرد النشر فقط.",
+    "descriptionEn": "In the final stage we focus on technical SEO: how to make the site more understandable to search engines and improve the technical signals that affect discoverability, indexing, and post-launch quality after deployment is complete."
   }
 ]

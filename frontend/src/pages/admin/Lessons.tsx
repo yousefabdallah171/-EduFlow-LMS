@@ -20,20 +20,9 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
-import { useTusUpload } from "@/hooks/useTusUpload";
 import { getAdminUiCopy } from "@/lib/admin-ui-copy";
 import { api, queryClient } from "@/lib/api";
 import { resolveLocale } from "@/lib/locale";
-
-type MediaFile = {
-  id: string;
-  title: string;
-  type: string;
-  status: string;
-  durationSeconds: number | null;
-  sizeBytes: bigint;
-};
 
 type LessonAdmin = {
   id: string;
@@ -90,13 +79,6 @@ const formatDuration = (durationSeconds: number | null, fallback: string) => {
   return `${minutes}m ${seconds}s`;
 };
 
-const formatBytes = (bytes: number) => {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-};
-
 export const AdminLessons = () => {
   const { t, i18n } = useTranslation();
   const locale = resolveLocale(i18n.language);
@@ -116,9 +98,6 @@ export const AdminLessons = () => {
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [attachmentDrawerOpen, setAttachmentDrawerOpen] = useState(false);
   const [stagedLessons, setStagedLessons] = useState<LessonAdmin[]>([]);
-  const { progress, bytesUploaded, bytesTotal, isUploading, startUpload, cancelUpload } = useTusUpload({
-    lessonId: selectedLessonId
-  });
 
   const linkMediaMutation = useMutation({
     mutationFn: async (mediaFileId: string) => {

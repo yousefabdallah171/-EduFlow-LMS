@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Loader, AlertCircle, XCircle } from "lucide-react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { resolveLocale } from "@/lib/locale";
 import { usePaymentStatus } from "@/hooks/usePaymentStatus";
 import { SEO } from "@/components/shared/SEO";
 import { SEO_PAGES } from "@/lib/seo-config";
@@ -14,8 +13,7 @@ export const PaymentPending = () => {
   const { locale } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { t, i18n } = useTranslation();
-  const isAr = resolveLocale(i18n.language) === "ar";
+  const { t } = useTranslation();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
 
   const orderId = searchParams.get("orderId");
@@ -23,7 +21,7 @@ export const PaymentPending = () => {
   const [timedOut, setTimedOut] = useState(false);
 
   // Use custom hook to poll payment status
-  const { status, error: statusError, isLoading } = usePaymentStatus(orderId || "", POLL_INTERVAL);
+  const { status, error: statusError } = usePaymentStatus(orderId || "", POLL_INTERVAL);
 
   // Track elapsed time
   useEffect(() => {
@@ -44,9 +42,9 @@ export const PaymentPending = () => {
   // Auto-redirect when payment completes
   useEffect(() => {
     if (status === "COMPLETED") {
-      navigate(`${prefix}/payment-success?orderId=${orderId}`, { replace: true });
+      navigate(`${prefix}/payment/success?orderId=${orderId}`, { replace: true });
     } else if (status === "FAILED") {
-      navigate(`${prefix}/payment-failure?orderId=${orderId}&error=PAYMENT_FAILED`, { replace: true });
+      navigate(`${prefix}/payment/failure?orderId=${orderId}&error=PAYMENT_FAILED`, { replace: true });
     } else if (status === "CANCELLED") {
       navigate(`${prefix}/checkout`, { replace: true });
     }

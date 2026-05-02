@@ -9,7 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { api } from "@/lib/api";
-import { formatMinutesShort, formatNumber, pickLocalizedText, resolveLocale } from "@/lib/locale";
+import { formatClockDuration, formatMinutesShort, formatNumber, pickLocalizedText, resolveLocale } from "@/lib/locale";
+import { cn } from "@/lib/utils";
 
 type LessonItem = {
   id: string;
@@ -27,6 +28,7 @@ export const StudentProgress = () => {
   const { t, i18n } = useTranslation();
   const resolvedLocale = resolveLocale(i18n.language);
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
+  const isAr = resolvedLocale === "ar";
 
   const { data, isLoading } = useQuery({
     queryKey: ["student-lessons"],
@@ -44,6 +46,8 @@ export const StudentProgress = () => {
       <>
         <PageHeader
           hero
+          backHref={`${prefix}/dashboard`}
+          backLabel={t("nav.dashboard")}
           eyebrow={t("student.dashboard.yourJourney")}
           title={t("student.progress.title")}
           description={t("student.progress.description")}
@@ -65,15 +69,15 @@ export const StudentProgress = () => {
           <div className="dashboard-panel dashboard-panel--accent p-5">
             <div className="flex items-center gap-2 text-brand-600">
               <Trophy className="h-4 w-4" />
-              <span className="text-xs font-bold uppercase tracking-[0.16em]">{t("course.completion")}</span>
+              <span className={cn("text-xs font-bold tracking-[0.16em]", !isAr && "uppercase")}>{t("course.completion")}</span>
             </div>
-            <p className="mt-2 font-display text-3xl font-bold">{percent}%</p>
+            <p className="mt-2 font-display text-3xl font-bold">{formatNumber(percent, resolvedLocale)}%</p>
             {!isLoading ? <ProgressBar className="mt-3 h-2" value={percent} /> : null}
           </div>
           <div className="dashboard-panel p-5">
             <div className="flex items-center gap-2 text-brand-600">
               <CheckCircle2 className="h-4 w-4" />
-              <span className="text-xs font-bold uppercase tracking-[0.16em]">{t("student.progress.completed")}</span>
+              <span className={cn("text-xs font-bold tracking-[0.16em]", !isAr && "uppercase")}>{t("student.progress.completed")}</span>
             </div>
             <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{formatNumber(completed, resolvedLocale)}</p>
             <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
@@ -83,7 +87,7 @@ export const StudentProgress = () => {
           <div className="dashboard-panel p-5">
             <div className="flex items-center gap-2 text-brand-600">
               <Gauge className="h-4 w-4" />
-              <span className="text-xs font-bold uppercase tracking-[0.16em]">{t("student.progress.inProgress")}</span>
+              <span className={cn("text-xs font-bold tracking-[0.16em]", !isAr && "uppercase")}>{t("student.progress.inProgress")}</span>
             </div>
             <p className="mt-2 font-display text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>{formatNumber(inProgress, resolvedLocale)}</p>
             <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
@@ -107,7 +111,7 @@ export const StudentProgress = () => {
               {lessons.map((lesson) => (
                 <Link
                   key={lesson.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] border px-4 py-4 no-underline transition-colors hover:bg-surface2"
+                  className="flex flex-col items-start gap-3 rounded-[22px] border px-4 py-4 no-underline transition-colors hover:bg-surface2 sm:flex-row sm:items-center sm:justify-between"
                   style={{ borderColor: "var(--color-border)", color: "inherit" }}
                   to={lesson.isUnlocked ? `${prefix}/lessons/${lesson.id}` : `${prefix}/course`}
                 >
@@ -116,17 +120,21 @@ export const StudentProgress = () => {
                       {pickLocalizedText(resolvedLocale, lesson.titleEn ?? lesson.title, lesson.titleAr)}
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
-                      <span className="inline-flex items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1.5" dir="ltr">
                         <Clock3 className="h-3.5 w-3.5 text-brand-600" />
                         {formatMinutesShort(lesson.lastPositionSeconds, resolvedLocale)}
                       </span>
                       {lesson.durationSeconds ? (
-                        <span>{t("student.progress.lessonLength", { length: formatMinutesShort(lesson.durationSeconds, resolvedLocale) })}</span>
+                        <span>
+                          {t("student.progress.lessonLength", {
+                            length: formatClockDuration(lesson.durationSeconds, resolvedLocale)
+                          })}
+                        </span>
                       ) : null}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-start">
                     {lesson.completedAt ? (
                       <Badge variant="default" className="gap-1 border-green-500/20 bg-green-500/10 text-green-600">
                         <CheckCircle2 className="h-3.5 w-3.5" />

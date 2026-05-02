@@ -14,9 +14,10 @@ import { useEnrollment } from "@/hooks/useEnrollment";
 import { useVideoToken } from "@/hooks/useVideoToken";
 import { api, queryClient } from "@/lib/api";
 import { demoLessons, isDemoMode } from "@/lib/demo";
-import { pickLocalizedText, resolveLocale } from "@/lib/locale";
+import { formatClockDuration, formatNumber, pickLocalizedText, resolveLocale } from "@/lib/locale";
 import { SEO } from "@/components/shared/SEO";
 import { SEO_PAGES } from "@/lib/seo-config";
+import { cn } from "@/lib/utils";
 
 type LessonSummary = {
   id: string;
@@ -201,7 +202,7 @@ export const Lesson = () => {
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600/10 text-brand-600">
             <LockKeyhole className="h-5 w-5" />
           </div>
-          <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-brand-600">{t("lesson.enrollmentRequired")}</p>
+          <p className={cn("mt-5 text-xs font-bold tracking-[0.18em] text-brand-600", !isAr && "uppercase")}>{t("lesson.enrollmentRequired")}</p>
           <h1 className="font-display mt-3 text-2xl font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
             {t("lesson.enrollmentRequired")}
           </h1>
@@ -278,7 +279,7 @@ export const Lesson = () => {
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600/10 text-brand-600">
               <TriangleAlert className="h-5 w-5" />
             </div>
-            <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-brand-600">{t("lesson.error")}</p>
+            <p className={cn("mt-5 text-xs font-bold tracking-[0.18em] text-brand-600", !isAr && "uppercase")}>{t("lesson.error")}</p>
             <h1 className="font-display mt-3 text-xl font-bold" style={{ color: "var(--color-text-primary)" }}>
               {errorTitle}
             </h1>
@@ -419,12 +420,12 @@ export const Lesson = () => {
                 borderColor: "var(--color-border)"
               }}
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+              <p className={cn("text-xs font-semibold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>
                 {t("lesson.notes")}
               </p>
 
               <div className="mt-4 space-y-3">
-                <div className="flex items-end gap-3">
+                <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-end">
                   <div className="flex-1">
                     <textarea
                       value={noteInput}
@@ -437,6 +438,7 @@ export const Lesson = () => {
                         color: "var(--color-text-primary)"
                       }}
                       rows={2}
+                      dir="auto"
                     />
                   </div>
                   <button
@@ -458,15 +460,22 @@ export const Lesson = () => {
                   </button>
                 </div>
 
-                <div className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-                  {isAr ? "الموضع الحالي:" : "Current position:"} <span style={{ color: "var(--color-text-primary)" }}>{Math.floor(currentPosition / 60)}:{String(currentPosition % 60).padStart(2, "0")}</span>
+                <div className="flex flex-wrap items-center gap-2 text-xs" style={{ color: "var(--color-text-muted)" }}>
+                  <span>{t("lesson.currentPositionLabel")}</span>
+                  <span
+                    className="rounded-full px-2.5 py-1 font-semibold"
+                    dir="ltr"
+                    style={{ backgroundColor: "var(--color-surface-2)", color: "var(--color-text-primary)" }}
+                  >
+                    {formatClockDuration(currentPosition, resolvedLocale)}
+                  </span>
                 </div>
               </div>
 
               {notesQuery.data && notesQuery.data.length > 0 ? (
                 <div className="mt-4 space-y-2 border-t pt-4" style={{ borderColor: "var(--color-border)" }}>
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
-                    {isAr ? "ملاحظاتك" : "Your notes"} ({notesQuery.data.length})
+                  <p className={cn("text-xs font-semibold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>
+                    {t("lesson.yourNotesLabel")} ({formatNumber(notesQuery.data.length, resolvedLocale)})
                   </p>
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {notesQuery.data.map((note) => (
@@ -480,10 +489,10 @@ export const Lesson = () => {
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <p style={{ color: "var(--color-text-primary)" }}>{note.content}</p>
+                            <p style={{ color: "var(--color-text-primary)" }} dir="auto">{note.content}</p>
                           </div>
-                          <span className="flex-shrink-0 text-xs font-semibold whitespace-nowrap" style={{ color: "var(--color-text-muted)" }}>
-                            {Math.floor(note.positionSeconds / 60)}:{String(note.positionSeconds % 60).padStart(2, "0")}
+                          <span className="flex-shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap" style={{ color: "var(--color-text-muted)", backgroundColor: "var(--color-surface)" }} dir="ltr">
+                            {formatClockDuration(note.positionSeconds, resolvedLocale)}
                           </span>
                         </div>
                       </div>
@@ -531,17 +540,15 @@ export const Lesson = () => {
                 borderColor: "color-mix(in oklab, var(--color-brand) 22%, var(--color-border))"
               }}
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+              <p className={cn("text-xs font-semibold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>
                 {t("lesson.courseProgress")}
               </p>
               <p className="mt-1.5 font-display text-3xl font-bold tabular-nums" style={{ color: "var(--color-text-primary)" }}>
-                {completionPercentage}%
+                {formatNumber(completionPercentage, resolvedLocale)}%
               </p>
               <Progress className="mt-3 h-2" value={completionPercentage} />
               <p className="mt-3 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
-                {isAr
-                  ? "حافظ على الإيقاع: إنهاء هذا الدرس يقربك من القسم التالي."
-                  : "Keep the rhythm going: finishing this lesson moves you closer to the next section."}
+                {t("lesson.progressEncouragement")}
               </p>
             </div>
 
@@ -552,7 +559,7 @@ export const Lesson = () => {
                 borderColor: "var(--color-border)"
               }}
             >
-              <p className="mb-3 px-1 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+              <p className={cn("mb-3 px-1 text-xs font-bold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>
                 {t("lesson.allLessons")}
               </p>
               <div className="space-y-4">
@@ -562,7 +569,7 @@ export const Lesson = () => {
 
                     return (
                       <div key={section.id} className="space-y-2">
-                        <div className="px-1 text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>
+                        <div className={cn("px-1 text-xs font-semibold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>
                           {sectionTitle}
                         </div>
                         <div className="space-y-1">

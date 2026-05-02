@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { SkeletonFullPage } from "@/components/skeletons";
 import { isAccessTokenExpiringSoon, refreshAccessToken } from "@/lib/api";
@@ -10,6 +11,10 @@ const Landing = lazy(async () => import("@/pages/Landing").then((module) => ({ d
 const Register = lazy(async () => import("@/pages/Register").then((module) => ({ default: module.Register })));
 const Login = lazy(async () => import("@/pages/Login").then((module) => ({ default: module.Login })));
 const Checkout = lazy(async () => import("@/pages/Checkout").then((module) => ({ default: module.Checkout })));
+const PaymentSuccess = lazy(async () => import("@/pages/PaymentSuccess").then((module) => ({ default: module.PaymentSuccess })));
+const PaymentPending = lazy(async () => import("@/pages/PaymentPending").then((module) => ({ default: module.PaymentPending })));
+const PaymentFailure = lazy(async () => import("@/pages/PaymentFailure").then((module) => ({ default: module.PaymentFailure })));
+const PaymentHistory = lazy(async () => import("@/pages/PaymentHistory").then((module) => ({ default: module.PaymentHistory })));
 const Course = lazy(async () => import("@/pages/Course").then((module) => ({ default: module.Course })));
 const Lesson = lazy(async () => import("@/pages/Lesson").then((module) => ({ default: module.Lesson })));
 const Lessons = lazy(async () => import("@/pages/Lessons").then((module) => ({ default: module.Lessons })));
@@ -65,7 +70,8 @@ const VerifyEmailPage = lazy(async () => import("@/pages/VerifyEmail").then((m) 
 const ResetPasswordPage = lazy(async () => import("@/pages/ResetPassword").then((m) => ({ default: m.ResetPassword })));
 
 const OAuthCallback = () => {
-  const [message, setMessage] = useState("Signing in...");
+  const { t } = useTranslation();
+  const [message, setMessage] = useState(() => t("auth.callback.signingIn"));
   const navigate = useNavigate();
   const location = useLocation();
   const hasStarted = useRef(false);
@@ -77,14 +83,14 @@ const OAuthCallback = () => {
 
     hasStarted.current = true;
     if (!hasStoredRefreshFlag()) {
-      setMessage("Sign-in failed.");
+      setMessage(t("auth.callback.failed"));
       return;
     }
 
     void refreshAccessToken()
       .then((token) => {
         if (!token) {
-          setMessage("Sign-in failed.");
+          setMessage(t("auth.callback.failed"));
           return;
         }
 
@@ -93,11 +99,11 @@ const OAuthCallback = () => {
         const prefix = segment === "en" || segment === "ar" ? `/${segment}` : "";
         const target = nextUser?.role === ROLES.ADMIN ? `${prefix}/admin/dashboard` : `${prefix}/dashboard`;
 
-        setMessage("Signed in.");
+        setMessage(t("auth.callback.signedIn"));
         navigate(target, { replace: true });
       })
-      .catch(() => setMessage("Sign-in failed."));
-  }, [location.pathname, navigate]);
+      .catch(() => setMessage(t("auth.callback.failed")));
+  }, [location.pathname, navigate, t]);
 
   return (
     <div className="flex min-h-dvh items-center justify-center" style={{ backgroundColor: "var(--color-page)" }}>
@@ -180,6 +186,7 @@ export const SessionKeepAlive = () => {
 
 const RequireRole = ({ role, children }: { role: string; children: JSX.Element }) => {
   const location = useLocation();
+  const { t } = useTranslation();
   const { isAuthReady, user } = useAuthStore();
   const prefix = getLocalePrefix(location.pathname);
   const [isRecoveringSession, setIsRecoveringSession] = useState(false);
@@ -208,7 +215,7 @@ const RequireRole = ({ role, children }: { role: string; children: JSX.Element }
   if (!isAuthReady || isRecoveringSession) {
     return (
       <div className="flex min-h-dvh items-center justify-center" style={{ backgroundColor: "var(--color-page)" }}>
-        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>Checking your session…</p>
+        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>{t("auth.session.checking")}</p>
       </div>
     );
   }
@@ -235,6 +242,12 @@ export const AppRoutes = () => (
       <Route element={<Register />} path="/register" />
       <Route element={<Login />} path="/login" />
       <Route element={<Checkout />} path="/checkout" />
+      <Route element={<PaymentSuccess />} path="/payment/success" />
+      <Route element={<PaymentSuccess />} path="/payment-success" />
+      <Route element={<PaymentPending />} path="/payment/pending" />
+      <Route element={<PaymentPending />} path="/payment-pending" />
+      <Route element={<PaymentFailure />} path="/payment/failure" />
+      <Route element={<PaymentFailure />} path="/payment-failure" />
       <Route element={<Preview />} path="/preview" />
       <Route element={<Course />} path="/course" />
       <Route
@@ -285,6 +298,8 @@ export const AppRoutes = () => (
       <Route element={<RequireRole role={ROLES.STUDENT}><StudentNotes /></RequireRole>} path="/notes" />
       <Route element={<RequireRole role={ROLES.STUDENT}><StudentDownloads /></RequireRole>} path="/downloads" />
       <Route element={<RequireRole role={ROLES.STUDENT}><StudentOrders /></RequireRole>} path="/orders" />
+      <Route element={<RequireRole role={ROLES.STUDENT}><PaymentHistory /></RequireRole>} path="/payment/history" />
+      <Route element={<RequireRole role={ROLES.STUDENT}><PaymentHistory /></RequireRole>} path="/payment-history" />
       <Route element={<RequireRole role={ROLES.STUDENT}><StudentProfile /></RequireRole>} path="/profile" />
       <Route element={<RequireRole role={ROLES.STUDENT}><StudentHelp /></RequireRole>} path="/help" />
       <Route element={<AdminHome />} path="/admin" />
@@ -316,6 +331,12 @@ export const AppRoutes = () => (
       <Route element={<Register />} path="/:locale/register" />
       <Route element={<Login />} path="/:locale/login" />
       <Route element={<Checkout />} path="/:locale/checkout" />
+      <Route element={<PaymentSuccess />} path="/:locale/payment/success" />
+      <Route element={<PaymentSuccess />} path="/:locale/payment-success" />
+      <Route element={<PaymentPending />} path="/:locale/payment/pending" />
+      <Route element={<PaymentPending />} path="/:locale/payment-pending" />
+      <Route element={<PaymentFailure />} path="/:locale/payment/failure" />
+      <Route element={<PaymentFailure />} path="/:locale/payment-failure" />
       <Route element={<Preview />} path="/:locale/preview" />
       <Route element={<Course />} path="/:locale/course" />
       <Route
@@ -366,6 +387,8 @@ export const AppRoutes = () => (
       <Route element={<RequireRole role={ROLES.STUDENT}><StudentNotes /></RequireRole>} path="/:locale/notes" />
       <Route element={<RequireRole role={ROLES.STUDENT}><StudentDownloads /></RequireRole>} path="/:locale/downloads" />
       <Route element={<RequireRole role={ROLES.STUDENT}><StudentOrders /></RequireRole>} path="/:locale/orders" />
+      <Route element={<RequireRole role={ROLES.STUDENT}><PaymentHistory /></RequireRole>} path="/:locale/payment/history" />
+      <Route element={<RequireRole role={ROLES.STUDENT}><PaymentHistory /></RequireRole>} path="/:locale/payment-history" />
       <Route element={<RequireRole role={ROLES.STUDENT}><StudentProfile /></RequireRole>} path="/:locale/profile" />
       <Route element={<RequireRole role={ROLES.STUDENT}><StudentHelp /></RequireRole>} path="/:locale/help" />
       <Route element={<AdminHome />} path="/:locale/admin" />

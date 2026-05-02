@@ -60,7 +60,9 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       exclude: ["node_modules", "dist", "tests/e2e/**"],
-      passWithNoTests: true
+      environment: "jsdom",
+      passWithNoTests: true,
+      setupFiles: ["./tests/setup.ts"]
     }
   };
 });

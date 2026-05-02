@@ -2,11 +2,15 @@ import { FileText, LifeBuoy, Sparkles } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
+import { useAuth } from "@/hooks/useAuth";
+
 export const Footer = () => {
   const location = useLocation();
   const segment = location.pathname.split("/")[1];
   const prefix = segment === "en" || segment === "ar" ? `/${segment}` : "";
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const isStudent = user?.role === "STUDENT";
 
   if (location.pathname.includes("/admin")) return null;
 
@@ -26,14 +30,33 @@ export const Footer = () => {
     { label: t("preview.freePreview"), to: "/preview" }
   ];
 
-  const accountLinks = [
-    { label: t("nav.register"), to: "/register" },
-    { label: t("nav.login"), to: "/login" },
-    { label: t("nav.course"), to: "/course" },
-    { label: t("nav.dashboard"), to: "/dashboard" },
-    { label: t("nav.profile"), to: "/profile" },
-    { label: t("nav.help"), to: "/help" }
-  ];
+  const accountLinks = isStudent
+    ? [
+        { label: t("nav.dashboard"), to: "/dashboard" },
+        { label: t("nav.course"), to: "/course" },
+        { label: t("student.shell.progress"), to: "/progress" },
+        { label: t("student.shell.notes"), to: "/notes" },
+        { label: t("student.shell.downloads"), to: "/downloads" },
+        { label: t("student.shell.orders"), to: "/orders" },
+        { label: t("nav.profile"), to: "/profile" },
+        { label: t("nav.help"), to: "/help" }
+      ]
+    : [
+        { label: t("nav.register"), to: "/register" },
+        { label: t("nav.login"), to: "/login" },
+        { label: t("nav.course"), to: "/course" },
+        { label: t("nav.dashboard"), to: "/dashboard" },
+        { label: t("nav.profile"), to: "/profile" },
+        { label: t("nav.help"), to: "/help" }
+      ];
+
+  const primaryCta = isStudent
+    ? { label: t("nav.dashboard"), to: "/dashboard" }
+    : { label: t("nav.getStarted"), to: "/register" };
+
+  const secondaryCta = isStudent
+    ? { label: t("nav.course"), to: "/course" }
+    : { label: t("preview.freePreview"), to: "/preview" };
 
   return (
     <footer className="px-4 pb-8 pt-14 sm:px-6">
@@ -58,16 +81,16 @@ export const Footer = () => {
                     background: "var(--gradient-brand)",
                     boxShadow: "0 12px 24px rgba(163,230,53,0.16)"
                   }}
-                  to={`${prefix}/register`}
+                  to={`${prefix}${primaryCta.to}`}
                 >
-                  {t("nav.getStarted")}
+                  {primaryCta.label}
                 </Link>
                 <Link
                   className="rounded-2xl border px-4 py-2.5 text-sm font-medium no-underline transition-colors hover:bg-surface"
                   style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
-                  to={`${prefix}/preview`}
+                  to={`${prefix}${secondaryCta.to}`}
                 >
-                  {t("preview.freePreview")}
+                  {secondaryCta.label}
                 </Link>
               </div>
             </div>

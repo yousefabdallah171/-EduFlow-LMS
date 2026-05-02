@@ -1,5 +1,4 @@
-import { useMemo, useState } from "react";
-import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
+import { useEffect, useMemo, useState } from "react";
 import {
   autoUpdate,
   flip,
@@ -12,13 +11,18 @@ import {
   useRole
 } from "@floating-ui/react";
 import {
+  BadgeHelp,
   ChevronDown,
-  CreditCard,
+  Download,
+  FileText,
+  Gauge,
   GraduationCap,
   LayoutDashboard,
   LogOut,
   Menu,
+  ReceiptText,
   Shield,
+  X,
   UserCircle2
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -26,8 +30,10 @@ import { useTranslation } from "react-i18next";
 
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar } from "@/components/Avatar";
 import { useAuth } from "@/hooks/useAuth";
+import { resolveLocale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -39,7 +45,16 @@ type NavItem = {
 const studentMenuItems: NavItem[] = [
   { labelKey: "nav.dashboard", to: "/dashboard", icon: LayoutDashboard },
   { labelKey: "nav.course", to: "/course", icon: GraduationCap },
-  { labelKey: "nav.lessons", to: "/lessons", icon: CreditCard },
+  { labelKey: "nav.progress", to: "/progress", icon: Gauge },
+  { labelKey: "nav.notes", to: "/notes", icon: FileText },
+  { labelKey: "nav.downloads", to: "/downloads", icon: Download },
+  { labelKey: "nav.orders", to: "/orders", icon: ReceiptText },
+  { labelKey: "nav.profile", to: "/profile", icon: UserCircle2 }
+];
+
+const studentQuickMenuItems: NavItem[] = [
+  { labelKey: "nav.dashboard", to: "/dashboard", icon: LayoutDashboard },
+  { labelKey: "nav.course", to: "/course", icon: GraduationCap },
   { labelKey: "nav.profile", to: "/profile", icon: UserCircle2 }
 ];
 
@@ -52,7 +67,7 @@ const adminMenuItems: NavItem[] = [
 const publicMenuItems: NavItem[] = [
   { labelKey: "nav.home", to: "/", icon: LayoutDashboard },
   { labelKey: "nav.course", to: "/course", icon: GraduationCap },
-  { labelKey: "nav.checkout", to: "/checkout", icon: CreditCard }
+  { labelKey: "nav.checkout", to: "/checkout", icon: ReceiptText }
 ];
 
 export const NavBar = () => {
@@ -62,8 +77,11 @@ export const NavBar = () => {
   const { user, logout } = useAuth();
   const userRole = user?.role;
   const isAuthenticated = Boolean(user);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const locale = resolveLocale(i18n.language);
+  const isAr = locale === "ar";
 
   const { refs, floatingStyles, context } = useFloating({
     open,
@@ -77,28 +95,44 @@ export const NavBar = () => {
   const role = useRole(context);
   const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss, role]);
 
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.hash, location.pathname, location.search]);
+
   const links = useMemo(() => {
     if (userRole === "ADMIN") {
       return adminMenuItems;
     }
 
     if (isAuthenticated) {
-      return studentMenuItems;
+      return studentQuickMenuItems;
+    }
+
+    return publicMenuItems;
+  }, [isAuthenticated, userRole]);
+
+  const drawerLinks = useMemo(() => {
+    if (userRole === "ADMIN") {
+      return adminMenuItems;
+    }
+
+    if (isAuthenticated) {
+      return [...studentMenuItems, { labelKey: "nav.help", to: "/help", icon: BadgeHelp }];
     }
 
     return publicMenuItems;
   }, [isAuthenticated, userRole]);
 
   return (
-    <Disclosure
-      as="header"
-      className="sticky top-0 z-30 border-b"
-      style={{
-        borderColor: "var(--color-border)",
-        backgroundColor: "color-mix(in srgb, var(--color-surface) 82%, transparent)",
-        backdropFilter: "blur(16px)"
-      }}
-    >
+    <>
+      <header
+        className="sticky top-0 z-30 border-b"
+        style={{
+          borderColor: "var(--color-border)",
+          backgroundColor: "color-mix(in srgb, var(--color-surface) 82%, transparent)",
+          backdropFilter: "blur(16px)"
+        }}
+      >
       <div className="app-shell px-0 py-3">
         <div
           className="surface-card flex items-center justify-between gap-3 rounded-[28px] px-3 py-2.5 sm:px-4"
@@ -108,17 +142,19 @@ export const NavBar = () => {
           }}
         >
           <div className="flex min-w-0 items-center gap-3">
-            <DisclosureButton
+            <button
               aria-label={t("nav.openNavigation")}
-              className="flex h-11 w-11 items-center justify-center rounded-2xl border md:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-2xl border lg:hidden"
+              onClick={() => setMobileNavOpen(true)}
               style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+              type="button"
             >
               <Menu className="h-5 w-5" />
-            </DisclosureButton>
+            </button>
 
             <Link className="flex min-w-0 items-center gap-3 no-underline" to={`${prefix}/`}>
-                <span
-                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl font-mono text-sm font-black text-white"
+              <span
+                className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl font-mono text-sm font-black text-white"
                 style={{
                   background: "var(--gradient-brand)",
                   boxShadow: "0 10px 24px rgba(163,230,53,0.22)"
@@ -126,18 +162,15 @@ export const NavBar = () => {
               >
                 YA
               </span>
-              <span className="min-w-0">
-                <span className="font-display block truncate text-sm font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
-                  {t("app.title")}
-                </span>
-                <span className="hidden truncate text-[11px] leading-tight sm:block" style={{ color: "var(--color-text-muted)" }}>
+              <span className="hidden min-w-0 sm:block">
+                <span className="truncate text-[11px] leading-tight" style={{ color: "var(--color-text-muted)" }}>
                   {t("app.subtitle")}
                 </span>
               </span>
             </Link>
           </div>
 
-          <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
             {links.map((item) => {
               const target = `${prefix}${item.to}`;
               const active = location.pathname === target || (item.to !== "/" && location.pathname.startsWith(target));
@@ -266,7 +299,7 @@ export const NavBar = () => {
                 ) : null}
               </div>
             ) : (
-              <div className="hidden items-center gap-2 md:flex">
+              <div className="hidden items-center gap-2 lg:flex">
                 <Link
                   className="rounded-2xl px-3 py-2 text-sm font-medium no-underline transition-colors hover:bg-surface2"
                   style={{ color: "var(--color-text-secondary)" }}
@@ -289,52 +322,175 @@ export const NavBar = () => {
           </div>
         </div>
       </div>
+      </header>
 
-      <DisclosurePanel className="border-t px-4 py-3 md:hidden" style={{ borderColor: "var(--color-border)" }}>
-        <nav aria-label="Mobile primary" className="space-y-1">
-          {links.map((item) => {
-            const target = `${prefix}${item.to}`;
-            const active = location.pathname === target || (item.to !== "/" && location.pathname.startsWith(target));
-            const Icon = item.icon;
+      <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <SheetContent
+          side={isAr ? "right" : "left"}
+          className="w-[min(88vw,24rem)] overflow-y-auto border-none p-0 lg:hidden"
+          style={{
+            background:
+              "linear-gradient(180deg, color-mix(in oklab, var(--color-surface) 92%, transparent), var(--color-surface))",
+            boxShadow: "var(--shadow-elevated)"
+          }}
+        >
+          <div className="flex min-h-full flex-col">
+            <SheetHeader className="border-b px-5 pb-5 pt-6" style={{ borderColor: "var(--color-border)" }}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl font-mono text-sm font-black text-white"
+                      style={{
+                        background: "var(--gradient-brand)",
+                        boxShadow: "0 12px 26px rgba(163,230,53,0.24)"
+                      }}
+                    >
+                      YA
+                    </span>
+                    <div className="min-w-0">
+                      <SheetTitle className="font-display text-base font-bold tracking-tight" style={{ color: "var(--color-text-primary)" }}>
+                        {t("nav.menu")}
+                      </SheetTitle>
+                      <p className="mt-1 text-sm leading-6" style={{ color: "var(--color-text-secondary)" }}>
+                        {t("app.subtitle")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-            return (
-              <Link
-                key={item.to}
-                className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium no-underline transition-colors"
-                style={{
-                  color: active ? "var(--color-brand)" : "var(--color-text-primary)",
-                  backgroundColor: active ? "var(--color-brand-muted)" : "transparent"
-                }}
-                to={target}
-              >
-                <Icon className="h-4 w-4" />
-                {t(item.labelKey)}
-              </Link>
-            );
-          })}
+                <button
+                  aria-label={t("nav.closeNavigation")}
+                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl border"
+                  onClick={() => setMobileNavOpen(false)}
+                  style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                  type="button"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </SheetHeader>
 
-          {!user ? (
-            <div className="mt-3 grid grid-cols-2 gap-2 border-t pt-3" style={{ borderColor: "var(--color-border)" }}>
-              <Link
-                className="block rounded-2xl border px-3 py-2.5 text-center text-sm font-medium no-underline"
-                style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
-                to={`${prefix}/login`}
-              >
-                {t("nav.login")}
-              </Link>
-              <Link
-                className="block rounded-2xl px-3 py-2.5 text-center text-sm font-semibold text-white no-underline"
-                style={{
-                  background: "var(--gradient-brand)"
-                }}
-                to={`${prefix}/register`}
-              >
-                {t("nav.getStarted")}
-              </Link>
+            <div className="flex-1 px-4 py-5">
+              {user ? (
+                <div className="mb-5 rounded-[24px] border p-4" style={{ borderColor: "var(--color-border)", backgroundColor: "color-mix(in oklab, var(--color-surface-2) 82%, transparent)" }}>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl text-sm font-bold text-white" style={{ background: "var(--gradient-brand)" }}>
+                      <Avatar
+                        alt={user.fullName}
+                        className="h-full w-full rounded-2xl text-sm font-bold text-white"
+                        fallback={user.fullName.charAt(0).toUpperCase()}
+                        src={user.avatarUrl}
+                        style={{ background: "var(--gradient-brand)" }}
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-display text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
+                        {user.fullName}
+                      </p>
+                      <p className="mt-1 truncate text-xs" style={{ color: "var(--color-text-muted)" }}>
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  {user.role === "STUDENT" ? (
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                      <div className="rounded-[18px] px-3 py-2" style={{ backgroundColor: "var(--color-brand-muted)" }}>
+                        <p className={cn("text-[10px] font-bold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>
+                          {t("student.shell.section")}
+                        </p>
+                        <p className="mt-1 text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
+                          {t("common.student")}
+                        </p>
+                      </div>
+                      <div className="rounded-[18px] px-3 py-2" style={{ backgroundColor: "var(--color-brand-muted)" }}>
+                        <p className={cn("text-[10px] font-bold tracking-[0.16em]", !isAr && "uppercase")} style={{ color: "var(--color-text-muted)" }}>
+                          {t("student.shell.enrolled")}
+                        </p>
+                        <p className="mt-1 text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>
+                          {t("student.shell.lifetimeAccess")}
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+
+              <nav aria-label="Mobile primary" className="space-y-2">
+                {drawerLinks.map((item) => {
+                  const target = `${prefix}${item.to}`;
+                  const active = location.pathname === target || (item.to !== "/" && location.pathname.startsWith(target));
+                  const Icon = item.icon;
+
+                  return (
+                    <Link
+                      key={item.to}
+                      className="flex items-center gap-3 rounded-[22px] border px-4 py-3 text-sm font-semibold no-underline transition-all hover:-translate-y-0.5"
+                      onClick={() => setMobileNavOpen(false)}
+                      style={{
+                        color: active ? "var(--color-brand-text)" : "var(--color-text-primary)",
+                        background: active ? "var(--gradient-brand)" : "color-mix(in oklab, var(--color-surface-2) 82%, transparent)",
+                        borderColor: active ? "transparent" : "var(--color-border)"
+                      }}
+                      to={target}
+                    >
+                      <span
+                        className="flex h-10 w-10 items-center justify-center rounded-2xl"
+                        style={{
+                          backgroundColor: active
+                            ? "color-mix(in oklab, white 28%, transparent)"
+                            : "color-mix(in oklab, var(--color-brand) 14%, transparent)",
+                          color: active ? "var(--color-brand-text)" : "var(--color-text-primary)"
+                        }}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <span className="font-display text-[15px] tracking-tight">{t(item.labelKey)}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              {!user ? (
+                <div className="mt-6 space-y-3 border-t pt-5" style={{ borderColor: "var(--color-border)" }}>
+                  <Link
+                    className="flex min-h-12 items-center justify-center rounded-[22px] border px-4 text-sm font-semibold no-underline"
+                    onClick={() => setMobileNavOpen(false)}
+                    style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                    to={`${prefix}/login`}
+                  >
+                    {t("nav.login")}
+                  </Link>
+                  <Link
+                    className="flex min-h-12 items-center justify-center rounded-[22px] px-4 text-sm font-semibold no-underline"
+                    onClick={() => setMobileNavOpen(false)}
+                    style={{ background: "var(--gradient-brand)" }}
+                    to={`${prefix}/register`}
+                  >
+                    {t("nav.getStarted")}
+                  </Link>
+                </div>
+              ) : (
+                <div className="mt-6 border-t pt-5" style={{ borderColor: "var(--color-border)" }}>
+                  <button
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-[22px] border px-4 text-sm font-semibold transition-colors hover:bg-surface2"
+                    onClick={() => {
+                      setMobileNavOpen(false);
+                      void logout();
+                    }}
+                    style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                    type="button"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {t("nav.signOut")}
+                  </button>
+                </div>
+              )}
             </div>
-          ) : null}
-        </nav>
-      </DisclosurePanel>
-    </Disclosure>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 };

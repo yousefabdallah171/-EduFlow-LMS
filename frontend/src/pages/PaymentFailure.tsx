@@ -1,7 +1,6 @@
 import { AlertCircle, ArrowRight, RotateCcw } from "lucide-react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { resolveLocale } from "@/lib/locale";
 import { SEO } from "@/components/shared/SEO";
 import { SEO_PAGES } from "@/lib/seo-config";
 import {
@@ -14,8 +13,7 @@ import {
 export const PaymentFailure = () => {
   const { locale } = useParams();
   const [searchParams] = useSearchParams();
-  const { t, i18n } = useTranslation();
-  const isAr = resolveLocale(i18n.language) === "ar";
+  const { t } = useTranslation();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
 
   // Extract error info from URL
@@ -34,7 +32,8 @@ export const PaymentFailure = () => {
     params.delete("error");
     params.delete("orderId");
     params.delete("amount");
-    window.location.href = `/checkout?${params.toString()}`;
+    const query = params.toString();
+    window.location.href = `${prefix}/checkout${query ? `?${query}` : ""}`;
   };
 
   return (

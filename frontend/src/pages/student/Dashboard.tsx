@@ -47,6 +47,8 @@ export const StudentDashboard = () => {
       <>
         <PageHeader
           hero
+          backHref={`${prefix}/`}
+          backLabel={t("actions.backToHome")}
           eyebrow={t("student.shell.section")}
           title={t("course.welcomeBack")}
           description={t("student.dashboard.heroDescription")}
