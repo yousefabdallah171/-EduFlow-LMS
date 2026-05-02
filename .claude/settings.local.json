@@ -195,7 +195,17 @@
       "Bash(2>&1)",
       "Bash(PGPASSWORD=eduflow-secure-pass-2024 psql *)",
       "Bash(bash /tmp/final-verification.sh)",
-      "Bash(cp *)"
+      "Bash(cp *)",
+      "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS diff --name-only HEAD)",
+      "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS add frontend/src/locales/en.json frontend/src/locales/ar.json frontend/src/pages/admin/MediaLibrary.tsx backend/src/controllers/admin/media-library.controller.ts backend/src/routes/admin.routes.ts)",
+      "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS status --short)",
+      "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS log --oneline -3)",
+      "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS commit -m ' *)",
+      "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS push origin main)",
+      "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS add backend/src/utils/ip-extractor.ts README.md)",
+      "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS add .github/workflows/deploy.yml)",
+      "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS commit -m 'ci: pass VITE_HCAPTCHA_SITE_KEY secret to frontend build step *)",
+      "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS log --oneline -8)"
     ]
   }
 }

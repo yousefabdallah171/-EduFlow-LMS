@@ -128,6 +128,9 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
                 <p className="mt-0.5 text-xs" style={{ color: "var(--color-text-muted)" }}>
                   {t("course.public.lessonCount", { count: course.lessonCount })}
                 </p>
+                <p className="mt-1 text-xs font-semibold text-brand-600">
+                  {isAr ? "إجمالي مدة الكورس: 4 ساعات" : "Total course duration: 4 hours"}
+                </p>
               </div>
             ) : null}
           </aside>
@@ -186,9 +189,14 @@ const PublicCourseView = ({ prefix, t, isAr }: { prefix: string; t: (k: string, 
                   <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
                     {t("course.public.content")}
                   </p>
-                  <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ backgroundColor: "var(--color-surface-2)", color: "var(--color-text-muted)" }}>
-                    {t("course.public.lessonCount", { count: course.lessons.length })}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ backgroundColor: "var(--color-surface-2)", color: "var(--color-text-muted)" }}>
+                      {t("course.public.lessonCount", { count: course.lessons.length })}
+                    </span>
+                    <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ backgroundColor: "var(--color-brand-muted)", color: "var(--color-brand)" }}>
+                      {isAr ? "4 ساعات" : "4 hours"}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="divide-y" style={{ borderColor: "var(--color-border)" }}>

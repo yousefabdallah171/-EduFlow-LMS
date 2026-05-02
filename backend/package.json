@@ -14,6 +14,7 @@
     "test:integration": "vitest run --dir tests/integration",
     "test:security": "vitest run tests/security",
     "test:performance": "vitest run tests/performance",
+    "lessons:sync": "tsx scripts/sync-lessons-from-videos.ts",
     "load:course": "node scripts/load/course.mjs",
     "load:student": "node scripts/load/student.mjs",
     "prisma:generate": "prisma generate",

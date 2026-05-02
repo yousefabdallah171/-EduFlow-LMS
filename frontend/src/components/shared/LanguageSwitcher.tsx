@@ -32,9 +32,12 @@ export const LanguageSwitcher = () => {
     }
   };
 
+  const currentLabel = locale === "ar" ? "العربية" : "English";
+  const currentFlag = locale === "ar" ? "🇪🇬" : "🇺🇸";
+
   return (
     <button
-      aria-label="Switch language"
+      aria-label={`Switch language (current: ${currentLabel})`}
       className="inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold transition-colors hover:bg-surface2"
       style={{
         color: "var(--color-text-primary)",
@@ -45,6 +48,7 @@ export const LanguageSwitcher = () => {
       type="button"
     >
       <Languages className="h-4 w-4" />
+      <span className="text-base leading-none" aria-hidden="true">{currentFlag}</span>
       <span>{locale === "ar" ? "EN" : "AR"}</span>
     </button>
   );

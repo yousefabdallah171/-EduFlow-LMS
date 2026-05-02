@@ -1,5 +1,4 @@
 import type { Request, Response, NextFunction } from "express";
-import { paymentService } from "../services/payment.service.js";
 
 export const checkoutController = {
   /**
@@ -18,7 +17,7 @@ export const checkoutController = {
         return;
       }
 
-      const payment = await (req as any).db?.payment?.findUnique?.({
+      const payment = await (req as { db?: { payment?: { findUnique?: (args: any) => Promise<any> } } }).db?.payment?.findUnique?.({
         where: { id: orderId }
       });
 

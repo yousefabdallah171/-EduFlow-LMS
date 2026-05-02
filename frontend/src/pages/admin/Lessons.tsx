@@ -44,12 +44,19 @@ type LessonAdmin = {
   videoStatus: "NONE" | "PROCESSING" | "READY" | "ERROR";
   durationSeconds: number | null;
   dripDays: number | null;
-  sectionId?: string;
+  sectionId?: string | null;
   section?: {
     id: string;
     titleEn: string;
     titleAr: string;
   } | null;
+};
+
+type SectionAdmin = {
+  id: string;
+  titleEn: string;
+  titleAr: string;
+  sortOrder: number;
 };
 
 const VideoStatusBadge = ({ status, labels }: { status: LessonAdmin["videoStatus"]; labels: Record<LessonAdmin["videoStatus"], string> }) => {
@@ -108,6 +115,7 @@ export const AdminLessons = () => {
   const [pendingDeleteLessonId, setPendingDeleteLessonId] = useState<string | null>(null);
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [attachmentDrawerOpen, setAttachmentDrawerOpen] = useState(false);
+  const [stagedLessons, setStagedLessons] = useState<LessonAdmin[]>([]);
   const { progress, bytesUploaded, bytesTotal, isUploading, startUpload, cancelUpload } = useTusUpload({
     lessonId: selectedLessonId
   });
@@ -139,6 +147,14 @@ export const AdminLessons = () => {
     }
   });
 
+  const sectionsQuery = useQuery({
+    queryKey: ["admin-sections"],
+    queryFn: async () => {
+      const response = await api.get<{ sections: SectionAdmin[] }>("/admin/sections");
+      return response.data.sections;
+    }
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (lessonId: string) => api.delete(`/admin/lessons/${lessonId}`),
     onSuccess: async () => {
@@ -147,32 +163,120 @@ export const AdminLessons = () => {
     }
   });
 
+  const saveLayoutMutation = useMutation({
+    mutationFn: async (payload: LessonAdmin[]) => {
+      const originalById = new Map(lessons.map((lesson) => [lesson.id, lesson]));
+      const movedLessons = payload.filter((lesson) => {
+        const original = originalById.get(lesson.id);
+        return original && (original.sectionId ?? null) !== (lesson.sectionId ?? null);
+      });
+
+      if (movedLessons.length > 0) {
+        await Promise.all(
+          movedLessons.map((lesson) =>
+            api.put(`/admin/lessons/${lesson.id}`, {
+              sectionId: lesson.sectionId ?? null
+            })
+          )
+        );
+      }
+
+      await api.post("/admin/lessons/reorder", {
+        order: payload.map((lesson, index) => ({
+          id: lesson.id,
+          sortOrder: index
+        }))
+      });
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["admin-lessons"] }),
+        queryClient.invalidateQueries({ queryKey: ["lessons-grouped"] }),
+        queryClient.invalidateQueries({ queryKey: ["course"] })
+      ]);
+      toast.success(isAr ? "تم حفظ ترتيب الدروس والأقسام" : "Lesson ordering and sections saved");
+    },
+    onError: (error) => {
+      const apiError = error as AxiosError<{ message?: string }>;
+      toast.error(
+        apiError.response?.data?.message ??
+          (isAr ? "تعذر حفظ تغييرات الترتيب." : "Failed to save lesson ordering changes.")
+      );
+    }
+  });
+
   const lessons = useMemo(() => lessonsQuery.data ?? [], [lessonsQuery.data]);
+  const sections = useMemo(() => sectionsQuery.data ?? [], [sectionsQuery.data]);
   const selectedLesson = useMemo(
-    () => lessons.find((lesson) => lesson.id === selectedLessonId) ?? null,
-    [lessons, selectedLessonId]
+    () => stagedLessons.find((lesson) => lesson.id === selectedLessonId) ?? null,
+    [stagedLessons, selectedLessonId]
   );
   const pendingDeleteLesson = useMemo(
-    () => lessons.find((lesson) => lesson.id === pendingDeleteLessonId) ?? null,
-    [lessons, pendingDeleteLessonId]
+    () => stagedLessons.find((lesson) => lesson.id === pendingDeleteLessonId) ?? null,
+    [stagedLessons, pendingDeleteLessonId]
   );
 
   useEffect(() => {
-    if (!lessons.length) {
+    setStagedLessons(lessons);
+  }, [lessons]);
+
+  useEffect(() => {
+    if (!stagedLessons.length) {
       if (selectedLessonId) {
         setSelectedLessonId(null);
       }
       return;
     }
 
-    if (!selectedLessonId || !lessons.some((lesson) => lesson.id === selectedLessonId)) {
-      setSelectedLessonId(lessons[0].id);
+    if (!selectedLessonId || !stagedLessons.some((lesson) => lesson.id === selectedLessonId)) {
+      setSelectedLessonId(stagedLessons[0].id);
     }
-  }, [lessons, selectedLessonId]);
+  }, [stagedLessons, selectedLessonId]);
 
-  const readyCount = lessons.filter((lesson) => lesson.videoStatus === "READY").length;
-  const processingCount = lessons.filter((lesson) => lesson.videoStatus === "PROCESSING").length;
-  const unpublishedCount = lessons.filter((lesson) => !lesson.isPublished).length;
+  const readyCount = stagedLessons.filter((lesson) => lesson.videoStatus === "READY").length;
+  const processingCount = stagedLessons.filter((lesson) => lesson.videoStatus === "PROCESSING").length;
+  const unpublishedCount = stagedLessons.filter((lesson) => !lesson.isPublished).length;
+  const isDirty = useMemo(() => {
+    if (stagedLessons.length !== lessons.length) return true;
+    for (let index = 0; index < stagedLessons.length; index += 1) {
+      const staged = stagedLessons[index];
+      const original = lessons[index];
+      if (!original) return true;
+      if (staged.id !== original.id) return true;
+      if ((staged.sectionId ?? null) !== (original.sectionId ?? null)) return true;
+    }
+    return false;
+  }, [lessons, stagedLessons]);
+
+  const moveLessonByOffset = (lessonId: string, offset: number) => {
+    setStagedLessons((current) => {
+      const sourceIndex = current.findIndex((lesson) => lesson.id === lessonId);
+      if (sourceIndex < 0) return current;
+      const targetIndex = sourceIndex + offset;
+      if (targetIndex < 0 || targetIndex >= current.length) return current;
+      const next = [...current];
+      const [moved] = next.splice(sourceIndex, 1);
+      next.splice(targetIndex, 0, moved);
+      return next;
+    });
+  };
+
+  const moveLessonToSection = (lessonId: string, sectionId: string | null) => {
+    const nextSection = sectionId ? sections.find((section) => section.id === sectionId) : null;
+    setStagedLessons((current) =>
+      current.map((lesson) =>
+        lesson.id === lessonId
+          ? {
+              ...lesson,
+              sectionId,
+              section: nextSection
+                ? { id: nextSection.id, titleEn: nextSection.titleEn, titleAr: nextSection.titleAr }
+                : null
+            }
+          : lesson
+      )
+    );
+  };
 
   const handleDeleteLesson = async (lessonId: string) => {
     try {
@@ -194,7 +298,7 @@ export const AdminLessons = () => {
           {[
             {
               label: selectedSectionId ? copy.lessons.filteredLessons : copy.lessons.totalLessons,
-              value: lessons.length,
+              value: stagedLessons.length,
               note: selectedSectionId ? copy.lessons.filteredWorkspace : copy.lessons.fullWorkspace
             },
             {
@@ -294,7 +398,7 @@ export const AdminLessons = () => {
                   {copy.common.loading}
                 </p>
               </div>
-            ) : lessons.length === 0 ? (
+            ) : stagedLessons.length === 0 ? (
               <EmptyState
                 action={
                   <button
@@ -320,7 +424,7 @@ export const AdminLessons = () => {
               />
             ) : (
               <div className="space-y-3">
-                {lessons.map((lesson) => {
+                {stagedLessons.map((lesson, lessonIndex) => {
                   const isActive = lesson.id === selectedLessonId;
 
                   return (
@@ -380,6 +484,41 @@ export const AdminLessons = () => {
                           <button
                             className="rounded-lg border px-3 py-2 text-xs font-semibold transition-colors hover:bg-surface2"
                             style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                            onClick={() => moveLessonByOffset(lesson.id, -1)}
+                            type="button"
+                            disabled={lessonIndex === 0}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            className="rounded-lg border px-3 py-2 text-xs font-semibold transition-colors hover:bg-surface2"
+                            style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                            onClick={() => moveLessonByOffset(lesson.id, 1)}
+                            type="button"
+                            disabled={lessonIndex === stagedLessons.length - 1}
+                          >
+                            ↓
+                          </button>
+                          <select
+                            className="rounded-lg border px-2 py-2 text-xs font-semibold"
+                            style={{
+                              borderColor: "var(--color-border-strong)",
+                              color: "var(--color-text-primary)",
+                              backgroundColor: "var(--color-surface)"
+                            }}
+                            onChange={(event) => moveLessonToSection(lesson.id, event.target.value || null)}
+                            value={lesson.sectionId ?? ""}
+                          >
+                            <option value="">{isAr ? "بدون قسم" : "No section"}</option>
+                            {sections.map((section) => (
+                              <option key={section.id} value={section.id}>
+                                {isAr ? section.titleAr : section.titleEn}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            className="rounded-lg border px-3 py-2 text-xs font-semibold transition-colors hover:bg-surface2"
+                            style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
                             onClick={() => {
                               setSelectedLessonId(lesson.id);
                               setEditingLessonId(lesson.id);
@@ -407,6 +546,46 @@ export const AdminLessons = () => {
                 })}
               </div>
             )}
+
+            <div className="dashboard-panel p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>
+                  {isDirty
+                    ? isAr
+                      ? "لديك تغييرات غير محفوظة في الترتيب أو الأقسام."
+                      : "You have unsaved ordering or section changes."
+                    : isAr
+                      ? "لا توجد تغييرات معلقة."
+                      : "No pending layout changes."}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    className="rounded-lg border px-3 py-2 text-xs font-semibold transition-colors hover:bg-surface2"
+                    style={{ borderColor: "var(--color-border-strong)", color: "var(--color-text-primary)" }}
+                    onClick={() => setStagedLessons(lessons)}
+                    type="button"
+                    disabled={!isDirty || saveLayoutMutation.isPending}
+                  >
+                    {isAr ? "إلغاء التغييرات" : "Discard changes"}
+                  </button>
+                  <button
+                    className="rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95"
+                    style={{ background: "var(--gradient-brand)" }}
+                    onClick={() => saveLayoutMutation.mutate(stagedLessons)}
+                    type="button"
+                    disabled={!isDirty || saveLayoutMutation.isPending}
+                  >
+                    {saveLayoutMutation.isPending
+                      ? isAr
+                        ? "جارٍ الحفظ..."
+                        : "Saving..."
+                      : isAr
+                        ? "حفظ التغييرات"
+                        : "Save changes"}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-4">

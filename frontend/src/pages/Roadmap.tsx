@@ -72,6 +72,9 @@ export const Roadmap = () => {
             {copy.title} <span className="accent-word">{copy.accent}</span>
           </h1>
           <p className="reference-subtitle">{copy.subtitle}</p>
+          <div className="mt-4 inline-flex rounded-full border px-3 py-1 text-xs font-bold" style={{ borderColor: "var(--color-border-strong)", color: "var(--color-brand)" }}>
+            {isAr ? "إجمالي مدة الكورس: 4 ساعات" : "Total course duration: 4 hours"}
+          </div>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link className="reference-button-secondary" to={`${prefix}/pricing`}>
               {copy.primary}

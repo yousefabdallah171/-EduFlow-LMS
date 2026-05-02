@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+﻿import { spawn } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -7,6 +7,20 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+
+type GeneratedLesson = {
+  id: string;
+  sortOrder: number;
+  sectionKey: "introduction" | "foundations" | "advanced" | "production";
+  titleAr: string;
+  titleEn: string;
+  descriptionAr: string;
+  descriptionEn: string;
+  isPreview: boolean;
+  isPublished: boolean;
+  durationSeconds: number;
+  fileName: string;
+};
 
 const storageRoot = () => path.resolve(process.cwd(), process.env.STORAGE_PATH || "storage");
 
@@ -109,40 +123,26 @@ const ensureSeedHls = async (lessonId: string, toneHz: number) => {
   return path.relative(storageRoot(), playlistPath).replace(/\\/g, "/");
 };
 
+const loadGeneratedLessons = async (): Promise<GeneratedLesson[]> => {
+  const filePath = path.resolve(process.cwd(), "prisma", "generated-lessons.json");
+  const raw = await fs.readFile(filePath, "utf8");
+  const data = JSON.parse(raw) as GeneratedLesson[];
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error("generated-lessons.json is empty. Run: pnpm lessons:sync");
+  }
+  return data.sort((a, b) => a.sortOrder - b.sortOrder);
+};
+
 async function main() {
   const adminPasswordHash = await bcrypt.hash("Admin1234!", 12);
   const studentPasswordHash = await bcrypt.hash("Student12345!", 12);
-  const [
-    seedOneHlsPath,
-    seedTwoHlsPath,
-    seedThreeHlsPath,
-    seedFourHlsPath,
-    seedFiveHlsPath,
-    seedSixHlsPath,
-    seedSevenHlsPath
-  ] = await (async () => {
-    const entries: string[] = [];
-    for (const [lessonId, toneHz] of [
-      ["seed-1", 440],
-      ["seed-2", 554],
-      ["seed-3", 659],
-      ["seed-4", 740],
-      ["seed-5", 831],
-      ["seed-6", 932],
-      ["seed-7", 1047]
-    ] as const) {
-      entries.push(await ensureSeedHls(lessonId, toneHz));
-    }
-    return entries as [
-      string,
-      string,
-      string,
-      string,
-      string,
-      string,
-      string
-    ];
-  })();
+  const generatedLessons = await loadGeneratedLessons();
+  const lessonSeedIds = generatedLessons.map((lesson) => lesson.id);
+  const lessonHlsPathById = new Map<string, string>();
+  for (const [index, lessonId] of lessonSeedIds.entries()) {
+    const toneHz = 440 + index * 37;
+    lessonHlsPathById.set(lessonId, await ensureSeedHls(lessonId, toneHz));
+  }
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@eduflow.com" },
@@ -178,18 +178,18 @@ async function main() {
     where: { id: 1 },
     update: {
       titleEn: "AI Workflow: From Idea to Production",
-      titleAr: "AI Workflow: من الفكرة إلى الـ Production",
+      titleAr: "AI Workflow: Ù…Ù† Ø§Ù„ÙÙƒØ±Ø© Ø¥Ù„Ù‰ Ø§Ù„Ù€ Production",
       descriptionEn: "A practical Arabic-first workflow course that turns ideas into production-ready applications using PRDs, Spec Kit, Claude Code, Codex, Docker, testing, SEO, and CI/CD.",
-      descriptionAr: "كورس عربي عملي يعلّمك الـ workflow الكامل من الفكرة إلى تطبيق production باستخدام PRD وSpec Kit وClaude Code وCodex وDocker والاختبارات والـ SEO والـ CI/CD.",
+      descriptionAr: "ÙƒÙˆØ±Ø³ Ø¹Ø±Ø¨ÙŠ Ø¹Ù…Ù„ÙŠ ÙŠØ¹Ù„Ù‘Ù…Ùƒ Ø§Ù„Ù€ workflow Ø§Ù„ÙƒØ§Ù…Ù„ Ù…Ù† Ø§Ù„ÙÙƒØ±Ø© Ø¥Ù„Ù‰ ØªØ·Ø¨ÙŠÙ‚ production Ø¨Ø§Ø³ØªØ®Ø¯Ø§Ù… PRD ÙˆSpec Kit ÙˆClaude Code ÙˆCodex ÙˆDocker ÙˆØ§Ù„Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª ÙˆØ§Ù„Ù€ SEO ÙˆØ§Ù„Ù€ CI/CD.",
       pricePiasters: 100000,
       updatedById: admin.id
     },
     create: {
       id: 1,
       titleEn: "AI Workflow: From Idea to Production",
-      titleAr: "AI Workflow: من الفكرة إلى الـ Production",
+      titleAr: "AI Workflow: Ù…Ù† Ø§Ù„ÙÙƒØ±Ø© Ø¥Ù„Ù‰ Ø§Ù„Ù€ Production",
       descriptionEn: "A practical Arabic-first workflow course that turns ideas into production-ready applications using PRDs, Spec Kit, Claude Code, Codex, Docker, testing, SEO, and CI/CD.",
-      descriptionAr: "كورس عربي عملي يعلّمك الـ workflow الكامل من الفكرة إلى تطبيق production باستخدام PRD وSpec Kit وClaude Code وCodex وDocker والاختبارات والـ SEO والـ CI/CD.",
+      descriptionAr: "ÙƒÙˆØ±Ø³ Ø¹Ø±Ø¨ÙŠ Ø¹Ù…Ù„ÙŠ ÙŠØ¹Ù„Ù‘Ù…Ùƒ Ø§Ù„Ù€ workflow Ø§Ù„ÙƒØ§Ù…Ù„ Ù…Ù† Ø§Ù„ÙÙƒØ±Ø© Ø¥Ù„Ù‰ ØªØ·Ø¨ÙŠÙ‚ production Ø¨Ø§Ø³ØªØ®Ø¯Ø§Ù… PRD ÙˆSpec Kit ÙˆClaude Code ÙˆCodex ÙˆDocker ÙˆØ§Ù„Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª ÙˆØ§Ù„Ù€ SEO ÙˆØ§Ù„Ù€ CI/CD.",
       pricePiasters: 100000,
       updatedById: admin.id
     }
@@ -208,9 +208,9 @@ async function main() {
       where: { id: "core-course" },
       update: {
         titleEn: "AI Workflow Course",
-        titleAr: "كورس AI Workflow",
+        titleAr: "ÙƒÙˆØ±Ø³ AI Workflow",
         descriptionEn: "The complete 7-phase workflow with lifetime access and future updates.",
-        descriptionAr: "الـ workflow الكامل في 7 مراحل مع وصول دائم وتحديثات مستقبلية.",
+        descriptionAr: "Ø§Ù„Ù€ workflow Ø§Ù„ÙƒØ§Ù…Ù„ ÙÙŠ 7 Ù…Ø±Ø§Ø­Ù„ Ù…Ø¹ ÙˆØµÙˆÙ„ Ø¯Ø§Ø¦Ù… ÙˆØªØ­Ø¯ÙŠØ«Ø§Øª Ù…Ø³ØªÙ‚Ø¨Ù„ÙŠØ©.",
         pricePiasters: 100000,
         currency: "EGP",
         isActive: true,
@@ -219,9 +219,9 @@ async function main() {
       create: {
         id: "core-course",
         titleEn: "AI Workflow Course",
-        titleAr: "كورس AI Workflow",
+        titleAr: "ÙƒÙˆØ±Ø³ AI Workflow",
         descriptionEn: "The complete 7-phase workflow with lifetime access and future updates.",
-        descriptionAr: "الـ workflow الكامل في 7 مراحل مع وصول دائم وتحديثات مستقبلية.",
+        descriptionAr: "Ø§Ù„Ù€ workflow Ø§Ù„ÙƒØ§Ù…Ù„ ÙÙŠ 7 Ù…Ø±Ø§Ø­Ù„ Ù…Ø¹ ÙˆØµÙˆÙ„ Ø¯Ø§Ø¦Ù… ÙˆØªØ­Ø¯ÙŠØ«Ø§Øª Ù…Ø³ØªÙ‚Ø¨Ù„ÙŠØ©.",
         pricePiasters: 100000,
         currency: "EGP",
         isActive: true,
@@ -232,9 +232,9 @@ async function main() {
       where: { id: "course-review-session" },
       update: {
         titleEn: "Course + Review Session",
-        titleAr: "الكورس + جلسة مراجعة",
+        titleAr: "Ø§Ù„ÙƒÙˆØ±Ø³ + Ø¬Ù„Ø³Ø© Ù…Ø±Ø§Ø¬Ø¹Ø©",
         descriptionEn: "Everything in the course plus one personal review session for your real project.",
-        descriptionAr: "كل محتوى الكورس مع جلسة شخصية لمراجعة مشروعك الحقيقي والخطوات التالية.",
+        descriptionAr: "ÙƒÙ„ Ù…Ø­ØªÙˆÙ‰ Ø§Ù„ÙƒÙˆØ±Ø³ Ù…Ø¹ Ø¬Ù„Ø³Ø© Ø´Ø®ØµÙŠØ© Ù„Ù…Ø±Ø§Ø¬Ø¹Ø© Ù…Ø´Ø±ÙˆØ¹Ùƒ Ø§Ù„Ø­Ù‚ÙŠÙ‚ÙŠ ÙˆØ§Ù„Ø®Ø·ÙˆØ§Øª Ø§Ù„ØªØ§Ù„ÙŠØ©.",
         pricePiasters: 250000,
         currency: "EGP",
         isActive: true,
@@ -243,9 +243,9 @@ async function main() {
       create: {
         id: "course-review-session",
         titleEn: "Course + Review Session",
-        titleAr: "الكورس + جلسة مراجعة",
+        titleAr: "Ø§Ù„ÙƒÙˆØ±Ø³ + Ø¬Ù„Ø³Ø© Ù…Ø±Ø§Ø¬Ø¹Ø©",
         descriptionEn: "Everything in the course plus one personal review session for your real project.",
-        descriptionAr: "كل محتوى الكورس مع جلسة شخصية لمراجعة مشروعك الحقيقي والخطوات التالية.",
+        descriptionAr: "ÙƒÙ„ Ù…Ø­ØªÙˆÙ‰ Ø§Ù„ÙƒÙˆØ±Ø³ Ù…Ø¹ Ø¬Ù„Ø³Ø© Ø´Ø®ØµÙŠØ© Ù„Ù…Ø±Ø§Ø¬Ø¹Ø© Ù…Ø´Ø±ÙˆØ¹Ùƒ Ø§Ù„Ø­Ù‚ÙŠÙ‚ÙŠ ÙˆØ§Ù„Ø®Ø·ÙˆØ§Øª Ø§Ù„ØªØ§Ù„ÙŠØ©.",
         pricePiasters: 250000,
         currency: "EGP",
         isActive: true,
@@ -261,9 +261,9 @@ async function main() {
       create: {
         id: "course-month-followup",
         titleEn: "Course + One Month Follow-up",
-        titleAr: "الكورس + شهر متابعة",
+        titleAr: "Ø§Ù„ÙƒÙˆØ±Ø³ + Ø´Ù‡Ø± Ù…ØªØ§Ø¨Ø¹Ø©",
         descriptionEn: "Weekly follow-up for a month. Disabled by default until you are ready to sell it inside checkout.",
-        descriptionAr: "جلسة أسبوعية لمدة شهر. غير مفعّل افتراضياً إلى أن تكون جاهزاً لبيعه داخل الدفع.",
+        descriptionAr: "Ø¬Ù„Ø³Ø© Ø£Ø³Ø¨ÙˆØ¹ÙŠØ© Ù„Ù…Ø¯Ø© Ø´Ù‡Ø±. ØºÙŠØ± Ù…ÙØ¹Ù‘Ù„ Ø§ÙØªØ±Ø§Ø¶ÙŠØ§Ù‹ Ø¥Ù„Ù‰ Ø£Ù† ØªÙƒÙˆÙ† Ø¬Ø§Ù‡Ø²Ø§Ù‹ Ù„Ø¨ÙŠØ¹Ù‡ Ø¯Ø§Ø®Ù„ Ø§Ù„Ø¯ÙØ¹.",
         pricePiasters: 800000,
         currency: "EGP",
         isActive: false,
@@ -272,21 +272,40 @@ async function main() {
     })
   ]);
 
+  const introSection = await prisma.section.upsert({
+    where: { id: "section-introduction" },
+    update: {
+      titleEn: "Introduction",
+      titleAr: "المقدمة",
+      descriptionEn: "Open preview and orientation for the full course journey.",
+      descriptionAr: "معاينة مفتوحة وتعريف بخطة الكورس ومسار التنفيذ.",
+      sortOrder: 0
+    },
+    create: {
+      id: "section-introduction",
+      titleEn: "Introduction",
+      titleAr: "المقدمة",
+      descriptionEn: "Open preview and orientation for the full course journey.",
+      descriptionAr: "معاينة مفتوحة وتعريف بخطة الكورس ومسار التنفيذ.",
+      sortOrder: 0
+    }
+  });
+
   const foundationsSection = await prisma.section.upsert({
     where: { id: "section-foundations" },
     update: {
       titleEn: "Planning and Product Shape",
-      titleAr: "التخطيط وشكل المنتج",
+      titleAr: "Ø§Ù„ØªØ®Ø·ÙŠØ· ÙˆØ´ÙƒÙ„ Ø§Ù„Ù…Ù†ØªØ¬",
       descriptionEn: "Turn the idea into a PRD, technical map, and UI direction before writing code.",
-      descriptionAr: "حوّل الفكرة إلى PRD وخريطة تقنية واتجاه UI واضح قبل كتابة الكود.",
+      descriptionAr: "Ø­ÙˆÙ‘Ù„ Ø§Ù„ÙÙƒØ±Ø© Ø¥Ù„Ù‰ PRD ÙˆØ®Ø±ÙŠØ·Ø© ØªÙ‚Ù†ÙŠØ© ÙˆØ§ØªØ¬Ø§Ù‡ UI ÙˆØ§Ø¶Ø­ Ù‚Ø¨Ù„ ÙƒØªØ§Ø¨Ø© Ø§Ù„ÙƒÙˆØ¯.",
       sortOrder: 1
     },
     create: {
       id: "section-foundations",
       titleEn: "Planning and Product Shape",
-      titleAr: "التخطيط وشكل المنتج",
+      titleAr: "Ø§Ù„ØªØ®Ø·ÙŠØ· ÙˆØ´ÙƒÙ„ Ø§Ù„Ù…Ù†ØªØ¬",
       descriptionEn: "Turn the idea into a PRD, technical map, and UI direction before writing code.",
-      descriptionAr: "حوّل الفكرة إلى PRD وخريطة تقنية واتجاه UI واضح قبل كتابة الكود.",
+      descriptionAr: "Ø­ÙˆÙ‘Ù„ Ø§Ù„ÙÙƒØ±Ø© Ø¥Ù„Ù‰ PRD ÙˆØ®Ø±ÙŠØ·Ø© ØªÙ‚Ù†ÙŠØ© ÙˆØ§ØªØ¬Ø§Ù‡ UI ÙˆØ§Ø¶Ø­ Ù‚Ø¨Ù„ ÙƒØªØ§Ø¨Ø© Ø§Ù„ÙƒÙˆØ¯.",
       sortOrder: 1
     }
   });
@@ -295,17 +314,17 @@ async function main() {
     where: { id: "section-advanced" },
     update: {
       titleEn: "Structured Implementation",
-      titleAr: "التنفيذ المنظم",
+      titleAr: "Ø§Ù„ØªÙ†ÙÙŠØ° Ø§Ù„Ù…Ù†Ø¸Ù…",
       descriptionEn: "Use Spec Kit and AI agents to build in focused, testable phases.",
-      descriptionAr: "استخدم Spec Kit ووكلاء الذكاء الاصطناعي للبناء على مراحل واضحة وقابلة للاختبار.",
+      descriptionAr: "Ø§Ø³ØªØ®Ø¯Ù… Spec Kit ÙˆÙˆÙƒÙ„Ø§Ø¡ Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ Ù„Ù„Ø¨Ù†Ø§Ø¡ Ø¹Ù„Ù‰ Ù…Ø±Ø§Ø­Ù„ ÙˆØ§Ø¶Ø­Ø© ÙˆÙ‚Ø§Ø¨Ù„Ø© Ù„Ù„Ø§Ø®ØªØ¨Ø§Ø±.",
       sortOrder: 2
     },
     create: {
       id: "section-advanced",
       titleEn: "Structured Implementation",
-      titleAr: "التنفيذ المنظم",
+      titleAr: "Ø§Ù„ØªÙ†ÙÙŠØ° Ø§Ù„Ù…Ù†Ø¸Ù…",
       descriptionEn: "Use Spec Kit and AI agents to build in focused, testable phases.",
-      descriptionAr: "استخدم Spec Kit ووكلاء الذكاء الاصطناعي للبناء على مراحل واضحة وقابلة للاختبار.",
+      descriptionAr: "Ø§Ø³ØªØ®Ø¯Ù… Spec Kit ÙˆÙˆÙƒÙ„Ø§Ø¡ Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ Ù„Ù„Ø¨Ù†Ø§Ø¡ Ø¹Ù„Ù‰ Ù…Ø±Ø§Ø­Ù„ ÙˆØ§Ø¶Ø­Ø© ÙˆÙ‚Ø§Ø¨Ù„Ø© Ù„Ù„Ø§Ø®ØªØ¨Ø§Ø±.",
       sortOrder: 2
     }
   });
@@ -314,129 +333,46 @@ async function main() {
     where: { id: "section-production" },
     update: {
       titleEn: "Launch and Production",
-      titleAr: "الإطلاق والـ Production",
+      titleAr: "Ø§Ù„Ø¥Ø·Ù„Ø§Ù‚ ÙˆØ§Ù„Ù€ Production",
       descriptionEn: "Harden security, performance, SEO, tracking, Docker, deployment, and CI/CD.",
-      descriptionAr: "قوّي الأمان والأداء والـ SEO والتتبع وDocker والنشر والـ CI/CD.",
+      descriptionAr: "Ù‚ÙˆÙ‘ÙŠ Ø§Ù„Ø£Ù…Ø§Ù† ÙˆØ§Ù„Ø£Ø¯Ø§Ø¡ ÙˆØ§Ù„Ù€ SEO ÙˆØ§Ù„ØªØªØ¨Ø¹ ÙˆDocker ÙˆØ§Ù„Ù†Ø´Ø± ÙˆØ§Ù„Ù€ CI/CD.",
       sortOrder: 3
     },
     create: {
       id: "section-production",
       titleEn: "Launch and Production",
-      titleAr: "الإطلاق والـ Production",
+      titleAr: "Ø§Ù„Ø¥Ø·Ù„Ø§Ù‚ ÙˆØ§Ù„Ù€ Production",
       descriptionEn: "Harden security, performance, SEO, tracking, Docker, deployment, and CI/CD.",
-      descriptionAr: "قوّي الأمان والأداء والـ SEO والتتبع وDocker والنشر والـ CI/CD.",
+      descriptionAr: "Ù‚ÙˆÙ‘ÙŠ Ø§Ù„Ø£Ù…Ø§Ù† ÙˆØ§Ù„Ø£Ø¯Ø§Ø¡ ÙˆØ§Ù„Ù€ SEO ÙˆØ§Ù„ØªØªØ¨Ø¹ ÙˆDocker ÙˆØ§Ù„Ù†Ø´Ø± ÙˆØ§Ù„Ù€ CI/CD.",
       sortOrder: 3
     }
   });
 
+  const seededLessons = generatedLessons.map((lesson) => ({
+    id: lesson.id,
+    titleEn: lesson.titleEn,
+    titleAr: lesson.titleAr,
+    descriptionEn: lesson.descriptionEn,
+    descriptionAr: lesson.descriptionAr,
+    sectionId:
+      lesson.sectionKey === "introduction"
+        ? introSection.id
+        : lesson.sectionKey === "foundations"
+          ? foundationsSection.id
+          : lesson.sectionKey === "advanced"
+            ? advancedSection.id
+            : productionSection.id,
+    sortOrder: lesson.sortOrder,
+    isPreview: lesson.isPreview,
+    isPublished: lesson.isPublished,
+    durationSeconds: lesson.durationSeconds,
+    videoHlsPath: lessonHlsPathById.get(lesson.id) ?? "",
+    videoStatus: "READY" as const,
+    dripDays: 0
+  }));
+
   await Promise.all(
-    [
-      {
-        id: "seed-1",
-        titleEn: "Planning Before Code",
-        titleAr: "التخطيط قبل الكود",
-        descriptionEn: "Convert your idea into a clear PRD, scope, and technical map before asking AI to build.",
-        descriptionAr: "حوّل فكرتك إلى PRD واضح ونطاق وخريطة تقنية قبل أن تطلب من الـ AI تنفيذ المشروع.",
-        sortOrder: 1,
-        isPublished: true,
-        isPreview: true,
-        sectionId: foundationsSection.id,
-        videoHlsPath: seedOneHlsPath,
-        videoStatus: "READY" as const,
-        durationSeconds: 12,
-        dripDays: 0
-      },
-      {
-        id: "seed-2",
-        titleEn: "UI Before Code",
-        titleAr: "الـ UI قبل الكود",
-        descriptionEn: "Use Stitch and structured screens to define the product experience before implementation.",
-        descriptionAr: "استخدم Stitch والشاشات المنظمة لتحديد تجربة المنتج قبل مرحلة التنفيذ.",
-        sortOrder: 2,
-        isPublished: true,
-        isPreview: false,
-        sectionId: foundationsSection.id,
-        videoHlsPath: seedTwoHlsPath,
-        videoStatus: "READY" as const,
-        durationSeconds: 12,
-        dripDays: 0
-      },
-      {
-        id: "seed-3",
-        titleEn: "Spec Kit Execution",
-        titleAr: "التنفيذ باستخدام Spec Kit",
-        descriptionEn: "Split the project into small tasks so a cheaper model can build correctly without chaos.",
-        descriptionAr: "قسّم المشروع إلى مهام صغيرة حتى يستطيع موديل أرخص التنفيذ بدقة وبدون فوضى.",
-        sortOrder: 3,
-        isPublished: true,
-        isPreview: false,
-        sectionId: advancedSection.id,
-        videoHlsPath: seedThreeHlsPath,
-        videoStatus: "READY" as const,
-        durationSeconds: 12,
-        dripDays: 0
-      },
-      {
-        id: "seed-4",
-        titleEn: "AI Code Review and Tests",
-        titleAr: "مراجعة الكود والاختبارات",
-        descriptionEn: "Use Claude for review, TODO extraction, and E2E coverage before moving forward.",
-        descriptionAr: "استخدم Claude للمراجعة واستخراج TODOs وبناء اختبارات E2E قبل الانتقال للمرحلة التالية.",
-        sortOrder: 4,
-        isPublished: true,
-        isPreview: false,
-        sectionId: advancedSection.id,
-        videoHlsPath: seedFourHlsPath,
-        videoStatus: "READY" as const,
-        durationSeconds: 12,
-        dripDays: 0
-      },
-      {
-        id: "seed-5",
-        titleEn: "Security and Performance",
-        titleAr: "الأمان والأداء",
-        descriptionEn: "Run security checks, performance audits, and Lighthouse improvements before launch.",
-        descriptionAr: "نفّذ فحوصات الأمان وتحسينات الأداء وLighthouse قبل الإطلاق.",
-        sortOrder: 5,
-        isPublished: true,
-        isPreview: false,
-        sectionId: productionSection.id,
-        videoHlsPath: seedFiveHlsPath,
-        videoStatus: "READY" as const,
-        durationSeconds: 12,
-        dripDays: 0
-      },
-      {
-        id: "seed-6",
-        titleEn: "SEO, Marketing, and Tracking",
-        titleAr: "SEO والتسويق والتتبع",
-        descriptionEn: "Prepare technical SEO, Meta Pixel, GA4, and the signals needed to understand conversion.",
-        descriptionAr: "جهّز الـ SEO التقني وMeta Pixel وGA4 والإشارات التي تحتاجها لفهم التحويلات.",
-        sortOrder: 6,
-        isPublished: true,
-        isPreview: false,
-        sectionId: productionSection.id,
-        videoHlsPath: seedSixHlsPath,
-        videoStatus: "READY" as const,
-        durationSeconds: 12,
-        dripDays: 0
-      },
-      {
-        id: "seed-7",
-        titleEn: "Docker and Production Deployment",
-        titleAr: "Docker والنشر على Production",
-        descriptionEn: "Package the app with Docker, deploy to a server, and wire a CI/CD pipeline for automatic updates.",
-        descriptionAr: "جهّز التطبيق بـ Docker وانشره على السيرفر واربط CI/CD حتى يتحدث تلقائياً.",
-        sortOrder: 7,
-        isPublished: true,
-        isPreview: false,
-        sectionId: productionSection.id,
-        videoHlsPath: seedSevenHlsPath,
-        videoStatus: "READY" as const,
-        durationSeconds: 12,
-        dripDays: 0
-      }
-    ].map((lesson) =>
+    seededLessons.map((lesson) =>
       prisma.lesson.upsert({
         where: { id: lesson.id },
         update: lesson,
@@ -521,3 +457,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+

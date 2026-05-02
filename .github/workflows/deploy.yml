@@ -44,18 +44,16 @@ jobs:
             exit 1
           fi
 
-          # Ensure directories exist with proper permissions
+          # Ensure directories exist
           mkdir -p $DEPLOY_PATH/public_html
           mkdir -p $DEPLOY_PATH/backend
-          chmod -R 755 $DEPLOY_PATH/backend 2>/dev/null || true
-          chmod -R 755 $DEPLOY_PATH/public_html 2>/dev/null || true
 
-          # Remove read-only files if they exist (can't be overwritten)
-          find $DEPLOY_PATH/backend/src -type f -perm 444 -delete 2>/dev/null || true
-          find $DEPLOY_PATH/backend/src -type f ! -perm 644 -exec chmod 644 {} \; 2>/dev/null || true
+          # Remove old frontend files first
+          rm -rf $DEPLOY_PATH/public_html/* 2>/dev/null || true
 
           # Copy frontend build
           cp -r frontend/dist/* $DEPLOY_PATH/public_html/
+          chmod -R 755 $DEPLOY_PATH/public_html 2>/dev/null || true
           echo "✅ Frontend deployed"
 
           # Copy backend files (remove old first to avoid permission issues)

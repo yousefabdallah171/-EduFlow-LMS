@@ -1,0 +1,234 @@
+[
+  {
+    "fileName": "1- بناء ال prd Prodecut req docs للمشروع عشان نطلع كل تفاصيل المشروع في ملف واحد.mp4",
+    "lessonId": "seed-0",
+    "sortOrder": 0,
+    "sectionKey": "introduction",
+    "titleAr": "فيديو 0: نظرة المشروع النهائي والخطوات",
+    "titleEn": "Lesson 0: Final Project Preview and Execution Path",
+    "descriptionAr": "فيديو ترويجي مفتوح يوضح الشكل النهائي للمشروع والخطوات الكاملة التي سنمشي عليها داخل الكورس.",
+    "descriptionEn": "Open promotional preview showing the final project result and the full execution path of the course.",
+    "isPreview": true,
+    "isPublished": true
+  },
+  {
+    "fileName": "2-  تثبيت بيئه العمل وكل متطلبات تشغيل  الكود وبناء المشاريع لوكال_ALTERED_final.mp4",
+    "lessonId": "seed-1",
+    "sortOrder": 1,
+    "sectionKey": "foundations",
+    "titleAr": "تثبيت بيئة العمل ومتطلبات التشغيل",
+    "titleEn": "Set Up Local Development Environment",
+    "descriptionAr": "تجهيز بيئة العمل كاملة لتشغيل وبناء المشاريع محليًا بشكل صحيح.",
+    "descriptionEn": "Configure all local requirements to run and build projects reliably."
+  },
+  {
+    "fileName": "3- اي هو الجيت هب وليه بنستخدمه واي فايدته في الشغل (video for non techincailel ).mp4",
+    "lessonId": "seed-2",
+    "sortOrder": 2,
+    "sectionKey": "foundations",
+    "titleAr": "GitHub لغير التقنيين (V1)",
+    "titleEn": "GitHub for Non-Technical Builders (V1)",
+    "descriptionAr": "فهم GitHub وأهميته في الشغل والتعاون حتى لغير التقنيين.",
+    "descriptionEn": "Understand GitHub value for collaboration and practical delivery."
+  },
+  {
+    "fileName": "3- تجهيز بيئه العمل وتصطيب CLAUDE CODE و CODEX وبدا عمل ريبو جديد على جيت هب_ALTERED_final.mp4",
+    "lessonId": "seed-3",
+    "sortOrder": 3,
+    "sectionKey": "foundations",
+    "titleAr": "تجهيز Claude Code وCodex وبداية الريبو (V2)",
+    "titleEn": "Claude Code + Codex Setup and Repo Kickoff (V2)",
+    "descriptionAr": "تجهيز أدوات AI العملية وبداية إنشاء الريبو بشكل منظم.",
+    "descriptionEn": "Prepare AI tooling and initialize the repository workflow cleanly."
+  },
+  {
+    "fileName": "5- بدا شرح عملي ل SPEC KIT  وتسطيبها على المشروع وبدا عمل ال PLAN بيها_ALTERED_final.mp4",
+    "lessonId": "seed-4",
+    "sortOrder": 4,
+    "sectionKey": "foundations",
+    "titleAr": "تنصيب Spec Kit وبناء خطة التنفيذ",
+    "titleEn": "Spec Kit Setup and Execution Planning",
+    "descriptionAr": "شرح عملي لتنصيب Spec Kit وتحويل الفكرة لخطة تنفيذ قابلة للتطبيق.",
+    "descriptionEn": "Install Spec Kit and convert product intent into an actionable plan."
+  },
+  {
+    "fileName": "16 التخطيط لميزاه جديده باساتخدام super power pl;ugin.mp4",
+    "lessonId": "seed-5",
+    "sortOrder": 5,
+    "sectionKey": "foundations",
+    "titleAr": "التخطيط لميزة جديدة باستخدام Super Power",
+    "titleEn": "Plan a New Feature with Super Power",
+    "descriptionAr": "تخطيط ميزة جديدة بنطاق واضح وأولويات دقيقة باستخدام Super Power.",
+    "descriptionEn": "Plan a new feature with clear scope and priorities using Super Power."
+  },
+  {
+    "fileName": "6- بدا تفنيذ المشروع باتسخدام اوامر spec kit_ALTERED_final.mp4",
+    "lessonId": "seed-6",
+    "sortOrder": 6,
+    "sectionKey": "foundations",
+    "titleAr": "تنفيذ المشروع بأوامر Spec Kit",
+    "titleEn": "Execute the Project with Spec Kit Commands",
+    "descriptionAr": "بدء التنفيذ العملي للمشروع عبر أوامر Spec Kit بشكل منظم.",
+    "descriptionEn": "Run the implementation phase using structured Spec Kit commands."
+  },
+  {
+    "fileName": "7- ملخص لل هتعمله مع SPEC KIT في كل سبرينت  والفلو ال هتككره في كل حاجه_ALTERED_final.mp4",
+    "lessonId": "seed-7",
+    "sortOrder": 7,
+    "sectionKey": "foundations",
+    "titleAr": "ملخص فلو Spec Kit في كل سبرنت",
+    "titleEn": "Spec Kit Sprint Workflow Summary",
+    "descriptionAr": "تلخيص الفلو المتكرر الذي ستعتمد عليه في كل سبرنت.",
+    "descriptionEn": "Summarize the repeatable sprint workflow used across features."
+  },
+  {
+    "fileName": "8- بعد ما عملت خطه المشروع بشكل كامل ازاي تعمل الديزاين_ALTERED_final.mp4",
+    "lessonId": "seed-8",
+    "sortOrder": 8,
+    "sectionKey": "advanced",
+    "titleAr": "من الخطة للتصميم العملي",
+    "titleEn": "From Plan to Practical Design",
+    "descriptionAr": "تحويل مخرجات التخطيط إلى تصميم واجهات قابل للتنفيذ.",
+    "descriptionEn": "Translate planning outputs into implementation-ready UI direction."
+  },
+  {
+    "fileName": "-9 بعد ما خلصت المشروع بشكل كامل ددلوقتي المميزات اليزاده ليه_ALTERED_final.mp4",
+    "lessonId": "seed-9",
+    "sortOrder": 9,
+    "sectionKey": "advanced",
+    "titleAr": "إضافة مميزات بعد اكتمال النسخة الأولى",
+    "titleEn": "Feature Expansion After First Complete Build",
+    "descriptionAr": "كيف تضيف مميزات جديدة بدون كسر استقرار المشروع.",
+    "descriptionEn": "Add meaningful features after first release without destabilizing the app."
+  },
+  {
+    "fileName": "--11 بناء مميزات جديده بعد بناء الموقع باستخدام SPEC KIT_ALTERED_final.mp4",
+    "lessonId": "seed-10",
+    "sortOrder": 10,
+    "sectionKey": "advanced",
+    "titleAr": "بناء مميزات جديدة باستخدام Spec Kit",
+    "titleEn": "Build New Features with Spec Kit",
+    "descriptionAr": "استخدام Spec Kit مرة أخرى لتوسيع المشروع بشكل احترافي.",
+    "descriptionEn": "Reuse Spec Kit for safe and consistent feature expansion."
+  },
+  {
+    "fileName": "-12 تحسين شكل الموقع وال uii_ALTERED_final.mp4",
+    "lessonId": "seed-11",
+    "sortOrder": 11,
+    "sectionKey": "advanced",
+    "titleAr": "تحسين واجهة الموقع (V1)",
+    "titleEn": "Website UI Improvement (V1)",
+    "descriptionAr": "المرحلة الأولى لتحسين شكل الموقع وتجربة المستخدم.",
+    "descriptionEn": "First pass of interface and UX refinements."
+  },
+  {
+    "fileName": "-12 تحسين شكل الموقع وال uii V2_ALTERED_final.mp4",
+    "lessonId": "seed-12",
+    "sortOrder": 12,
+    "sectionKey": "advanced",
+    "titleAr": "تحسين واجهة الموقع (V2)",
+    "titleEn": "Website UI Improvement (V2)",
+    "descriptionAr": "المرحلة الثانية لتحسين الواجهة وتثبيت الجودة البصرية.",
+    "descriptionEn": "Second pass to polish visual consistency and UX details."
+  },
+  {
+    "fileName": "-13 عمل كود ريفيو بين المرحله والتانيه_ALTERED_final.mp4",
+    "lessonId": "seed-13",
+    "sortOrder": 13,
+    "sectionKey": "advanced",
+    "titleAr": "Code Review بين المراحل",
+    "titleEn": "Inter-Phase Code Review",
+    "descriptionAr": "مراجعة كود احترافية قبل الانتقال للمرحلة التالية.",
+    "descriptionEn": "Perform quality-focused code review before phase handoff."
+  },
+  {
+    "fileName": "14- اول فيديو ب التفاصيل الحقيقيه لبروجكيت جديده و.mp4",
+    "lessonId": "seed-14",
+    "sortOrder": 14,
+    "sectionKey": "advanced",
+    "titleAr": "تفاصيل مشروع جديد حقيقي من البداية",
+    "titleEn": "Real New Project Deep-Dive Walkthrough",
+    "descriptionAr": "شرح تفصيلي عملي لبناء مشروع جديد بخطوات واضحة.",
+    "descriptionEn": "Detailed walkthrough of building a real project end-to-end."
+  },
+  {
+    "fileName": "15 - هيبقي فيديوي كامل في كل smtp.mp4",
+    "lessonId": "seed-15",
+    "sortOrder": 15,
+    "sectionKey": "advanced",
+    "titleAr": "ربط SMTP بالكامل",
+    "titleEn": "Complete SMTP Integration",
+    "descriptionAr": "تنفيذ تكامل SMTP وإدارة الإرسال بشكل موثوق.",
+    "descriptionEn": "Implement full SMTP integration for reliable delivery."
+  },
+  {
+    "fileName": "15 تكمله ربط ال smtp.mp4",
+    "lessonId": "seed-16",
+    "sortOrder": 16,
+    "sectionKey": "advanced",
+    "titleAr": "تكملة ربط SMTP وحل المشكلات",
+    "titleEn": "SMTP Continuation and Troubleshooting",
+    "descriptionAr": "استكمال الربط وحل المشكلات العملية المتكررة.",
+    "descriptionEn": "Continue SMTP implementation and resolve practical issues."
+  },
+  {
+    "fileName": "18- Dockler وليه بنستتخدمه  وبيسهل اي واحنا بنرعف الويب ساي.mp4",
+    "lessonId": "seed-17",
+    "sortOrder": 17,
+    "sectionKey": "production",
+    "titleAr": "Docker: لماذا نستخدمه وكيف يسهّل الشغل",
+    "titleEn": "Docker Fundamentals and Why It Matters",
+    "descriptionAr": "فهم Docker عمليًا لدعم تشغيل ونشر المشاريع.",
+    "descriptionEn": "Understand Docker basics for practical deployment workflows."
+  },
+  {
+    "fileName": "19- بعد انهاء الويب سايت رفعه على السيرفر وربط الدومين.mp4",
+    "lessonId": "seed-18",
+    "sortOrder": 18,
+    "sectionKey": "production",
+    "titleAr": "رفع الموقع على السيرفر وربط الدومين",
+    "titleEn": "Deploy to Server and Connect Domain",
+    "descriptionAr": "نشر المشروع وربط الدومين للوصول إلى بيئة إنتاج حقيقية.",
+    "descriptionEn": "Deploy the app to server and complete domain setup."
+  },
+  {
+    "fileName": "20- عمل الخطه والبلان لربط بوابه الدفع.mp4",
+    "lessonId": "seed-19",
+    "sortOrder": 19,
+    "sectionKey": "production",
+    "titleAr": "خطة ربط بوابة الدفع",
+    "titleEn": "Plan the Payment Gateway Integration",
+    "descriptionAr": "وضع خطة ربط بوابة الدفع قبل التنفيذ الفعلي.",
+    "descriptionEn": "Create a clear payment gateway integration plan."
+  },
+  {
+    "fileName": "21- ربط جوجل auth لتسجيل الدخول ب جوجل.mp4",
+    "lessonId": "seed-20",
+    "sortOrder": 20,
+    "sectionKey": "production",
+    "titleAr": "ربط تسجيل الدخول بجوجل OAuth",
+    "titleEn": "Google OAuth Login Integration",
+    "descriptionAr": "تفعيل Google OAuth لتجربة تسجيل دخول أسرع وأكثر أمانًا.",
+    "descriptionEn": "Integrate Google OAuth for seamless secure login."
+  },
+  {
+    "fileName": "22- ما بعد رفع الموقع ظبط ال ci cd عشان التعيدلات تسمع علطول_final.mp4",
+    "lessonId": "seed-21",
+    "sortOrder": 21,
+    "sectionKey": "production",
+    "titleAr": "بعد الرفع: ضبط CI/CD للتحديثات المستمرة",
+    "titleEn": "Post-Deployment CI/CD Setup",
+    "descriptionAr": "ضبط CI/CD بعد النشر لضمان وصول التحديثات تلقائيًا.",
+    "descriptionEn": "Set up CI/CD for safe continuous post-deployment updates."
+  },
+  {
+    "fileName": "23- ما بعد رفع الموقع ما بعد الويب سايت وتحسين ال تيكينكيال SEO_final.mp4",
+    "lessonId": "seed-22",
+    "sortOrder": 22,
+    "sectionKey": "production",
+    "titleAr": "ما بعد الإطلاق: تحسين Technical SEO",
+    "titleEn": "Post-Launch Technical SEO Optimization",
+    "descriptionAr": "تحسين الـ Technical SEO لزيادة الظهور والنمو.",
+    "descriptionEn": "Optimize technical SEO for better discoverability and growth."
+  }
+]

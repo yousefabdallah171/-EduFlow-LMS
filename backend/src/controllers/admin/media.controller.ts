@@ -12,7 +12,7 @@ export const mediaController = {
   async createFolder(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, parentId } = req.body;
-      const userId = (req as any).user?.id;
+      const userId = (req as { user?: { id?: string } }).user?.id;
 
       if (!name) {
         return res.status(400).json({ error: 'Folder name is required' });
@@ -121,7 +121,7 @@ export const mediaController = {
       const id = getFirstValue(req.params.id);
       const { title, folderId } = req.body;
 
-      const updateData: any = {};
+      const updateData: { title?: string; folderId?: string | null } = {};
       if (title !== undefined) updateData.title = title;
       if (folderId !== undefined) updateData.folderId = folderId || null;
 
