@@ -157,7 +157,7 @@ export const NavBar = () => {
                 className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl font-mono text-sm font-black text-white"
                 style={{
                   background: "var(--gradient-brand)",
-                  boxShadow: "0 10px 24px rgba(163,230,53,0.22)"
+                  boxShadow: "0 10px 24px color-mix(in oklab, var(--color-brand) 22%, transparent)"
                 }}
               >
                 YA
@@ -190,7 +190,7 @@ export const NavBar = () => {
                       ? {
                           backgroundColor: "var(--color-brand-muted)",
                           color: "var(--color-brand)",
-                          border: "1px solid rgba(163,230,53,0.18)"
+                          border: "1px solid color-mix(in oklab, var(--color-brand) 18%, transparent)"
                         }
                       : {
                           color: "var(--color-text-secondary)"
@@ -343,7 +343,7 @@ export const NavBar = () => {
                       className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl font-mono text-sm font-black text-white"
                       style={{
                         background: "var(--gradient-brand)",
-                        boxShadow: "0 12px 26px rgba(163,230,53,0.24)"
+                        boxShadow: "0 12px 26px color-mix(in oklab, var(--color-brand) 24%, transparent)"
                       }}
                     >
                       YA

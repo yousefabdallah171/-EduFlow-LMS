@@ -246,7 +246,7 @@ export const AttachmentManager = ({ lessonId }: AttachmentManagerProps) => {
                     </a>
                     <button
                       className="rounded-md border px-2.5 py-1.5 text-[10px] font-medium transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
-                      style={{ borderColor: "rgba(239,68,68,0.4)", color: "rgb(185,28,28)" }}
+                      style={{ borderColor: "var(--color-danger-bg)", color: "var(--color-danger)" }}
                       onClick={() => setPendingDeleteId(resource.id)}
                       type="button"
                     >
@@ -294,7 +294,7 @@ export const AttachmentManager = ({ lessonId }: AttachmentManagerProps) => {
             </button>
             <button
               className="rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all hover:opacity-95"
-              style={{ backgroundColor: "rgb(185,28,28)" }}
+              style={{ backgroundColor: "var(--color-danger)" }}
               onClick={() => {
                 if (pendingDeleteId) {
                   void handleDelete(pendingDeleteId);

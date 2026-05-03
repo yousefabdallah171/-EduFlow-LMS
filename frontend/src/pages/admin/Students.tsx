@@ -49,8 +49,8 @@ type PendingAction = {
 
 const StatusBadge = ({ status, label }: { status: EnrollmentStatus; label: string }) => {
   const styles: Record<EnrollmentStatus, { bg: string; color: string }> = {
-    ACTIVE:  { bg: "rgba(34,197,94,0.12)", color: "rgb(21,128,61)" },
-    REVOKED: { bg: "rgba(239,68,68,0.12)", color: "rgb(185,28,28)" },
+    ACTIVE:  { bg: "var(--color-success-bg)", color: "var(--color-success)" },
+    REVOKED: { bg: "var(--color-danger-bg)", color: "var(--color-danger)" },
     NONE:    { bg: "var(--color-surface-2)", color: "var(--color-text-muted)" }
   };
   const s = styles[status];

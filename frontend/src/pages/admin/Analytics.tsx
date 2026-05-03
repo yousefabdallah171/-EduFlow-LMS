@@ -44,9 +44,9 @@ type PaymentsPayload = {
 
 const statusTone = (status: PaymentsPayload["data"][number]["status"]) => {
   const map: Record<PaymentsPayload["data"][number]["status"], { bg: string; color: string }> = {
-    COMPLETED: { bg: "rgba(34,197,94,0.12)", color: "rgb(21,128,61)" },
-    PENDING: { bg: "rgba(234,179,8,0.12)", color: "rgb(161,98,7)" },
-    FAILED: { bg: "rgba(239,68,68,0.12)", color: "rgb(185,28,28)" },
+    COMPLETED: { bg: "var(--color-success-bg)", color: "var(--color-success)" },
+    PENDING: { bg: "var(--color-warning-bg)", color: "var(--color-warning)" },
+    FAILED: { bg: "var(--color-danger-bg)", color: "var(--color-danger)" },
     REFUNDED: { bg: "var(--color-surface-2)", color: "var(--color-text-muted)" }
   };
   return map[status];

@@ -202,7 +202,7 @@ export const Preview = () => {
           <div className="space-y-5">
             <div
               className="rounded-[28px] border p-4 shadow-card"
-              style={{ backgroundColor: "var(--color-brand-muted)", borderColor: "rgba(163,230,53,0.2)" }}
+              style={{ backgroundColor: "var(--color-brand-muted)", borderColor: "color-mix(in oklab, var(--color-brand) 20%, transparent)" }}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -300,7 +300,7 @@ export const Preview = () => {
             >
               <div
                 className="pointer-events-none absolute inset-0"
-                style={{ background: "radial-gradient(ellipse 60% 80% at 50% 120%, rgba(163,230,53,0.3), transparent)" }}
+                style={{ background: "radial-gradient(ellipse 60% 80% at 50% 120%, color-mix(in oklab, var(--color-brand) 30%, transparent), transparent)" }}
               />
               <p className="relative text-xs font-bold uppercase tracking-[0.16em] opacity-60" style={{ color: "var(--color-text-invert)" }}>
                 {t("preview.likedIt")}
@@ -311,7 +311,7 @@ export const Preview = () => {
               <p className="relative mt-2 text-sm opacity-70" style={{ color: "var(--color-text-invert)" }}>
                 {t("preview.onePayment")}
               </p>
-              <div className="relative mx-auto mt-5 max-w-2xl rounded-[24px] border px-4 py-4 text-start" style={{ borderColor: "rgba(255,255,255,0.12)", backgroundColor: "rgba(255,255,255,0.04)" }}>
+              <div className="relative mx-auto mt-5 max-w-2xl rounded-[24px] border px-4 py-4 text-start" style={{ borderColor: "color-mix(in srgb, white 12%, transparent)", backgroundColor: "color-mix(in srgb, white 4%, transparent)" }}>
                 <ul className="grid gap-3 sm:grid-cols-3">
                   {previewBenefits.map((benefit) => (
                     <li key={benefit} className="text-sm leading-6" style={{ color: "var(--color-text-invert)" }}>

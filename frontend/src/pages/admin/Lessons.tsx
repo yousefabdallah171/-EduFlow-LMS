@@ -50,9 +50,9 @@ type SectionAdmin = {
 
 const VideoStatusBadge = ({ status, labels }: { status: LessonAdmin["videoStatus"]; labels: Record<LessonAdmin["videoStatus"], string> }) => {
   const map: Record<LessonAdmin["videoStatus"], { bg: string; color: string; label: string }> = {
-    READY: { bg: "rgba(34,197,94,0.12)", color: "rgb(21,128,61)", label: labels.READY },
-    PROCESSING: { bg: "rgba(234,179,8,0.12)", color: "rgb(161,98,7)", label: labels.PROCESSING },
-    ERROR: { bg: "rgba(239,68,68,0.12)", color: "rgb(185,28,28)", label: labels.ERROR },
+    READY: { bg: "var(--color-success-bg)", color: "var(--color-success)", label: labels.READY },
+    PROCESSING: { bg: "var(--color-warning-bg)", color: "var(--color-warning)", label: labels.PROCESSING },
+    ERROR: { bg: "var(--color-danger-bg)", color: "var(--color-danger)", label: labels.ERROR },
     NONE: { bg: "var(--color-surface-2)", color: "var(--color-text-muted)", label: labels.NONE }
   };
   const current = map[status];

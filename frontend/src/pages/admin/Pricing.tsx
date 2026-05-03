@@ -246,8 +246,8 @@ export const AdminPricing = () => {
                             <span
                               className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
                               style={{
-                                backgroundColor: item.isActive ? "rgba(34,197,94,0.12)" : "var(--color-surface-2)",
-                                color: item.isActive ? "rgb(21,128,61)" : "var(--color-text-muted)"
+                                backgroundColor: item.isActive ? "var(--color-success-bg)" : "var(--color-surface-2)",
+                                color: item.isActive ? "var(--color-success)" : "var(--color-text-muted)"
                               }}
                             >
                               {item.isActive ? copy.common.active : copy.common.inactive}
@@ -321,8 +321,8 @@ export const AdminPricing = () => {
                             <span
                               className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
                               style={{
-                                backgroundColor: coupon.status === "ACTIVE" ? "rgba(34,197,94,0.12)" : "var(--color-surface-2)",
-                                color: coupon.status === "ACTIVE" ? "rgb(21,128,61)" : "var(--color-text-muted)"
+                                backgroundColor: coupon.status === "ACTIVE" ? "var(--color-success-bg)" : "var(--color-surface-2)",
+                                color: coupon.status === "ACTIVE" ? "var(--color-success)" : "var(--color-text-muted)"
                               }}
                             >
                               {coupon.status === "ACTIVE" ? copy.common.active : isAr ? "منتهي" : "EXPIRED"}

@@ -79,7 +79,7 @@ export const Footer = () => {
                   className="rounded-2xl px-4 py-2.5 text-sm font-semibold text-white no-underline transition-all"
                   style={{
                     background: "var(--gradient-brand)",
-                    boxShadow: "0 12px 24px rgba(163,230,53,0.16)"
+                    boxShadow: "0 12px 24px color-mix(in oklab, var(--color-brand) 16%, transparent)"
                   }}
                   to={`${prefix}${primaryCta.to}`}
                 >

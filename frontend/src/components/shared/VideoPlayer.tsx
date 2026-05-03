@@ -245,7 +245,7 @@ export const VideoPlayer = ({
         }}
       >
         {!isAttached ? (
-          <div className="absolute inset-0 z-20 grid place-items-center" style={{ background: "rgba(9, 13, 9, 0.72)" }}>
+          <div className="absolute inset-0 z-20 grid place-items-center" style={{ background: "color-mix(in srgb, var(--color-invert) 72%, transparent)" }}>
             <button
               className="rounded-full px-5 py-3 text-sm font-semibold transition-transform hover:scale-105 active:scale-95"
               style={{ background: "var(--gradient-brand)", color: "var(--color-text-invert)" }}

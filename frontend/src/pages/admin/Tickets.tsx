@@ -152,7 +152,7 @@ export const AdminTickets = () => {
                     className="dashboard-panel w-full p-5 text-start transition-all hover:-translate-y-0.5"
                     style={{
                       borderColor: selected?.id === ticket.id ? "color-mix(in oklab, var(--color-brand) 55%, white)" : undefined,
-                      boxShadow: selected?.id === ticket.id ? "0 24px 70px rgba(239, 68, 68, 0.14)" : undefined
+                      boxShadow: selected?.id === ticket.id ? "0 24px 70px color-mix(in oklab, var(--color-danger) 14%, transparent)" : undefined
                     }}
                     onClick={() => setSelected(ticket)}
                     type="button"
@@ -166,7 +166,7 @@ export const AdminTickets = () => {
                           {awaitingAdmin ? (
                             <span
                               className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                              style={{ backgroundColor: "rgba(234,179,8,0.12)", color: "rgb(161,98,7)" }}
+                              style={{ backgroundColor: "var(--color-warning-bg)", color: "var(--color-warning)" }}
                             >
                               {copy.common.awaitingAdmin}
                             </span>

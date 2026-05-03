@@ -16,7 +16,7 @@ export const PreviewCTABanner = ({ lessonCount = 0 }: { lessonCount?: number }) 
     <div
       data-testid="preview-cta-banner"
       className="fixed bottom-0 start-0 end-0 z-50 border-t shadow-elevated"
-      style={{ backgroundColor: "var(--color-invert)", borderColor: "rgba(255,255,255,0.1)" }}
+      style={{ backgroundColor: "var(--color-invert)", borderColor: "color-mix(in srgb, white 10%, transparent)" }}
     >
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <p className="max-w-[68ch] text-sm font-medium leading-6" style={{ color: "var(--color-text-invert)", opacity: 0.9 }}>
