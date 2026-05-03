@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BookOpenCheck, Download, FileText, Gauge, PlayCircle, ReceiptText, Sparkles } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { Progress } from "@/components/ui/progress";
 import { StudentShell } from "@/components/layout/StudentShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SkeletonDashboard } from "@/components/skeletons";
+import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+import { useAuthStore } from "@/stores/auth.store";
 import { api } from "@/lib/api";
 import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { formatDate, resolveLocale } from "@/lib/locale";
@@ -24,6 +26,7 @@ export const StudentDashboard = () => {
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const { t, i18n } = useTranslation();
   const resolvedLocale = resolveLocale(i18n.language);
+  const user = useAuthStore((s) => s.user);
 
   const { data, isLoading } = useQuery({
     queryKey: ["student-dashboard"],
@@ -41,6 +44,11 @@ export const StudentDashboard = () => {
         : progress >= 35
           ? t("student.dashboard.milestone.strongMomentum")
           : t("student.dashboard.milestone.startNext");
+
+  // Redirect unenrolled students to checkout
+  if (!isLoading && data && !data.enrolled) {
+    return <Navigate to={`${prefix}/checkout`} replace />;
+  }
 
   return (
     <StudentShell>
@@ -211,6 +219,14 @@ export const StudentDashboard = () => {
           </>
         )}
       </>
+      {user && data?.enrolled && data.completionPercent === 0 && (
+        <OnboardingModal
+          user={user}
+          prefix={prefix}
+          coursePath={`${prefix}/course`}
+          lessonPath={data?.lastLessonId ? `${prefix}/lessons/${data.lastLessonId}` : undefined}
+        />
+      )}
     </StudentShell>
   );
 };

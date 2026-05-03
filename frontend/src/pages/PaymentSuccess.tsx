@@ -79,8 +79,8 @@ export const PaymentSuccess = () => {
             className="rounded-lg p-4 mb-8 flex items-start gap-3"
             style={{ backgroundColor: "color-mix(in oklab, var(--color-brand) 5%, var(--color-surface))" }}
           >
-            <Mail className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "var(--color-brand)" }} />
-            <div className="text-left">
+            <Mail className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-brand)" }} aria-hidden="true" />
+            <div className="text-start">
               <p className="text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>
                 {t("paymentSuccess.emailSent")}
               </p>
@@ -114,17 +114,23 @@ export const PaymentSuccess = () => {
 
           <button
             onClick={() => {
-              const element = document.createElement("a");
-              element.setAttribute("href", `data:text/plain,Order: ${orderId}%0AAmount: ${amount}%0AStatus: Completed`);
-              element.setAttribute("download", `receipt-${orderId}.txt`);
-              document.body.appendChild(element);
-              element.click();
-              document.body.removeChild(element);
+              const lines = [
+                `${t("paymentSuccess.orderId")}: ${orderId}`,
+                `${t("paymentSuccess.amount")}: ${amount}`,
+                `${t("paymentSuccess.status")}: ${t("paymentSuccess.statusCompleted")}`
+              ];
+              const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.href = url;
+              link.download = `receipt-${orderId}.txt`;
+              link.click();
+              URL.revokeObjectURL(url);
             }}
             className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-bold transition-all hover:opacity-95 border"
             style={{ borderColor: "var(--color-border)" }}
           >
-            <Download className="h-4 w-4" />
+            <Download className="h-4 w-4" aria-hidden="true" />
             {t("paymentSuccess.downloadReceipt")}
           </button>
         </div>
@@ -135,7 +141,7 @@ export const PaymentSuccess = () => {
             {t("paymentSuccess.anyQuestions")}
           </p>
           <a
-            href="mailto:support@eduflow.com"
+            href={`${prefix}/help`}
             className="text-sm font-medium text-brand-600 no-underline hover:underline"
           >
             {t("paymentSuccess.contactSupport")}

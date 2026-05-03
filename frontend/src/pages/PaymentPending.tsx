@@ -174,7 +174,7 @@ export const PaymentPending = () => {
                 {t("paymentPending.timeoutDescription")}
               </p>
               <a
-                href="mailto:support@eduflow.com"
+                href={`${prefix}/help`}
                 className="text-xs font-semibold text-orange-700 dark:text-orange-400 no-underline hover:underline"
               >
                 {t("paymentPending.contactSupport")}
@@ -205,7 +205,7 @@ export const PaymentPending = () => {
               {t("paymentPending.needHelp")}
             </p>
             <a
-              href="mailto:support@eduflow.com"
+              href={`${prefix}/help`}
               className="text-sm font-medium text-brand-600 no-underline hover:underline"
             >
               {t("paymentPending.supportEmail")}

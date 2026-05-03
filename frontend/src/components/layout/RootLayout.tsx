@@ -32,6 +32,14 @@ export const RootLayout = ({ children }: RootLayoutProps) => {
   const location = useLocation();
   const appliedUserId = useRef<string | null>(null);
 
+  // Always sync locale from URL pathname first (most reliable source of truth)
+  useEffect(() => {
+    const pathLocale = getLocaleFromPathname(location.pathname);
+    if (pathLocale && pathLocale !== locale) {
+      setLocale(pathLocale);
+    }
+  }, [location.pathname, locale, setLocale]);
+
   // Apply saved locale + theme from account whenever the user logs in (or refreshes with an existing session)
   useEffect(() => {
     if (!user || appliedUserId.current === user.id) return;
@@ -56,21 +64,13 @@ export const RootLayout = ({ children }: RootLayoutProps) => {
     if (!user) appliedUserId.current = null;
   }, [user]);
 
-  useEffect(() => {
-    const pathLocale = getLocaleFromPathname(location.pathname);
-
-    if (pathLocale && pathLocale !== locale) {
-      setLocale(pathLocale);
-    }
-  }, [location.pathname, locale, setLocale]);
-
+  // Apply locale to HTML element and i18n (must happen whenever locale changes)
   useEffect(() => {
     void i18n.changeLanguage(locale);
-
     document.documentElement.lang = locale;
     document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
     document.documentElement.classList.toggle("dark", theme === "dark");
-  }, [locale, theme]);
+  }, [locale, theme, i18n]);
 
   return (
     <div className="min-h-dvh">

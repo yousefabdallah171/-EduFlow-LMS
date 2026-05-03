@@ -107,7 +107,7 @@ export const PaymentFailure = () => {
 
           {/* Suggestion Box */}
           <div
-            className="rounded-lg p-4 mb-8 text-left"
+            className="rounded-lg p-4 mb-8 text-start"
             style={{ backgroundColor: "color-mix(in oklab, rgb(239, 68, 68) 5%, var(--color-surface))" }}
           >
             <p className="text-sm font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
@@ -155,7 +155,7 @@ export const PaymentFailure = () => {
 
           {showSupport && (
             <a
-              href="mailto:support@eduflow.com"
+              href={`${prefix}/help`}
               className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-bold transition-all hover:opacity-95 border"
               style={{ borderColor: "var(--color-border)" }}
             >
@@ -181,7 +181,7 @@ export const PaymentFailure = () => {
             {t("paymentFailure.needHelp")}
           </p>
           <a
-            href="mailto:support@eduflow.com"
+            href={`${prefix}/help`}
             className="text-sm font-medium text-brand-600 no-underline hover:underline"
           >
             {t("paymentFailure.supportEmail")}
@@ -224,7 +224,7 @@ export const PaymentFailure = () => {
         {/* Error Code for Support */}
         {errorCode && (
           <p className="mt-8 text-center text-xs font-mono" style={{ color: "var(--color-text-muted)" }}>
-            Error Code: {errorCode}
+            {t("paymentFailure.errorCode")}: {errorCode}
           </p>
         )}
       </div>

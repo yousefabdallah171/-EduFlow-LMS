@@ -205,7 +205,19 @@
       "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS add backend/src/utils/ip-extractor.ts README.md)",
       "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS add .github/workflows/deploy.yml)",
       "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS commit -m 'ci: pass VITE_HCAPTCHA_SITE_KEY secret to frontend build step *)",
-      "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS log --oneline -8)"
+      "Bash(git -C /c/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS log --oneline -8)",
+      "Bash(node \"c:\\\\Users\\\\youse\\\\OneDrive\\\\Desktop\\\\project\\\\-EduFlow-LMS\\\\.claude\\\\skills\\\\impeccable\\\\scripts\\\\load-context.mjs\")",
+      "Bash(findstr -i asset)",
+      "Bash(node -e \"require\\('./frontend/src/locales/en.json'\\); console.log\\('en.json OK'\\)\")",
+      "Bash(node -e \"require\\('./frontend/src/locales/ar.json'\\); console.log\\('ar.json OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('c:/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS/frontend/src/locales/en.json','utf8'\\)\\); console.log\\('en.json OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('c:/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS/frontend/src/locales/ar.json','utf8'\\)\\); console.log\\('ar.json OK'\\)\")",
+      "Bash(dir \"c:\\\\Users\\\\youse\\\\OneDrive\\\\Desktop\\\\project\\\\-EduFlow-LMS\\\\frontend\\\\src\\\\components\\\\ui\\\\\" /b 2>&1 | head -30)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('c:/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS/frontend/src/locales/en.json','utf8'\\)\\); console.log\\('en OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('c:/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS/frontend/src/locales/ar.json','utf8'\\)\\); console.log\\('ar OK'\\)\")",
+      "Bash(npx impeccable *)",
+      "Bash(find frontend/src/pages/student frontend/src/pages/Payment* -name \"*.tsx\" -type f)",
+      "Bash(pkill -f \"vite\\\\|npm run dev\")"
     ]
   }
 }
