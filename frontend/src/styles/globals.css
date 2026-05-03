@@ -720,11 +720,257 @@ p {
 .landing-tech-pill.cursor { box-shadow: inset 3px 0 0 color-mix(in oklab, var(--color-brand) 62%, transparent); }
 .landing-tech-pill.docker { box-shadow: inset 3px 0 0 color-mix(in oklab, var(--color-warning) 60%, transparent); }
 
+/* ─── Text Overflow & Hardening ────────────────────────────────────── */
 .landing-hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   margin-top: clamp(32px, 4vw, 48px);
+}
+
+/* Prevent flex items from causing overflow */
+.landing-hero-actions > * {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+/* Single-line text with ellipsis (for overflow) */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Multi-line text with line clamping (up to 3 lines) */
+.text-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Allow text wrapping with hyphenation */
+.text-wrap-balance {
+  text-wrap: balance;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+/* Stat values: handle very long numbers and currencies */
+.landing-stat-value {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--color-brand);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Stat label: handle long translations */
+.landing-stat-label {
+  margin: 10px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Audience card hardening: prevent title/content overflow */
+.landing-audience-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-audience-title {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.landing-audience-copy {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  flex: 1;
+}
+
+/* Pricing: handle large numbers and currency symbols */
+.landing-pricing-amount {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  font-variant-numeric: tabular-nums;
+}
+
+.landing-pricing-currency {
+  display: inline-block;
+  min-width: min-content;
+}
+
+/* Workflow text: handle long labels */
+.landing-workflow-text {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.landing-workflow-label {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* ─── Flex/Grid Overflow Prevention ─────────────────────────────────── */
+/* Prevent grid items from overflowing */
+.landing-audience-grid > * {
+  min-width: 0;
+}
+
+.landing-pricing-grid > * {
+  min-width: 0;
+}
+
+.landing-workflow-row {
+  min-width: 0;
+}
+
+/* ─── Form Validation & Error States ───────────────────────────────── */
+/* Error state styling for inputs */
+input.is-error,
+select.is-error,
+textarea.is-error,
+[aria-invalid="true"] {
+  border-color: var(--color-danger);
+  background-color: color-mix(in oklab, var(--color-danger) 4%, var(--color-page));
+}
+
+input.is-error:focus,
+select.is-error:focus,
+textarea.is-error:focus,
+[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-danger) 14%, transparent);
+  border-color: var(--color-danger);
+}
+
+/* Error message styling */
+.form-error {
+  color: var(--color-danger);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Success state styling */
+input.is-valid,
+select.is-valid,
+textarea.is-valid,
+[aria-invalid="false"] {
+  border-color: var(--color-success);
+}
+
+input.is-valid:focus,
+select.is-valid:focus,
+textarea.is-valid:focus,
+[aria-invalid="false"]:focus {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-success) 14%, transparent);
+}
+
+/* ─── Empty States & Loading ───────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(48px, 10vw, 80px) clamp(24px, 5vw, 48px);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.empty-state__icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 24px;
+  opacity: 0.5;
+}
+
+.empty-state__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+.empty-state__description {
+  max-width: 40ch;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+/* Loading state (skeleton) styling */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-2) 0%,
+    var(--color-surface-3) 50%,
+    var(--color-surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--color-surface-2);
+  }
+}
+
+/* ─── RTL/LTR Text Direction Handling ───────────────────────────────── */
+/* Ensure text direction is properly handled */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="ltr"] {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Logical spacing for bidirectional layouts */
+.spacing-inline {
+  margin-inline: var(--space-md);
+  padding-inline: var(--space-md);
+}
+
+.spacing-block {
+  margin-block: var(--space-md);
+  padding-block: var(--space-md);
+}
+
+/* ─── Browser Compatibility & Feature Detection ─────────────────────── */
+/* Support for browsers that don't support gap in flexbox */
+@supports not (gap: 1px) {
+  .flex-gap > * + * {
+    margin-inline-start: var(--space-md);
+  }
+}
+
+/* Support for older browsers without CSS Grid minmax */
+@supports not (grid-template-columns: minmax(0, 1fr)) {
+  .grid-auto-fit {
+    display: flex;
+    flex-wrap: wrap;
+  }
 }
 
 .landing-trust-row {
