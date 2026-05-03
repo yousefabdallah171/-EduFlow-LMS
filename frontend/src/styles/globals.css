@@ -1015,7 +1015,7 @@ textarea.is-valid:focus,
 }
 
 @media (max-width: 767px) {
-  .landing-stats-grid { grid-template-columns: 1fr; gap: 14px; }
+  .landing-stats-grid { grid-template-columns: 1fr; gap: 12px; }
 }
 
 .landing-stat {
@@ -1112,7 +1112,7 @@ textarea.is-valid:focus,
 .landing-window-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -1381,9 +1381,9 @@ textarea.is-valid:focus,
 }
 
 .landing-workflow-side {
-  padding: 22px 22px;
+  padding: 24px;
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .landing-workflow-side--before {
@@ -1522,7 +1522,7 @@ textarea.is-valid:focus,
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
   max-width: 320px;
 }
 
@@ -1556,9 +1556,9 @@ textarea.is-valid:focus,
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   min-height: 100%;
-  padding: 26px;
+  padding: 24px;
   border: 1px solid rgb(var(--card-accent-rgb) / 0.18);
   border-radius: 18px;
   background:
@@ -1842,7 +1842,7 @@ textarea.is-valid:focus,
 
 .landing-phase-card {
   position: relative;
-  padding: 22px;
+  padding: 24px;
   border: 1px solid var(--color-border);
   border-radius: 14px;
   background: var(--color-surface);
@@ -2277,7 +2277,7 @@ textarea.is-valid:focus,
 .landing-stat-strip {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   margin-top: clamp(14px, 2vw, 20px);
   padding-top: clamp(12px, 1.5vw, 16px);
   border-top: 1px solid var(--color-border);
@@ -2493,7 +2493,7 @@ textarea.is-valid:focus,
 .landing-credibility-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
 }
 
@@ -2543,7 +2543,7 @@ textarea.is-valid:focus,
 .landing-guarantee {
   position: relative;
   margin: 0 auto 28px;
-  padding: 26px 28px;
+  padding: 24px 28px;
   border: 1px solid color-mix(in oklab, var(--color-brand) 22%, transparent);
   border-radius: 22px;
   background:
@@ -2720,7 +2720,7 @@ textarea.is-valid:focus,
 
 .landing-pricing-top-accent {
   height: 2px;
-  margin: -28px -28px 22px;
+  margin: -24px -24px 24px;
   background: linear-gradient(90deg, transparent, var(--color-border-strong), transparent);
 }
 
@@ -2761,8 +2761,8 @@ textarea.is-valid:focus,
 .landing-pricing-soldout-pill {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 8px;
   padding: 6px 14px;
   border: 1px solid color-mix(in oklab, var(--color-danger) 26%, transparent);
   border-radius: 999px;
@@ -2783,7 +2783,7 @@ textarea.is-valid:focus,
 }
 
 .landing-pricing-description {
-  margin: 14px 0 0;
+  margin: 12px 0 0;
   color: var(--color-text-secondary);
   font-size: 14px;
   font-weight: 650;
@@ -2793,7 +2793,7 @@ textarea.is-valid:focus,
 }
 
 .landing-pricing-price {
-  margin-top: 18px;
+  margin-top: 16px;
 }
 
 .landing-pricing-old {
@@ -2806,7 +2806,7 @@ textarea.is-valid:focus,
 .landing-pricing-row {
   display: inline-flex;
   align-items: baseline;
-  gap: 10px;
+  gap: 8px;
   margin-top: 6px;
 }
 
@@ -2870,13 +2870,13 @@ textarea.is-valid:focus,
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .landing-pricing-feature {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 8px;
   color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 700;
@@ -2977,8 +2977,8 @@ textarea.is-valid:focus,
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 22px;
+  gap: 12px;
+  margin-top: 24px;
   color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 800;
@@ -2988,7 +2988,7 @@ textarea.is-valid:focus,
 .landing-pricing-trust-item {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 @media (max-width: 1023px) {
@@ -3010,11 +3010,11 @@ textarea.is-valid:focus,
   .landing-pricing-card--vip { order: 3; }
 
   .landing-pricing-card {
-    padding: 22px 18px;
+    padding: 24px 16px;
   }
 
   .landing-guarantee {
-    padding: 22px 18px;
+    padding: 24px 16px;
   }
 
   .landing-guarantee-copy {
@@ -3058,7 +3058,7 @@ textarea.is-valid:focus,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   border: 1px solid color-mix(in oklab, var(--color-brand) 22%, transparent);
   border-radius: 999px;
   background: color-mix(in oklab, var(--color-brand) 8%, transparent);
@@ -3190,7 +3190,7 @@ textarea.is-valid:focus,
   min-height: 46px;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   border-radius: 12px;
   padding: 12px 18px;
   font-weight: 900;
@@ -3235,7 +3235,7 @@ textarea.is-valid:focus,
 
 .policy-section {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .policy-section h2 {
@@ -3297,7 +3297,7 @@ textarea.is-valid:focus,
 
 .contact-item {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   align-items: flex-start;
 }
 
@@ -3520,7 +3520,7 @@ textarea.is-valid:focus,
 
 .pricing-features li {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: flex-start;
   color: var(--color-text-secondary);
   font-size: 0.92rem;

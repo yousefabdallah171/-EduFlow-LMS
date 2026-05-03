@@ -50,13 +50,6 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       chunkSizeWarningLimit: 600,
-      minify: "terser",
-      terserOptions: {
-        compress: {
-          drop_console: isProd,
-          drop_debugger: isProd
-        }
-      },
       rollupOptions: {
         output: {
           manualChunks: {
