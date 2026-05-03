@@ -62,10 +62,12 @@ export const LandingPricingSection = ({
   const vip = cards.find((card) => card.variant === "vip");
 
   const ordered = [starter, featured, vip].filter(Boolean) as PricingCard[];
+  const isLoading = courseQuery.isPending && !courseQuery.data;
+  const hasError = courseQuery.isError;
 
   return (
     <section
-      className={["landing-section", "landing-pricing", forceVisible ? "is-visible" : ""].join(" ")}
+      className={["landing-section", "landing-pricing", forceVisible || courseQuery.isSuccess ? "is-visible" : ""].join(" ")}
       id="pricing"
       data-landing-section
     >
@@ -91,6 +93,24 @@ export const LandingPricingSection = ({
         </h3>
         <p className="landing-guarantee-copy">{t("landing.pricing.guarantee.body")}</p>
       </div>
+
+      {hasError && (
+        <div
+          className="landing-pricing-error landing-reveal"
+          style={{
+            padding: "24px",
+            borderRadius: "18px",
+            backgroundColor: "var(--color-danger-bg)",
+            color: "var(--color-danger)",
+            textAlign: "center",
+            marginBottom: "24px"
+          }}
+        >
+          <p style={{ margin: "0" }}>
+            {t("common.error") || "Unable to load pricing information. Please refresh the page."}
+          </p>
+        </div>
+      )}
 
       <div className="landing-pricing-grid">
         {ordered.map((card, index) => {
