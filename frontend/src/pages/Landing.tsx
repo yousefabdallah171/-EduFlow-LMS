@@ -1,13 +1,17 @@
 import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { contactInfo } from "@/lib/public-page-content";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
+import { api } from "@/lib/api";
+import { CACHE_TIME, getGCTime } from "@/lib/query-config";
 import { LandingHero } from "@/components/landing/LandingHero";
 import { SEO } from "@/components/shared/SEO";
 import { SEO_PAGES } from "@/lib/seo-config";
+import { LandingLoadingSkeleton } from "@/components/landing/LandingLoadingSkeleton";
 
 // Lazy load below-fold sections for faster initial render
 const LandingAudience = lazy(() => import("@/components/landing/LandingAudience").then(m => ({ default: m.LandingAudience })));
@@ -51,8 +55,22 @@ export const Landing = () => {
   const { locale } = useParams();
   const prefix = locale === "en" || locale === "ar" ? `/${locale}` : "";
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   useRevealOnScroll({ selector: "[data-landing-section]" });
+
+  // Prefetch pricing data to avoid delay when PricingSection renders
+  useEffect(() => {
+    queryClient.prefetchQuery({
+      queryKey: ["course"],
+      queryFn: async () => {
+        const response = await api.get("/course");
+        return response.data;
+      },
+      staleTime: CACHE_TIME.MEDIUM,
+      gcTime: getGCTime(CACHE_TIME.MEDIUM)
+    });
+  }, [queryClient]);
 
   return (
     <main className="reference-page landing-page">
@@ -60,7 +78,7 @@ export const Landing = () => {
       <div className="landing-noise" aria-hidden="true" />
       <div className="reference-shell">
         <LandingHero prefix={prefix} />
-        <Suspense fallback={null}>
+        <Suspense fallback={<LandingLoadingSkeleton />}>
           <LandingAudience />
           <LandingWorkflowSection />
           <LandingCourseContentSection />

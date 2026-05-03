@@ -219,7 +219,10 @@
       "Bash(find frontend/src/pages/student frontend/src/pages/Payment* -name \"*.tsx\" -type f)",
       "Bash(pkill -f \"vite\\\\|npm run dev\")",
       "Bash(node .agents/skills/impeccable/scripts/load-context.mjs)",
-      "Bash(grep -r \"#[0-9a-f]\\\\{3,6\\\\}\" frontend/src/pages --include=\"*.tsx\")"
+      "Bash(grep -r \"#[0-9a-f]\\\\{3,6\\\\}\" frontend/src/pages --include=\"*.tsx\")",
+      "Bash(Start-Sleep -Seconds 3)",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":5173\")"
     ]
   }
 }
