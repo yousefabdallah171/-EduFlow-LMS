@@ -59,6 +59,7 @@ export const OnboardingModal = ({ user, prefix, coursePath, lessonPath }: Onboar
                 key={i}
                 role="tab"
                 aria-selected={i === step}
+                aria-label={`Step ${i + 1} of 2${i === step ? ', current' : ''}`}
                 className="rounded-full transition-all duration-200"
                 style={{
                   width: i === step ? "20px" : "7px",

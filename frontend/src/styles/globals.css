@@ -40,8 +40,15 @@
   --color-brand-muted:   color-mix(in oklab, var(--color-brand) 14%, transparent);
   --color-brand-text:    oklch(0.18 0.03 145);
   --color-brand-accent:  oklch(0.58 0.12 205);
+
+  /* Semantic states */
+  --color-success:       oklch(0.72 0.18 143);
+  --color-success-bg:    oklch(0.92 0.04 143);
   --color-warning:       oklch(0.82 0.16 82);
+  --color-warning-bg:    oklch(0.95 0.05 82);
   --color-danger:        oklch(0.72 0.18 28);
+  --color-danger-bg:     oklch(0.92 0.04 28);
+
   --gradient-brand:      linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-hover) 100%);
 
   /* Shadows */
@@ -104,6 +111,14 @@
   --color-brand-text:    oklch(0.83 0.18 128);
   --color-brand-accent:  oklch(0.78 0.15 205);
   --gradient-brand:      linear-gradient(135deg, var(--color-brand) 0%, oklch(0.77 0.2 128) 100%);
+
+  /* Semantic states (dark mode) */
+  --color-success:       oklch(0.78 0.16 143);
+  --color-success-bg:    oklch(0.24 0.04 143);
+  --color-warning:       oklch(0.78 0.16 82);
+  --color-warning-bg:    oklch(0.28 0.06 82);
+  --color-danger:        oklch(0.78 0.18 28);
+  --color-danger-bg:     oklch(0.28 0.06 28);
 
   --shadow-card:         0 16px 40px rgba(0,0,0,0.28), 0 1px 0 rgba(255,255,255,0.03) inset;
   --shadow-card-hover:   0 24px 64px rgba(0,0,0,0.36), 0 0 0 1px rgba(163,230,53,0.08);

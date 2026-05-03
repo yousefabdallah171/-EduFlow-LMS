@@ -217,7 +217,9 @@
       "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('c:/Users/youse/OneDrive/Desktop/project/-EduFlow-LMS/frontend/src/locales/ar.json','utf8'\\)\\); console.log\\('ar OK'\\)\")",
       "Bash(npx impeccable *)",
       "Bash(find frontend/src/pages/student frontend/src/pages/Payment* -name \"*.tsx\" -type f)",
-      "Bash(pkill -f \"vite\\\\|npm run dev\")"
+      "Bash(pkill -f \"vite\\\\|npm run dev\")",
+      "Bash(node .agents/skills/impeccable/scripts/load-context.mjs)",
+      "Bash(grep -r \"#[0-9a-f]\\\\{3,6\\\\}\" frontend/src/pages --include=\"*.tsx\")"
     ]
   }
 }

@@ -138,11 +138,11 @@ export const PaymentPending = () => {
           </div>
 
           {/* Important Notice */}
-          <div className="mb-8 p-4 border border-amber-200 dark:border-amber-900/30 rounded-lg" style={{ backgroundColor: "color-mix(in oklab, rgb(245, 158, 11) 5%, var(--color-surface))" }}>
-            <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-2">
+          <div className="mb-8 p-4 border rounded-lg" style={{ borderColor: "var(--color-warning)", backgroundColor: "var(--color-warning-bg)" }}>
+            <p className="text-sm font-semibold mb-2" style={{ color: "var(--color-warning)" }}>
               ⚠️ {t("paymentPending.importantNotice")}
             </p>
-            <ul className="text-xs text-amber-600 dark:text-amber-500 space-y-1 list-disc list-inside">
+            <ul className="text-xs space-y-1 list-disc list-inside" style={{ color: "var(--color-warning)" }}>
               <li>{t("paymentPending.dontRefresh")}</li>
               <li>{t("paymentPending.dontClose")}</li>
               <li>{t("paymentPending.dontGoBack")}</li>
@@ -152,12 +152,12 @@ export const PaymentPending = () => {
 
           {/* Error State */}
           {statusError && (
-            <div className="mb-8 p-4 border border-red-200 dark:border-red-900/30 rounded-lg" style={{ backgroundColor: "color-mix(in oklab, rgb(239, 68, 68) 5%, var(--color-surface))" }}>
-              <p className="text-sm font-semibold text-red-700 dark:text-red-400 flex items-center gap-2 mb-2">
+            <div className="mb-8 p-4 border rounded-lg" style={{ borderColor: "var(--color-danger)", backgroundColor: "var(--color-danger-bg)" }}>
+              <p className="text-sm font-semibold flex items-center gap-2 mb-2" style={{ color: "var(--color-danger)" }}>
                 <AlertCircle className="h-4 w-4" />
                 {t("paymentPending.checkError")}
               </p>
-              <p className="text-xs text-red-600 dark:text-red-500">
+              <p className="text-xs" style={{ color: "var(--color-danger)" }}>
                 {t("paymentPending.checkErrorDescription")}
               </p>
             </div>
@@ -165,17 +165,18 @@ export const PaymentPending = () => {
 
           {/* Timeout State */}
           {timedOut && (
-            <div className="mb-8 p-4 border border-orange-200 dark:border-orange-900/30 rounded-lg" style={{ backgroundColor: "color-mix(in oklab, rgb(245, 126, 32) 5%, var(--color-surface))" }}>
-              <p className="text-sm font-semibold text-orange-700 dark:text-orange-400 flex items-center gap-2 mb-2">
+            <div className="mb-8 p-4 border rounded-lg" style={{ borderColor: "var(--color-warning)", backgroundColor: "var(--color-warning-bg)" }}>
+              <p className="text-sm font-semibold flex items-center gap-2 mb-2" style={{ color: "var(--color-warning)" }}>
                 <XCircle className="h-4 w-4" />
                 {t("paymentPending.timeoutTitle")}
               </p>
-              <p className="text-xs text-orange-600 dark:text-orange-500 mb-3">
+              <p className="text-xs mb-3" style={{ color: "var(--color-warning)" }}>
                 {t("paymentPending.timeoutDescription")}
               </p>
               <a
                 href={`${prefix}/help`}
-                className="text-xs font-semibold text-orange-700 dark:text-orange-400 no-underline hover:underline"
+                className="text-xs font-semibold no-underline hover:underline"
+                style={{ color: "var(--color-warning)" }}
               >
                 {t("paymentPending.contactSupport")}
               </a>

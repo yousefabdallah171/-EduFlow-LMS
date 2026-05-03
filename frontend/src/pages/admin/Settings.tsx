@@ -139,20 +139,20 @@ export const AdminSettings = () => {
                       <textarea
                         rows={4}
                         className={fieldClass}
-                        style={{ ...fieldStyle, resize: "vertical", borderColor: validationErrors[field] ? "#ef4444" : "var(--color-border-strong)" }}
+                        style={{ ...fieldStyle, resize: "vertical", borderColor: validationErrors[field] ? "var(--color-danger)" : "var(--color-border-strong)" }}
                         value={course[field] ?? ""}
                         onChange={(event) => setCourse({ ...course, [field]: event.target.value })}
                       />
                     ) : (
                       <input
                         className={fieldClass}
-                        style={{ ...fieldStyle, borderColor: validationErrors[field] ? "#ef4444" : "var(--color-border-strong)" }}
+                        style={{ ...fieldStyle, borderColor: validationErrors[field] ? "var(--color-danger)" : "var(--color-border-strong)" }}
                         value={course[field] ?? ""}
                         onChange={(event) => setCourse({ ...course, [field]: event.target.value })}
                       />
                     )}
                     {validationErrors[field] && (
-                      <div className="mt-1 flex items-center gap-2 text-xs" style={{ color: "#ef4444" }}>
+                      <div className="mt-1 flex items-center gap-2 text-xs" style={{ color: "var(--color-danger)" }}>
                         <AlertCircle className="h-3 w-3" />
                         {validationErrors[field]}
                       </div>
@@ -204,8 +204,8 @@ export const AdminSettings = () => {
                     <span
                       className="inline-block rounded-full px-3 py-1 text-xs font-bold"
                       style={{
-                        backgroundColor: systemStatus?.smtpConfigured ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
-                        color: systemStatus?.smtpConfigured ? "#22c55e" : "#ef4444"
+                        backgroundColor: systemStatus?.smtpConfigured ? "var(--color-success-bg)" : "var(--color-danger-bg)",
+                        color: systemStatus?.smtpConfigured ? "var(--color-success)" : "var(--color-danger)"
                       }}
                     >
                       {systemStatus?.smtpConfigured ? "✓ Configured" : "✗ Not Configured"}
@@ -219,8 +219,8 @@ export const AdminSettings = () => {
                     <span
                       className="inline-block rounded-full px-3 py-1 text-xs font-bold"
                       style={{
-                        backgroundColor: systemStatus?.paymobConfigured ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
-                        color: systemStatus?.paymobConfigured ? "#22c55e" : "#ef4444"
+                        backgroundColor: systemStatus?.paymobConfigured ? "var(--color-success-bg)" : "var(--color-danger-bg)",
+                        color: systemStatus?.paymobConfigured ? "var(--color-success)" : "var(--color-danger)"
                       }}
                     >
                       {systemStatus?.paymobConfigured ? "✓ Configured" : "✗ Not Configured"}
@@ -234,8 +234,8 @@ export const AdminSettings = () => {
                     <span
                       className="inline-block rounded-full px-3 py-1 text-xs font-bold"
                       style={{
-                        backgroundColor: systemStatus?.storageConfigured ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
-                        color: systemStatus?.storageConfigured ? "#22c55e" : "#ef4444"
+                        backgroundColor: systemStatus?.storageConfigured ? "var(--color-success-bg)" : "var(--color-danger-bg)",
+                        color: systemStatus?.storageConfigured ? "var(--color-success)" : "var(--color-danger)"
                       }}
                     >
                       {systemStatus?.storageConfigured ? "✓ Configured" : "✗ Not Configured"}
