@@ -1,19 +1,22 @@
 import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 
 import { contactInfo } from "@/lib/public-page-content";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import { LandingHero } from "@/components/landing/LandingHero";
-import { LandingAudience } from "@/components/landing/LandingAudience";
-import { LandingWorkflowSection } from "@/components/landing/LandingWorkflowSection";
-import { LandingCourseContentSection } from "@/components/landing/LandingCourseContentSection";
-import { LandingTimelineSection } from "@/components/landing/LandingTimelineSection";
-import { LandingNumbersSection } from "@/components/landing/LandingNumbersSection";
-import { LandingPricingSection } from "@/components/landing/LandingPricingSection";
-import { LandingFaqSection } from "@/components/landing/LandingFaqSection";
 import { SEO } from "@/components/shared/SEO";
 import { SEO_PAGES } from "@/lib/seo-config";
+
+// Lazy load below-fold sections for faster initial render
+const LandingAudience = lazy(() => import("@/components/landing/LandingAudience").then(m => ({ default: m.LandingAudience })));
+const LandingWorkflowSection = lazy(() => import("@/components/landing/LandingWorkflowSection").then(m => ({ default: m.LandingWorkflowSection })));
+const LandingCourseContentSection = lazy(() => import("@/components/landing/LandingCourseContentSection").then(m => ({ default: m.LandingCourseContentSection })));
+const LandingTimelineSection = lazy(() => import("@/components/landing/LandingTimelineSection").then(m => ({ default: m.LandingTimelineSection })));
+const LandingNumbersSection = lazy(() => import("@/components/landing/LandingNumbersSection").then(m => ({ default: m.LandingNumbersSection })));
+const LandingPricingSection = lazy(() => import("@/components/landing/LandingPricingSection").then(m => ({ default: m.LandingPricingSection })));
+const LandingFaqSection = lazy(() => import("@/components/landing/LandingFaqSection").then(m => ({ default: m.LandingFaqSection })));
 
 const courseSchema = {
   "@context": "https://schema.org",
@@ -57,14 +60,15 @@ export const Landing = () => {
       <div className="landing-noise" aria-hidden="true" />
       <div className="reference-shell">
         <LandingHero prefix={prefix} />
-        <LandingAudience />
-        <LandingWorkflowSection />
-        <LandingCourseContentSection />
-        <LandingTimelineSection />
-        <LandingNumbersSection />
-        <LandingPricingSection prefix={prefix} />
-
-        <LandingFaqSection prefix={prefix} />
+        <Suspense fallback={null}>
+          <LandingAudience />
+          <LandingWorkflowSection />
+          <LandingCourseContentSection />
+          <LandingTimelineSection />
+          <LandingNumbersSection />
+          <LandingPricingSection prefix={prefix} />
+          <LandingFaqSection prefix={prefix} />
+        </Suspense>
 
         <section className="reference-card reference-card--amber mt-12 p-8 text-center md:p-10">
           <span className="reference-badge">

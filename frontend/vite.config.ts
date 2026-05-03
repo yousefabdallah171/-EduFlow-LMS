@@ -26,7 +26,11 @@ export default defineConfig(({ mode }) => {
   const isProd = mode === "production";
 
   return {
-    plugins: [react()],
+    plugins: [
+      react({
+        jsxImportSource: "react"
+      })
+    ],
     server: {
       watch: {
         usePolling: true,
@@ -46,6 +50,13 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       chunkSizeWarningLimit: 600,
+      minify: "terser",
+      terserOptions: {
+        compress: {
+          drop_console: isProd,
+          drop_debugger: isProd
+        }
+      },
       rollupOptions: {
         output: {
           manualChunks: {
