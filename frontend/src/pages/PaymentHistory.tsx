@@ -128,7 +128,7 @@ export const PaymentHistory = () => {
           <div className="grid gap-4 sm:grid-cols-3">
             {/* Search */}
             <div className="relative sm:col-span-2">
-              <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Search className="absolute start-3 top-3 h-5 w-5 text-gray-400" />
               <input
                 type="text"
                 placeholder={t("paymentHistory.searchByOrderId")}
@@ -137,7 +137,7 @@ export const PaymentHistory = () => {
                   setSearchTerm(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border outline-none transition-all focus:ring-2 focus:ring-brand-600/30"
+                className="w-full rounded-lg border py-2.5 ps-10 pe-4 outline-none transition-all focus:ring-2 focus:ring-brand-600/30"
                 style={{
                   backgroundColor: "var(--color-surface-2)",
                   borderColor: "var(--color-border-strong)",
@@ -148,14 +148,14 @@ export const PaymentHistory = () => {
 
             {/* Status Filter */}
             <div className="relative">
-              <Filter className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Filter className="absolute start-3 top-3 h-5 w-5 text-gray-400" />
               <select
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border outline-none transition-all focus:ring-2 focus:ring-brand-600/30"
+                className="w-full rounded-lg border py-2.5 ps-10 pe-4 outline-none transition-all focus:ring-2 focus:ring-brand-600/30"
                 style={{
                   backgroundColor: "var(--color-surface-2)",
                   borderColor: "var(--color-border-strong)",
@@ -172,7 +172,7 @@ export const PaymentHistory = () => {
           </div>
 
           {/* Sort */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm" style={{ color: "var(--color-text-muted)" }}>
               {t("paymentHistory.sortBy")}
             </span>
@@ -246,16 +246,16 @@ export const PaymentHistory = () => {
                 <table className="w-full">
                   <thead>
                     <tr style={{ borderBottom: "1px solid var(--color-border)" }}>
-                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>
+                      <th className="px-6 py-4 text-start text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>
                         {t("paymentHistory.orderId")}
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>
+                      <th className="px-6 py-4 text-start text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>
                         {t("paymentHistory.amount")}
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>
+                      <th className="px-6 py-4 text-start text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>
                         {t("paymentHistory.status")}
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>
+                      <th className="px-6 py-4 text-start text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>
                         {t("paymentHistory.date")}
                       </th>
                       <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-muted)" }}>

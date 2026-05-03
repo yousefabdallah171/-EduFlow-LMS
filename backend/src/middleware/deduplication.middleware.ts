@@ -58,6 +58,7 @@ export const deduplicationMiddleware = (options?: {
     const originalSend = res.send.bind(res);
 
     let captured: CapturedResponse | null = null;
+    let settled = false;
 
     res.json = ((body: unknown) => {
       const bytes = Buffer.byteLength(JSON.stringify(body ?? null), "utf8");
@@ -92,6 +93,8 @@ export const deduplicationMiddleware = (options?: {
 
     const finalize = () => {
       inFlight.delete(key);
+      if (settled) return;
+      settled = true;
       if (captured) {
         resolvePromise(captured);
       } else {
@@ -107,8 +110,18 @@ export const deduplicationMiddleware = (options?: {
     res.on("finish", finalize);
     res.on("close", () => {
       inFlight.delete(key);
-      if (!captured) {
-        rejectPromise(new Error("Request closed before response could be captured."));
+
+      // Never reject here: the app treats unhandled rejections as fatal.
+      // If the client disconnects early, just resolve a minimal placeholder so any
+      // concurrent awaiters can proceed without crashing the process.
+      if (!settled) {
+        settled = true;
+        resolvePromise({
+          status: res.statusCode || 499,
+          headers: {},
+          body: null,
+          mode: "json"
+        });
       }
     });
 

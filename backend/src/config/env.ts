@@ -6,7 +6,9 @@ config();
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   BACKEND_PORT: z.coerce.number().int().positive().default(3000),
-  ENFORCE_SINGLE_SESSION: z.coerce.boolean().default(true),
+  // When true, a new login invalidates previous sessions for the same user (one active session max).
+  // Default is false to allow multi-device sign-in (PC + mobile) like most consumer apps.
+  ENFORCE_SINGLE_SESSION: z.coerce.boolean().default(false),
   STORAGE_PATH: z.string().default("storage"),
   PROMETHEUS_METRICS_ENABLED: z.coerce.boolean().default(false),
   PROMETHEUS_METRICS_TOKEN: z.string().optional(),

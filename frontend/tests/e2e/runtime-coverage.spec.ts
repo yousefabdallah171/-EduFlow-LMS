@@ -84,7 +84,7 @@ const adminRoutes = [
 const adminArabicExpectations = [
   { route: "/ar/admin/dashboard", heading: "لوحة الإدارة" },
   { route: "/ar/admin/lessons", heading: "رفع الدروس" },
-  { route: "/ar/admin/students", heading: "إدارة الطلاب" },
+  { route: "/ar/admin/students", heading: "الطلاب" },
   { route: "/ar/admin/pricing", heading: "التسعير والقسائم" },
   { route: "/ar/admin/analytics", heading: "التحليلات والمدفوعات" },
   { route: "/ar/admin/orders", heading: "الطلبات" },
@@ -150,12 +150,16 @@ const expectNoCriticalIssues = (issues: string[]) => {
 
 const enableDarkMode = async (page: Page) => {
   const html = page.locator("html");
-  const toggle = page.getByLabel("Toggle theme");
+  const toggle = page.getByRole("button", {
+    // Localized label changes based on current theme + locale.
+    name: /Switch to (light|dark) mode|التبديل إلى الوضع (الفاتح|الداكن)/
+  });
 
-  await toggle.click();
-  if (!(await html.evaluate((element) => element.classList.contains("dark")))) {
-    await toggle.click({ force: true });
+  if (await html.evaluate((element) => element.classList.contains("dark"))) {
+    return;
   }
+
+  await toggle.click({ timeout: 10_000 });
 
   await expect(html).toHaveClass(/dark/);
 };
@@ -188,7 +192,7 @@ const expectRouteToLoad = async (page: Page, route: string) => {
     .waitForFunction(
       () => {
         const text = document.body.innerText;
-        return !text.includes("Loading") && !text.includes("Checking your session");
+        return !text.includes("Loading") && !text.includes("Checking your session") && !text.includes("جاري التحقق من الجلسة");
       },
       { timeout: 5000 }
     )

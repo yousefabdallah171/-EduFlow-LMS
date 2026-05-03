@@ -118,6 +118,7 @@ html, body, #root {
 body {
   margin: 0;
   background-color: var(--color-page);
+  overflow-x: hidden;
   background-image:
     radial-gradient(circle at 8% 8%, color-mix(in oklab, var(--color-brand) 12%, transparent), transparent 28rem),
     radial-gradient(circle at 88% 0%, color-mix(in oklab, var(--color-brand-accent) 10%, transparent), transparent 24rem),

@@ -92,7 +92,12 @@ const issueSession = async (user: User, sessionId: string = crypto.randomUUID(),
 
   await redis.set(sessionCacheKey(user.id, sessionId), "active", "EX", REFRESH_SESSION_WINDOW_SECONDS);
   await redis.set(refreshCurrentCacheKey(user.id, sessionId), refreshTokenHash, "EX", REFRESH_SESSION_WINDOW_SECONDS);
-  await sessionService.setActiveSession(user.id, sessionId, REFRESH_SESSION_WINDOW_SECONDS);
+
+  // Only track a single "active session" when the deployment explicitly requests it.
+  // Otherwise we allow multiple concurrent sessions across devices (multi-login).
+  if (env.ENFORCE_SINGLE_SESSION) {
+    await sessionService.setActiveSession(user.id, sessionId, REFRESH_SESSION_WINDOW_SECONDS);
+  }
 
   return {
     accessToken,
