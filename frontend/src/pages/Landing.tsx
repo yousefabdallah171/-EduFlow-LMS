@@ -78,6 +78,7 @@ export const Landing = () => {
       <div className="landing-noise" aria-hidden="true" />
       <div className="reference-shell">
         <LandingHero prefix={prefix} />
+        <div className="landing-hero-divider" />
         <Suspense fallback={<LandingLoadingSkeleton />}>
           <div role="region" aria-label={t("landing.audience.title", "Who is this for?")}>
             <LandingAudience />
@@ -116,7 +117,13 @@ export const Landing = () => {
               {t("landing.final.pricingCta")}
               <ArrowLeft className="icon-dir h-4 w-4" />
             </Link>
-            <a className="reference-button-secondary" href={contactInfo.whatsappUrl} target="_blank" rel="noreferrer">
+            <a
+              className="reference-button-secondary"
+              href={contactInfo.whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={t("common.whatsapp") + " (opens in new window)"}
+            >
               {t("common.whatsapp")}
             </a>
           </div>

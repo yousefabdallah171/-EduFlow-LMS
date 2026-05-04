@@ -222,7 +222,13 @@
       "Bash(grep -r \"#[0-9a-f]\\\\{3,6\\\\}\" frontend/src/pages --include=\"*.tsx\")",
       "Bash(Start-Sleep -Seconds 3)",
       "Bash(netstat -ano)",
-      "Bash(findstr \":5173\")"
+      "Bash(findstr \":5173\")",
+      "Bash(taskkill /PID 2017 /F)",
+      "Bash(taskkill /PID 1615 /F)",
+      "PowerShell(Get-Process node -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Force)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue })",
+      "Bash(node scripts/load-context.mjs)"
     ]
   }
 }

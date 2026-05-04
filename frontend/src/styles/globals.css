@@ -569,6 +569,30 @@ p {
   margin-bottom: clamp(56px, 8vw, 96px);
 }
 
+.landing-hero-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    color-mix(in oklab, var(--color-brand) 20%, transparent) 15%,
+    color-mix(in oklab, var(--color-brand) 20%, transparent) 85%,
+    transparent 100%
+  );
+  margin: clamp(32px, 6vw, 64px) 0;
+  animation: landing-divider-fade 1.2s var(--ease-out-quint) 0.6s both;
+}
+
+@keyframes landing-divider-fade {
+  from {
+    opacity: 0;
+    transform: scaleX(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
 .landing-hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
