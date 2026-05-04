@@ -3003,6 +3003,17 @@ textarea.is-valid:focus,
   }
 }
 
+@media (min-width: 768px) and (max-width: 1023px) {
+  .landing-pricing-card {
+    min-height: auto;
+  }
+
+  .landing-pricing-card--featured {
+    grid-column: auto;
+    order: 1;
+  }
+}
+
 @media (max-width: 767px) {
   .landing-pricing-card--starter { order: 2; }
   .landing-pricing-card--featured { order: 1; grid-column: auto; transform: none; height: auto; }
@@ -3019,6 +3030,16 @@ textarea.is-valid:focus,
 
   .landing-guarantee-copy {
     font-size: 14px;
+  }
+}
+
+@media (max-height: 500px) {
+  .landing-pricing-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  .landing-pricing-card {
+    padding: 20px 16px;
   }
 }
 
