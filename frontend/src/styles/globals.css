@@ -659,7 +659,7 @@ p {
   display: inline-block;
   min-width: 0.5ch;
   color: var(--color-brand);
-  animation: eduflow-landing-blink 0.65s step-end infinite;
+  animation: eduflow-landing-blink 0.65s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
   opacity: 0.9;
 }
 
@@ -2999,13 +2999,13 @@ textarea.is-valid:focus,
   }
 
   .landing-section.is-visible .landing-pricing-card--featured.landing-reveal {
-    transform: translateY(0) scale(1.03);
+    transform: translateY(0);
   }
 }
 
 @media (max-width: 767px) {
   .landing-pricing-card--starter { order: 2; }
-  .landing-pricing-card--featured { order: 1; grid-column: auto; transform: none; }
+  .landing-pricing-card--featured { order: 1; grid-column: auto; transform: none; height: auto; }
   .landing-section.is-visible .landing-pricing-card--featured.landing-reveal { transform: none; }
   .landing-pricing-card--vip { order: 3; }
 
@@ -3025,6 +3025,12 @@ textarea.is-valid:focus,
 @keyframes eduflow-landing-blink {
   0%, 100% { opacity: 0.35; }
   50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-pricing-card--featured {
+    will-change: auto;
+  }
 }
 
 @keyframes eduflow-landing-type-line {

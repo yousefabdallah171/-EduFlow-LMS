@@ -79,13 +79,27 @@ export const Landing = () => {
       <div className="reference-shell">
         <LandingHero prefix={prefix} />
         <Suspense fallback={<LandingLoadingSkeleton />}>
-          <LandingAudience />
-          <LandingWorkflowSection />
-          <LandingCourseContentSection />
-          <LandingTimelineSection />
-          <LandingNumbersSection />
-          <LandingPricingSection prefix={prefix} />
-          <LandingFaqSection prefix={prefix} />
+          <div role="region" aria-label={t("landing.audience.title", "Who is this for?")}>
+            <LandingAudience />
+          </div>
+          <div role="region" aria-label={t("landing.workflow.title", "Workflow")}>
+            <LandingWorkflowSection />
+          </div>
+          <div role="region" aria-label={t("landing.courseContent.title", "Course Content")}>
+            <LandingCourseContentSection />
+          </div>
+          <div role="region" aria-label={t("landing.timeline.title", "Timeline")}>
+            <LandingTimelineSection />
+          </div>
+          <div role="region" aria-label={t("landing.numbers.title", "Impact")}>
+            <LandingNumbersSection />
+          </div>
+          <div role="region" aria-label={t("landing.pricing.title", "Pricing")}>
+            <LandingPricingSection prefix={prefix} />
+          </div>
+          <div role="region" aria-label={t("landing.faq.title", "FAQ")}>
+            <LandingFaqSection prefix={prefix} />
+          </div>
         </Suspense>
 
         <section className="reference-card reference-card--amber mt-12 p-8 text-center md:p-10">
